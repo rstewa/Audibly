@@ -1,0 +1,75 @@
+﻿<Window
+    x:Class="Audibly.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Bottom"
+        Orientation="Vertical">
+        <Image Height="500">
+            <Image.Source>
+                <BitmapImage UriSource="https://via.placeholder.com/500" />
+            </Image.Source>
+        </Image>
+        <CommandBar OverflowButtonVisibility="Collapsed">
+            <AppBarButton
+                Click="OpenAudioFile"
+                Label="OpenAudiobook"
+                ToolTipService.ToolTip="Open Audiobook">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarSeparator />
+            <AppBarButton
+                Click="AppBarButton_Click"
+                Label="PreviousChapter"
+                ToolTipService.ToolTip="Previous Chapter">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE892;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton
+                Click="AppBarButton_Click"
+                Label="SkipBack10"
+                ToolTipService.ToolTip="Skip backward 10 seconds">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED3C;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton
+                x:Name="PlayPauseButton"
+                Click="PlayPauseButton_Click"
+                Icon="Play"
+                Label="Play"
+                Tag="play"
+                ToolTipService.ToolTip="Play/Pause" />
+            <AppBarButton
+                Click="AppBarButton_Click"
+                Label="SkipForward30"
+                ToolTipService.ToolTip="Skip forward 30 seconds">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED3D;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton
+                Click="AppBarButton_Click"
+                Label="NextChapter"
+                ToolTipService.ToolTip="Next Chapter">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE893;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarSeparator />
+            <AppBarButton
+                Click="AppBarButton_Click"
+                Icon="Setting"
+                Label="Setting"
+                ToolTipService.ToolTip="Settings" />
+        </CommandBar>
+    </StackPanel>
+</Window>

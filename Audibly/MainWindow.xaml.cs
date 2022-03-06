@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using Windows.Storage.Pickers;
 using Audibly.Model;
@@ -12,13 +11,10 @@ using WinRT.Interop;
 
 namespace Audibly;
 
-/// <summary>
-///     An empty window that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MainWindow : Window
 {
     private readonly Player _player;
-    private bool _lockUpdate = false;
+    private bool _lockUpdate;
 
     public MainWindow()
     {
@@ -34,14 +30,7 @@ public sealed partial class MainWindow : Window
         );
 
         // Create new config
-        var config = new Config
-        {
-            Player =
-            {
-                Usage = Usage.Audio // make player audio-only
-            }
-        };
-
+        var config = new Config { Player = { Usage = Usage.Audio } };
         _player = new Player(config);
 
         // Listen to property changed events
@@ -95,7 +84,7 @@ public sealed partial class MainWindow : Window
         switch (e.PropertyName)
         {
             case "CurTime":
-                if(_lockUpdate) return;
+                if (_lockUpdate) return;
                 ViewModel.Audiobook.Update(_player.CurTime.ToMs());
                 break;
 
@@ -117,8 +106,7 @@ public sealed partial class MainWindow : Window
         filePicker.FileTypeFilter.Add(".m4a");
         filePicker.FileTypeFilter.Add(".m4b");
         var file = await filePicker.PickSingleFileAsync();
-        if(file == null) return;
-
+        if (file == null) return;
 
         ViewModel.Audiobook.Init(file.Path);
         _player.OpenAsync(file.Path);

@@ -10,6 +10,7 @@ using Audibly.ViewModel;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using System.Collections.ObjectModel;
 
 namespace Audibly.Model;
 
@@ -55,15 +56,10 @@ public class Audiobook : BindableBase
             _curChptr = value;
 
             CurChptrTitle = _curChptr.Value.Title;
-            SetupProgressBar();
+            CurChptrDur = (int)(_curChptr.Value.EndTime - _curChptr.Value.StartTime);
+            var t = TimeSpan.FromMilliseconds(CurChptrDur);
+            CurChptrDurText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
         }
-    }
-
-    private void SetupProgressBar()
-    {
-        CurChptrDur = (int)(_curChptr.Value.EndTime - _curChptr.Value.StartTime);
-        var t = TimeSpan.FromMilliseconds(CurChptrDur);
-        CurChptrDurText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
     }
 
     private string _curChptrTitle;
@@ -106,35 +102,54 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _curTimeText, value);
     }
 
-    public void Update(long curMs)
-    {
-        if (curMs >= CurChptr.Value.EndTime)
-        {
-            CurChptr = CurChptr.Next ?? CurChptr;
-        }
-        CurTimeMs = (int)(curMs - CurChptr.Value.StartTime);
-    }
-
-    public int GetNextChapter()
-    {
-        CurChptr = CurChptr.Next ?? CurChptr;
-        CurTimeMs = 0;
-        return (int)CurChptr.Value.StartTime;
-    }
-    
-    public int GetPrevChapter()
-    {
-        CurChptr = CurChptr.Previous ?? CurChptr;
-        CurTimeMs = 0;
-        return (int)CurChptr.Value.StartTime;
-    }
-
     private ImageSource _coverImgSrc = new BitmapImage(new Uri("https://via.placeholder.com/500"));
     public ImageSource CoverImgSrc
     {
         get => _coverImgSrc;
         set => SetProperty(ref _coverImgSrc, value);
     }
+
+    // BUG: CurTimeMs is getting updated after skip to next chapter before play
+    public void Update(long curMs)
+    {
+        //if (curMs >= CurChptr.Value.EndTime)
+        //{
+        //    CurChptr = CurChptr.Next ?? CurChptr;
+        //}
+        //else if (curMs < CurChptr.Value.StartTime)
+        //{
+        //    CurChptr = CurChptr.Previous ?? CurChptr;
+        //}
+
+        CurChptr = curMs >= CurChptr.Value.EndTime 
+            ? CurChptr.Next : curMs < CurChptr.Value.StartTime 
+            ? CurChptr.Previous : CurChptr;
+
+        CurTimeMs = (int)(curMs - CurChptr.Value.StartTime);
+    }
+
+    public int GetNextChapter()
+    {
+        // CurTimeMs = 0;
+        // CurChptr = CurChptr.Next ?? CurChptr;
+        Update((CurChptr.Next ?? CurChptr).Value.StartTime);
+        return (int) CurChptr.Value.StartTime;
+    }
+
+    public int GetPrevChapter()
+    {
+        CurTimeMs = 0;
+
+        // will return you the beginning of the current chapter unless you are 2 seconds from the
+        // current chapter start time, in which case it will return you the previous chapter
+        CurChptr = CurChptr.Previous == null || CurTimeMs - CurChptr.Value.StartTime >= 2000
+            ? CurChptr
+            : CurChptr.Previous;
+
+        return (int) CurChptr.Value.StartTime;
+    }
+
+    public ObservableCollection<Demuxer.Chapter> ChptrList = new();
 
     public async void Init(string filePath)
     {
@@ -155,6 +170,7 @@ public class Audiobook : BindableBase
                 EndTime = ch.EndTime
             };
             Chptrs.AddLast(chptr);
+            ChptrList.Add(chptr);
 
             Debug.WriteLine($"[{chptr.Title}][{chptr.StartTime}][{chptr.EndTime}]");
         }
@@ -169,10 +185,10 @@ public class Audiobook : BindableBase
 
         using var fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
         var bitmapImage = new BitmapImage { DecodePixelWidth = 500 };
-        await bitmapImage.SetSourceAsync(fileStream); 
+        await bitmapImage.SetSourceAsync(fileStream);
         CoverImgSrc = bitmapImage;
     }
-    
+
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 }
 

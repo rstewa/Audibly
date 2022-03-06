@@ -4,20 +4,79 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:DefaultBindMode="OneWay"
     mc:Ignorable="d">
 
     <StackPanel
         HorizontalAlignment="Center"
         VerticalAlignment="Bottom"
         Orientation="Vertical">
+
+        <!--  Current AudioBook and Chapter Titles  -->
+        <Grid Height="24">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Name="CurrentBook_TextBlock"
+                Grid.Column="0"
+                Margin="12,0"
+                Text="Temporary Book Title"
+                TextAlignment="Left" />
+
+            <TextBlock
+                Name="CurrentChapter_TextBlock"
+                Grid.Column="1"
+                Margin="12,0"
+                Text="Temporary Chapter Title"
+                TextAlignment="Right" />
+
+        </Grid>
+
+        <!--  Current AudioBook Cover Image  -->
         <Image Height="500">
             <Image.Source>
                 <BitmapImage UriSource="https://via.placeholder.com/500" />
             </Image.Source>
         </Image>
+
+        <!--  Current Time  -->
+        <Grid Height="34">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="100" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Name="CurrentTime_TextBlock"
+                Grid.Column="0"
+                Margin="12,8"
+                Text="00:00:00"
+                TextAlignment="Left" />
+
+            <ProgressBar
+                Name="ChapterProgress_ProgressBar"
+                Grid.Column="1"
+                Value="50" />
+
+            <TextBlock
+                Name="CurrentChapterDuration_TextBlock"
+                Grid.Column="2"
+                Margin="12,8"
+                Text="00:00:00"
+                TextAlignment="Right" />
+        </Grid>
+
+        <!--  AudioBook Playback Controls  -->
         <CommandBar OverflowButtonVisibility="Collapsed">
             <AppBarButton
-                Click="OpenAudioFile"
+                x:Name="OpenAudiobookButton"
+                Click="OpenAudiobook_Click"
                 Label="OpenAudiobook"
                 ToolTipService.ToolTip="Open Audiobook">
                 <AppBarButton.Icon>
@@ -26,7 +85,8 @@
             </AppBarButton>
             <AppBarSeparator />
             <AppBarButton
-                Click="AppBarButton_Click"
+                x:Name="PreviousChapterButton"
+                Click="PreviousChapterButton_Click"
                 Label="PreviousChapter"
                 ToolTipService.ToolTip="Previous Chapter">
                 <AppBarButton.Icon>
@@ -34,7 +94,8 @@
                 </AppBarButton.Icon>
             </AppBarButton>
             <AppBarButton
-                Click="AppBarButton_Click"
+                x:Name="SkipBack10Button"
+                Click="SkipBack10Button_Click"
                 Label="SkipBack10"
                 ToolTipService.ToolTip="Skip backward 10 seconds">
                 <AppBarButton.Icon>
@@ -49,7 +110,8 @@
                 Tag="play"
                 ToolTipService.ToolTip="Play/Pause" />
             <AppBarButton
-                Click="AppBarButton_Click"
+                x:Name="SkipForward30Button"
+                Click="SkipForward30Button_Click"
                 Label="SkipForward30"
                 ToolTipService.ToolTip="Skip forward 30 seconds">
                 <AppBarButton.Icon>
@@ -57,7 +119,8 @@
                 </AppBarButton.Icon>
             </AppBarButton>
             <AppBarButton
-                Click="AppBarButton_Click"
+                x:Name="NextChapterButton"
+                Click="NextChapterButton_Click"
                 Label="NextChapter"
                 ToolTipService.ToolTip="Next Chapter">
                 <AppBarButton.Icon>
@@ -66,7 +129,8 @@
             </AppBarButton>
             <AppBarSeparator />
             <AppBarButton
-                Click="AppBarButton_Click"
+                x:Name="SettingButton"
+                Click="SettingButton_Click"
                 Icon="Setting"
                 Label="Setting"
                 ToolTipService.ToolTip="Settings" />

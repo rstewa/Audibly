@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using System;
 using WinRT.Interop;
 using static PInvoke.User32;
 
@@ -33,26 +33,31 @@ public partial class App : Application
         _mWindow = new MainWindow();
         var hwnd = WindowNative.GetWindowHandle(_mWindow);
 
-        SetWindowDetails(hwnd, 515, 700);
+        SetWindowDetails(hwnd, 515, 650);
         _mWindow.Activate();
     }
 
     private static void SetWindowDetails(IntPtr hwnd, int width, int height)
     {
         var dpi = GetDpiForWindow(hwnd);
-        var scalingFactor = (float) dpi / 96;
-        width = (int) (width * scalingFactor);
-        height = (int) (height * scalingFactor);
+        var scalingFactor = (float)dpi / 96;
+        width = (int)(width * scalingFactor);
+        height = (int)(height * scalingFactor);
 
+        // setting window size
         _ = SetWindowPos(hwnd, SpecialWindowHandles.HWND_TOP,
             0, 0, width, height,
             SetWindowPosFlags.SWP_NOMOVE);
         _ = SetWindowLong(hwnd,
             WindowLongIndexFlags.GWL_STYLE,
-            (SetWindowLongFlags) (GetWindowLong(hwnd,
+            (SetWindowLongFlags)(GetWindowLong(hwnd,
                                       WindowLongIndexFlags.GWL_STYLE) &
                                   // ~(int)SetWindowLongFlags.WS_MINIMIZEBOX & // disables minimize button on window
-                                  ~(int) SetWindowLongFlags.WS_MAXIMIZEBOX)); // disables maximize button on window
+                                  ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX)); // disables maximize button on window
+        // setting window title
+        _ = SetWindowText(hwnd, "Audibly");
+
+        // todo: set application icon
 
         // disable resizing of the main window
         var myWndId = Win32Interop.GetWindowIdFromWindow(hwnd);

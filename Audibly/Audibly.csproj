@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="FlyleafLib" Version="3.4.9" />
+    <PackageReference Include="Humanizer" Version="2.14.1" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
@@ -37,9 +38,6 @@
        package has not yet been restored -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\" />
   </ItemGroup>
 
   <!-- Flyleaf needs FFMpeg dll's so this copies them to bin directory (i.e., bin\x64\Debug\net6.0-windows10.0.19041.0\win10-x64\FFMpeg\) -->

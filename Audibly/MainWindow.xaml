@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d">
 
@@ -13,38 +14,24 @@
         Orientation="Vertical">
 
         <!--  Current AudioBook and Chapter Titles  -->
-        <Grid Height="24">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                Name="CurrentBook_TextBlock"
-                Grid.Column="0"
-                Margin="12,0"
-                Text="Temporary Book Title"
-                TextAlignment="Left" />
-
-            <TextBlock
-                Name="CurrentChapter_TextBlock"
-                Grid.Column="1"
-                Margin="12,0"
-                Text="Temporary Chapter Title"
-                TextAlignment="Right" />
-
-        </Grid>
+        <TextBlock
+            x:Name="CurrentBook_TextBlock"
+            Margin="12,0"
+            Text="{x:Bind ViewModel.Audiobook.Title}"
+            TextAlignment="Center" />
 
         <!--  Current AudioBook Cover Image  -->
-        <Image Height="500">
-            <Image.Source>
-                <BitmapImage UriSource="https://via.placeholder.com/500" />
-            </Image.Source>
-        </Image>
+        <Image
+            Height="500"
+            Margin="0,18"
+            Source="{x:Bind ViewModel.Audiobook.CoverImgSrc}" />
 
-        <!--  Current Time  -->
-        <Grid Height="34">
+        <!--  Current Time & Progress  -->
+        <Grid x:Name="ProgressGrid" Height="58">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24" />
+                <RowDefinition Height="34" />
+            </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100" />
@@ -53,22 +40,35 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock
-                Name="CurrentTime_TextBlock"
-                Grid.Column="0"
-                Margin="12,8"
-                Text="00:00:00"
-                TextAlignment="Left" />
-
-            <ProgressBar
-                Name="ChapterProgress_ProgressBar"
+                x:Name="CurrentChapter_TextBlock"
+                Grid.Row="0"
                 Grid.Column="1"
-                Value="50" />
+                Margin="0"
+                Text="{x:Bind ViewModel.Audiobook.CurChptrTitle}"
+                TextAlignment="Center" />
 
             <TextBlock
-                Name="CurrentChapterDuration_TextBlock"
+                x:Name="CurrentTime_TextBlock"
+                Grid.Row="1"
+                Grid.Column="0"
+                Margin="15,8,0,8"
+                Text="{x:Bind ViewModel.Audiobook.CurTimeText}"
+                TextAlignment="Left" />
+
+            <muxc:ProgressBar
+                x:Name="ChapterProgress_ProgressBar"
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="0"
+                Maximum="{x:Bind ViewModel.Audiobook.CurChptrDur}"
+                Value="{x:Bind ViewModel.Audiobook.CurTimeMs}" />
+
+            <TextBlock
+                x:Name="CurrentChapterDuration_TextBlock"
+                Grid.Row="1"
                 Grid.Column="2"
-                Margin="12,8"
-                Text="00:00:00"
+                Margin="0,8,15,0"
+                Text="{x:Bind ViewModel.Audiobook.CurChptrDurText}"
                 TextAlignment="Right" />
         </Grid>
 

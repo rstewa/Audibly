@@ -1,7 +1,7 @@
-﻿using Microsoft.UI;
+﻿using System;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using System;
 using WinRT.Interop;
 using static PInvoke.User32;
 
@@ -33,7 +33,7 @@ public partial class App : Application
         _mWindow = new MainWindow();
         var hwnd = WindowNative.GetWindowHandle(_mWindow);
 
-        SetWindowDetails(hwnd, 515, 650);
+        SetWindowDetails(hwnd, 515, 715);
         _mWindow.Activate();
     }
 
@@ -45,15 +45,23 @@ public partial class App : Application
         height = (int)(height * scalingFactor);
 
         // setting window size
-        _ = SetWindowPos(hwnd, SpecialWindowHandles.HWND_TOP,
+        _ = SetWindowPos(
+            hwnd, SpecialWindowHandles.HWND_TOP,
             0, 0, width, height,
-            SetWindowPosFlags.SWP_NOMOVE);
-        _ = SetWindowLong(hwnd,
+            SetWindowPosFlags.SWP_NOMOVE
+        );
+        _ = SetWindowLong(
+            hwnd,
             WindowLongIndexFlags.GWL_STYLE,
-            (SetWindowLongFlags)(GetWindowLong(hwnd,
-                                      WindowLongIndexFlags.GWL_STYLE) &
-                                  // ~(int)SetWindowLongFlags.WS_MINIMIZEBOX & // disables minimize button on window
-                                  ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX)); // disables maximize button on window
+            (SetWindowLongFlags)(GetWindowLong(
+                                     hwnd,
+                                     WindowLongIndexFlags.GWL_STYLE
+                                 ) &
+
+                                 // ~(int)SetWindowLongFlags.WS_MINIMIZEBOX & // disables minimize button on window
+                                 ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX)
+        ); // disables maximize button on window
+
         // setting window title
         _ = SetWindowText(hwnd, "Audibly");
 

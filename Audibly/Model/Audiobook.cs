@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using ATL;
 using Audibly.ViewModel;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using System.Collections.ObjectModel;
 
 namespace Audibly.Model;
 
@@ -40,23 +37,23 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _description, value);
     }
 
-    private LinkedList<Demuxer.Chapter> _chptrs = new();
-    public LinkedList<Demuxer.Chapter> Chptrs
+    private List<Demuxer.Chapter> _chptrs = new();
+    public List<Demuxer.Chapter> Chptrs
     {
         get => _chptrs;
         set => SetProperty(ref _chptrs, value);
     }
 
-    private LinkedListNode<Demuxer.Chapter> _curChptr;
-    public LinkedListNode<Demuxer.Chapter> CurChptr
+    private Demuxer.Chapter _curChptr;
+    public Demuxer.Chapter CurChptr
     {
         get => _curChptr;
         set
         {
             _curChptr = value;
 
-            CurChptrTitle = _curChptr.Value.Title;
-            CurChptrDur = (int)(_curChptr.Value.EndTime - _curChptr.Value.StartTime);
+            CurChptrTitle = _curChptr.Title;
+            CurChptrDur = (int)(_curChptr.EndTime - _curChptr.StartTime);
             var t = TimeSpan.FromMilliseconds(CurChptrDur);
             CurChptrDurText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
         }
@@ -112,44 +109,42 @@ public class Audiobook : BindableBase
     // BUG: CurTimeMs is getting updated after skip to next chapter before play
     public void Update(long curMs)
     {
-        //if (curMs >= CurChptr.Value.EndTime)
-        //{
-        //    CurChptr = CurChptr.Next ?? CurChptr;
-        //}
-        //else if (curMs < CurChptr.Value.StartTime)
-        //{
-        //    CurChptr = CurChptr.Previous ?? CurChptr;
-        //}
-
-        CurChptr = curMs >= CurChptr.Value.EndTime 
-            ? CurChptr.Next : curMs < CurChptr.Value.StartTime 
-            ? CurChptr.Previous : CurChptr;
-
-        CurTimeMs = (int)(curMs - CurChptr.Value.StartTime);
+        if (!CurChptr.InRange(curMs))
+        {
+            var tmp = Chptrs.Find(c => c.InRange(curMs));
+            if (tmp != null) CurChptr = tmp;
+        }
+        CurTimeMs = curMs > CurChptr.StartTime ? (int)(curMs - CurChptr.StartTime) : 0;
     }
 
-    public int GetNextChapter()
-    {
-        // CurTimeMs = 0;
-        // CurChptr = CurChptr.Next ?? CurChptr;
-        Update((CurChptr.Next ?? CurChptr).Value.StartTime);
-        return (int) CurChptr.Value.StartTime;
-    }
-
-    public int GetPrevChapter()
+    public long GetNextChapter()
     {
         CurTimeMs = 0;
+        var idx = Chptrs.IndexOf(CurChptr);
 
-        // will return you the beginning of the current chapter unless you are 2 seconds from the
-        // current chapter start time, in which case it will return you the previous chapter
-        CurChptr = CurChptr.Previous == null || CurTimeMs - CurChptr.Value.StartTime >= 2000
-            ? CurChptr
-            : CurChptr.Previous;
+        if (idx == Chptrs.Count - 1)
+        {
+            CurChptr = Chptrs[idx];
+            return CurChptr.EndTime.ToTicks();
+        }
 
-        return (int) CurChptr.Value.StartTime;
+        CurChptr = Chptrs[idx + 1];
+        return CurChptr.StartTime.ToTicks();
     }
 
-    public ObservableCollection<Demuxer.Chapter> ChptrList = new();
+    public long GetPrevChapter(long curTimeMs)
+    {
+        var idx = Chptrs.FindIndex(c => c.InRange(curTimeMs));
+        if(idx == -1) return curTimeMs.ToTicks();
+
+        CurTimeMs = 0;
+
+        if(idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 2000)) 
+            return Chptrs[idx].StartTime.ToTicks();
+
+        CurChptr = Chptrs[idx - 1];
+        return Chptrs[idx - 1].StartTime.ToTicks();
+    }
 
     public async void Init(string filePath)
     {
@@ -169,13 +164,12 @@ public class Audiobook : BindableBase
                 StartTime = ch.StartTime,
                 EndTime = ch.EndTime
             };
-            Chptrs.AddLast(chptr);
-            ChptrList.Add(chptr);
+            Chptrs.Add(chptr);
 
             Debug.WriteLine($"[{chptr.Title}][{chptr.StartTime}][{chptr.EndTime}]");
         }
 
-        CurChptr = Chptrs.First;
+        CurChptr = Chptrs[0];
         CurTimeMs = 0;
 
         var imgBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()!.PictureData;

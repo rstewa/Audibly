@@ -14,4 +14,9 @@ public static class Extensions
     {
         return ticks / TimeSpan.TicksPerMillisecond;
     }
+
+    public static long ToTicks(this long ms)
+    {
+        return TimeSpan.FromMilliseconds(ms).Ticks;
+    }
 }

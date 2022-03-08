@@ -106,7 +106,6 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _coverImgSrc, value);
     }
 
-    // BUG: CurTimeMs is getting updated after skip to next chapter before play
     public void Update(long curMs)
     {
         if (!CurChptr.InRange(curMs))
@@ -166,7 +165,9 @@ public class Audiobook : BindableBase
             };
             Chptrs.Add(chptr);
 
+#if DEBUG
             Debug.WriteLine($"[{chptr.Title}][{chptr.StartTime}][{chptr.EndTime}]");
+#endif
         }
 
         CurChptr = Chptrs[0];

@@ -8,8 +8,8 @@
 
   <Identity
     Name="5ba66f48-86b0-4aae-8292-b067c6a9fe92"
-    Publisher="CN=RStewar2"
-    Version="1.0.0.0" />
+    Publisher="CN=rstewa"
+    Version="1.0.2.0" />
 
   <Properties>
     <DisplayName>Audibly</DisplayName>

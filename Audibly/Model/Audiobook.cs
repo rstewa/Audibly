@@ -80,15 +80,16 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _curChptrDurText, value);
     }
 
-    private int _curTimeMs;
+    private long _curTimeMs;
     public int CurTimeMs
     {
-        get => _curTimeMs;
+        get => (int) _curTimeMs;
         set
         {
             SetProperty(ref _curTimeMs, value);
-            var t = TimeSpan.FromMilliseconds(_curTimeMs);
-            CurTimeText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
+            // var t = TimeSpan.FromMilliseconds(_curTimeMs);
+            // CurTimeText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
+            CurTimeText = _curTimeMs.ToStr_ms();
         }
     }
 
@@ -106,6 +107,13 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _coverImgSrc, value);
     }
 
+    private string _curPosInBook;
+    public string CurPosInBook
+    {
+        get => $"Current position: {_curPosInBook}";
+        set => SetProperty(ref _curPosInBook, value);
+    }
+
     public void Update(long curMs)
     {
         if (!CurChptr.InRange(curMs))
@@ -114,20 +122,34 @@ public class Audiobook : BindableBase
             if (tmp != null) CurChptr = tmp;
         }
         CurTimeMs = curMs > CurChptr.StartTime ? (int)(curMs - CurChptr.StartTime) : 0;
+        CurPosInBook = curMs.ToStr_ms();
+    }
+
+    public long GetChapter(Demuxer.Chapter chptr, long curTimeMs)
+    {
+        if (chptr == CurChptr) return curTimeMs.ToTicks();
+        CurChptr = chptr;
+        CurTimeMs = 0;
+        CurPosInBook = CurChptr.StartTime.ToStr_ms();
+        return CurChptr.StartTime.ToTicks();
     }
 
     public long GetNextChapter()
     {
-        CurTimeMs = 0;
         var idx = Chptrs.IndexOf(CurChptr);
 
+        // if 'CurChptr' is the last chapter of the book
         if (idx == Chptrs.Count - 1)
         {
             CurChptr = Chptrs[idx];
+            CurTimeMs = (int) CurChptr.EndTime;
+            CurPosInBook = CurChptr.EndTime.ToStr_ms();
             return CurChptr.EndTime.ToTicks();
         }
 
         CurChptr = Chptrs[idx + 1];
+        CurTimeMs = 0;
+        CurPosInBook = CurChptr.StartTime.ToStr_ms();
         return CurChptr.StartTime.ToTicks();
     }
 
@@ -136,13 +158,16 @@ public class Audiobook : BindableBase
         var idx = Chptrs.FindIndex(c => c.InRange(curTimeMs));
         if(idx == -1) return curTimeMs.ToTicks();
 
+        // RETURNS start of the current chapter IF 'curTimeMs' is in the 1st chapter of the book
+        //     OR
+        // the current position in 'CurChptr' is greater than 2 seconds away from the start of 'CurChptr'
+        CurChptr = idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 2000)
+            ? Chptrs[idx]
+            : Chptrs[idx - 1];
+        
         CurTimeMs = 0;
-
-        if(idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 2000)) 
-            return Chptrs[idx].StartTime.ToTicks();
-
-        CurChptr = Chptrs[idx - 1];
-        return Chptrs[idx - 1].StartTime.ToTicks();
+        CurPosInBook = CurChptr.StartTime.ToStr_ms();
+        return CurChptr.StartTime.ToTicks();
     }
 
     public async void Init(string filePath)
@@ -153,7 +178,7 @@ public class Audiobook : BindableBase
         Title = fileMetadata.Title;
         Author = fileMetadata.Artist;
         Description = fileMetadata.Comment;
-        Duration = fileMetadata.Duration;
+        Duration = fileMetadata.Duration * 1000; // convert to ms
 
         foreach (var ch in fileMetadata.Chapters)
         {
@@ -172,6 +197,7 @@ public class Audiobook : BindableBase
 
         CurChptr = Chptrs[0];
         CurTimeMs = 0;
+        CurPosInBook = ((long) 0).ToStr_ms();
 
         var imgBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()!.PictureData;
         var imageFile = await StorageFolder.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting);

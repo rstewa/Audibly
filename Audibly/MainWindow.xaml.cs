@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 using Windows.Storage;
+using FlyleafLib.MediaFramework.MediaDemuxer;
 
 namespace Audibly;
 
@@ -16,7 +17,8 @@ public sealed partial class MainWindow : Window
 {
     private readonly Player _player;
     private bool _lockUpdate;
-    private ApplicationDataContainer _localSettings;
+    private readonly ApplicationDataContainer _localSettings;
+    private string _curPosStg = "";
 
     public MainWindow()
     {
@@ -49,19 +51,16 @@ public sealed partial class MainWindow : Window
 
         _player.OpenCompleted += (o, e) =>
         {
-            Utils.UI(() => 
-            { 
-                if (_localSettings.Values["currentTime"] == null)
+            Utils.UI(() =>
+            {
+                if (_curPosStg == string.Empty) _curPosStg = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
+
+                if (_localSettings.Values[_curPosStg!] == null)
                 {
-                    _localSettings.Values["currentTime"] = 0;
+                    _localSettings.Values[_curPosStg] = 0;
                     _player.CurTime = 0;
                 }
-                else
-                {
-                    var currentTime = Convert.ToInt32(_localSettings.Values["currentTime"]);
-                    _player.CurTime = TimeSpan.FromMilliseconds(currentTime).Ticks;
-                }
-                // ViewModel.Audiobook.Update(_player.CurTime.ToMs());
+                else { _player.CurTime = TimeSpan.FromMilliseconds(Convert.ToInt32(_localSettings.Values[_curPosStg!])).Ticks; }
             });
         };
 
@@ -84,6 +83,7 @@ public sealed partial class MainWindow : Window
         SkipBack10Button.IsEnabled = isEnabled;
         SkipForward30Button.IsEnabled = isEnabled;
         NextChapterButton.IsEnabled = isEnabled;
+        ChapterCombo.IsEnabled = isEnabled;
 
         CurrentTime_TextBlock.Opacity = ChapterProgress_ProgressBar.Opacity =
             CurrentChapterDuration_TextBlock.Opacity = isEnabled ? 1.0 : 0.5;
@@ -113,6 +113,10 @@ public sealed partial class MainWindow : Window
             case "CurTime":
                 if (_lockUpdate) return;
                 ViewModel.Audiobook.Update(_player.CurTime.ToMs());
+                if (ChapterCombo.SelectedIndex != ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr))
+                {
+                    ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
+                }
                 SaveProgress();
                 break;
 
@@ -147,15 +151,17 @@ public sealed partial class MainWindow : Window
 
         if ((string)PlayPauseButton.Tag == "play")
         {
-            PlayPauseButton.Icon = new SymbolIcon(Symbol.Pause);
-            PlayPauseButton.Label = "Pause";
+            // PlayPauseButton.Icon = new SymbolIcon(Symbol.Pause);
+            // PlayPauseButton.Label = "Pause";
             PlayPauseButton.Tag = "pause";
+            PlayPauseIcon.Symbol = Symbol.Pause;
         }
         else
         {
-            PlayPauseButton.Icon = new SymbolIcon(Symbol.Play);
-            PlayPauseButton.Label = "Play";
+            // PlayPauseButton.Icon = new SymbolIcon(Symbol.Play);
+            // PlayPauseButton.Label = "Play";
             PlayPauseButton.Tag = "play";
+            PlayPauseIcon.Symbol = Symbol.Play;
         }
     }
 
@@ -163,7 +169,7 @@ public sealed partial class MainWindow : Window
     {
         _lockUpdate = true;
         _player.CurTime = ViewModel.Audiobook.GetNextChapter();
-        // ViewModel.Audiobook.Update(_player.CurTime.ToMs());
+        ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
         _lockUpdate = false;
     }
 
@@ -171,7 +177,7 @@ public sealed partial class MainWindow : Window
     {
         _lockUpdate = true;
         _player.CurTime = ViewModel.Audiobook.GetPrevChapter(_player.CurTime.ToMs());
-        // ViewModel.Audiobook.Update(_player.CurTime.ToMs());
+        ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
         _lockUpdate = false;
     }
 
@@ -191,6 +197,18 @@ public sealed partial class MainWindow : Window
 
     private void SaveProgress()
     {
-        _localSettings.Values["currentTime"] = _player.CurTime.ToMs();
+        _localSettings.Values[_curPosStg] = _player.CurTime.ToMs();
+    }
+
+    private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var container = sender as ComboBox;
+        if (container == null) return;
+        var chapter = container.SelectedItem as Demuxer.Chapter;
+        if (chapter == null) return;
+
+        _lockUpdate = true;
+        _player.CurTime = ViewModel.Audiobook.GetChapter(chapter, _player.CurTime.ToMs());
+        _lockUpdate = false;
     }
 }

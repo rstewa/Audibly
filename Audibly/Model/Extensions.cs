@@ -19,4 +19,10 @@ public static class Extensions
     {
         return TimeSpan.FromMilliseconds(ms).Ticks;
     }
+
+    public static string ToStr_ms(this long ms)
+    {
+        var t = TimeSpan.FromMilliseconds(ms);
+        return $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
+    }
 }

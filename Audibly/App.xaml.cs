@@ -33,7 +33,7 @@ public partial class App : Application
         _mWindow = new MainWindow();
         var hwnd = WindowNative.GetWindowHandle(_mWindow);
 
-        SetWindowDetails(hwnd, 515, 612);
+        SetWindowDetails(hwnd, 350, 500);
         _mWindow.Activate();
     }
 

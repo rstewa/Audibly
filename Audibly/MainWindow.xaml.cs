@@ -1,28 +1,39 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using Windows.Storage;
 using Windows.Storage.Pickers;
+using Audibly.Extensions;
 using Audibly.Model;
 using FlyleafLib;
+using FlyleafLib.MediaFramework.MediaDemuxer;
 using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
-using Windows.Storage;
-using FlyleafLib.MediaFramework.MediaDemuxer;
+using static PInvoke.User32;
 
 namespace Audibly;
 
 public sealed partial class MainWindow : Window
 {
-    private readonly Player _player;
-    private bool _lockUpdate;
     private readonly ApplicationDataContainer _localSettings;
+    private readonly Player _player;
     private string _curPosStg = "";
+    private bool _lockUpdate;
 
     public MainWindow()
     {
         InitializeComponent();
+        this.SetWindowSize(315, 420, false);
+
+        var hWnd = WindowNative.GetWindowHandle(this);
+
+        _ = SetWindowLong(hWnd, WindowLongIndexFlags.GWL_STYLE,
+            (SetWindowLongFlags)(GetWindowLong(hWnd, WindowLongIndexFlags.GWL_STYLE)
+                                 & ~(int)SetWindowLongFlags.WS_MINIMIZEBOX & ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX));
+
+
         ViewModel = new AudiobookViewModel();
         _localSettings = ApplicationData.Current.LocalSettings;
 
@@ -53,19 +64,27 @@ public sealed partial class MainWindow : Window
         {
             Utils.UI(() =>
             {
-                if (_curPosStg == string.Empty) _curPosStg = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
+                if (_curPosStg == string.Empty)
+                    _curPosStg = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
 
                 if (_localSettings.Values[_curPosStg!] == null)
                 {
                     _localSettings.Values[_curPosStg] = 0;
                     _player.CurTime = 0;
                 }
-                else { _player.CurTime = TimeSpan.FromMilliseconds(Convert.ToInt32(_localSettings.Values[_curPosStg!])).Ticks; }
+                else
+                {
+                    _player.CurTime = TimeSpan.FromMilliseconds(Convert.ToInt32(_localSettings.Values[_curPosStg!]))
+                        .Ticks;
+                }
             });
         };
 
         // play/pause button disabled until an audio file is successfully opened
         ToggleAudioControls(false);
+
+        CurrentTime_TextBlock.Opacity = 0.5;
+        CurrentChapterDuration_TextBlock.Opacity = 0.5;
         if (_localSettings.Values["currentAudiobookPath"] != null)
         {
             var currentAudiobookPath = _localSettings.Values["currentAudiobookPath"].ToString();
@@ -114,9 +133,7 @@ public sealed partial class MainWindow : Window
                 if (_lockUpdate) return;
                 ViewModel.Audiobook.Update(_player.CurTime.ToMs());
                 if (ChapterCombo.SelectedIndex != ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr))
-                {
                     ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
-                }
                 SaveProgress();
                 break;
 

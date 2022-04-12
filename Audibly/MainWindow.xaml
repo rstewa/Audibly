@@ -4,197 +4,215 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d">
 
 
-    <Grid HorizontalAlignment="Center">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="300" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-        </Grid.RowDefinitions>
+    <Grid Background="#121212">
+        <Grid HorizontalAlignment="Center" Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="300" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
 
-        <!--  Book Cover Image  -->
-        <Border
-            Grid.Row="0"
-            Width="275"
-            Height="275"
-            Margin="0,25,0,0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            BorderBrush="transparent"
-            BorderThickness="1"
-            CornerRadius="10">
-            <Border.Background>
-                <ImageBrush ImageSource="{x:Bind ViewModel.Audiobook.CoverImgSrc}" Stretch="UniformToFill" />
-            </Border.Background>
-        </Border>
+            <!--  Book Cover Image  -->
+            <Border
+                Grid.Row="0"
+                Width="275"
+                Height="275"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BorderBrush="transparent"
+                BorderThickness="1"
+                CornerRadius="10">
+                <Border.Background>
+                    <ImageBrush ImageSource="{x:Bind ViewModel.Audiobook.CoverImgSrc}" Stretch="UniformToFill" />
+                </Border.Background>
+            </Border>
 
-        <!--  Time Remaining in book  -->
-        <TextBlock
-            x:Name="CurPosInBook_TextBlock"
-            Grid.Row="1"
-            Margin="0,0,0,0"
-            HorizontalAlignment="Left"
-            Text="{x:Bind ViewModel.Audiobook.CurPosInBook}"
-            TextAlignment="Left"
-            Visibility="Collapsed" />
+            <!--  Time Remaining in book  -->
+            <TextBlock
+                x:Name="CurPosInBook_TextBlock"
+                Grid.Row="1"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Left"
+                Text="{x:Bind ViewModel.Audiobook.CurPosInBook}"
+                TextAlignment="Left"
+                Visibility="Collapsed" />
 
-        <!--#region Chapter Grid-->
-        <Grid
-            x:Name="ChapterGrid"
-            Grid.Row="2"
-            Height="50"
-            Width="300"
-            Margin="0,0,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="225" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+            <!--#region Chapter Grid-->
+            <Grid
+                x:Name="ChapterGrid"
+                Grid.Row="2"
+                Width="300"
+                Margin="0,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="225" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    x:Name="PreviousChapterButton"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Left"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="PreviousChapterButton_Click"
+                    Content="&#xE76B;"
+                    FontFamily="Segoe MDL2 Assets">
+                    <!--<FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />-->
+                </Button>
+
+                <ComboBox
+                    x:Name="ChapterCombo"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    DisplayMemberPath="Title"
+                    ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"
+                    SelectionChanged="ChapterCombo_SelectionChanged" />
+
+                <Button
+                    x:Name="NextChapterButton"
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Right"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="NextChapterButton_Click"
+                    Content="&#xE76C;"
+                    FontFamily="Segoe MDL2 Assets">
+                    <!--<FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />-->
+                </Button>
+            </Grid>
+            <!--#endregion-->
+
+            <!--#region  Current Time & Progress-->
+            <Grid
+                x:Name="ProgressGrid"
+                Grid.Row="3"
+                Width="275"
+                Height="50"
+                Margin="0,-15,0,0"
+                VerticalAlignment="Bottom">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    x:Name="CurrentTime_TextBlock"
+                    Grid.Column="0"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Foreground="#9d9d9d"
+                    Text="{x:Bind ViewModel.Audiobook.CurTimeText}"
+                    TextAlignment="Left" />
+
+                <ProgressBar
+                    x:Name="ChapterProgress_ProgressBar"
+                    Grid.Column="1"
+                    Width="175"
+                    Margin="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Maximum="{x:Bind ViewModel.Audiobook.CurChptrDur}"
+                    Value="{x:Bind ViewModel.Audiobook.CurTimeMs}" />
+
+                <TextBlock
+                    x:Name="CurrentChapterDuration_TextBlock"
+                    Grid.Column="2"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Foreground="#9d9d9d"
+                    Text="{x:Bind ViewModel.Audiobook.CurChptrDurText}"
+                    TextAlignment="Right" />
+            </Grid>
+            <!--#endregion-->
 
             <Button
-                x:Name="PreviousChapterButton"
-                Grid.Row="0"
-                Grid.Column="0"
-                Margin="0,0,0,0"
+                x:Name="OpenAudiobookButton"
+                Grid.Row="4"
+                Margin="2,5,0,0"
                 HorizontalAlignment="Left"
                 Background="Transparent"
                 BorderThickness="0"
-                Click="PreviousChapterButton_Click"
-                Content="&#xE76B;"
-                FontFamily="Segoe MDL2 Assets">
-                <!--<FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />-->
+                Click="OpenAudiobook_Click"
+                ToolTipService.ToolTip="Open Audiobook">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
             </Button>
 
-            <ComboBox
-                x:Name="ChapterCombo"
-                Grid.Row="0"
-                Grid.Column="1"
+            <!--#region Audio Playback Controls-->
+
+            <StackPanel
+                Grid.Row="4"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HorizontalContentAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0"
-                DisplayMemberPath="Title"
-                ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"
-                SelectionChanged="ChapterCombo_SelectionChanged" />
+                Orientation="Horizontal"
+                Margin="0,5,0,0">
 
-            <Button
-                x:Name="NextChapterButton"
-                Grid.Row="0"
-                Grid.Column="2"
-                Margin="0,0,0,0"
-                HorizontalAlignment="Right"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="NextChapterButton_Click"
-                Content="&#xE76C;"
-                FontFamily="Segoe MDL2 Assets">
-                <!--<FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />-->
-            </Button>
+                <Button
+                    x:Name="SkipBack10Button"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="SkipBack10Button_Click"
+                    ToolTipService.ToolTip="Skip backward 10 seconds">
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        Foreground="#61ccff"
+                        Glyph="&#xED3C;" />
+                </Button>
+
+                <Button
+                    x:Name="PlayPauseButton"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="PlayPauseButton_Click"
+                    Tag="play"
+                    ToolTipService.ToolTip="Play/Pause">
+                    <!--<FontIcon
+                        x:Name="PlayPauseButtonIcon"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="24"
+                        Foreground="#61ccff"
+                        Glyph="&#xF5B0;" />-->
+                    <SymbolIcon
+                        x:Name="PlayPauseIcon"
+                        Foreground="#61ccff"
+                        Symbol="Play" />
+                </Button>
+
+                <Button
+                    x:Name="SkipForward30Button"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="SkipForward30Button_Click"
+                    ToolTipService.ToolTip="Skip forward 30 seconds">
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        Foreground="#61ccff"
+                        Glyph="&#xED3D;" />
+                </Button>
+
+            </StackPanel>
+
+            <!--#endregion-->
+
         </Grid>
-        <!--#endregion-->
-
-        <!--#region  Current Time & Progress-->
-        <Grid
-            x:Name="ProgressGrid"
-            Grid.Row="3"
-            Height="50"
-            Width="275"
-            Margin="0,-15,0,15"
-            VerticalAlignment="Bottom">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="150" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                x:Name="CurrentTime_TextBlock"
-                Grid.Column="0"
-                Margin="0,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="{x:Bind ViewModel.Audiobook.CurTimeText}"
-                TextAlignment="Left" />
-
-            <muxc:ProgressBar
-                x:Name="ChapterProgress_ProgressBar"
-                Grid.Column="1"
-                Margin="0"
-                Width="175"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Maximum="{x:Bind ViewModel.Audiobook.CurChptrDur}"
-                Value="{x:Bind ViewModel.Audiobook.CurTimeMs}" />
-
-            <TextBlock
-                x:Name="CurrentChapterDuration_TextBlock"
-                Grid.Column="2"
-                Margin="0,0,0,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Text="{x:Bind ViewModel.Audiobook.CurChptrDurText}"
-                TextAlignment="Right" />
-        </Grid>
-        <!--#endregion-->
-
-        <Button
-            x:Name="OpenAudiobookButton"
-            Grid.Row="4"
-            HorizontalAlignment="Left"
-            Background="Transparent"
-            Margin="2,0,0,0"
-            BorderThickness="0"
-            Click="OpenAudiobook_Click"
-            ToolTipService.ToolTip="Open Audiobook">
-            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
-        </Button>
-
-        <!--#region Audio Playback Controls-->
-
-        <StackPanel
-            Grid.Row="4"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-
-            <Button
-                x:Name="SkipBack10Button"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="SkipBack10Button_Click"
-                ToolTipService.ToolTip="Skip backward 10 seconds">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED3C;" />
-            </Button>
-
-            <Button
-                x:Name="PlayPauseButton"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="PlayPauseButton_Click"
-                Tag="play"
-                ToolTipService.ToolTip="Play/Pause">
-                <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
-            </Button>
-
-            <Button
-                x:Name="SkipForward30Button"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="SkipForward30Button_Click"
-                ToolTipService.ToolTip="Skip forward 30 seconds">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED3D;" />
-            </Button>
-
-        </StackPanel>
-
-        <!--#endregion-->
-
     </Grid>
 </Window>

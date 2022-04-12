@@ -28,7 +28,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.Foundation.Metadata;
 
-namespace Audibly.ViewModel;
+namespace Audibly.Model;
 
 /// <summary>
 ///     Implementation of <see cref="INotifyPropertyChanged" /> to simplify models.

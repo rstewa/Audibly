@@ -33,7 +33,8 @@ public partial class App : Application
         _mWindow = new MainWindow();
         var hwnd = WindowNative.GetWindowHandle(_mWindow);
 
-        SetWindowDetails(hwnd, 350, 500);
+        //_mWindow.SetWindowSize(315, 450, false, false, true);
+        // SetWindowDetails(hwnd, 315, 450);
         _mWindow.Activate();
     }
 
@@ -50,9 +51,10 @@ public partial class App : Application
             0, 0, width, height,
             SetWindowPosFlags.SWP_NOMOVE
         );
-        _ = SetWindowLong(hwnd, WindowLongIndexFlags.GWL_STYLE, (SetWindowLongFlags)(GetWindowLong(hwnd, WindowLongIndexFlags.GWL_STYLE)
-            & ~(int)SetWindowLongFlags.WS_MINIMIZEBOX &
-              ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX));
+        _ = SetWindowLong(hwnd, WindowLongIndexFlags.GWL_STYLE,
+            (SetWindowLongFlags)(GetWindowLong(hwnd, WindowLongIndexFlags.GWL_STYLE)
+                                 & ~(int)SetWindowLongFlags.WS_MINIMIZEBOX &
+                                 ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX));
 
         // setting window title
         _ = SetWindowText(hwnd, "Audibly");

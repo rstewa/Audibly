@@ -1,15 +1,9 @@
 ﻿using System;
-using FlyleafLib.MediaFramework.MediaDemuxer;
 
-namespace Audibly.Model;
+namespace Audibly.Extensions;
 
-public static class Extensions
+public static class TimespanExtensions
 {
-    public static bool InRange(this Demuxer.Chapter chapter, long curTime)
-    {
-        return curTime >= chapter.StartTime && curTime < chapter.EndTime;
-    }
-
     public static long ToMs(this long ticks)
     {
         return ticks / TimeSpan.TicksPerMillisecond;
@@ -24,5 +18,11 @@ public static class Extensions
     {
         var t = TimeSpan.FromMilliseconds(ms);
         return $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
+    }
+
+    public static string ToStr_ms(this int ms)
+    {
+        var t = TimeSpan.FromMilliseconds(ms);
+        return $@"{t.TotalHours}:{t:mm}:{t:ss}";
     }
 }

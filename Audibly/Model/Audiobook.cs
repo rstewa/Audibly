@@ -7,6 +7,7 @@ using ATL;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Audibly.Extensions;
 
 namespace Audibly.Model;
 

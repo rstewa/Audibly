@@ -207,7 +207,7 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 * [Iconoir](https://github.com/lucaburgio/iconoir)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template/blob/master/BLANK_README.md)
-* []()
+* [Logo](https://freeiconshop.com/icon/open-book-icon-flat/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

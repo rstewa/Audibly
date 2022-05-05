@@ -25,14 +25,10 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        this.SetWindowSize(315, 420, false);
-
-        var hWnd = WindowNative.GetWindowHandle(this);
-
-        _ = SetWindowLong(hWnd, WindowLongIndexFlags.GWL_STYLE,
-            (SetWindowLongFlags)(GetWindowLong(hWnd, WindowLongIndexFlags.GWL_STYLE)
-                                 & ~(int)SetWindowLongFlags.WS_MINIMIZEBOX & ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX));
-
+        this.SetWindowSize(315, 440, false, false, true, false);
+        // Title = "Audibly";
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
 
         ViewModel = new AudiobookViewModel();
         _localSettings = ApplicationData.Current.LocalSettings;
@@ -227,5 +223,10 @@ public sealed partial class MainWindow : Window
         _lockUpdate = true;
         _player.CurTime = ViewModel.Audiobook.GetChapter(chapter, _player.CurTime.ToMs());
         _lockUpdate = false;
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
     }
 }

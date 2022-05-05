@@ -31,41 +31,6 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         _mWindow = new MainWindow();
-        var hwnd = WindowNative.GetWindowHandle(_mWindow);
-
-        //_mWindow.SetWindowSize(315, 450, false, false, true);
-        // SetWindowDetails(hwnd, 315, 450);
         _mWindow.Activate();
-    }
-
-    private static void SetWindowDetails(IntPtr hwnd, int width, int height)
-    {
-        var dpi = GetDpiForWindow(hwnd);
-        var scalingFactor = (float)dpi / 96;
-        width = (int)(width * scalingFactor);
-        height = (int)(height * scalingFactor);
-
-        // setting window size
-        _ = SetWindowPos(
-            hwnd, SpecialWindowHandles.HWND_TOP,
-            0, 0, width, height,
-            SetWindowPosFlags.SWP_NOMOVE
-        );
-        _ = SetWindowLong(hwnd, WindowLongIndexFlags.GWL_STYLE,
-            (SetWindowLongFlags)(GetWindowLong(hwnd, WindowLongIndexFlags.GWL_STYLE)
-                                 & ~(int)SetWindowLongFlags.WS_MINIMIZEBOX &
-                                 ~(int)SetWindowLongFlags.WS_MAXIMIZEBOX));
-
-        // setting window title
-        _ = SetWindowText(hwnd, "Audibly");
-
-        // todo: set application icon
-
-        // disable resizing of the main window
-        var myWndId = Win32Interop.GetWindowIdFromWindow(hwnd);
-        var apw = AppWindow.GetFromWindowId(myWndId);
-        var presenter = apw.Presenter as OverlappedPresenter;
-
-        presenter!.IsResizable = false;
     }
 }

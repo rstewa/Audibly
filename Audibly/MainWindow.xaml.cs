@@ -11,7 +11,6 @@ using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
-using static PInvoke.User32;
 
 namespace Audibly;
 
@@ -63,9 +62,6 @@ public sealed partial class MainWindow : Window
         {
             Utils.UIInvoke(() =>
             {
-                // if (_curPosStg == string.Empty)
-                //     _curPosStg = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
-
                 var curBookName = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
                 _curPosStg = _curPosStg != curBookName ? curBookName : _curPosStg;
 
@@ -182,15 +178,11 @@ public sealed partial class MainWindow : Window
 
         if ((string)PlayPauseButton.Tag == "play")
         {
-            // PlayPauseButton.Icon = new SymbolIcon(Symbol.Pause);
-            // PlayPauseButton.Label = "Pause";
             PlayPauseButton.Tag = "pause";
             PlayPauseIcon.Symbol = Symbol.Pause;
         }
         else
         {
-            // PlayPauseButton.Icon = new SymbolIcon(Symbol.Play);
-            // PlayPauseButton.Label = "Play";
             PlayPauseButton.Tag = "play";
             PlayPauseIcon.Symbol = Symbol.Play;
         }

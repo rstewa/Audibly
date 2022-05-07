@@ -32,6 +32,21 @@
             Grid.Row="1"
             Margin="0,-10,0,0"
             HorizontalAlignment="Center">
+
+            <Grid.Resources>
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="ButtonForeground">#fff</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForegroundPressed">#CCCCCC</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForegroundPointerOver">#999999</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForegroundDisabled">#555555</SolidColorBrush>
+                </ResourceDictionary>
+            </Grid.Resources>
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="300" />
                 <RowDefinition Height="auto" />
@@ -88,9 +103,8 @@
                     BorderThickness="0"
                     Click="PreviousChapterButton_Click"
                     Content="&#xE76B;"
-                    FontFamily="Segoe MDL2 Assets">
-                    <!--<FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />-->
-                </Button>
+                    FontFamily="Segoe MDL2 Assets" />
+
 
                 <ComboBox
                     x:Name="ChapterCombo"
@@ -103,7 +117,6 @@
                     BorderThickness="0"
                     DisplayMemberPath="Title"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
-                <!--  ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"  -->
 
                 <Button
                     x:Name="NextChapterButton"
@@ -188,50 +201,50 @@
                 HorizontalAlignment="Center"
                 Orientation="Horizontal">
 
+                <StackPanel.Resources>
+                    <ResourceDictionary>
+                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                        <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
+                    </ResourceDictionary>
+                </StackPanel.Resources>
+
                 <Button
                     x:Name="SkipBack10Button"
-                    Background="Transparent"
                     BorderThickness="0"
                     Click="SkipBack10Button_Click"
                     ToolTipService.ToolTip="Skip backward 10 seconds">
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="24"
-                        Foreground="#4ac694"
                         Glyph="&#xED3C;" />
                 </Button>
 
                 <Button
                     x:Name="PlayPauseButton"
-                    Background="Transparent"
                     BorderThickness="0"
                     Click="PlayPauseButton_Click"
                     Tag="play"
                     ToolTipService.ToolTip="Play/Pause">
-                    <!--<FontIcon
-                        x:Name="PlayPauseButtonIcon"
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="24"
-                        Foreground="#61ccff"
-                        Glyph="&#xF5B0;" />-->
                     <Viewbox MaxWidth="24" MaxHeight="24">
-                        <SymbolIcon
-                            x:Name="PlayPauseIcon"
-                            Foreground="#4ac694"
-                            Symbol="Play" />
+                        <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
                     </Viewbox>
                 </Button>
 
                 <Button
                     x:Name="SkipForward30Button"
-                    Background="Transparent"
                     BorderThickness="0"
                     Click="SkipForward30Button_Click"
                     ToolTipService.ToolTip="Skip forward 30 seconds">
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="24"
-                        Foreground="#4ac694"
                         Glyph="&#xED3D;" />
                 </Button>
 

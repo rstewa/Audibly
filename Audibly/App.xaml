@@ -13,6 +13,8 @@
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForeground">White</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">White</SolidColorBrush>
+
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="Audibly-alpha-5ba66f48-86b0-4aae-8292-b067c6a9fe92"
+    Name="Audibly-VS-5ba66f48-86b0-4aae-8292-b067c6a9fe92"
     Publisher="CN=ryan"
     Version="0.0.1.0" />
 

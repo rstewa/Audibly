@@ -102,8 +102,8 @@
                     Background="Transparent"
                     BorderThickness="0"
                     DisplayMemberPath="Title"
-                    ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
+                <!--  ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"  -->
 
                 <Button
                     x:Name="NextChapterButton"
@@ -215,7 +215,10 @@
                         Foreground="#61ccff"
                         Glyph="&#xF5B0;" />-->
                     <Viewbox MaxWidth="24" MaxHeight="24">
-                        <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" Foreground="#4ac694" />
+                        <SymbolIcon
+                            x:Name="PlayPauseIcon"
+                            Foreground="#4ac694"
+                            Symbol="Play" />
                     </Viewbox>
                 </Button>
 

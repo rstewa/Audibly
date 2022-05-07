@@ -26,12 +26,15 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         this.SetWindowSize(315, 440, false, false, true, false);
-        // Title = "Audibly";
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
         ViewModel = new AudiobookViewModel();
+
         _localSettings = ApplicationData.Current.LocalSettings;
+#if DEBUG
+        _localSettings.Values.Clear();
+#endif
 
         Engine.Start(
             new EngineConfig
@@ -58,10 +61,13 @@ public sealed partial class MainWindow : Window
 
         _player.OpenCompleted += (o, e) =>
         {
-            Utils.UI(() =>
+            Utils.UIInvoke(() =>
             {
-                if (_curPosStg == string.Empty)
-                    _curPosStg = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
+                // if (_curPosStg == string.Empty)
+                //     _curPosStg = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
+
+                var curBookName = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
+                _curPosStg = _curPosStg != curBookName ? curBookName : _curPosStg;
 
                 if (_localSettings.Values[_curPosStg!] == null)
                 {
@@ -73,6 +79,14 @@ public sealed partial class MainWindow : Window
                     _player.CurTime = TimeSpan.FromMilliseconds(Convert.ToInt32(_localSettings.Values[_curPosStg!]))
                         .Ticks;
                 }
+
+                ViewModel.Audiobook.Chptrs.ForEach(ch => ChapterCombo.Items.Add(ch));
+                
+                ViewModel.Audiobook.Update(_player.CurTime.ToMs());
+
+                var curChptrIdx = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
+                if (ChapterCombo.SelectedIndex != curChptrIdx)
+                    ChapterCombo.SelectedIndex = curChptrIdx;
             });
         };
 
@@ -126,10 +140,14 @@ public sealed partial class MainWindow : Window
         switch (e.PropertyName)
         {
             case "CurTime":
-                if (_lockUpdate) return;
+                if (_lockUpdate) break;
+
                 ViewModel.Audiobook.Update(_player.CurTime.ToMs());
-                if (ChapterCombo.SelectedIndex != ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr))
-                    ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
+
+                var curChptrIdx = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);
+                if (ChapterCombo.SelectedIndex != curChptrIdx)
+                    ChapterCombo.SelectedIndex = curChptrIdx;
+
                 SaveProgress();
                 break;
 

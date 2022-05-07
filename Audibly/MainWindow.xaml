@@ -18,7 +18,7 @@
                 Width="24"
                 Margin="8,0"
                 HorizontalAlignment="Left"
-                Source="Assets\Logo\SoundWave\1x\book-open-flat.png" />
+                Source="Assets\Logo\Icon\1x\book-open-flat.png" />
             <TextBlock
                 x:Name="AppTitleTextBlock"
                 Margin="40,0,0,0"

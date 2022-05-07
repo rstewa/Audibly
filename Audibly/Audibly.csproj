@@ -12,15 +12,16 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>1C521964710C10060BE3E411C9D25A693C6B8BBF</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <AppxPackageDir>C:\Users\rstewa\Desktop\audibly-tmp\</AppxPackageDir>
+    <AppxPackageDir>C:\temp\Audibly\Audibly %28Package%29\AppPackages\</AppxPackageDir>
+    <PackageIcon>book-open-flat.png</PackageIcon>
+    <PackageCertificateKeyFile>Audibly_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,6 +57,11 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
+	  <Content Remove="Assets\BadgeLogo.scale-100.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-125.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-150.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-200.png" />
+	  <Content Remove="Assets\BadgeLogo.scale-400.png" />
 	  <Content Remove="Assets\LargeTile.scale-100.png" />
 	  <Content Remove="Assets\LargeTile.scale-125.png" />
 	  <Content Remove="Assets\LargeTile.scale-150.png" />
@@ -98,6 +104,9 @@
 	  <Content Remove="Assets\Wide310x150Logo.scale-400.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Assets\Logo\" />
+	  <None Update="Assets\Logo\Icon\128w\book-open-flat.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 </Project>

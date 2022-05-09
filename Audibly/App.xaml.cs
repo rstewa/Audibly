@@ -1,9 +1,4 @@
-﻿using System;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using WinRT.Interop;
-using static PInvoke.User32;
+﻿using Microsoft.UI.Xaml;
 
 namespace Audibly;
 

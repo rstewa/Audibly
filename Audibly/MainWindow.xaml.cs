@@ -77,7 +77,7 @@ public sealed partial class MainWindow : Window
                 }
 
                 ViewModel.Audiobook.Chptrs.ForEach(ch => ChapterCombo.Items.Add(ch));
-                
+
                 ViewModel.Audiobook.Update(_player.CurTime.ToMs());
 
                 var curChptrIdx = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr);

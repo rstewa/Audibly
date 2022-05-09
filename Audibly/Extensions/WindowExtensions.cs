@@ -1,5 +1,4 @@
 ﻿using Windows.Graphics;
-using Windows.UI;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -11,7 +10,6 @@ public static class WindowExtensions
 {
     public static void SetWindowSize(this Window window, int width, int height)
     {
-
     }
 
     public static void SetWindowSize(this Window window, int width, int height,

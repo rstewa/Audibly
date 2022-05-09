@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Storage;
 using ATL;
+using Audibly.Extensions;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Audibly.Extensions;
 
 namespace Audibly.Model;
 
@@ -174,7 +174,7 @@ public class Audiobook : BindableBase
         // RETURNS start of the current chapter IF 'curTimeMs' is in the 1st chapter of the book
         //     OR
         // the current position in 'CurChptr' is greater than 2 seconds away from the start of 'CurChptr'
-        CurChptr = idx == 0 || curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 2000
+        CurChptr = idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 2000)
             ? Chptrs[idx]
             : Chptrs[idx - 1];
 

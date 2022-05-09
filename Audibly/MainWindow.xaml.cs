@@ -32,7 +32,7 @@ public sealed partial class MainWindow : Window
 
         _localSettings = ApplicationData.Current.LocalSettings;
 #if DEBUG
-        _localSettings.Values.Clear();
+        // _localSettings.Values.Clear();
 #endif
 
         Engine.Start(

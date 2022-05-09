@@ -23,6 +23,7 @@
     <PackageIcon>book-open-flat.png</PackageIcon>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
     <PackageCertificateKeyFile>Audibly_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <DefaultLanguage>en</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>

@@ -35,12 +35,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FlyleafLib" Version="3.4.9" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22000.194" />
+    <PackageReference Include="FlyleafLib" Version="3.4.14" />
+    <PackageReference Include="KlearTouch.MediaPlayer.WinUI" Version="0.7.0-beta" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.0-preview3" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621-preview" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
     <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
-    <PackageReference Include="z440.atl.core" Version="4.3.0" />
+    <PackageReference Include="z440.atl.core" Version="4.5.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

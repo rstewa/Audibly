@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Windows.Storage;
 using ATL;
 using Audibly.Extensions;
@@ -38,8 +36,6 @@ public class Audiobook : BindableBase
     private string _description;
 
     private string _title;
-
-    private Metadata metadata;
     public long Duration { get; private set; }
     public string FilePath { get; private set; }
 
@@ -187,65 +183,43 @@ public class Audiobook : BindableBase
         return CurChptr.StartTime.ToTicks();
     }
 
-    public void Init(string filePath)
+    public async void Init(string filePath)
     {
         FilePath = filePath;
         var fileMetadata = new Track(filePath);
 
-        var bookAppdataDir = StorageFolder.CreateFolderAsync(
-            $"{Path.GetFileNameWithoutExtension(filePath)} [{fileMetadata.Artist}]",
-            CreationCollisionOption.OpenIfExists).GetAwaiter().GetResult();
+        Title = fileMetadata.Title;
+        Author = fileMetadata.Artist;
+        Description = fileMetadata.Comment;
+        Duration = fileMetadata.Duration * 1000; // convert to ms
 
-        StorageFile coverImage;
-
-        if (!File.Exists(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")))
+        foreach (var ch in fileMetadata.Chapters)
         {
-            metadata = new Metadata
+            var chptr = new Demuxer.Chapter
             {
-                Title = fileMetadata.Title,
-                Author = fileMetadata.Artist,
-                Description = fileMetadata.Comment,
-                Duration = fileMetadata.Duration.ToMs(),
-                Chapters = new List<Demuxer.Chapter>()
+                Title = ch.Title,
+                StartTime = ch.StartTime,
+                EndTime = ch.EndTime
             };
+            Chptrs.Add(chptr);
 
-            foreach (var ch in fileMetadata.Chapters)
-            {
-                var chptr = new Demuxer.Chapter
-                {
-                    Title = ch.Title,
-                    StartTime = ch.StartTime,
-                    EndTime = ch.EndTime
-                };
-                metadata.Chapters.Add(chptr);
-            }
-
-            var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
-            coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting).GetAwaiter().GetResult();
-            FileIO.WriteBytesAsync(coverImage, imageBytes).GetAwaiter().GetResult();
-
-            var metadataFile = bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting).GetAwaiter().GetResult();
-            File.WriteAllText(metadataFile.Path, JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true }));
+#if DEBUG
+            Debug.WriteLine($"[{chptr.Title}][{chptr.StartTime}][{chptr.EndTime}]");
+#endif
         }
-        else
-        {
-            metadata = JsonSerializer.Deserialize<Metadata>(File.ReadAllText(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")));
-            coverImage = bookAppdataDir.GetFileAsync("CoverImage.jpg").GetAwaiter().GetResult();
-        }
-
-        Debug.Assert(metadata != null, nameof(metadata) + " != null");
-
-        Title = metadata.Title;
-        Author = metadata.Author;
-        Description = metadata.Description;
-        Duration = metadata.Duration;
-        Chptrs = metadata.Chapters;
 
         CurChptr = Chptrs[0];
         CurTimeMs = 0;
-        CurPosInBook = "0";
+        CurPosInBook = ((long)0).ToStr_ms();
 
-        var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
+        var imgBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()!.PictureData;
+        var imageFile = await StorageFolder.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting);
+        await FileIO.WriteBytesAsync(imageFile, imgBytes);
+        if (imageFile == null) return;
+
+        using var fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
+        var bitmapImage = new BitmapImage { DecodePixelWidth = 500 };
+        await bitmapImage.SetSourceAsync(fileStream);
         CoverImgSrc = bitmapImage;
     }
 }

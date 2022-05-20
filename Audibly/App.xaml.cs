@@ -1,4 +1,7 @@
-﻿using Microsoft.UI.Xaml;
+﻿//   Author: Ryan Stewart
+//   Date: 05/20/2022
+
+using Microsoft.UI.Xaml;
 
 namespace Audibly;
 

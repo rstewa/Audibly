@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿//   Author: Ryan Stewart
+//   Date: 05/20/2022
+
+using System.Collections.Generic;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 
 namespace Audibly.Model;

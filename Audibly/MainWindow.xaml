@@ -54,6 +54,11 @@
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
+            <Border
+                x:Name="MediaPlayerElementContainer"
+                Width="0"
+                Height="0" />
+
             <!--  Book Cover Image  -->
             <Border
                 Grid.Row="0"
@@ -116,6 +121,8 @@
                     Background="Transparent"
                     BorderThickness="0"
                     DisplayMemberPath="Title"
+                    ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"
+                    SelectedIndex="0"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
 
                 <Button

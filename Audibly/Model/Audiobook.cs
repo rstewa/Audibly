@@ -1,4 +1,7 @@
-﻿using System;
+﻿//   Author: Ryan Stewart
+//   Date: 05/20/2022
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -63,7 +66,7 @@ public class Audiobook : BindableBase
 
     public List<Demuxer.Chapter> Chptrs
     {
-        get => _chptrs;
+        get => _chptrs ??= new List<Demuxer.Chapter>();
         set => SetProperty(ref _chptrs, value);
     }
 
@@ -130,7 +133,7 @@ public class Audiobook : BindableBase
 
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
-    public void Update(long curMs)
+    public void Update(double curMs)
     {
         if (!CurChptr.InRange(curMs))
         {
@@ -151,7 +154,7 @@ public class Audiobook : BindableBase
         return CurChptr.StartTime.ToTicks();
     }
 
-    public long GetNextChapter()
+    public TimeSpan GetNextChapter()
     {
         var idx = Chptrs.IndexOf(CurChptr);
 
@@ -161,30 +164,30 @@ public class Audiobook : BindableBase
             CurChptr = Chptrs[idx];
             CurTimeMs = (int)CurChptr.EndTime;
             CurPosInBook = CurChptr.EndTime.ToStr_ms();
-            return CurChptr.EndTime.ToTicks();
+            return TimeSpan.FromMilliseconds(CurChptr.EndTime);
         }
 
         CurChptr = Chptrs[idx + 1];
         CurTimeMs = 0;
         CurPosInBook = CurChptr.StartTime.ToStr_ms();
-        return CurChptr.StartTime.ToTicks();
+        return TimeSpan.FromMilliseconds(CurChptr.StartTime);
     }
 
-    public long GetPrevChapter(long curTimeMs)
+    public TimeSpan GetPrevChapter(double curTimeMs)
     {
         var idx = Chptrs.FindIndex(c => c.InRange(curTimeMs));
-        if (idx == -1) return curTimeMs.ToTicks();
+        if (idx == -1) return TimeSpan.FromMilliseconds(curTimeMs);
 
         // RETURNS start of the current chapter IF 'curTimeMs' is in the 1st chapter of the book
         //     OR
-        // the current position in 'CurChptr' is greater than 2 seconds away from the start of 'CurChptr'
-        CurChptr = idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 2000)
+        // the current position in 'CurChptr' is greater than 3 seconds away from the start of 'CurChptr'
+        CurChptr = idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 3000)
             ? Chptrs[idx]
             : Chptrs[idx - 1];
 
         CurTimeMs = 0;
         CurPosInBook = CurChptr.StartTime.ToStr_ms();
-        return CurChptr.StartTime.ToTicks();
+        return TimeSpan.FromMilliseconds(CurChptr.StartTime);
     }
 
     public void Init(string filePath)
@@ -221,15 +224,19 @@ public class Audiobook : BindableBase
             }
 
             var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
-            coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting).GetAwaiter().GetResult();
+            coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting)
+                .GetAwaiter().GetResult();
             FileIO.WriteBytesAsync(coverImage, imageBytes).GetAwaiter().GetResult();
 
-            var metadataFile = bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting).GetAwaiter().GetResult();
-            File.WriteAllText(metadataFile.Path, JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true }));
+            var metadataFile = bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting)
+                .GetAwaiter().GetResult();
+            File.WriteAllText(metadataFile.Path,
+                JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true }));
         }
         else
         {
-            metadata = JsonSerializer.Deserialize<Metadata>(File.ReadAllText(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")));
+            metadata = JsonSerializer.Deserialize<Metadata>(
+                File.ReadAllText(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")));
             coverImage = bookAppdataDir.GetFileAsync("CoverImage.jpg").GetAwaiter().GetResult();
         }
 

@@ -8,6 +8,11 @@ public static class TimespanExtensions
     {
         return ticks / TimeSpan.TicksPerMillisecond;
     }
+    
+    public static long ToMs(this int ticks)
+    {
+        return ticks * 1000;
+    }
 
     public static long ToTicks(this long ms)
     {

@@ -1,4 +1,7 @@
-﻿using Windows.Graphics;
+﻿//   Author: Ryan Stewart
+//   Date: 05/20/2022
+
+using Windows.Graphics;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;

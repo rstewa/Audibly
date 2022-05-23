@@ -17,13 +17,13 @@
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageDir>C:\Users\ryan\Documents\source\repos\Audibly\Audibly %28Package%29\AppPackages\</AppxPackageDir>
     <PackageIcon>book-open-flat.png</PackageIcon>
-    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
-    <PackageCertificateKeyFile>Audibly_TemporaryKey.pfx</PackageCertificateKeyFile>
     <DefaultLanguage>en</DefaultLanguage>
+    <PackageCertificateThumbprint>3D647678AD955E545A0A24C368D72C8315B8CF9C</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile>Audibly_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,11 +53,6 @@
   </ItemGroup>
 
   <!-- Flyleaf needs FFMpeg dll's so this copies them to bin directory (i.e., bin\x64\Debug\net6.0-windows10.0.19041.0\win10-x64\FFMpeg\) -->
-	<ItemGroup>
-		<Content Include="FFMpeg\**\*.*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
 	<ItemGroup>
 	  <Content Remove="Assets\BadgeLogo.scale-100.png" />
 	  <Content Remove="Assets\BadgeLogo.scale-125.png" />

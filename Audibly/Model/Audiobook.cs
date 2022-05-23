@@ -13,11 +13,24 @@ using Audibly.Extensions;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Data;
 
 namespace Audibly.Model;
 
 public class Audiobook : BindableBase
 {
+    public const string Volume0 = "\uE74F";
+    public const string Volume1 = "\uE993";
+    public const string Volume2 = "\uE994";
+    public const string Volume3 = "\uE995";
+
+    private string _audioLevelGlyph;
+    public string AudioLevelGlyph 
+    { 
+        get => _audioLevelGlyph;  
+        set => SetProperty(ref _audioLevelGlyph, value);
+    }
+
     private string _author;
 
     private List<Demuxer.Chapter> _chptrs = new();
@@ -222,7 +235,7 @@ public class Audiobook : BindableBase
                 };
                 metadata.Chapters.Add(chptr);
             }
-
+             
             var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
             coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
@@ -251,6 +264,7 @@ public class Audiobook : BindableBase
         CurChptr = Chptrs[0];
         CurTimeMs = 0;
         CurPosInBook = "0";
+        AudioLevelGlyph = Volume3;
 
         var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
         CoverImgSrc = bitmapImage;

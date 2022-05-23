@@ -14,6 +14,7 @@ using Microsoft.UI.Media.Playback;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
+using Microsoft.UI.Xaml.Data;
 
 namespace Audibly;
 
@@ -171,15 +172,19 @@ public sealed partial class MainWindow : Window
 
     private void ToggleAudioControls(bool isEnabled)
     {
-        PlayPauseButton.IsEnabled = isEnabled;
-        PreviousChapterButton.IsEnabled = isEnabled;
-        SkipBack10Button.IsEnabled = isEnabled;
-        SkipForward30Button.IsEnabled = isEnabled;
-        NextChapterButton.IsEnabled = isEnabled;
-        ChapterCombo.IsEnabled = isEnabled;
+        DispatcherQueue.TryEnqueue(() =>
+        { 
+            PlayPauseButton.IsEnabled = isEnabled;
+            PreviousChapterButton.IsEnabled = isEnabled;
+            SkipBack10Button.IsEnabled = isEnabled;
+            SkipForward30Button.IsEnabled = isEnabled;
+            NextChapterButton.IsEnabled = isEnabled;
+            ChapterCombo.IsEnabled = isEnabled;
+            AudioLevel_Slider.IsEnabled = isEnabled;
 
-        CurrentTime_TextBlock.Opacity = ChapterProgress_ProgressBar.Opacity =
-            CurrentChapterDuration_TextBlock.Opacity = isEnabled ? 1.0 : 0.5;
+            CurrentTime_TextBlock.Opacity = ChapterProgress_ProgressBar.Opacity =
+                CurrentChapterDuration_TextBlock.Opacity = isEnabled ? 1.0 : 0.5;
+        });
     }
 
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -229,5 +234,16 @@ public sealed partial class MainWindow : Window
         if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChptr)) return;
 
         CurPos = TimeSpan.FromMilliseconds(chapter.StartTime);
+    }
+
+    private void Slider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+    {
+        var volume = AudioLevel_Slider.Value;
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ViewModel.Audiobook.AudioLevelGlyph = volume == 0 ? Audiobook.Volume0 : volume <= 33 ? Audiobook.Volume1 : volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
+            MediaPlayer.Volume = volume / 100;
+        });
     }
 }

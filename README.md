@@ -8,9 +8,9 @@
 
 
 ### Screenshots
-![Audibly_01](images/Audibly_01.PNG)
-![Audibly_03](images/Audibly_03.PNG)
-![Audibly_02](images/Audibly_02.PNG)
+![Audibly_01](images/Audibly_01.PNG)  
+![Audibly_03](images/Audibly_03.PNG)  
+![Audibly_02](images/Audibly_02.PNG)  
 
 
 

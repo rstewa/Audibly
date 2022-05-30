@@ -6,6 +6,8 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using WinRT.Interop;
+using static PInvoke.User32;
+using System;
 
 namespace Audibly.Extensions;
 
@@ -23,6 +25,13 @@ public static class WindowExtensions
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
         var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        var scalingFactor = (float)GetDpiForWindow(hWnd) / 96;
+        if(scalingFactor != 1)
+        {
+            width = Math.Ceiling(width * scalingFactor).ToInt();
+            height = Math.Ceiling(height * scalingFactor).ToInt();
+        }
 
         // appWindow.TitleBar.ExtendsContentIntoTitleBar = extendsContentIntoTitleBar;
         // appWindow.TitleBar.ButtonBackgroundColor = Color.FromArgb(1, 18, 18, 18);

@@ -14,7 +14,6 @@ using Microsoft.UI.Media.Playback;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
-using Microsoft.UI.Xaml.Data;
 
 namespace Audibly;
 

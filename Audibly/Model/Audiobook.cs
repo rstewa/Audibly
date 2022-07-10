@@ -220,7 +220,9 @@ public class Audiobook : BindableBase
             {
                 Title = fileMetadata.Title,
                 Author = fileMetadata.Artist,
-                Description = fileMetadata.Comment,
+                Description = fileMetadata.AdditionalFields.ContainsKey("\u00A9des")
+                    ? fileMetadata.AdditionalFields["\u00A9des"]
+                    : fileMetadata.Comment,
                 Duration = fileMetadata.Duration.ToMs(),
                 Chapters = new List<Demuxer.Chapter>()
             };

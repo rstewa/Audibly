@@ -9,21 +9,7 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <AppxPackageDir>C:\Users\ryan\Documents\source\repos\Audibly\Audibly %28Package%29\AppPackages\</AppxPackageDir>
-    <PackageIcon>book-open-flat.png</PackageIcon>
-    <DefaultLanguage>en</DefaultLanguage>
-    <PackageCertificateThumbprint>3D647678AD955E545A0A24C368D72C8315B8CF9C</PackageCertificateThumbprint>
-    <PackageCertificateKeyFile>Audibly_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,22 +21,32 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221109.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
     <PackageReference Include="FlyleafLib" Version="3.4.14" />
-    <PackageReference Include="KlearTouch.MediaPlayer.WinUI" Version="0.7.0-beta" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.0-preview3" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621-preview" />
     <PackageReference Include="PInvoke.User32" Version="0.7.104" />
     <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
     <PackageReference Include="z440.atl.core" Version="4.5.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-       Tools extension to be activated for this project even if the Windows App SDK Nuget
-       package has not yet been restored -->
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
 
   <!-- Flyleaf needs FFMpeg dll's so this copies them to bin directory (i.e., bin\x64\Debug\net6.0-windows10.0.19041.0\win10-x64\FFMpeg\) -->
 	<ItemGroup>

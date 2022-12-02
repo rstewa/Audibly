@@ -57,12 +57,17 @@
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <!--#region MediaPlayerElementContainer-->
+            <!--#region MediaPlayerElementContainer
             <Border
                 x:Name="MediaPlayerElementContainer"
                 Width="0"
                 Height="0" />
-            <!--#endregion MediaPlayerElementContainer-->
+            #endregion MediaPlayerElementContainer-->
+            <MediaPlayerElement x:Name="AudioPlayerElement"
+                                Width="0"
+                                Height="0"
+                                AutoPlay="False"
+                                AreTransportControlsEnabled="False" />
 
             <!--#region Book Cover Image-->
             <Border

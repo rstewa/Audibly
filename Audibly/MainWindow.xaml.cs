@@ -9,11 +9,11 @@ using Windows.Storage.Pickers;
 using Audibly.Extensions;
 using Audibly.Model;
 using FlyleafLib.MediaFramework.MediaDemuxer;
-using Microsoft.UI.Media.Core;
-using Microsoft.UI.Media.Playback;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
+using Windows.Media.Playback;
+using Windows.Media.Core;
 
 namespace Audibly;
 
@@ -36,7 +36,6 @@ public sealed partial class MainWindow : Window
         // _localSettings.Values.Clear();
 #endif
 
-        MediaPlayerElementContainer!.Child = MediaPlayerElement;
         MediaPlayer.AutoPlay = false;
         MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
         MediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
@@ -68,12 +67,12 @@ public sealed partial class MainWindow : Window
     {
         get
         {
-            if (MediaPlayerElement.MediaPlayer == null) MediaPlayerElement.SetMediaPlayer(new MediaPlayer());
-            return MediaPlayerElement.MediaPlayer;
+            if (AudioPlayerElement.MediaPlayer == null) AudioPlayerElement.SetMediaPlayer(new MediaPlayer());
+            return AudioPlayerElement.MediaPlayer;
         }
     }
 
-    public MediaPlayerElement MediaPlayerElement { get; } = new() { AreTransportControlsEnabled = false };
+    // public MediaPlayerElement MediaPlayerElement { get; } = new() { AreTransportControlsEnabled = false };
 
     public AudiobookViewModel ViewModel { get; set; }
 

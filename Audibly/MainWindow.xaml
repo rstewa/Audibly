@@ -57,12 +57,6 @@
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <!--#region MediaPlayerElementContainer
-            <Border
-                x:Name="MediaPlayerElementContainer"
-                Width="0"
-                Height="0" />
-            #endregion MediaPlayerElementContainer-->
             <MediaPlayerElement x:Name="AudioPlayerElement"
                                 Width="0"
                                 Height="0"
@@ -222,11 +216,24 @@
                         <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
                         <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
                         <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
+
+                        <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                        <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
+                        <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                        <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                        <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
+
                     </ResourceDictionary>
                 </StackPanel.Resources>
 
-                <Button
+                <RepeatButton
                     x:Name="SkipBack10Button"
+                    Delay="500"
+                    Interval="100"
                     BorderThickness="0"
                     Click="SkipBack10Button_Click"
                     ToolTipService.ToolTip="Skip backward 10 seconds">
@@ -234,7 +241,7 @@
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="24"
                         Glyph="&#xED3C;" />
-                </Button>
+                </RepeatButton>
 
                 <Button
                     x:Name="PlayPauseButton"
@@ -247,8 +254,10 @@
                     </Viewbox>
                 </Button>
 
-                <Button
+                <RepeatButton
                     x:Name="SkipForward30Button"
+                    Delay="500"
+                    Interval="100"
                     BorderThickness="0"
                     Click="SkipForward30Button_Click"
                     ToolTipService.ToolTip="Skip forward 30 seconds">
@@ -256,7 +265,7 @@
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="24"
                         Glyph="&#xED3D;" />
-                </Button>
+                </RepeatButton>
 
             </StackPanel>
 

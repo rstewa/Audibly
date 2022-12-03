@@ -94,6 +94,7 @@
 
                 <Button
                     x:Name="PreviousChapterButton"
+                    ToolTipService.ToolTip="Previous Chapter"
                     Grid.Row="0"
                     Grid.Column="0"
                     Margin="0,0,0,0"
@@ -122,6 +123,7 @@
 
                 <Button
                     x:Name="NextChapterButton"
+                    ToolTipService.ToolTip="Next Chapter"
                     Grid.Row="0"
                     Grid.Column="2"
                     Margin="0,0,0,0"

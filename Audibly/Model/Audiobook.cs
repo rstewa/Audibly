@@ -13,16 +13,24 @@ using Audibly.Extensions;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.UI.Xaml.Data;
 
 namespace Audibly.Model;
 
 public class Audiobook : BindableBase
 {
+    // CONSTS
+
     public const string Volume0 = "\uE74F";
     public const string Volume1 = "\uE993";
     public const string Volume2 = "\uE994";
     public const string Volume3 = "\uE995";
+
+
+    // PROPERTIES
+    
+    private Metadata metadata;
+    public long Duration { get; private set; }
+    public string FilePath { get; private set; }
 
     private string _audioLevelGlyph;
     public string AudioLevelGlyph 
@@ -31,58 +39,35 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _audioLevelGlyph, value);
     }
 
-    private string _author;
-
-    private List<Demuxer.Chapter> _chptrs = new();
-
-    private ImageSource _coverImgSrc = new BitmapImage(new Uri("https://via.placeholder.com/500"));
-
-    private Demuxer.Chapter _curChptr;
-
-    private int _curChptrDur;
-
-    private string _curChptrDurText = "00:00:00";
-
-    private string _curChptrTitle;
-
-    private string _curPosInBook;
-
-    private long _curTimeMs;
-
-    private string _curTimeText = "00:00:00";
-
-    private string _description;
-
     private string _title;
-
-    private Metadata metadata;
-    public long Duration { get; private set; }
-    public string FilePath { get; private set; }
-
     public string Title
     {
         get => _title;
         set => SetProperty(ref _title, value);
     }
 
+    private string _author;
     public string Author
     {
         get => _author;
         set => SetProperty(ref _author, value);
     }
 
+    private string _description;
     public string Description
     {
         get => _description;
         set => SetProperty(ref _description, value);
     }
 
+    private List<Demuxer.Chapter> _chptrs = new();
     public List<Demuxer.Chapter> Chptrs
     {
         get => _chptrs ??= new List<Demuxer.Chapter>();
         set => SetProperty(ref _chptrs, value);
     }
 
+    private Demuxer.Chapter _curChptr;
     public Demuxer.Chapter CurChptr
     {
         get => _curChptr;
@@ -98,24 +83,28 @@ public class Audiobook : BindableBase
         }
     }
 
+    private string _curChptrTitle;
     public string CurChptrTitle
     {
         get => _curChptrTitle;
         set => SetProperty(ref _curChptrTitle, value);
     }
 
+    private int _curChptrDur;
     public int CurChptrDur
     {
         get => _curChptrDur;
         set => SetProperty(ref _curChptrDur, value);
     }
 
+    private string _curChptrDurText = "00:00:00";
     public string CurChptrDurText
     {
         get => _curChptrDurText;
         set => SetProperty(ref _curChptrDurText, value);
     }
 
+    private long _curTimeMs;
     public int CurTimeMs
     {
         get => (int)_curTimeMs;
@@ -126,18 +115,21 @@ public class Audiobook : BindableBase
         }
     }
 
+    private string _curTimeText = "00:00:00";
     public string CurTimeText
     {
         get => _curTimeText;
         set => SetProperty(ref _curTimeText, value);
     }
 
+    private ImageSource _coverImgSrc = new BitmapImage(new Uri("https://via.placeholder.com/500"));
     public ImageSource CoverImgSrc
     {
         get => _coverImgSrc;
         set => SetProperty(ref _coverImgSrc, value);
     }
 
+    private string _curPosInBook;
     public string CurPosInBook
     {
         get => $"Current position: {_curPosInBook}";
@@ -145,6 +137,9 @@ public class Audiobook : BindableBase
     }
 
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
+
+
+    // METHODS
 
     public void Update(double curMs)
     {

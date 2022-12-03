@@ -72,8 +72,6 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    // public MediaPlayerElement MediaPlayerElement { get; } = new() { AreTransportControlsEnabled = false };
-
     public AudiobookViewModel ViewModel { get; set; }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)

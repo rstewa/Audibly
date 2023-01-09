@@ -13,8 +13,11 @@
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForeground">White</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForegroundDisabled">White</SolidColorBrush>
-
             <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+            
+            <Style TargetType="ListViewItem" x:Name="ListViewItem_PlaybackSpeed_Style">
+                <Setter Property="Width" Value="10" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

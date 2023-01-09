@@ -25,12 +25,48 @@ public class Audiobook : BindableBase
     public const string Volume2 = "\uE994";
     public const string Volume3 = "\uE995";
 
+    public const string Playback1 = "\uEC57";
+    public const string Playback2 = "\uEC58";
+
 
     // PROPERTIES
     
     private Metadata metadata;
     public long Duration { get; private set; }
     public string FilePath { get; private set; }
+
+    // TODO:
+    private List<Tuple<string, double>> _speeds = new List<Tuple<string, double>>()
+    {
+        new Tuple<string, double>("0.5x", 0.5),
+        new Tuple<string, double>("0.6x", 0.6),
+        new Tuple<string, double>("0.7x", 0.7),
+        new Tuple<string, double>("0.8x", 0.8),
+        new Tuple<string, double>("0.9x", 0.9),
+        new Tuple<string, double>("1x", 1),
+        new Tuple<string, double>("1.1x", 1.1),
+        new Tuple<string, double>("1.2x", 1.2),
+        new Tuple<string, double>("1.3x", 1.3),
+        new Tuple<string, double>("1.4x", 1.4),
+        new Tuple<string, double>("1.5x", 1.5),
+        new Tuple<string, double>("1.6x", 1.6),
+        new Tuple<string, double>("1.7x", 1.7),
+        new Tuple<string, double>("1.8x", 1.8),
+        new Tuple<string, double>("1.9x", 1.9),
+        new Tuple<string, double>("2x", 2)
+    };
+
+    public List<Tuple<string, double>> Speeds
+    {
+        get { return _speeds; }
+    }
+
+    private string _playbackGlyph;
+    public string PlaybackGlyph 
+    { 
+        get => _playbackGlyph;  
+        set => SetProperty(ref _playbackGlyph, value);
+    }
 
     private string _audioLevelGlyph;
     public string AudioLevelGlyph 
@@ -203,6 +239,10 @@ public class Audiobook : BindableBase
         FilePath = filePath;
         var fileMetadata = new Track(filePath);
 
+        // TESTING
+        var json = JsonSerializer.Serialize<Track>(fileMetadata);
+        File.WriteAllText($"C:\\Users\\rstewa\\Documents\\AudiblyMetadataTest\\{Path.GetFileNameWithoutExtension(filePath)}_metadata.json", json);
+
         var bookAppdataDir = StorageFolder.CreateFolderAsync(
             $"{Path.GetFileNameWithoutExtension(filePath)} [{fileMetadata.Artist}]",
             CreationCollisionOption.OpenIfExists).GetAwaiter().GetResult();
@@ -262,6 +302,8 @@ public class Audiobook : BindableBase
         CurTimeMs = 0;
         CurPosInBook = "0";
         AudioLevelGlyph = Volume3;
+        PlaybackGlyph = Playback1;
+        // PlaybackGlyph = Playback2;
 
         var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
         CoverImgSrc = bitmapImage;

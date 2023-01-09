@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 using Windows.Media.Playback;
 using Windows.Media.Core;
+using System.Linq;
 
 namespace Audibly;
 
@@ -241,5 +242,16 @@ public sealed partial class MainWindow : Window
             ViewModel.Audiobook.AudioLevelGlyph = volume == 0 ? Audiobook.Volume0 : volume <= 33 ? Audiobook.Volume1 : volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
             MediaPlayer.Volume = volume / 100;
         });
+    }
+
+    private void PlaybackSpeed_ListView_Loaded(object sender, RoutedEventArgs e)
+    {
+        // MediaPlayer.PlaybackRate = 
+        PlaybackSpeed_ListView.SelectedIndex = 5;
+    }
+
+    private void PlaybackSpeed_ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        MediaPlayer.PlaybackRate = ((Tuple<string, double>)e.AddedItems[0]).Item2;
     }
 }

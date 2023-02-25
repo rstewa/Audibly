@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 using Windows.Media.Playback;
 using Windows.Media.Core;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Audibly;
 
@@ -46,8 +47,8 @@ public sealed partial class MainWindow
 
         ToggleAudioControls(false); // disable buttons until a book is opened
 
-        CurrentTime_TextBlock.Opacity = 0.5;
-        CurrentChapterDuration_TextBlock.Opacity = 0.5;
+        CurrentTimeTextBlock.Opacity = 0.5;
+        CurrentChapterDurationTextBlock.Opacity = 0.5;
 
         if (_localSettings.Values["currentAudiobookPath"] == null) return; // means a book was opened for the 1st time
 
@@ -189,8 +190,8 @@ public sealed partial class MainWindow
             VolumeLevelButton.IsEnabled = isEnabled;
             PlaybackSpeedButton.IsEnabled = isEnabled;
 
-            CurrentTime_TextBlock.Opacity = ChapterProgress_ProgressBar.Opacity =
-                CurrentChapterDuration_TextBlock.Opacity = isEnabled ? 1.0 : 0.5;
+            CurrentTimeTextBlock.Opacity = ChapterProgressProgressBar.Opacity =
+                CurrentChapterDurationTextBlock.Opacity = isEnabled ? 1.0 : 0.5;
         });
     }
 
@@ -243,10 +244,9 @@ public sealed partial class MainWindow
         CurPos = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
 
-    private void Slider_ValueChanged(object sender,
-        Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+    private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        var volume = AudioLevel_Slider.Value;
+        var volume = AudioLevelSlider.Value;
 
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -257,14 +257,8 @@ public sealed partial class MainWindow
         });
     }
 
-    private void PlaybackSpeed_ListView_Loaded(object sender, RoutedEventArgs e)
+    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        // MediaPlayer.PlaybackRate = 
-        PlaybackSpeed_ListView.SelectedIndex = 5;
-    }
-
-    private void PlaybackSpeed_ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        MediaPlayer.PlaybackRate = ((Tuple<string, double>)e.AddedItems[0]).Item2;
+        MediaPlayer.PlaybackRate = PlaybackSpeedSlider.Value;
     }
 }

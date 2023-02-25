@@ -7,12 +7,12 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="Audibly-v2.0.0-alpha.1"
+    Name="Audibly-v2.0.0-alpha.2"
     Publisher="CN=rstewa"
-    Version="1.1.0.0" />
+    Version="1.2.0.2" />
 
   <Properties>
-    <DisplayName>AudiblyV2</DisplayName>
+    <DisplayName>AudiblyV2.2</DisplayName>
     <PublisherDisplayName>rstewa</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>

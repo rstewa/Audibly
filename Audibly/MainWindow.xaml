@@ -368,7 +368,7 @@
                                 Minimum="0"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Volume Level"
-                                ValueChanged="Slider_ValueChanged"
+                                ValueChanged="VolumeSlider_ValueChanged"
                                 Value="100">
                                 <Slider.Resources>
                                     <ResourceDictionary>

@@ -22,6 +22,26 @@ public sealed partial class MainWindow
 {
     private readonly ApplicationDataContainer _localSettings;
     private string _curPosStg;
+    
+    private DateTime TimePlaybackPaused { get; set; }
+    private const double SmartRewindDuration = 1.0;
+
+    private const bool SmartRewind = true;
+
+    private TimeSpan CurPos
+    {
+        get => MediaPlayer.PlaybackSession.Position;
+        set => MediaPlayer.PlaybackSession.Position = value < TimeSpan.Zero ? TimeSpan.Zero : value;
+    }
+
+    private MediaPlayer MediaPlayer
+    {
+        get
+        {
+            if (AudioPlayerElement.MediaPlayer == null) AudioPlayerElement.SetMediaPlayer(new MediaPlayer());
+            return AudioPlayerElement.MediaPlayer;
+        }
+    }
 
     public MainWindow()
     {
@@ -59,37 +79,19 @@ public sealed partial class MainWindow
         MediaPlayerElement_Init(file);
     }
 
-    private TimeSpan CurPos
-    {
-        get => MediaPlayer.PlaybackSession.Position;
-        set => MediaPlayer.PlaybackSession.Position = value < TimeSpan.Zero ? TimeSpan.Zero : value;
-    }
-
-    private MediaPlayer MediaPlayer
-    {
-        get
-        {
-            if (AudioPlayerElement.MediaPlayer == null) AudioPlayerElement.SetMediaPlayer(new MediaPlayer());
-            return AudioPlayerElement.MediaPlayer;
-        }
-    }
-
     public AudiobookViewModel ViewModel { get; }
-
-    private DateTime TimePlaybackPaused { get; set; }
-    private const double SmartRewindDuration = 10.0;
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
     {
         switch (sender.PlaybackState)
         {
             case MediaPlaybackState.Playing:
-                // rewind current playback position 30 sec if book was paused for >= 10 minutes
-                if (DateTime.UtcNow.Subtract(TimePlaybackPaused).TotalMinutes >= SmartRewindDuration)
-                    CurPos -= TimeSpan.FromSeconds(30);
-
                 DispatcherQueue.TryEnqueue(() =>
                 {
+                    // rewind current playback position 30 sec if book was paused for >= 10 minutes
+                    if (SmartRewind && DateTime.UtcNow.Subtract(TimePlaybackPaused).TotalMinutes >= SmartRewindDuration)
+                        CurPos -= TimeSpan.FromSeconds(30);
+
                     if ((string)PlayPauseButton.Tag == "pause") return;
                     PlayPauseButton.Tag = "pause";
                     PlayPauseIcon.Symbol = Symbol.Pause;
@@ -99,7 +101,8 @@ public sealed partial class MainWindow
 
             case MediaPlaybackState.Paused:
                 // grab current time for smart rewind feature
-                TimePlaybackPaused = DateTime.UtcNow;
+                if (SmartRewind)
+                    TimePlaybackPaused = DateTime.UtcNow;
 
                 DispatcherQueue.TryEnqueue(() =>
                 {
@@ -161,12 +164,11 @@ public sealed partial class MainWindow
             if (_localSettings.Values[_curPosStg!] == null)
             {
                 _localSettings.Values[_curPosStg] = 0;
-                MediaPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
+                CurPos = TimeSpan.FromSeconds(0);
             }
             else
             {
-                MediaPlayer.PlaybackSession.Position =
-                    TimeSpan.FromMilliseconds(Convert.ToDouble(_localSettings.Values[_curPosStg!]));
+                CurPos = TimeSpan.FromMilliseconds(Convert.ToDouble(_localSettings.Values[_curPosStg!]));
             }
         });
     }
@@ -244,7 +246,7 @@ public sealed partial class MainWindow
         CurPos = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
 
-    private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+    private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         var volume = AudioLevelSlider.Value;
 

@@ -57,11 +57,12 @@
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <MediaPlayerElement x:Name="AudioPlayerElement"
-                                Width="0"
-                                Height="0"
-                                AutoPlay="False"
-                                AreTransportControlsEnabled="False" />
+            <MediaPlayerElement
+                x:Name="AudioPlayerElement"
+                Width="0"
+                Height="0"
+                AreTransportControlsEnabled="False"
+                AutoPlay="False" />
 
             <!--#region Book Cover Image-->
             <Border
@@ -94,7 +95,6 @@
 
                 <Button
                     x:Name="PreviousChapterButton"
-                    ToolTipService.ToolTip="Previous Chapter"
                     Grid.Row="0"
                     Grid.Column="0"
                     Margin="0,0,0,0"
@@ -104,7 +104,8 @@
                     BorderThickness="0"
                     Click="PreviousChapterButton_Click"
                     Content="&#xE76B;"
-                    FontFamily="Segoe MDL2 Assets" />
+                    FontFamily="Segoe MDL2 Assets"
+                    ToolTipService.ToolTip="Previous Chapter" />
 
 
                 <ComboBox
@@ -117,13 +118,12 @@
                     Background="Transparent"
                     BorderThickness="0"
                     DisplayMemberPath="Title"
-                    ItemsSource="{x:Bind ViewModel.Audiobook.Chptrs}"
+                    ItemsSource="{x:Bind ViewModel.Audiobook.Chapters}"
                     SelectedIndex="0"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
 
                 <Button
                     x:Name="NextChapterButton"
-                    ToolTipService.ToolTip="Next Chapter"
                     Grid.Row="0"
                     Grid.Column="2"
                     Margin="0,0,0,0"
@@ -133,7 +133,8 @@
                     BorderThickness="0"
                     Click="NextChapterButton_Click"
                     Content="&#xE76C;"
-                    FontFamily="Segoe MDL2 Assets" />
+                    FontFamily="Segoe MDL2 Assets"
+                    ToolTipService.ToolTip="Next Chapter" />
             </Grid>
             <!--#endregion-->
 
@@ -153,7 +154,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
-                    x:Name="CurrentTime_TextBlock"
+                    x:Name="CurrentTimeTextBlock"
                     Grid.Column="0"
                     Margin="0,0,0,0"
                     HorizontalAlignment="Left"
@@ -163,41 +164,27 @@
                     TextAlignment="Left" />
 
                 <ProgressBar
-                    x:Name="ChapterProgress_ProgressBar"
+                    x:Name="ChapterProgressProgressBar"
                     Grid.Column="1"
                     Width="175"
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="#84e2c9"
-                    Maximum="{x:Bind ViewModel.Audiobook.CurChptrDur}"
+                    Maximum="{x:Bind ViewModel.Audiobook.CurChapterDur}"
                     Value="{x:Bind ViewModel.Audiobook.CurTimeMs}" />
 
                 <TextBlock
-                    x:Name="CurrentChapterDuration_TextBlock"
+                    x:Name="CurrentChapterDurationTextBlock"
                     Grid.Column="2"
                     Margin="0,0,0,0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind ViewModel.Audiobook.CurChptrDurText}"
+                    Text="{x:Bind ViewModel.Audiobook.CurChapterDurText}"
                     TextAlignment="Right" />
             </Grid>
             <!--#endregion-->
-
-            <!--#region OpenAudioBookButton-->
-            <Button
-                x:Name="OpenAudiobookButton"
-                Grid.Row="3"
-                Margin="2,5,0,0"
-                HorizontalAlignment="Left"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="OpenAudiobook_Click"
-                ToolTipService.ToolTip="Open Audiobook">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
-            </Button>
-            <!--#endregion OpenAudioBookButton-->
 
             <!--#region Audio Playback Controls-->
 
@@ -234,10 +221,10 @@
 
                 <RepeatButton
                     x:Name="SkipBack10Button"
-                    Delay="500"
-                    Interval="100"
                     BorderThickness="0"
                     Click="SkipBack10Button_Click"
+                    Delay="500"
+                    Interval="100"
                     ToolTipService.ToolTip="Skip backward 10 seconds">
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
@@ -258,10 +245,10 @@
 
                 <RepeatButton
                     x:Name="SkipForward30Button"
-                    Delay="500"
-                    Interval="100"
                     BorderThickness="0"
                     Click="SkipForward30Button_Click"
+                    Delay="500"
+                    Interval="100"
                     ToolTipService.ToolTip="Skip forward 30 seconds">
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
@@ -273,15 +260,88 @@
 
             <!--#endregion-->
 
+            <!--#region OpenAudioBookButton-->
+            <Button
+                x:Name="OpenAudiobookButton"
+                Grid.Row="3"
+                Margin="2,5,0,0"
+                HorizontalAlignment="Left"
+                Background="Transparent"
+                BorderThickness="0"
+                Click="OpenAudiobook_Click"
+                ToolTipService.ToolTip="Open Audiobook">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+            </Button>
+            <!--#endregion OpenAudioBookButton-->
+
+            <!--#region PlaybackSpeedButton-->
+            <Button
+                x:Name="PlaybackSpeedButton"
+                Grid.Row="3"
+                Margin="0,5,35,0"
+                HorizontalAlignment="Right"
+                Background="Transparent"
+                BorderThickness="0"
+                ToolTipService.ToolTip="Playback Speed">
+                <FontIcon
+                    x:Name="PlaybackSpeedButtonIcon"
+                    FontFamily="Segoe MDL2 Assets"
+                    Glyph="{x:Bind ViewModel.Audiobook.PlaybackGlyph}" />
+                <Button.Flyout>
+                    <Flyout>
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style TargetType="FlyoutPresenter">
+                                <Setter Property="MinWidth" Value="30" />
+                                <Setter Property="MaxWidth" Value="30" />
+                                <Setter Property="MinHeight" Value="125" />
+                                <Setter Property="CornerRadius" Value="5" />
+                                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+                        <Grid>
+                            <Slider
+                                x:Name="PlaybackSpeedSlider"
+                                Margin="-14,0,0,0"
+                                AutomationProperties.Name="PlaybackSpeedSlider"
+                                Foreground="#84e2c9"
+                                Maximum="1.5"
+                                Minimum="0.5"
+                                StepFrequency="0.1"
+                                Orientation="Vertical"
+                                ToolTipService.ToolTip="Playback Speed"
+                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
+                                Value="1.0">
+                                <Slider.Resources>
+                                    <ResourceDictionary>
+                                        <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#4ac694</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#4ac694</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackValueFill">#84e2c9</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackValueFillPressed">#84e2c9</SolidColorBrush>
+                                        <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#84e2c9</SolidColorBrush>
+                                    </ResourceDictionary>
+                                </Slider.Resources>
+                            </Slider>
+                        </Grid>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+            <!--#endregion PlaybackSpeedButton-->
+
             <!--#region VolumeLevelButton-->
             <Button
+                x:Name="VolumeLevelButton"
                 Grid.Row="3"
+                Margin="0,5,0,0"
                 HorizontalAlignment="Right"
                 Background="Transparent"
                 BorderThickness="0"
                 ToolTipService.ToolTip="Volume Level">
                 <FontIcon
-                    x:Name="AudioLevel_Button_Icon"
+                    x:Name="AudioLevelButtonIcon"
                     FontFamily="Segoe MDL2 Assets"
                     Glyph="{x:Bind ViewModel.Audiobook.AudioLevelGlyph}" />
                 <Button.Flyout>
@@ -300,15 +360,15 @@
                         </Flyout.FlyoutPresenterStyle>
                         <Grid>
                             <Slider
-                                x:Name="AudioLevel_Slider"
-                                Margin="-15,0,0,0"
+                                x:Name="AudioLevelSlider"
+                                Margin="-14,0,0,0"
                                 AutomationProperties.Name="AudioLevelSlider"
                                 Foreground="#84e2c9"
                                 Maximum="100"
                                 Minimum="0"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Volume Level"
-                                ValueChanged="Slider_ValueChanged"
+                                ValueChanged="VolumeSlider_ValueChanged"
                                 Value="100">
                                 <Slider.Resources>
                                     <ResourceDictionary>

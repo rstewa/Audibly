@@ -7,12 +7,12 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="4b7632fe-969c-44a0-9bc3-68bf9fea1299"
+    Name="Audibly-v2.0.0-alpha.2"
     Publisher="CN=rstewa"
-    Version="1.0.0.0" />
+    Version="1.2.0.2" />
 
   <Properties>
-    <DisplayName>Audibly</DisplayName>
+    <DisplayName>AudiblyV2.2</DisplayName>
     <PublisherDisplayName>rstewa</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -31,7 +31,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Audibly"
+        DisplayName="AudiblyV2"
         Description="Audibly"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

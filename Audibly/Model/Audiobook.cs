@@ -25,12 +25,44 @@ public class Audiobook : BindableBase
     public const string Volume2 = "\uE994";
     public const string Volume3 = "\uE995";
 
+    private const string Playback1 = "\uEC57";
+    public const string Playback2 = "\uEC58";
+
 
     // PROPERTIES
     
-    private Metadata metadata;
-    public long Duration { get; private set; }
+    private Metadata _metadata;
+    private long Duration { get; set; }
     public string FilePath { get; private set; }
+
+    // TODO:
+
+    public List<Tuple<string, double>> Speeds { get; } = new()
+    {
+        new Tuple<string, double>("0.5x", 0.5),
+        new Tuple<string, double>("0.6x", 0.6),
+        new Tuple<string, double>("0.7x", 0.7),
+        new Tuple<string, double>("0.8x", 0.8),
+        new Tuple<string, double>("0.9x", 0.9),
+        new Tuple<string, double>("1x", 1),
+        new Tuple<string, double>("1.1x", 1.1),
+        new Tuple<string, double>("1.2x", 1.2),
+        new Tuple<string, double>("1.3x", 1.3),
+        new Tuple<string, double>("1.4x", 1.4),
+        new Tuple<string, double>("1.5x", 1.5),
+        new Tuple<string, double>("1.6x", 1.6),
+        new Tuple<string, double>("1.7x", 1.7),
+        new Tuple<string, double>("1.8x", 1.8),
+        new Tuple<string, double>("1.9x", 1.9),
+        new Tuple<string, double>("2x", 2)
+    };
+
+    private string _playbackGlyph;
+    public string PlaybackGlyph 
+    { 
+        get => _playbackGlyph;  
+        set => SetProperty(ref _playbackGlyph, value);
+    }
 
     private string _audioLevelGlyph;
     public string AudioLevelGlyph 
@@ -60,48 +92,48 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _description, value);
     }
 
-    private List<Demuxer.Chapter> _chptrs = new();
-    public List<Demuxer.Chapter> Chptrs
+    private List<Demuxer.Chapter> _chapters = new();
+    public List<Demuxer.Chapter> Chapters
     {
-        get => _chptrs ??= new List<Demuxer.Chapter>();
-        set => SetProperty(ref _chptrs, value);
+        get => _chapters ??= new List<Demuxer.Chapter>();
+        set => SetProperty(ref _chapters, value);
     }
 
-    private Demuxer.Chapter _curChptr;
-    public Demuxer.Chapter CurChptr
+    private Demuxer.Chapter _curChapter;
+    public Demuxer.Chapter CurChapter
     {
-        get => _curChptr;
+        get => _curChapter;
         set
         {
-            _curChptr = value;
+            _curChapter = value;
 
-            CurChptrTitle = _curChptr.Title;
-            CurChptrDur = (int)(_curChptr.EndTime - _curChptr.StartTime);
-            // CurChptrDurText = _curChptrDur.ToStr_ms();
-            var t = TimeSpan.FromMilliseconds(CurChptrDur);
-            CurChptrDurText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
+            CurChapterTitle = _curChapter.Title;
+            CurChapterDur = (int)(_curChapter.EndTime - _curChapter.StartTime);
+            // CurChapterDurText = _curChapterDur.ToStr_ms();
+            var t = TimeSpan.FromMilliseconds(CurChapterDur);
+            CurChapterDurText = $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
         }
     }
 
-    private string _curChptrTitle;
-    public string CurChptrTitle
+    private string _curChapterTitle;
+    public string CurChapterTitle
     {
-        get => _curChptrTitle;
-        set => SetProperty(ref _curChptrTitle, value);
+        get => _curChapterTitle;
+        set => SetProperty(ref _curChapterTitle, value);
     }
 
-    private int _curChptrDur;
-    public int CurChptrDur
+    private int _curChapterDur;
+    public int CurChapterDur
     {
-        get => _curChptrDur;
-        set => SetProperty(ref _curChptrDur, value);
+        get => _curChapterDur;
+        set => SetProperty(ref _curChapterDur, value);
     }
 
-    private string _curChptrDurText = "00:00:00";
-    public string CurChptrDurText
+    private string _curChapterDurText = "00:00:00";
+    public string CurChapterDurText
     {
-        get => _curChptrDurText;
-        set => SetProperty(ref _curChptrDurText, value);
+        get => _curChapterDurText;
+        set => SetProperty(ref _curChapterDurText, value);
     }
 
     private long _curTimeMs;
@@ -143,65 +175,69 @@ public class Audiobook : BindableBase
 
     public void Update(double curMs)
     {
-        if (!CurChptr.InRange(curMs))
+        if (!CurChapter.InRange(curMs))
         {
-            var tmp = Chptrs.Find(c => c.InRange(curMs));
-            if (tmp != null) CurChptr = tmp;
+            var tmp = Chapters.Find(c => c.InRange(curMs));
+            if (tmp != null) CurChapter = tmp;
         }
 
-        CurTimeMs = curMs > CurChptr.StartTime ? (int)(curMs - CurChptr.StartTime) : 0;
+        CurTimeMs = curMs > CurChapter.StartTime ? (int)(curMs - CurChapter.StartTime) : 0;
         CurPosInBook = curMs.ToStr_ms();
     }
 
-    public long GetChapter(Demuxer.Chapter chptr, long curTimeMs)
+    public long GetChapter(Demuxer.Chapter chapter, long curTimeMs)
     {
-        if (chptr == CurChptr) return curTimeMs.ToTicks();
-        CurChptr = chptr;
+        if (chapter == CurChapter) return curTimeMs.ToTicks();
+        CurChapter = chapter;
         CurTimeMs = 0;
-        CurPosInBook = CurChptr.StartTime.ToStr_ms();
-        return CurChptr.StartTime.ToTicks();
+        CurPosInBook = CurChapter.StartTime.ToStr_ms();
+        return CurChapter.StartTime.ToTicks();
     }
 
     public TimeSpan GetNextChapter()
     {
-        var idx = Chptrs.IndexOf(CurChptr);
+        var idx = Chapters.IndexOf(CurChapter);
 
-        // if 'CurChptr' is the last chapter of the book
-        if (idx == Chptrs.Count - 1)
+        // if 'CurChapter' is the last chapter of the book
+        if (idx == Chapters.Count - 1)
         {
-            CurChptr = Chptrs[idx];
-            CurTimeMs = (int)CurChptr.EndTime;
-            CurPosInBook = CurChptr.EndTime.ToStr_ms();
-            return TimeSpan.FromMilliseconds(CurChptr.EndTime);
+            CurChapter = Chapters[idx];
+            CurTimeMs = (int)CurChapter.EndTime;
+            CurPosInBook = CurChapter.EndTime.ToStr_ms();
+            return TimeSpan.FromMilliseconds(CurChapter.EndTime);
         }
 
-        CurChptr = Chptrs[idx + 1];
+        CurChapter = Chapters[idx + 1];
         CurTimeMs = 0;
-        CurPosInBook = CurChptr.StartTime.ToStr_ms();
-        return TimeSpan.FromMilliseconds(CurChptr.StartTime);
+        CurPosInBook = CurChapter.StartTime.ToStr_ms();
+        return TimeSpan.FromMilliseconds(CurChapter.StartTime);
     }
 
     public TimeSpan GetPrevChapter(double curTimeMs)
     {
-        var idx = Chptrs.FindIndex(c => c.InRange(curTimeMs));
+        var idx = Chapters.FindIndex(c => c.InRange(curTimeMs));
         if (idx == -1) return TimeSpan.FromMilliseconds(curTimeMs);
 
         // RETURNS start of the current chapter IF 'curTimeMs' is in the 1st chapter of the book
         //     OR
-        // the current position in 'CurChptr' is greater than 3 seconds away from the start of 'CurChptr'
-        CurChptr = idx == 0 || (curTimeMs > Chptrs[idx].StartTime && curTimeMs - Chptrs[idx].StartTime > 3000)
-            ? Chptrs[idx]
-            : Chptrs[idx - 1];
+        // the current position in 'CurChapter' is greater than 3 seconds away from the start of 'CurChapter'
+        CurChapter = idx == 0 || (curTimeMs > Chapters[idx].StartTime && curTimeMs - Chapters[idx].StartTime > 3000)
+            ? Chapters[idx]
+            : Chapters[idx - 1];
 
         CurTimeMs = 0;
-        CurPosInBook = CurChptr.StartTime.ToStr_ms();
-        return TimeSpan.FromMilliseconds(CurChptr.StartTime);
+        CurPosInBook = CurChapter.StartTime.ToStr_ms();
+        return TimeSpan.FromMilliseconds(CurChapter.StartTime);
     }
 
     public void Init(string filePath)
     {
         FilePath = filePath;
         var fileMetadata = new Track(filePath);
+
+        // TESTING
+        // var json = JsonSerializer.Serialize<Track>(fileMetadata);
+        // File.WriteAllText($"C:\\Users\\rstewa\\Documents\\AudiblyMetadataTest\\{Path.GetFileNameWithoutExtension(filePath)}_metadata.json", json);
 
         var bookAppdataDir = StorageFolder.CreateFolderAsync(
             $"{Path.GetFileNameWithoutExtension(filePath)} [{fileMetadata.Artist}]",
@@ -211,7 +247,7 @@ public class Audiobook : BindableBase
 
         if (!File.Exists(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")))
         {
-            metadata = new Metadata
+            _metadata = new Metadata
             {
                 Title = fileMetadata.Title,
                 Author = fileMetadata.Artist,
@@ -224,13 +260,13 @@ public class Audiobook : BindableBase
 
             foreach (var ch in fileMetadata.Chapters)
             {
-                var chptr = new Demuxer.Chapter
+                var chapter = new Demuxer.Chapter
                 {
                     Title = ch.Title,
                     StartTime = ch.StartTime,
                     EndTime = ch.EndTime
                 };
-                metadata.Chapters.Add(chptr);
+                _metadata.Chapters.Add(chapter);
             }
              
             var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
@@ -241,27 +277,29 @@ public class Audiobook : BindableBase
             var metadataFile = bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
             File.WriteAllText(metadataFile.Path,
-                JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true }));
+                JsonSerializer.Serialize(_metadata, new JsonSerializerOptions { WriteIndented = true }));
         }
         else
         {
-            metadata = JsonSerializer.Deserialize<Metadata>(
+            _metadata = JsonSerializer.Deserialize<Metadata>(
                 File.ReadAllText(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")));
             coverImage = bookAppdataDir.GetFileAsync("CoverImage.jpg").GetAwaiter().GetResult();
         }
 
-        Debug.Assert(metadata != null, nameof(metadata) + " != null");
+        Debug.Assert(_metadata != null, nameof(_metadata) + " != null");
 
-        Title = metadata.Title;
-        Author = metadata.Author;
-        Description = metadata.Description;
-        Duration = metadata.Duration;
-        Chptrs = metadata.Chapters;
+        Title = _metadata.Title;
+        Author = _metadata.Author;
+        Description = _metadata.Description;
+        Duration = _metadata.Duration;
+        Chapters = _metadata.Chapters;
 
-        CurChptr = Chptrs[0];
+        CurChapter = Chapters[0];
         CurTimeMs = 0;
         CurPosInBook = "0";
         AudioLevelGlyph = Volume3;
+        PlaybackGlyph = Playback1;
+        // PlaybackGlyph = Playback2;
 
         var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
         CoverImgSrc = bitmapImage;

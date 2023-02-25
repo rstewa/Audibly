@@ -24,7 +24,7 @@ public sealed partial class MainWindow
     private string _curPosStg;
     
     private DateTime TimePlaybackPaused { get; set; }
-    private const double SmartRewindDuration = 1.0;
+    private const double SmartRewindDuration = 10.0;
 
     private const bool SmartRewind = true;
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using Windows.Storage;
 using ATL;
@@ -19,50 +20,15 @@ namespace Audibly.Model;
 public class Audiobook : BindableBase
 {
     // CONSTS
-
     public const string Volume0 = "\uE74F";
     public const string Volume1 = "\uE993";
     public const string Volume2 = "\uE994";
     public const string Volume3 = "\uE995";
 
-    private const string Playback1 = "\uEC57";
-    public const string Playback2 = "\uEC58";
-
-
     // PROPERTIES
-    
     private Metadata _metadata;
     private long Duration { get; set; }
     public string FilePath { get; private set; }
-
-    // TODO:
-
-    public List<Tuple<string, double>> Speeds { get; } = new()
-    {
-        new Tuple<string, double>("0.5x", 0.5),
-        new Tuple<string, double>("0.6x", 0.6),
-        new Tuple<string, double>("0.7x", 0.7),
-        new Tuple<string, double>("0.8x", 0.8),
-        new Tuple<string, double>("0.9x", 0.9),
-        new Tuple<string, double>("1x", 1),
-        new Tuple<string, double>("1.1x", 1.1),
-        new Tuple<string, double>("1.2x", 1.2),
-        new Tuple<string, double>("1.3x", 1.3),
-        new Tuple<string, double>("1.4x", 1.4),
-        new Tuple<string, double>("1.5x", 1.5),
-        new Tuple<string, double>("1.6x", 1.6),
-        new Tuple<string, double>("1.7x", 1.7),
-        new Tuple<string, double>("1.8x", 1.8),
-        new Tuple<string, double>("1.9x", 1.9),
-        new Tuple<string, double>("2x", 2)
-    };
-
-    private string _playbackGlyph;
-    public string PlaybackGlyph 
-    { 
-        get => _playbackGlyph;  
-        set => SetProperty(ref _playbackGlyph, value);
-    }
 
     private string _audioLevelGlyph;
     public string AudioLevelGlyph 
@@ -154,7 +120,7 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _curTimeText, value);
     }
 
-    private ImageSource _coverImgSrc = new BitmapImage(new Uri("https://via.placeholder.com/500"));
+    private ImageSource _coverImgSrc = new BitmapImage(new Uri(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "black_square_500x500.png")));
     public ImageSource CoverImgSrc
     {
         get => _coverImgSrc;
@@ -298,8 +264,6 @@ public class Audiobook : BindableBase
         CurTimeMs = 0;
         CurPosInBook = "0";
         AudioLevelGlyph = Volume3;
-        PlaybackGlyph = Playback1;
-        // PlaybackGlyph = Playback2;
 
         var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
         CoverImgSrc = bitmapImage;

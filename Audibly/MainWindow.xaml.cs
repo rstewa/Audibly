@@ -192,8 +192,9 @@ public sealed partial class MainWindow
             VolumeLevelButton.IsEnabled = isEnabled;
             PlaybackSpeedButton.IsEnabled = isEnabled;
 
-            CurrentTimeTextBlock.Opacity = ChapterProgressProgressBar.Opacity =
-                CurrentChapterDurationTextBlock.Opacity = isEnabled ? 1.0 : 0.5;
+            CurrentTimeTextBlock.Opacity = 
+                ChapterProgressProgressBar.Opacity =
+                    CurrentChapterDurationTextBlock.Opacity = isEnabled ? 1.0 : 0.5;
         });
     }
 

@@ -283,10 +283,8 @@
                 Background="Transparent"
                 BorderThickness="0"
                 ToolTipService.ToolTip="Playback Speed">
-                <FontIcon
-                    x:Name="PlaybackSpeedButtonIcon"
-                    FontFamily="Segoe MDL2 Assets"
-                    Glyph="{x:Bind ViewModel.Audiobook.PlaybackGlyph}" />
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEC57;" />
+                <!--Glyph="{x:Bind ViewModel.Audiobook.PlaybackGlyph}" /> -->
                 <Button.Flyout>
                     <Flyout>
                         <Flyout.FlyoutPresenterStyle>

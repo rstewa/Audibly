@@ -107,7 +107,6 @@
                     FontFamily="Segoe MDL2 Assets"
                     ToolTipService.ToolTip="Previous Chapter" />
 
-
                 <ComboBox
                     x:Name="ChapterCombo"
                     Grid.Row="0"
@@ -159,6 +158,7 @@
                     Margin="0,0,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
+                    Opacity="0.5"
                     Foreground="#9d9d9d"
                     Text="{x:Bind ViewModel.Audiobook.CurTimeText}"
                     TextAlignment="Left" />
@@ -178,6 +178,7 @@
                     x:Name="CurrentChapterDurationTextBlock"
                     Grid.Column="2"
                     Margin="0,0,0,0"
+                    Opacity="0.5"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Foreground="#9d9d9d"
@@ -308,6 +309,7 @@
                                 Maximum="1.5"
                                 Minimum="0.5"
                                 StepFrequency="0.1"
+                                SnapsTo="StepValues"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Playback Speed"
                                 ValueChanged="PlaybackSpeedSlider_ValueChanged"
@@ -341,7 +343,7 @@
                 <FontIcon
                     x:Name="AudioLevelButtonIcon"
                     FontFamily="Segoe MDL2 Assets"
-                    Glyph="{x:Bind ViewModel.Audiobook.AudioLevelGlyph}" />
+                    Glyph="{x:Bind ViewModel.Audiobook.VolumeLevelGlyph}" />
                 <Button.Flyout>
                     <Flyout>
                         <Flyout.FlyoutPresenterStyle>
@@ -358,16 +360,20 @@
                         </Flyout.FlyoutPresenterStyle>
                         <Grid>
                             <Slider
-                                x:Name="AudioLevelSlider"
+                                x:Name="VolumeLevelSlider"
                                 Margin="-14,0,0,0"
-                                AutomationProperties.Name="AudioLevelSlider"
+                                AutomationProperties.Name="VolumeLevelSlider"
                                 Foreground="#84e2c9"
-                                Maximum="100"
                                 Minimum="0"
+                                Maximum="100"
+                                StepFrequency="1"
+                                SmallChange="1"
+                                LargeChange="25"
+                                SnapsTo="StepValues"
+                                Value="{x:Bind ViewModel.Audiobook.Volume}"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Volume Level"
-                                ValueChanged="VolumeSlider_ValueChanged"
-                                Value="100">
+                                ValueChanged="VolumeSlider_ValueChanged">
                                 <Slider.Resources>
                                     <ResourceDictionary>
                                         <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>

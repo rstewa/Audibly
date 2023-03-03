@@ -30,11 +30,11 @@ public class Audiobook : BindableBase
     private long Duration { get; set; }
     public string FilePath { get; private set; }
 
-    private string _audioLevelGlyph;
-    public string AudioLevelGlyph 
+    private string _volumeLevelGlyph;
+    public string VolumeLevelGlyph 
     { 
-        get => _audioLevelGlyph;  
-        set => SetProperty(ref _audioLevelGlyph, value);
+        get => _volumeLevelGlyph;  
+        set => SetProperty(ref _volumeLevelGlyph, value);
     }
 
     private string _title;
@@ -120,7 +120,8 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _curTimeText, value);
     }
 
-    private ImageSource _coverImgSrc = new BitmapImage(new Uri(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "black_square_500x500.png")));
+    private ImageSource _coverImgSrc = new BitmapImage(new Uri(
+        Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "black_square_500x500.png")));
     public ImageSource CoverImgSrc
     {
         get => _coverImgSrc;
@@ -132,6 +133,13 @@ public class Audiobook : BindableBase
     {
         get => $"Current position: {_curPosInBook}";
         set => SetProperty(ref _curPosInBook, value);
+    }
+
+    private double _volume;
+    public double Volume
+    {
+        get => _volume;
+        set => SetProperty(ref _volume, value);
     }
 
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
@@ -149,15 +157,6 @@ public class Audiobook : BindableBase
 
         CurTimeMs = curMs > CurChapter.StartTime ? (int)(curMs - CurChapter.StartTime) : 0;
         CurPosInBook = curMs.ToStr_ms();
-    }
-
-    public long GetChapter(Demuxer.Chapter chapter, long curTimeMs)
-    {
-        if (chapter == CurChapter) return curTimeMs.ToTicks();
-        CurChapter = chapter;
-        CurTimeMs = 0;
-        CurPosInBook = CurChapter.StartTime.ToStr_ms();
-        return CurChapter.StartTime.ToTicks();
     }
 
     public TimeSpan GetNextChapter()
@@ -252,7 +251,7 @@ public class Audiobook : BindableBase
             coverImage = bookAppdataDir.GetFileAsync("CoverImage.jpg").GetAwaiter().GetResult();
         }
 
-        Debug.Assert(_metadata != null, nameof(_metadata) + " != null");
+        Debug.Assert(_metadata != null, $"{nameof(Metadata)} cannot be null");
 
         Title = _metadata.Title;
         Author = _metadata.Author;
@@ -263,7 +262,9 @@ public class Audiobook : BindableBase
         CurChapter = Chapters[0];
         CurTimeMs = 0;
         CurPosInBook = "0";
-        AudioLevelGlyph = Volume3;
+        
+        Volume = 100;
+        VolumeLevelGlyph = Volume3;
 
         var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
         CoverImgSrc = bitmapImage;

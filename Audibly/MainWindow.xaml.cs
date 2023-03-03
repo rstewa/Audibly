@@ -21,18 +21,56 @@ namespace Audibly;
 public sealed partial class MainWindow
 {
     private readonly ApplicationDataContainer _localSettings;
-    private string _curPosStg;
-    
-    private DateTime TimePlaybackPaused { get; set; }
+    private string _curBookName;
     private const double SmartRewindDuration = 10.0;
-
     private const bool SmartRewind = true;
+
+    private string CurAudiobookPathSettingValue
+    {
+        get => _localSettings.Values["currentAudiobookPath"]?.ToString();
+        set => _localSettings.Values["currentAudiobookPath"] = value;
+    }
+    
+    private string CurPosSettingLabel => $"{_curBookName}:CurrentPosition";
+    private double? CurPosSettingValue
+    {
+        get => _localSettings.Values[CurPosSettingLabel]?.ToDouble();
+        set => _localSettings.Values[CurPosSettingLabel] = value?.ToString(CultureInfo.InvariantCulture);
+    }
 
     private TimeSpan CurPos
     {
         get => MediaPlayer.PlaybackSession.Position;
         set => MediaPlayer.PlaybackSession.Position = value < TimeSpan.Zero ? TimeSpan.Zero : value;
     }
+
+    private string VolumeSettingLabel => $"{_curBookName}:Volume";
+    private double? VolumeSettingValue
+    {
+        get => _localSettings.Values[VolumeSettingLabel]?.ToDouble();
+        set => _localSettings.Values[VolumeSettingLabel] = value?.ToString();
+    }
+
+    private double Volume
+    {
+        get => ViewModel.Audiobook.Volume;
+        set => ViewModel.Audiobook.Volume = value;
+    }
+
+    private string TimePlayerWasPausedSettingLabel => $"{_curBookName}:TimePlayerWasPaused";
+
+    private DateTime? TimePlayerWasPaused
+    {
+        // get
+        // {
+        //     DateTime.TryParse(_localSettings.Values[TimePlayerWasPausedSettingLabel]?.ToString(), out var result);
+        //     return result;
+        // }
+        get => _localSettings.Values[TimePlayerWasPausedSettingLabel] as DateTime?;
+        set => _localSettings.Values[TimePlayerWasPausedSettingLabel] = value;
+    }
+
+    private DateTime TimePlaybackPaused { get; set; }
 
     private MediaPlayer MediaPlayer
     {
@@ -42,21 +80,25 @@ public sealed partial class MainWindow
             return AudioPlayerElement.MediaPlayer;
         }
     }
+    
+    public AudiobookViewModel ViewModel { get; }
 
     public MainWindow()
     {
+        // setting MainWindow properties
         InitializeComponent();
         this.SetWindowSize(315, 440, false, false, true, false);
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
         ViewModel = new AudiobookViewModel();
-
         _localSettings = ApplicationData.Current.LocalSettings;
+
 #if DEBUG
         // _localSettings.Values.Clear();
 #endif
 
+        // setting MediaPlayer properties
         MediaPlayer.AutoPlay = false;
         MediaPlayer.AudioCategory = MediaPlayerAudioCategory.Media;
         MediaPlayer.AudioDeviceType = MediaPlayerAudioDeviceType.Multimedia;
@@ -64,22 +106,21 @@ public sealed partial class MainWindow
         MediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
         MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+        
+        // disable buttons until a book is opened
+        ToggleAudioControls(false);
 
-        ToggleAudioControls(false); // disable buttons until a book is opened
+        // means an audiobook wasn't open when the application last closed and/or its the 1st time the application has been run
+        if (CurAudiobookPathSettingValue == null) return;
 
-        CurrentTimeTextBlock.Opacity = 0.5;
-        CurrentChapterDurationTextBlock.Opacity = 0.5;
+        // gets and/or sets the current audiobooks metadata and viewmodel
+        ViewModel.Audiobook.Init(CurAudiobookPathSettingValue);
 
-        if (_localSettings.Values["currentAudiobookPath"] == null) return; // means a book was opened for the 1st time
+        // I'm sure there's a better way to do this ...
+        var file = StorageFile.GetFileFromPathAsync(CurAudiobookPathSettingValue).GetAwaiter().GetResult();
 
-        var currentAudiobookPath = _localSettings.Values["currentAudiobookPath"].ToString();
-        ViewModel.Audiobook.Init(currentAudiobookPath);
-
-        var file = StorageFile.GetFileFromPathAsync(currentAudiobookPath).GetAwaiter().GetResult(); // gross
         MediaPlayerElement_Init(file);
     }
-
-    public AudiobookViewModel ViewModel { get; }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
     {
@@ -121,7 +162,7 @@ public sealed partial class MainWindow
         {
             ViewModel.Audiobook.Update(MediaPlayer.PlaybackSession.Position.TotalMilliseconds);
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChapter);
-            SaveProgress();
+            CurPosSettingValue = CurPos.TotalMilliseconds;
         });
     }
 
@@ -138,7 +179,7 @@ public sealed partial class MainWindow
         var file = await picker.PickSingleFileAsync()!;
         if (file is null) return;
 
-        _localSettings.Values["currentAudiobookPath"] = file.Path;
+        CurAudiobookPathSettingValue = file.Path;
         ViewModel.Audiobook.Init(file.Path);
 
         MediaPlayerElement_Init(file);
@@ -148,8 +189,10 @@ public sealed partial class MainWindow
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            // TODO: the following 2 properties should probably be in the viewmodel
             MediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(ViewModel.Audiobook.CurChapter);
+            
             ToggleAudioControls(true);
         });
     }
@@ -158,24 +201,20 @@ public sealed partial class MainWindow
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            var curBookName = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
-            _curPosStg = _curPosStg != curBookName ? curBookName : _curPosStg;
+            _curBookName = Path.GetFileNameWithoutExtension(ViewModel.Audiobook.FilePath);
+            
+            CurPosSettingValue ??= 0;
+            CurPos = TimeSpan.FromMilliseconds(CurPosSettingValue ?? 0);
 
-            if (_localSettings.Values[_curPosStg!] == null)
-            {
-                _localSettings.Values[_curPosStg] = 0;
-                CurPos = TimeSpan.FromSeconds(0);
-            }
-            else
-            {
-                CurPos = TimeSpan.FromMilliseconds(Convert.ToDouble(_localSettings.Values[_curPosStg!]));
-            }
+            VolumeSettingValue ??= 100;
+            Volume = VolumeSettingValue ?? 100;
+            UpdateVolumeIcon();
         });
     }
 
     private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
-        // todo -> add info-bar error message
+        // TODO: add info-bar error message
         ToggleAudioControls(false);
     }
 
@@ -231,12 +270,6 @@ public sealed partial class MainWindow
         CurPos -= TimeSpan.FromSeconds(10);
     }
 
-    private void SaveProgress()
-    {
-        _localSettings.Values[_curPosStg] =
-            MediaPlayer.PlaybackSession.Position.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
-    }
-
     private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var container = sender as ComboBox;
@@ -247,21 +280,26 @@ public sealed partial class MainWindow
         CurPos = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
 
+    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+    {
+        // TODO: probably want to save this as a setting and then put the PlaybackSpeedSlider.Value in the viewmodel
+        MediaPlayer.PlaybackRate = PlaybackSpeedSlider.Value;
+    }
+
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        var volume = AudioLevelSlider.Value;
-
         DispatcherQueue.TryEnqueue(() =>
         {
-            ViewModel.Audiobook.AudioLevelGlyph = volume == 0 ? Audiobook.Volume0 :
-                volume <= 33 ? Audiobook.Volume1 :
-                volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
-            MediaPlayer.Volume = volume / 100;
+            Volume = e.NewValue;
+            VolumeSettingValue = Volume;
+            UpdateVolumeIcon();
         });
     }
 
-    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        MediaPlayer.PlaybackRate = PlaybackSpeedSlider.Value;
+    private void UpdateVolumeIcon()
+    { 
+        ViewModel.Audiobook.VolumeLevelGlyph = Volume == 0 ? Audiobook.Volume0 : 
+            Volume <= 33 ? Audiobook.Volume1 :
+            Volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
     }
 }

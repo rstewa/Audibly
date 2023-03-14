@@ -43,7 +43,7 @@ public sealed partial class MainWindow
         {
             this.SetWindowOpacity(75); // , removeBorderAndTitleBar: true);
             // this.SetWindowSize(315, 315, false, false, false);
-            this.SetWindowSize(265, 265, false, false, false);
+            this.SetWindowSize(285, 285, false, false, false);
             CompactAppTitleBar.Width = (this.Width() / 3).ToDouble();
             DispatcherQueue.TryEnqueue(() =>
             {

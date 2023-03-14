@@ -161,7 +161,7 @@
                 <ProgressBar
                     x:Name="ChapterProgress_ProgressBar"
                     Grid.Column="1"
-                    Width="125" 
+                    Width="150" 
                     Foreground="#84e2c9"
                     Margin="10, 0, 10, 0"
                     Maximum="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDur}"

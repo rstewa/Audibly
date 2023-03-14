@@ -14,7 +14,7 @@
             Margin="0">
 
             <Grid.RowDefinitions>
-                <RowDefinition x:Name="TitleBarRowDefinition" Height="32" />
+                <RowDefinition Height="32" />
                 <RowDefinition />
             </Grid.RowDefinitions>
 
@@ -42,21 +42,8 @@
             <!-- #endregion AppTitleBar -->
 
             <src:DefaultPlayerControl Grid.Row="1" Margin="0,-10,0,0" x:Name="DefaultPlayerControl" />
+            
         </Grid>
-        
-        <!-- <Border -->
-        <!--     x:Name="CompactViewGrid" -->
-        <!--     BorderThickness="4" -->
-        <!--     CornerRadius="0"> -->
-        <!--     <Border.Background>   -->
-        <!--         <LinearGradientBrush StartPoint='0,0' EndPoint='1,1'>   -->
-        <!--             <GradientStop Color='Yellow' Offset='0.0' />   -->
-        <!--             <GradientStop Color='Red' Offset='0.25' />   -->
-        <!--             <GradientStop Color='Blue' Offset='0.75' />   -->
-        <!--             <GradientStop Color='LimeGreen' Offset='1.0' />   -->
-        <!--         </LinearGradientBrush>   -->
-        <!--     </Border.Background> -->
-        <!-- </Border> -->
         
         <Grid
             x:Name="CompactViewGrid"
@@ -67,16 +54,7 @@
                 x:Name="CompactAppTitleBar"
                 HorizontalAlignment="Center"
                 Width="100"
-                Height="32">
-                <!-- <Button x:Name="ToggleViewButton" -->
-                <!--         VerticalAlignment="Top" -->
-                <!--         HorizontalAlignment="Left" -->
-                <!--         Background="Transparent" -->
-                <!--         BorderThickness="0" -->
-                <!--         Content="&#xE740;" -->
-                <!--         FontFamily="Segoe MDL2 Assets" -->
-                <!--         ToolTipService.ToolTip="Default View" /> -->
-            </Grid>
+                Height="32"/>
             <!-- #endregion AppTitleBar -->
         
             <src:CompactPlayerControl Margin="0" x:Name="CompactPlayerControl" />
@@ -85,40 +63,4 @@
         
     </Grid>
 
-    <!-- <Grid> -->
-    <!--      -->
-    <!--     <Viewbox  -->
-    <!--         Margin="0" -->
-    <!--         Stretch="UniformToFill" -->
-    <!--         StretchDirection="DownOnly"> -->
-    <!--          -->
-    <!--         <Grid> -->
-    <!--             <Grid.RowDefinitions> -->
-    <!--                 <RowDefinition x:Name="TitleBarRowDefinition" Height="32" /> -->
-    <!--                 <RowDefinition /> -->
-    <!--             </Grid.RowDefinitions> -->
-    <!--              -->
-    <!--             ~1~#region AppTitleBar@1@ -->
-    <!--             <Grid x:Name="DefaultAppTitleBar" Background="#121212"> -->
-    <!--                 <Image -->
-    <!--                     Width="24" -->
-    <!--                     Margin="8,0" -->
-    <!--                     HorizontalAlignment="Left" -->
-    <!--                     Source="Assets\Logo\Icon\1x\book-open-flat.png" /> -->
-    <!--                 <TextBlock -->
-    <!--                     x:Name="AppTitleTextBlock" -->
-    <!--                     Margin="40,0,0,0" -->
-    <!--                     VerticalAlignment="Center" -->
-    <!--                     Style="{StaticResource CaptionTextBlockStyle}" -->
-    <!--                     Text="Audibly" -->
-    <!--                     TextWrapping="NoWrap" /> -->
-    <!--             </Grid> -->
-    <!--             ~1~#endregion AppTitleBar@1@ -->
-    <!--              -->
-    <!--             <src:DefaultPlayerControl Grid.Row="1" Margin="0,-10,0,0" x:Name="DefaultPlayerControl" /> -->
-    <!--             <src:CompactPlayerControl Grid.Row="1" Margin="0,-10,0,0" x:Name="CompactPlayerControl" /> -->
-    <!--         </Grid> -->
-    <!--     </Viewbox> -->
-    <!--      -->
-    <!-- </Grid> -->
 </Window>

@@ -41,19 +41,25 @@ public sealed partial class MainWindow
     {
         if (e is ViewChangedEventArgs { IsCompact: true })
         {
-            this.SetWindowSize(315, 307, false, false, false);
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(CompactAppTitleBar);
-            TogglePlayerView(Visibility.Collapsed);
-            this.SetWindowOpacity(65);
+            this.SetWindowOpacity(75, removeBorderAndTitleBar: true);
+            this.SetWindowSize(315, 315, false, false, false);
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ExtendsContentIntoTitleBar = false;
+                TogglePlayerView(Visibility.Collapsed);
+                // SetTitleBar(CompactAppTitleBar);
+            });
         }
         else
         {
-            this.SetWindowSize(315, 440, false, false, false);
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(DefaultAppTitleBar);
-            TogglePlayerView();
             this.SetWindowOpacity(100);
+            this.SetWindowSize(315, 440, false, false, false);
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ExtendsContentIntoTitleBar = true;
+                TogglePlayerView();
+                SetTitleBar(DefaultAppTitleBar);
+            });
         }
     }
 }

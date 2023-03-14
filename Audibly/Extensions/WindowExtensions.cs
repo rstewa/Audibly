@@ -508,21 +508,19 @@ public static class WindowExtensions
     
     #endregion
     
-    public static void SetWindowOpacity(this Window window, int nOpacity)
+    public static void SetWindowOpacity(this Window window, int nOpacity, bool removeBorderAndTitleBar = false)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
         var presenter = appWindow.Presenter as OverlappedPresenter;
         
-        // presenter!.SetBorderAndTitleBar(false, false);
+        if (removeBorderAndTitleBar)
+            presenter!.SetBorderAndTitleBar(false, false);
         
         var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-        // if ((nExStyle & WS_EX_LAYERED) == 0)
-        // {              
-            SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
-            SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
-        // }
+        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
+        SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
         nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
         SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
     }

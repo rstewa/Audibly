@@ -165,7 +165,6 @@ public class Audiobook : BindableBase
 
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
-
     // METHODS
 
     public void Update(double curMs)

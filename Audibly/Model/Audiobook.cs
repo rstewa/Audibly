@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using Windows.Media.Playback;
 using Windows.Storage;
 using ATL;
 using Audibly.Extensions;
@@ -19,6 +20,26 @@ namespace Audibly.Model;
 
 public class Audiobook : BindableBase
 {
+    // TODO: there's for sure a better way to do this ... lol
+    public event EventHandler ViewChanged;
+    protected virtual void OnViewChanged(EventArgs e)
+    {
+        ViewChanged?.Invoke(this, e);
+    }
+
+    private bool _isCompact;
+    public bool IsCompact
+    {
+        get => _isCompact;
+        set
+        {
+            _isCompact = value;
+            OnViewChanged(new ViewChangedEventArgs { IsCompact = value });
+        }
+    }
+
+    public readonly MediaPlayer MediaPlayer = new();
+    
     // CONSTS
     public const string Volume0 = "\uE74F";
     public const string Volume1 = "\uE993";
@@ -143,7 +164,6 @@ public class Audiobook : BindableBase
     }
 
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
-
 
     // METHODS
 
@@ -271,7 +291,8 @@ public class Audiobook : BindableBase
     }
 }
 
-public class AudiobookViewModel
+public static class AudiobookViewModel
 {
-    public Audiobook Audiobook { get; } = new();
+    private static Audiobook _audiobook = new();
+    public static Audiobook Audiobook { get { return _audiobook; } }
 }

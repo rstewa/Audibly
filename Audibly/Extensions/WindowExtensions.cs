@@ -524,4 +524,22 @@ public static class WindowExtensions
         nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
         SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
     }
+
+    public static int Width(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        return appWindow.Size.Width;
+    }
+    
+    public static int Height(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        return appWindow.Size.Height;
+    }
 }

@@ -17,6 +17,10 @@
                 <RowDefinition Height="32" />
                 <RowDefinition />
             </Grid.RowDefinitions>
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
             <!--#region AppTitleBar-->
             <Grid
@@ -53,7 +57,6 @@
             <Grid
                 x:Name="CompactAppTitleBar"
                 HorizontalAlignment="Center"
-                Width="100"
                 Height="32"/>
             <!-- #endregion AppTitleBar -->
         

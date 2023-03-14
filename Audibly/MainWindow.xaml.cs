@@ -41,13 +41,15 @@ public sealed partial class MainWindow
     {
         if (e is ViewChangedEventArgs { IsCompact: true })
         {
-            this.SetWindowOpacity(75, removeBorderAndTitleBar: true);
-            this.SetWindowSize(315, 315, false, false, false);
+            this.SetWindowOpacity(75); // , removeBorderAndTitleBar: true);
+            // this.SetWindowSize(315, 315, false, false, false);
+            this.SetWindowSize(265, 265, false, false, false);
+            CompactAppTitleBar.Width = (this.Width() / 3).ToDouble();
             DispatcherQueue.TryEnqueue(() =>
             {
-                ExtendsContentIntoTitleBar = false;
+                ExtendsContentIntoTitleBar = true;
                 TogglePlayerView(Visibility.Collapsed);
-                // SetTitleBar(CompactAppTitleBar);
+                SetTitleBar(CompactAppTitleBar);
             });
         }
         else

@@ -27,6 +27,13 @@
                 <SolidColorBrush x:Key="ButtonForegroundDisabled">#555555</SolidColorBrush>
             </ResourceDictionary>
         </Grid.Resources>
+            
+        <MediaPlayerElement
+            x:Name="AudioPlayerElement"
+            Width="0"
+            Height="0"
+            AreTransportControlsEnabled="False"
+            AutoPlay="False" />
         
         <Viewbox
             x:Name="AudioBookCover_ViewBox"
@@ -182,25 +189,22 @@
                     Grid.Column="0"
                     HorizontalAlignment="Left"
                     Foreground="#9d9d9d"
-                    Text="00:00" />
-                <!--  Text="{x:Bind ViewModel.Audiobook.CurTimeText}"  -->
+                    Text="{x:Bind model:AudiobookViewModel.Audiobook.CurTimeText}"/>
 
                 <ProgressBar
                     x:Name="ChapterProgress_ProgressBar"
                     Grid.Column="1"
-                    Width="175" />
-                <!--
-            Maximum="{x:Bind ViewModel.Audiobook.CurChptrDur}"
-            Value="{x:Bind ViewModel.Audiobook.CurTimeMs}" />
-        -->
+                    Width="175" 
+                    Foreground="#84e2c9"
+                    Maximum="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDur}"
+                    Value="{x:Bind model:AudiobookViewModel.Audiobook.CurTimeMs}" />
 
                 <TextBlock
                     x:Name="CurrentChapterDuration_TextBlock"
                     Grid.Column="2"
                     HorizontalAlignment="Right"
                     Foreground="#9d9d9d"
-                    Text="00:00" />
-                <!--  Text="{x:Bind ViewModel.Audiobook.CurChptrDurText}"  -->
+                    Text="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDurText}"/>
             </Grid>
 
         </Grid>

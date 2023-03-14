@@ -44,44 +44,44 @@
             <src:DefaultPlayerControl Grid.Row="1" Margin="0,-10,0,0" x:Name="DefaultPlayerControl" />
         </Grid>
         
-        <Border
-            x:Name="CompactViewGrid"
-            BorderThickness="4"
-            CornerRadius="0">
-            <Border.Background>  
-                <LinearGradientBrush StartPoint='0,0' EndPoint='1,1'>  
-                    <GradientStop Color='Yellow' Offset='0.0' />  
-                    <GradientStop Color='Red' Offset='0.25' />  
-                    <GradientStop Color='Blue' Offset='0.75' />  
-                    <GradientStop Color='LimeGreen' Offset='1.0' />  
-                </LinearGradientBrush>  
-            </Border.Background>
-        </Border>
-        
-        <!-- <Grid -->
+        <!-- <Border -->
         <!--     x:Name="CompactViewGrid" -->
-        <!--     Margin="0"> -->
-        <!--      -->
-        <!--     ~1~#region AppTitleBar@1@ -->
-        <!--     <Grid -->
-        <!--         x:Name="CompactAppTitleBar" -->
-        <!--         HorizontalAlignment="Center" -->
-        <!--         Width="100" -->
-        <!--         Height="32"> -->
-        <!--         ~1~ <Button x:Name="ToggleViewButton" @1@ -->
-        <!--         ~1~         VerticalAlignment="Top" @1@ -->
-        <!--         ~1~         HorizontalAlignment="Left" @1@ -->
-        <!--         ~1~         Background="Transparent" @1@ -->
-        <!--         ~1~         BorderThickness="0" @1@ -->
-        <!--         ~1~         Content="&#xE740;" @1@ -->
-        <!--         ~1~         FontFamily="Segoe MDL2 Assets" @1@ -->
-        <!--         ~1~         ToolTipService.ToolTip="Default View" /> @1@ -->
-        <!--     </Grid> -->
-        <!--     ~1~ #endregion AppTitleBar @1@ -->
-        <!--      -->
-        <!--     ~1~ <src:CompactPlayerControl Margin="0" x:Name="CompactPlayerControl" /> @1@ -->
-        <!--      -->
-        <!-- </Grid> -->
+        <!--     BorderThickness="4" -->
+        <!--     CornerRadius="0"> -->
+        <!--     <Border.Background>   -->
+        <!--         <LinearGradientBrush StartPoint='0,0' EndPoint='1,1'>   -->
+        <!--             <GradientStop Color='Yellow' Offset='0.0' />   -->
+        <!--             <GradientStop Color='Red' Offset='0.25' />   -->
+        <!--             <GradientStop Color='Blue' Offset='0.75' />   -->
+        <!--             <GradientStop Color='LimeGreen' Offset='1.0' />   -->
+        <!--         </LinearGradientBrush>   -->
+        <!--     </Border.Background> -->
+        <!-- </Border> -->
+        
+        <Grid
+            x:Name="CompactViewGrid"
+            Margin="0">
+        
+            <!--#region AppTitleBar-->
+            <Grid
+                x:Name="CompactAppTitleBar"
+                HorizontalAlignment="Center"
+                Width="100"
+                Height="32">
+                <!-- <Button x:Name="ToggleViewButton" -->
+                <!--         VerticalAlignment="Top" -->
+                <!--         HorizontalAlignment="Left" -->
+                <!--         Background="Transparent" -->
+                <!--         BorderThickness="0" -->
+                <!--         Content="&#xE740;" -->
+                <!--         FontFamily="Segoe MDL2 Assets" -->
+                <!--         ToolTipService.ToolTip="Default View" /> -->
+            </Grid>
+            <!-- #endregion AppTitleBar -->
+        
+            <src:CompactPlayerControl Margin="0" x:Name="CompactPlayerControl" />
+        
+        </Grid>
         
     </Grid>
 

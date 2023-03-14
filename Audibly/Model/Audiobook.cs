@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using Windows.Media.Playback;
 using Windows.Storage;
 using ATL;
 using Audibly.Extensions;
@@ -36,6 +37,8 @@ public class Audiobook : BindableBase
             OnViewChanged(new ViewChangedEventArgs { IsCompact = value });
         }
     }
+
+    public readonly MediaPlayer MediaPlayer = new();
     
     // CONSTS
     public const string Volume0 = "\uE74F";

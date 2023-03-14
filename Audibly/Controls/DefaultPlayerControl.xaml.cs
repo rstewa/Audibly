@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 using Windows.Media.Playback;
 using Windows.Media.Core;
+using Audibly.Helpers;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -26,9 +27,9 @@ public sealed partial class DefaultPlayerControl : UserControl
     private readonly ApplicationDataContainer _localSettings;
     private string _curBookName;
     private const double SmartRewindDuration = 0.5; // 0.0;
-    private const bool SmartRewind = true;
+    private const bool SmartRewind = false; // true;
 
-    private bool _canSmartRewind { get; set; } = false;
+    private bool CanSmartRewind { get; set; }
 
     private string CurAudiobookPathSettingValue
     {
@@ -66,27 +67,15 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private string TimePlayerWasPausedSettingLabel => $"{_curBookName}:TimePlayerWasPaused";
 
-    private DateTime? TimePlayerWasPaused
+    private DateTime? TimePlayerWasPausedSettingValue
     {
-        // get
-        // {
-        //     DateTime.TryParse(_localSettings.Values[TimePlayerWasPausedSettingLabel]?.ToString(), out var result);
-        //     return result;
-        // }
         get => _localSettings.Values[TimePlayerWasPausedSettingLabel] as DateTime?;
         set => _localSettings.Values[TimePlayerWasPausedSettingLabel] = value;
     }
 
-    private DateTime TimePlaybackPaused { get; set; }
+    private DateTime TimePlayerWasPaused { get; set; }
 
-    private MediaPlayer MediaPlayer
-    {
-        get
-        {
-            if (AudioPlayerElement.MediaPlayer == null) AudioPlayerElement.SetMediaPlayer(new MediaPlayer());
-            return AudioPlayerElement.MediaPlayer;
-        }
-    }
+    private MediaPlayer MediaPlayer => AudiobookViewModel.Audiobook.MediaPlayer;
 
     public DefaultPlayerControl()
     {
@@ -99,6 +88,7 @@ public sealed partial class DefaultPlayerControl : UserControl
 #endif
 
         // setting MediaPlayer properties
+        AudioPlayerElement.SetMediaPlayer(AudiobookViewModel.Audiobook.MediaPlayer);
         MediaPlayer.AutoPlay = false;
         MediaPlayer.AudioCategory = MediaPlayerAudioCategory.Media;
         MediaPlayer.AudioDeviceType = MediaPlayerAudioDeviceType.Multimedia;
@@ -130,11 +120,11 @@ public sealed partial class DefaultPlayerControl : UserControl
                 DispatcherQueue.TryEnqueue(() =>
                 {
                     // rewind current playback position 30 sec if book was paused for >= 10 minutes
-                    if (SmartRewind && _canSmartRewind && DateTime.UtcNow.Subtract(TimePlaybackPaused).TotalMinutes >=
+                    if (SmartRewind && CanSmartRewind && DateTime.UtcNow.Subtract(TimePlayerWasPaused).TotalMinutes >=
                         SmartRewindDuration)
                     {
                         CurPos -= TimeSpan.FromSeconds(30);
-                        _canSmartRewind = false;
+                        CanSmartRewind = false;
                     }
 
                     if ((string)PlayPauseButton.Tag == "pause") return;
@@ -148,8 +138,9 @@ public sealed partial class DefaultPlayerControl : UserControl
                 // grab current time for smart rewind feature
                 if (SmartRewind)
                 {
-                    TimePlaybackPaused = DateTime.UtcNow;
-                    _canSmartRewind = true;
+                    TimePlayerWasPaused = DateTime.UtcNow;
+                    TimePlayerWasPausedSettingValue = TimePlayerWasPaused;
+                    CanSmartRewind = true;
                 }
 
                 DispatcherQueue.TryEnqueue(() =>
@@ -171,7 +162,7 @@ public sealed partial class DefaultPlayerControl : UserControl
             // the user has changed the players current playback position before hitting
             // play again
             if (MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
-                _canSmartRewind = false;
+                CanSmartRewind = false;
 
             AudiobookViewModel.Audiobook.Update(MediaPlayer.PlaybackSession.Position.TotalMilliseconds);
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
@@ -181,18 +172,26 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private async void OpenAudiobook_Click(object sender, RoutedEventArgs e)
     {
-        var picker = new FileOpenPicker();
-#if !WINDOWS_UWP
-        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
-#endif
-        picker.ViewMode = PickerViewMode.Thumbnail;
-        picker.SuggestedStartLocation = PickerLocationId.Desktop;
-        picker.FileTypeFilter.Add(".m4b");
+        // Create a file picker
+        var openPicker = new FileOpenPicker();
 
-        var file = await picker.PickSingleFileAsync()!;
+        // Retrieve the window handle (HWND) of the current WinUI 3 window.
+        // var window = WindowHelper.GetWindowForElement(App.MainWindow);
+        var hWnd = WindowNative.GetWindowHandle(App.MainWindow);
+
+        // Initialize the file picker with the window handle (HWND).
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+
+        // Set options for your file picker
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.FileTypeFilter.Add(".m4b");
+
+        // Open the picker for the user to pick a file
+        var file = await openPicker.PickSingleFileAsync();
         if (file is null) return;
-
-        CurAudiobookPathSettingValue = file.Path;
+        
+        CurAudiobookPathSettingValue = file!.Path;
         AudiobookViewModel.Audiobook.Init(file.Path);
 
         MediaPlayerElement_Init(file);
@@ -222,6 +221,11 @@ public sealed partial class DefaultPlayerControl : UserControl
             VolumeSettingValue ??= 100;
             Volume = VolumeSettingValue ?? 100;
             UpdateVolumeIcon();
+
+            if (TimePlayerWasPausedSettingValue == null)
+                CanSmartRewind = false;
+            else
+                TimePlayerWasPaused = (DateTime) TimePlayerWasPausedSettingValue;
         });
     }
 
@@ -243,6 +247,7 @@ public sealed partial class DefaultPlayerControl : UserControl
             ChapterCombo.IsEnabled = isEnabled;
             VolumeLevelButton.IsEnabled = isEnabled;
             PlaybackSpeedButton.IsEnabled = isEnabled;
+            CompactViewButton.IsEnabled = isEnabled;
 
             CurrentTimeTextBlock.Opacity =
                 ChapterProgressProgressBar.Opacity =

@@ -10,8 +10,6 @@ namespace Audibly;
 /// </summary>
 public partial class App : Application
 {
-    private Window _mWindow;
-
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
     ///     executed, and as such is the logical equivalent of main() or WinMain().
@@ -20,6 +18,8 @@ public partial class App : Application
     {
         InitializeComponent();
     }
+    
+    public static MainWindow MainWindow { get; } = new ();
 
     /// <summary>
     ///     Invoked when the application is launched normally by the end user.  Other entry points
@@ -28,7 +28,6 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _mWindow = new MainWindow();
-        _mWindow.Activate();
+        MainWindow.Activate();
     }
 }

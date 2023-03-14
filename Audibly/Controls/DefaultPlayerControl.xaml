@@ -1,5 +1,5 @@
-<!-- Copyright (c) Microsoft Corporation and Contributors. -->
-<!-- Licensed under the MIT License. -->
+<!-- Author: Ryan Stewart -->
+<!-- Date: 03/13/2023 -->
 
 <UserControl
     x:Class="Audibly.Controls.DefaultPlayerControl"

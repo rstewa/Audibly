@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
+//   Author: Ryan Stewart
+//   Date: 03/13/2023
 
 using System;
 using System.Globalization;
@@ -14,11 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 using Windows.Media.Playback;
 using Windows.Media.Core;
-using Audibly.Helpers;
 using Microsoft.UI.Xaml.Controls.Primitives;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Audibly.Controls;
 
@@ -80,7 +76,7 @@ public sealed partial class DefaultPlayerControl : UserControl
     public DefaultPlayerControl()
     {
         InitializeComponent();
-        
+
         _localSettings = ApplicationData.Current.LocalSettings;
 
 #if DEBUG
@@ -190,7 +186,7 @@ public sealed partial class DefaultPlayerControl : UserControl
         // Open the picker for the user to pick a file
         var file = await openPicker.PickSingleFileAsync();
         if (file is null) return;
-        
+
         CurAudiobookPathSettingValue = file!.Path;
         AudiobookViewModel.Audiobook.Init(file.Path);
 
@@ -225,7 +221,7 @@ public sealed partial class DefaultPlayerControl : UserControl
             if (TimePlayerWasPausedSettingValue == null)
                 CanSmartRewind = false;
             else
-                TimePlayerWasPaused = (DateTime) TimePlayerWasPausedSettingValue;
+                TimePlayerWasPaused = (DateTime)TimePlayerWasPausedSettingValue;
         });
     }
 

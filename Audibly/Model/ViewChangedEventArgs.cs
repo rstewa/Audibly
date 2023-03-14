@@ -1,4 +1,7 @@
-﻿using System;
+﻿//   Author: Ryan Stewart
+//   Date: 03/13/2023
+
+using System;
 
 namespace Audibly.Model;
 

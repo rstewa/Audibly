@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using System.Collections.Generic;
 
+// from: https://github.com/microsoft/WinUI-Gallery/blob/260cb720ef83b3d134bc4805cffcfac9461dce33/WinUIGallery/Common/WindowHelper.cs
 namespace Audibly.Helpers
 {
     // Helper class to allow the app to find the Window that contains an

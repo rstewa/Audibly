@@ -163,6 +163,13 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _volume, value);
     }
 
+    private double _playbackSpeed;
+    public double PlaybackSpeed
+    {
+        get => _playbackSpeed;
+        set => SetProperty(ref _playbackSpeed, value);
+    }
+
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
     // METHODS

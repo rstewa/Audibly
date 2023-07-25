@@ -180,6 +180,9 @@ public sealed partial class DefaultPlayerControl : UserControl
             Settings.Volume ??= 100;
             Volume = Settings.Volume ?? 100;
 
+            Settings.PlaybackSpeed ??= 1;
+            AudiobookViewModel.Audiobook.PlaybackSpeed = Settings.PlaybackSpeed ?? 1;
+
             UpdateVolumeIcon();
 
             if (Settings.TimePlayerPaused == null)
@@ -260,8 +263,8 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        // TODO: probably want to save this as a setting and then put the PlaybackSpeedSlider.Value in the ViewModel
-        MediaPlayer.PlaybackRate = PlaybackSpeedSlider.Value;
+        Settings.PlaybackSpeed = AudiobookViewModel.Audiobook.PlaybackSpeed = e.NewValue;
+        MediaPlayer.PlaybackRate = e.NewValue;
     }
 
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)

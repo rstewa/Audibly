@@ -1,12 +1,12 @@
 //   Author: Ryan Stewart
 //   Date: 03/13/2023
 
-using System;
 using Audibly.Model;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Media.Playback;
 using Microsoft.UI.Xaml.Input;
+using System;
+using Windows.Media.Playback;
 
 namespace Audibly.Controls;
 

@@ -305,10 +305,10 @@
                                 Minimum="0.5"
                                 StepFrequency="0.1"
                                 SnapsTo="StepValues"
+                                Value="{x:Bind model:AudiobookViewModel.Audiobook.PlaybackSpeed}"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Playback Speed"
-                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                Value="1.0">
+                                ValueChanged="PlaybackSpeedSlider_ValueChanged">
                                 <Slider.Resources>
                                     <ResourceDictionary>
                                         <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>

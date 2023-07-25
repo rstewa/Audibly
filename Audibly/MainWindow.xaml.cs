@@ -1,10 +1,10 @@
 ﻿//   Author: Ryan Stewart
 //   Date: 05/20/2022
 
-using System;
 using Audibly.Extensions;
 using Audibly.Model;
 using Microsoft.UI.Xaml;
+using System;
 
 namespace Audibly;
 
@@ -17,7 +17,7 @@ public sealed partial class MainWindow
         this.SetWindowSize(315, 440, false, false, false);
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(DefaultAppTitleBar);
-        
+
         // TODO -> use a bind in the xaml
         TogglePlayerView();
 

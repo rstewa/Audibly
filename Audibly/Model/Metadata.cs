@@ -1,8 +1,8 @@
 ﻿//   Author: Ryan Stewart
 //   Date: 05/20/2022
 
-using System.Collections.Generic;
 using FlyleafLib.MediaFramework.MediaDemuxer;
+using System.Collections.Generic;
 
 namespace Audibly.Model;
 

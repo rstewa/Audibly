@@ -1,6 +1,11 @@
 ﻿//   Author: Ryan Stewart
 //   Date: 05/20/2022
 
+using ATL;
+using Audibly.Extensions;
+using FlyleafLib.MediaFramework.MediaDemuxer;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,11 +15,6 @@ using System.Reflection;
 using System.Text.Json;
 using Windows.Media.Playback;
 using Windows.Storage;
-using ATL;
-using Audibly.Extensions;
-using FlyleafLib.MediaFramework.MediaDemuxer;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Audibly.Model;
 
@@ -39,7 +39,7 @@ public class Audiobook : BindableBase
     }
 
     public readonly MediaPlayer MediaPlayer = new();
-    
+
     // CONSTS
     public const string Volume0 = "\uE74F";
     public const string Volume1 = "\uE993";
@@ -52,9 +52,9 @@ public class Audiobook : BindableBase
     public string FilePath { get; private set; }
 
     private string _volumeLevelGlyph;
-    public string VolumeLevelGlyph 
-    { 
-        get => _volumeLevelGlyph;  
+    public string VolumeLevelGlyph
+    {
+        get => _volumeLevelGlyph;
         set => SetProperty(ref _volumeLevelGlyph, value);
     }
 
@@ -163,6 +163,13 @@ public class Audiobook : BindableBase
         set => SetProperty(ref _volume, value);
     }
 
+    private double _playbackSpeed;
+    public double PlaybackSpeed
+    {
+        get => _playbackSpeed;
+        set => SetProperty(ref _playbackSpeed, value);
+    }
+
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
     // METHODS
@@ -253,7 +260,7 @@ public class Audiobook : BindableBase
                 };
                 _metadata.Chapters.Add(chapter);
             }
-             
+
             var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
             coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
@@ -282,7 +289,7 @@ public class Audiobook : BindableBase
         CurChapter = Chapters[0];
         CurTimeMs = 0;
         CurPosInBook = "0";
-        
+
         Volume = 100;
         VolumeLevelGlyph = Volume3;
 

@@ -1,14 +1,14 @@
 ﻿//   Author: Ryan Stewart
 //   Date: 05/20/2022
 
-using Windows.Graphics;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using WinRT.Interop;
-using static PInvoke.User32;
 using System;
 using System.Runtime.InteropServices;
+using Windows.Graphics;
+using WinRT.Interop;
+using static PInvoke.User32;
 
 namespace Audibly.Extensions;
 
@@ -27,7 +27,7 @@ public static class WindowExtensions
         var presenter = appWindow.Presenter as OverlappedPresenter;
 
         var scalingFactor = (float)GetDpiForWindow(hWnd) / 96;
-        if(scalingFactor != 1)
+        if (scalingFactor != 1)
         {
             width = Math.Ceiling(width * scalingFactor).ToInt();
             height = Math.Ceiling(height * scalingFactor).ToInt();
@@ -43,7 +43,7 @@ public static class WindowExtensions
     }
 
     #region PInvoke Stuff
-    
+
     public const int WM_CREATE = 0x0001;
     public const int WM_NCHITTEST = 0x0084;
     public const int WM_COMMAND = 0x0111;
@@ -505,19 +505,19 @@ public static class WindowExtensions
 
     [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern IntPtr GetModuleHandle(string modName);
-    
+
     #endregion
-    
+
     public static void SetWindowOpacity(this Window window, int nOpacity, bool removeBorderAndTitleBar = false)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
         var presenter = appWindow.Presenter as OverlappedPresenter;
-        
+
         if (removeBorderAndTitleBar)
             presenter!.SetBorderAndTitleBar(false, false);
-        
+
         var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
         SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
         SetLayeredWindowAttributes(hWnd, (uint)0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
@@ -533,7 +533,7 @@ public static class WindowExtensions
 
         return appWindow.Size.Width;
     }
-    
+
     public static int Height(this Window window)
     {
         var hWnd = WindowNative.GetWindowHandle(window);

@@ -30,12 +30,6 @@ public sealed partial class DefaultPlayerControl : UserControl
         set => MediaPlayer.PlaybackSession.Position = value < TimeSpan.Zero ? TimeSpan.Zero : value;
     }
 
-    private double Volume
-    {
-        get => AudiobookViewModel.Audiobook.Volume;
-        set => AudiobookViewModel.Audiobook.Volume = value;
-    }
-
     private DateTime TimePlayerPaused { get; set; }
 
     private MediaPlayer MediaPlayer => AudiobookViewModel.Audiobook.MediaPlayer;
@@ -178,7 +172,7 @@ public sealed partial class DefaultPlayerControl : UserControl
             CurPos = TimeSpan.FromMilliseconds(Settings.CurrentPosition ?? 0);
 
             Settings.Volume ??= 100;
-            Volume = Settings.Volume ?? 100;
+            AudiobookViewModel.Audiobook.Volume = Settings.Volume ?? 100;
 
             Settings.PlaybackSpeed ??= 1;
             AudiobookViewModel.Audiobook.PlaybackSpeed = Settings.PlaybackSpeed ?? 1;
@@ -271,7 +265,7 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            Settings.Volume = Volume = e.NewValue;
+            Settings.Volume = AudiobookViewModel.Audiobook.Volume = e.NewValue;
 
             MediaPlayer.Volume = e.NewValue / 100;
             UpdateVolumeIcon();
@@ -280,9 +274,9 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private void UpdateVolumeIcon()
     {
-        AudiobookViewModel.Audiobook.VolumeLevelGlyph = Volume == 0 ? Audiobook.Volume0 :
-            Volume <= 33 ? Audiobook.Volume1 :
-            Volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
+        AudiobookViewModel.Audiobook.VolumeLevelGlyph = AudiobookViewModel.Audiobook.Volume == 0 ? Audiobook.Volume0 :
+            AudiobookViewModel.Audiobook.Volume <= 33 ? Audiobook.Volume1 :
+            AudiobookViewModel.Audiobook.Volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
     }
 
     private void CompactViewButton_Click(object sender, RoutedEventArgs e)

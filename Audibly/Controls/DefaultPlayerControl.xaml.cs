@@ -1,45 +1,47 @@
 //   Author: Ryan Stewart
 //   Date: 03/13/2023
 
-using System;
-using System.Globalization;
-using System.IO;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 using Audibly.Extensions;
+using Audibly.Helpers;
 using Audibly.Model;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WinRT.Interop;
-using Windows.Media.Playback;
-using Windows.Media.Core;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using System;
+using System.Globalization;
+using System.IO;
+using Windows.Media.Core;
+using Windows.Media.Playback;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
+using Settings = Audibly.Helpers.AudiblySettingsHelper;
 
 namespace Audibly.Controls;
 
 public sealed partial class DefaultPlayerControl : UserControl
 {
-    private readonly ApplicationDataContainer _localSettings;
-    private string _curBookName;
+    // private readonly ApplicationDataContainer _localSettings;
+    // private string _curBookName;
     private const double SmartRewindDuration = 0.5; // 0.0;
     private const bool SmartRewind = false; // true;
 
     private bool CanSmartRewind { get; set; }
 
-    private string CurAudiobookPathSettingValue
-    {
-        get => _localSettings.Values["currentAudiobookPath"]?.ToString();
-        set => _localSettings.Values["currentAudiobookPath"] = value;
-    }
+    // private string CurAudiobookPathSettingValue
+    // {
+    //     get => _localSettings.Values["currentAudiobookPath"]?.ToString();
+    //     set => _localSettings.Values["currentAudiobookPath"] = value;
+    // }
 
-    private string CurPosSettingLabel => $"{_curBookName}:CurrentPosition";
+    // private string CurPosSettingLabel => $"{_curBookName}:CurrentPosition";
 
-    private double? CurPosSettingValue
-    {
-        get => _localSettings.Values[CurPosSettingLabel]?.ToDouble();
-        set => _localSettings.Values[CurPosSettingLabel] = value?.ToString(CultureInfo.InvariantCulture);
-    }
+    // private double? CurPosSettingValue
+    // {
+    //     get => _localSettings.Values[CurPosSettingLabel]?.ToDouble();
+    //     set => _localSettings.Values[CurPosSettingLabel] = value?.ToString(CultureInfo.InvariantCulture);
+    // }
 
     private TimeSpan CurPos
     {
@@ -47,13 +49,13 @@ public sealed partial class DefaultPlayerControl : UserControl
         set => MediaPlayer.PlaybackSession.Position = value < TimeSpan.Zero ? TimeSpan.Zero : value;
     }
 
-    private string VolumeSettingLabel => $"{_curBookName}:Volume";
+    // private string VolumeSettingLabel => $"{_curBookName}:Volume";
 
-    private double? VolumeSettingValue
-    {
-        get => _localSettings.Values[VolumeSettingLabel]?.ToDouble();
-        set => _localSettings.Values[VolumeSettingLabel] = value?.ToString();
-    }
+    // private double? VolumeSettingValue
+    // {
+    //     get => _localSettings.Values[VolumeSettingLabel]?.ToDouble();
+    //     set => _localSettings.Values[VolumeSettingLabel] = value?.ToString();
+    // }
 
     private double Volume
     {
@@ -61,15 +63,15 @@ public sealed partial class DefaultPlayerControl : UserControl
         set => AudiobookViewModel.Audiobook.Volume = value;
     }
 
-    private string TimePlayerWasPausedSettingLabel => $"{_curBookName}:TimePlayerWasPaused";
+    // private string TimePlayerWasPausedSettingLabel => $"{_curBookName}:TimePlayerWasPaused";
 
-    private DateTime? TimePlayerWasPausedSettingValue
-    {
-        get => _localSettings.Values[TimePlayerWasPausedSettingLabel] as DateTime?;
-        set => _localSettings.Values[TimePlayerWasPausedSettingLabel] = value;
-    }
+    // private DateTime? TimePlayerWasPausedSettingValue
+    // {
+    //     get => _localSettings.Values[TimePlayerWasPausedSettingLabel] as DateTime?;
+    //     set => _localSettings.Values[TimePlayerWasPausedSettingLabel] = value;
+    // }
 
-    private DateTime TimePlayerWasPaused { get; set; }
+    private DateTime TimePlayerPaused { get; set; }
 
     private MediaPlayer MediaPlayer => AudiobookViewModel.Audiobook.MediaPlayer;
 
@@ -77,7 +79,7 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         InitializeComponent();
 
-        _localSettings = ApplicationData.Current.LocalSettings;
+        // _localSettings = ApplicationData.Current.LocalSettings;
 
 #if DEBUG
         // _localSettings.Values.Clear();
@@ -97,13 +99,14 @@ public sealed partial class DefaultPlayerControl : UserControl
         ToggleAudioControls(false);
 
         // means an audiobook wasn't open when the application last closed and/or its the 1st time the application has been run
-        if (CurAudiobookPathSettingValue == null) return;
+        // if (CurAudiobookPathSettingValue == null) return;
+        if (Settings.CurrentAudiobookPath == null) return;
 
         // gets and/or sets the current audiobooks metadata and viewmodel
-        AudiobookViewModel.Audiobook.Init(CurAudiobookPathSettingValue);
+        AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath);
 
         // I'm sure there's a better way to do this ...
-        var file = StorageFile.GetFileFromPathAsync(CurAudiobookPathSettingValue).GetAwaiter().GetResult();
+        var file = StorageFile.GetFileFromPathAsync(Settings.CurrentAudiobookPath).GetAwaiter().GetResult();
 
         MediaPlayerElement_Init(file);
     }
@@ -116,7 +119,7 @@ public sealed partial class DefaultPlayerControl : UserControl
                 DispatcherQueue.TryEnqueue(() =>
                 {
                     // rewind current playback position 30 sec if book was paused for >= 10 minutes
-                    if (SmartRewind && CanSmartRewind && DateTime.UtcNow.Subtract(TimePlayerWasPaused).TotalMinutes >=
+                    if (SmartRewind && CanSmartRewind && DateTime.UtcNow.Subtract(TimePlayerPaused).TotalMinutes >=
                         SmartRewindDuration)
                     {
                         CurPos -= TimeSpan.FromSeconds(30);
@@ -134,8 +137,9 @@ public sealed partial class DefaultPlayerControl : UserControl
                 // grab current time for smart rewind feature
                 if (SmartRewind)
                 {
-                    TimePlayerWasPaused = DateTime.UtcNow;
-                    TimePlayerWasPausedSettingValue = TimePlayerWasPaused;
+                    TimePlayerPaused = DateTime.UtcNow;
+                    // TimePlayerWasPausedSettingValue = TimePlayerWasPaused;
+                    Settings.TimePlayerPaused = TimePlayerPaused;
                     CanSmartRewind = true;
                 }
 
@@ -162,7 +166,9 @@ public sealed partial class DefaultPlayerControl : UserControl
 
             AudiobookViewModel.Audiobook.Update(MediaPlayer.PlaybackSession.Position.TotalMilliseconds);
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
-            CurPosSettingValue = CurPos.TotalMilliseconds;
+            
+            // CurPosSettingValue = CurPos.TotalMilliseconds;
+            Settings.CurrentPosition = CurPos.TotalMilliseconds;
         });
     }
 
@@ -187,7 +193,9 @@ public sealed partial class DefaultPlayerControl : UserControl
         var file = await openPicker.PickSingleFileAsync();
         if (file is null) return;
 
-        CurAudiobookPathSettingValue = file!.Path;
+        // CurAudiobookPathSettingValue = file!.Path;
+        Settings.CurrentAudiobookPath = file.Path;
+
         AudiobookViewModel.Audiobook.Init(file.Path);
 
         MediaPlayerElement_Init(file);
@@ -209,19 +217,26 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            _curBookName = Path.GetFileNameWithoutExtension(AudiobookViewModel.Audiobook.FilePath);
+            // _curBookName = Path.GetFileNameWithoutExtension(AudiobookViewModel.Audiobook.FilePath);
+            Settings.CurrentBookName = Path.GetFileNameWithoutExtension(AudiobookViewModel.Audiobook.FilePath);
 
-            CurPosSettingValue ??= 0;
-            CurPos = TimeSpan.FromMilliseconds(CurPosSettingValue ?? 0);
+            // CurPosSettingValue ??= 0;
+            // CurPos = TimeSpan.FromMilliseconds(CurPosSettingValue ?? 0);
 
-            VolumeSettingValue ??= 100;
-            Volume = VolumeSettingValue ?? 100;
+            Settings.CurrentPosition ??= 0;
+            CurPos = TimeSpan.FromMilliseconds(Settings.CurrentPosition ?? 0);
+
+            // VolumeSettingValue ??= 100;
+            // Volume = VolumeSettingValue ?? 100;
+            Settings.Volume ??= 100;
+            Volume = Settings.Volume ?? 100;
+
             UpdateVolumeIcon();
 
-            if (TimePlayerWasPausedSettingValue == null)
+            if (Settings.TimePlayerPaused == null)
                 CanSmartRewind = false;
             else
-                TimePlayerWasPaused = (DateTime)TimePlayerWasPausedSettingValue;
+                TimePlayerPaused = (DateTime) Settings.TimePlayerPaused;
         });
     }
 
@@ -304,7 +319,9 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            VolumeSettingValue = Volume = e.NewValue;
+            // VolumeSettingValue = Volume = e.NewValue;
+            Settings.Volume = Volume = e.NewValue;
+
             MediaPlayer.Volume = e.NewValue / 100;
             UpdateVolumeIcon();
         });

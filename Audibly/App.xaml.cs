@@ -18,8 +18,8 @@ public partial class App : Application
     {
         InitializeComponent();
     }
-    
-    public static MainWindow MainWindow { get; } = new ();
+
+    public static MainWindow MainWindow { get; } = new();
 
     /// <summary>
     ///     Invoked when the application is launched normally by the end user.  Other entry points

@@ -179,7 +179,7 @@ Project Link: [https://github.com/rstewa35/Audibly](https://github.com/rstewa35/
 [license-shield]: https://img.shields.io/github/license/rstewa35/Audibly.svg?style=for-the-badge
 [license-url]: https://github.com/rstewa35/Audibly/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://www.linkedin.com/in/stewart-ryan-p/
 [product-screenshot]: images/default_screenshot.png
 [winui]: https://img.shields.io/badge/-WinUI_3-512BD4?style=for-the-badge&logo=.net&logoColor=white
 [winui-url]: https://learn.microsoft.com/en-us/windows/apps/winui

@@ -122,7 +122,7 @@ TODO
 <!-- ROADMAP -->
 ## Roadmap
 
-- [#26] Library View
+- [[#26](https://github.com/rstewa/Audibly/issues/26)] Library View
 
 See the [open issues](https://github.com/rstewa35/Audibly/issues) for a full list of proposed features (and known issues).
 

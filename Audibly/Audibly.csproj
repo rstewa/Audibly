@@ -7,9 +7,21 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;arm64</Platforms>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
+    <!--<PublishProfile>win10-$(Platform).pubxml</PublishProfile>-->
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <AppxBundle>Always</AppxBundle>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <!--<PackageCertificateKeyFile>Audibly_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>-->
+    <AppxBundlePlatforms>arm64</AppxBundlePlatforms>
+    <AppxPackageDir>C:\Users\rstewa\source\repos\mine\Audibly\AppPackages\</AppxPackageDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,6 +86,16 @@
 
   <!-- Flyleaf needs FFMpeg dll's so this copies them to bin directory (i.e., bin\x64\Debug\net6.0-windows10.0.19041.0\win10-x64\FFMpeg\) -->
 	<ItemGroup>
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-unplated_targetsize-16.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-unplated_targetsize-24.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-unplated_targetsize-256.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-unplated_targetsize-32.png" />
+	  <Content Remove="Assets\AppImages\Square44x44Logo.altform-unplated_targetsize-48.png" />
 	  <Content Remove="Assets\BadgeLogo.scale-100.png" />
 	  <Content Remove="Assets\BadgeLogo.scale-125.png" />
 	  <Content Remove="Assets\BadgeLogo.scale-150.png" />
@@ -111,6 +133,60 @@
 	  <Content Remove="Assets\Wide310x150Logo.scale-150.png" />
 	</ItemGroup>
 	<ItemGroup>
+	  <None Remove="Assets\AppImages\BadgeLogo.scale-100.png" />
+	  <None Remove="Assets\AppImages\BadgeLogo.scale-125.png" />
+	  <None Remove="Assets\AppImages\BadgeLogo.scale-150.png" />
+	  <None Remove="Assets\AppImages\BadgeLogo.scale-200.png" />
+	  <None Remove="Assets\AppImages\BadgeLogo.scale-400.png" />
+	  <None Remove="Assets\AppImages\LargeTile.scale-100.png" />
+	  <None Remove="Assets\AppImages\LargeTile.scale-125.png" />
+	  <None Remove="Assets\AppImages\LargeTile.scale-150.png" />
+	  <None Remove="Assets\AppImages\LargeTile.scale-200.png" />
+	  <None Remove="Assets\AppImages\LargeTile.scale-400.png" />
+	  <None Remove="Assets\AppImages\SmallTile.scale-100.png" />
+	  <None Remove="Assets\AppImages\SmallTile.scale-125.png" />
+	  <None Remove="Assets\AppImages\SmallTile.scale-150.png" />
+	  <None Remove="Assets\AppImages\SmallTile.scale-200.png" />
+	  <None Remove="Assets\AppImages\SmallTile.scale-400.png" />
+	  <None Remove="Assets\AppImages\SplashScreen.scale-100.png" />
+	  <None Remove="Assets\AppImages\SplashScreen.scale-125.png" />
+	  <None Remove="Assets\AppImages\SplashScreen.scale-150.png" />
+	  <None Remove="Assets\AppImages\SplashScreen.scale-200.png" />
+	  <None Remove="Assets\AppImages\SplashScreen.scale-400.png" />
+	  <None Remove="Assets\AppImages\Square150x150Logo.scale-100.png" />
+	  <None Remove="Assets\AppImages\Square150x150Logo.scale-125.png" />
+	  <None Remove="Assets\AppImages\Square150x150Logo.scale-150.png" />
+	  <None Remove="Assets\AppImages\Square150x150Logo.scale-200.png" />
+	  <None Remove="Assets\AppImages\Square150x150Logo.scale-400.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.scale-100.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.scale-125.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.scale-150.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.scale-200.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.scale-400.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-16.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-16_altform-lightunplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-24.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-24_altform-lightunplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-24_altform-unplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-256.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-256_altform-lightunplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-256_altform-unplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-32.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-32_altform-lightunplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-32_altform-unplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-48.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-48_altform-lightunplated.png" />
+	  <None Remove="Assets\AppImages\Square44x44Logo.targetsize-48_altform-unplated.png" />
+	  <None Remove="Assets\AppImages\StoreLogo.scale-100.png" />
+	  <None Remove="Assets\AppImages\StoreLogo.scale-125.png" />
+	  <None Remove="Assets\AppImages\StoreLogo.scale-150.png" />
+	  <None Remove="Assets\AppImages\StoreLogo.scale-200.png" />
+	  <None Remove="Assets\AppImages\StoreLogo.scale-400.png" />
+	  <None Remove="Assets\AppImages\Wide310x150Logo.scale-100.png" />
+	  <None Remove="Assets\AppImages\Wide310x150Logo.scale-125.png" />
+	  <None Remove="Assets\AppImages\Wide310x150Logo.scale-150.png" />
+	  <None Remove="Assets\AppImages\Wide310x150Logo.scale-200.png" />
+	  <None Remove="Assets\AppImages\Wide310x150Logo.scale-400.png" />
 	  <None Remove="Assets\LargeTile.scale-100.png" />
 	  <None Remove="Assets\LargeTile.scale-200.png" />
 	  <None Remove="Assets\LargeTile.scale-400.png" />

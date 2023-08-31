@@ -38,6 +38,11 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         InitializeComponent();
 
+        // TESTING -> REMOVE
+#if DEBUG
+        // Settings.ClearSettings();
+#endif
+
         // setting MediaPlayer properties
         AudioPlayerElement.SetMediaPlayer(AudiobookViewModel.Audiobook.MediaPlayer);
         MediaPlayer.AutoPlay = false;
@@ -52,10 +57,17 @@ public sealed partial class DefaultPlayerControl : UserControl
         ToggleAudioControls(false);
 
         // means an audiobook wasn't open when the application last closed and/or its the 1st time the application has been run
-        if (Settings.CurrentAudiobookPath == null) return;
+        if (Settings.CurrentAudiobookPath == null)
+        {
+            AudiobookViewModel.Audiobook.VolumeLevelGlyph = Audiobook.Volume3;
+            return;
+        }
 
         // gets and/or sets the current audiobooks metadata and viewmodel
-        if (!AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath)) { return; }
+        if (!AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath)) 
+        {
+            return; 
+        }
 
         // I'm sure there's a better way to do this ...
         var file = StorageFile.GetFileFromPathAsync(Settings.CurrentAudiobookPath).GetAwaiter().GetResult();
@@ -145,7 +157,10 @@ public sealed partial class DefaultPlayerControl : UserControl
 
         Settings.CurrentAudiobookPath = file.Path;
 
-        if (!AudiobookViewModel.Audiobook.Init(file.Path)) { return; }
+        if (!AudiobookViewModel.Audiobook.Init(file.Path)) 
+        {
+            return; 
+        }
 
         MediaPlayerElement_Init(file);
     }
@@ -157,6 +172,7 @@ public sealed partial class DefaultPlayerControl : UserControl
             // TODO: the following 2 properties should probably be in the viewmodel
             MediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
+            // AudiobookViewModel.Audiobook.PlaybackSpeed = 1.0;
 
             ToggleAudioControls(true);
         });
@@ -174,8 +190,11 @@ public sealed partial class DefaultPlayerControl : UserControl
             Settings.Volume ??= 100;
             AudiobookViewModel.Audiobook.Volume = Settings.Volume ?? 100;
 
-            Settings.PlaybackSpeed ??= 1;
-            AudiobookViewModel.Audiobook.PlaybackSpeed = Settings.PlaybackSpeed ?? 1;
+            if (Settings.PlaybackSpeed == null || Settings.PlaybackSpeed < 0.5)
+            {
+                Settings.PlaybackSpeed = 1;
+            }
+            AudiobookViewModel.Audiobook.PlaybackSpeed = (double) Settings.PlaybackSpeed;
 
             UpdateVolumeIcon();
 
@@ -257,8 +276,11 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        Settings.PlaybackSpeed = AudiobookViewModel.Audiobook.PlaybackSpeed = e.NewValue;
-        MediaPlayer.PlaybackRate = e.NewValue;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Settings.PlaybackSpeed = AudiobookViewModel.Audiobook.PlaybackSpeed = e.NewValue;
+            MediaPlayer.PlaybackRate = e.NewValue;
+        });
     }
 
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)

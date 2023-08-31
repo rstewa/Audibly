@@ -10,6 +10,11 @@ namespace Audibly.Helpers;
 public static class AudiblySettingsHelper
 {
     private static readonly ApplicationDataContainer _localSettings = ApplicationData.Current.LocalSettings;
+
+    public static void ClearSettings()
+    {
+        _localSettings.Values.Clear();
+    }
     
     public static string CurrentBookName { get; set; }
 

@@ -222,79 +222,90 @@ public class Audiobook : BindableBase
         return TimeSpan.FromMilliseconds(CurChapter.StartTime);
     }
 
-    public void Init(string filePath)
+    public bool Init(string filePath)
     {
-        FilePath = filePath;
-        var fileMetadata = new Track(filePath);
-
-        // TESTING
-        // var json = JsonSerializer.Serialize<Track>(fileMetadata);
-        // File.WriteAllText($"C:\\Users\\rstewa\\Documents\\AudiblyMetadataTest\\{Path.GetFileNameWithoutExtension(filePath)}_metadata.json", json);
-
-        var bookAppdataDir = StorageFolder.CreateFolderAsync(
-            $"{Path.GetFileNameWithoutExtension(filePath)} [{fileMetadata.Artist}]",
-            CreationCollisionOption.OpenIfExists).GetAwaiter().GetResult();
-
-        StorageFile coverImage;
-
-        if (!File.Exists(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")))
+        // TODO: this is bc im lazy ... need to fix
+        try
         {
-            _metadata = new Metadata
-            {
-                Title = fileMetadata.Title,
-                Author = fileMetadata.Artist,
-                Description = fileMetadata.AdditionalFields.ContainsKey("\u00A9des")
-                    ? fileMetadata.AdditionalFields["\u00A9des"]
-                    : fileMetadata.Comment,
-                Duration = fileMetadata.Duration.ToMs(),
-                Chapters = new List<Demuxer.Chapter>()
-            };
+            FilePath = filePath;
+            var fileMetadata = new Track(filePath);
 
-            foreach (var ch in fileMetadata.Chapters)
+            // TESTING
+            // var json = JsonSerializer.Serialize<Track>(fileMetadata);
+            // File.WriteAllText($"C:\\Users\\rstewa\\Documents\\AudiblyMetadataTest\\{Path.GetFileNameWithoutExtension(filePath)}_metadata.json", json);
+
+            var bookAppdataDir = StorageFolder.CreateFolderAsync(
+                $"{Path.GetFileNameWithoutExtension(filePath)} [{fileMetadata.Artist}]",
+                CreationCollisionOption.OpenIfExists).GetAwaiter().GetResult();
+
+            StorageFile coverImage;
+
+            if (!File.Exists(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")))
             {
-                var chapter = new Demuxer.Chapter
+                _metadata = new Metadata
                 {
-                    Title = ch.Title,
-                    StartTime = ch.StartTime,
-                    EndTime = ch.EndTime
+                    Title = fileMetadata.Title,
+                    Author = fileMetadata.Artist,
+                    Description = fileMetadata.AdditionalFields.ContainsKey("\u00A9des")
+                        ? fileMetadata.AdditionalFields["\u00A9des"]
+                        : fileMetadata.Comment,
+                    Duration = fileMetadata.Duration.ToMs(),
+                    Chapters = new List<Demuxer.Chapter>()
                 };
-                _metadata.Chapters.Add(chapter);
+
+                foreach (var ch in fileMetadata.Chapters)
+                {
+                    var chapter = new Demuxer.Chapter
+                    {
+                        Title = ch.Title,
+                        StartTime = ch.StartTime,
+                        EndTime = ch.EndTime
+                    };
+                    _metadata.Chapters.Add(chapter);
+                }
+
+                var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
+                coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting)
+                    .GetAwaiter().GetResult();
+                FileIO.WriteBytesAsync(coverImage, imageBytes).GetAwaiter().GetResult();
+
+                var metadataFile = bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting)
+                    .GetAwaiter().GetResult();
+                File.WriteAllText(metadataFile.Path,
+                    JsonSerializer.Serialize(_metadata, new JsonSerializerOptions { WriteIndented = true }));
+            }
+            else
+            {
+                _metadata = JsonSerializer.Deserialize<Metadata>(
+                    File.ReadAllText(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")));
+                coverImage = bookAppdataDir.GetFileAsync("CoverImage.jpg").GetAwaiter().GetResult();
             }
 
-            var imageBytes = fileMetadata.EmbeddedPictures.FirstOrDefault()?.PictureData;
-            coverImage = bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting)
-                .GetAwaiter().GetResult();
-            FileIO.WriteBytesAsync(coverImage, imageBytes).GetAwaiter().GetResult();
+            Debug.Assert(_metadata != null, $"{nameof(Metadata)} cannot be null");
 
-            var metadataFile = bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting)
-                .GetAwaiter().GetResult();
-            File.WriteAllText(metadataFile.Path,
-                JsonSerializer.Serialize(_metadata, new JsonSerializerOptions { WriteIndented = true }));
+            Title = _metadata.Title;
+            Author = _metadata.Author;
+            Description = _metadata.Description;
+            Duration = _metadata.Duration;
+            Chapters = _metadata.Chapters;
+
+            CurChapter = Chapters[0];
+            CurTimeMs = 0;
+            CurPosInBook = "0";
+
+            Volume = 100;
+            VolumeLevelGlyph = Volume3;
+
+            var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
+            CoverImgSrc = bitmapImage;
+
+            return true;
         }
-        else
+        catch (Exception ex)
         {
-            _metadata = JsonSerializer.Deserialize<Metadata>(
-                File.ReadAllText(Path.Combine(bookAppdataDir.Path, $"{nameof(Metadata)}.json")));
-            coverImage = bookAppdataDir.GetFileAsync("CoverImage.jpg").GetAwaiter().GetResult();
+            // todo: add log message here
+            return false;
         }
-
-        Debug.Assert(_metadata != null, $"{nameof(Metadata)} cannot be null");
-
-        Title = _metadata.Title;
-        Author = _metadata.Author;
-        Description = _metadata.Description;
-        Duration = _metadata.Duration;
-        Chapters = _metadata.Chapters;
-
-        CurChapter = Chapters[0];
-        CurTimeMs = 0;
-        CurPosInBook = "0";
-
-        Volume = 100;
-        VolumeLevelGlyph = Volume3;
-
-        var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
-        CoverImgSrc = bitmapImage;
     }
 }
 

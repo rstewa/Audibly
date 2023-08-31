@@ -55,7 +55,7 @@ public sealed partial class DefaultPlayerControl : UserControl
         if (Settings.CurrentAudiobookPath == null) return;
 
         // gets and/or sets the current audiobooks metadata and viewmodel
-        AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath);
+        if (!AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath)) { return; }
 
         // I'm sure there's a better way to do this ...
         var file = StorageFile.GetFileFromPathAsync(Settings.CurrentAudiobookPath).GetAwaiter().GetResult();
@@ -145,7 +145,7 @@ public sealed partial class DefaultPlayerControl : UserControl
 
         Settings.CurrentAudiobookPath = file.Path;
 
-        AudiobookViewModel.Audiobook.Init(file.Path);
+        if (!AudiobookViewModel.Audiobook.Init(file.Path)) { return; }
 
         MediaPlayerElement_Init(file);
     }

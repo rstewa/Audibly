@@ -66,6 +66,7 @@ public sealed partial class DefaultPlayerControl : UserControl
         // gets and/or sets the current audiobooks metadata and viewmodel
         if (!AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath)) 
         {
+            ShowDialogOnError(Settings.CurrentAudiobookPath);
             return; 
         }
 
@@ -73,6 +74,21 @@ public sealed partial class DefaultPlayerControl : UserControl
         var file = StorageFile.GetFileFromPathAsync(Settings.CurrentAudiobookPath).GetAwaiter().GetResult();
 
         MediaPlayerElement_Init(file);
+    }
+
+    private async void ShowDialogOnError(string path)
+    {
+        ContentDialog dialog = new ContentDialog();
+
+        // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+        dialog.XamlRoot = this.InsideGrid.XamlRoot; // this.XamlRoot;
+        // dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
+        dialog.Title = "Oops, something went wrong!";
+        dialog.CloseButtonText = "Okay";
+        dialog.DefaultButton = ContentDialogButton.Close;
+        dialog.Content = $"Something went wrong when trying to open {path}.";
+
+        var result = await dialog.ShowAsync();
     }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
@@ -159,6 +175,7 @@ public sealed partial class DefaultPlayerControl : UserControl
 
         if (!AudiobookViewModel.Audiobook.Init(file.Path)) 
         {
+            ShowDialogOnError(file.Path);
             return; 
         }
 
@@ -172,7 +189,6 @@ public sealed partial class DefaultPlayerControl : UserControl
             // TODO: the following 2 properties should probably be in the viewmodel
             MediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
-            // AudiobookViewModel.Audiobook.PlaybackSpeed = 1.0;
 
             ToggleAudioControls(true);
         });

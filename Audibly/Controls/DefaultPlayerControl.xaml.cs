@@ -81,8 +81,8 @@ public sealed partial class DefaultPlayerControl : UserControl
         ContentDialog dialog = new ContentDialog();
 
         // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-        dialog.XamlRoot = this.InsideGrid.XamlRoot; // this.XamlRoot;
-        // dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
+        dialog.XamlRoot = XamlRoot;
+        dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
         dialog.Title = "Oops, something went wrong!";
         dialog.CloseButtonText = "Okay";
         dialog.DefaultButton = ContentDialogButton.Close;

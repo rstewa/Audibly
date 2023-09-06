@@ -36,6 +36,12 @@
 
 
 
+<a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">
+	<img src="https://get.microsoft.com/images/en-US%20dark.svg" style="width:250px"/>
+</a>
+<br>
+<br>
+
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -68,10 +74,6 @@
 ## About The Project
 
 This is a minimalist desktop audiobook player for Windows 10/11. It currently only supports playing `.M4B` files.
-
-<a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">
-	<img src="https://get.microsoft.com/images/en-US%20dark.svg"/>
-</a>
 
 ### Screenshots
 

@@ -36,9 +36,11 @@
 
 
 
-<a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">
-	<img src="https://get.microsoft.com/images/en-US%20dark.svg" style="width:250px"/>
+<a href="https://apps.microsoft.com/detail/Audibly%20%E2%80%94%20Audiobook%20Player/9p6r1m1gg9jr?launch=true
+	&mode=mini">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="400"/>
 </a>
+
 <br>
 <br>
 

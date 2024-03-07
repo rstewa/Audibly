@@ -1,14 +1,14 @@
 //   Author: Ryan Stewart
 //   Date: 03/13/2023
 
-using Audibly.Model;
+using System;
+using Windows.Media.Playback;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using System;
-using Windows.Media.Playback;
+using Audibly.ViewModel;
 
-namespace Audibly.Controls;
+namespace Audibly.UserControls;
 
 public sealed partial class CompactPlayerControl : UserControl
 {
@@ -18,7 +18,7 @@ public sealed partial class CompactPlayerControl : UserControl
         set => MediaPlayer.PlaybackSession.Position = value < TimeSpan.Zero ? TimeSpan.Zero : value;
     }
 
-    private MediaPlayer MediaPlayer => AudiobookViewModel.Audiobook.MediaPlayer;
+    private MediaPlayer MediaPlayer => AudiobookViewModel.MediaPlayer;
 
     public CompactPlayerControl()
     {
@@ -29,7 +29,7 @@ public sealed partial class CompactPlayerControl : UserControl
 #endif
 
         // setting MediaPlayer properties
-        AudioPlayerElement.SetMediaPlayer(AudiobookViewModel.Audiobook.MediaPlayer);
+        AudioPlayerElement.SetMediaPlayer(AudiobookViewModel.MediaPlayer);
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
 
         // hover over events
@@ -98,6 +98,6 @@ public sealed partial class CompactPlayerControl : UserControl
 
     private void DefaultViewButton_OnClick(object sender, RoutedEventArgs e)
     {
-        AudiobookViewModel.Audiobook.IsCompact = false;
+        AudiobookViewModel.IsCompact = false;
     }
 }

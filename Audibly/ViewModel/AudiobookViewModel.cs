@@ -1,8 +1,8 @@
 ﻿//   Author: Ryan Stewart
 //   Date: 05/20/2022
 
-using ATL;
 using Audibly.Extensions;
+using Audibly.Model;
 using FlyleafLib.MediaFramework.MediaDemuxer;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -15,10 +15,12 @@ using System.Reflection;
 using System.Text.Json;
 using Windows.Media.Playback;
 using Windows.Storage;
+using ATL;
+using Audibly.Helpers;
 
-namespace Audibly.Model;
+namespace Audibly.ViewModel;
 
-public class Audiobook : BindableBase
+public class AudiobookViewModel : BindableBase
 {
     // TODO: there's for sure a better way to do this ... lol
     public event EventHandler ViewChanged;
@@ -41,10 +43,6 @@ public class Audiobook : BindableBase
     public readonly MediaPlayer MediaPlayer = new();
 
     // CONSTS
-    public const string Volume0 = "\uE74F";
-    public const string Volume1 = "\uE993";
-    public const string Volume2 = "\uE994";
-    public const string Volume3 = "\uE995";
 
     // PROPERTIES
     private Metadata _metadata;
@@ -82,7 +80,7 @@ public class Audiobook : BindableBase
     private List<Demuxer.Chapter> _chapters = new();
     public List<Demuxer.Chapter> Chapters
     {
-        get => _chapters ??= new List<Demuxer.Chapter>();
+        get => _chapters ??= [];
         set => SetProperty(ref _chapters, value);
     }
 
@@ -213,7 +211,7 @@ public class Audiobook : BindableBase
         // RETURNS start of the current chapter IF 'curTimeMs' is in the 1st chapter of the book
         //     OR
         // the current position in 'CurChapter' is greater than 3 seconds away from the start of 'CurChapter'
-        CurChapter = idx == 0 || (curTimeMs > Chapters[idx].StartTime && curTimeMs - Chapters[idx].StartTime > 3000)
+        CurChapter = idx == 0 || curTimeMs > Chapters[idx].StartTime && curTimeMs - Chapters[idx].StartTime > 3000
             ? Chapters[idx]
             : Chapters[idx - 1];
 
@@ -294,7 +292,7 @@ public class Audiobook : BindableBase
             CurPosInBook = "0";
 
             Volume = 100;
-            VolumeLevelGlyph = Volume3;
+            VolumeLevelGlyph = Constants.Volume3;
 
             var bitmapImage = new BitmapImage(new Uri(coverImage.Path)) { DecodePixelWidth = 500 };
             CoverImgSrc = bitmapImage;
@@ -309,8 +307,8 @@ public class Audiobook : BindableBase
     }
 }
 
-public static class AudiobookViewModel
-{
-    private static Audiobook _audiobook = new();
-    public static Audiobook Audiobook { get { return _audiobook; } }
-}
+// public static class AudiobookViewModel
+// {
+//     private static Audiobook _audiobookViewModel = new();
+//     public static Audiobook AudiobookViewModel { get { return _audiobookViewModel; } }
+// }

@@ -2,15 +2,18 @@
 <!-- Date: 03/13/2023 -->
 
 <UserControl
-    x:Class="Audibly.Controls.DefaultPlayerControl"
+    x:Class="Audibly.UserControls.DefaultPlayerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Audibly.Controls"
-    xmlns:model="using:Audibly.Model"
+    xmlns:model="using:Audibly.ViewModel"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d">
+
+    <UserControl.DataContext>
+        <model:AudiobookViewModel x:Name="AudiobookViewModel"/>
+    </UserControl.DataContext>
 
     <Grid Background="#121212">
         <Grid>
@@ -58,7 +61,7 @@
                 BorderThickness="1"
                 CornerRadius="10">
                 <Border.Background>
-                    <ImageBrush ImageSource="{x:Bind model:AudiobookViewModel.Audiobook.CoverImgSrc}" Stretch="UniformToFill" />
+                    <ImageBrush ImageSource="{x:Bind AudiobookViewModel.CoverImgSrc}" Stretch="UniformToFill" />
                 </Border.Background>
                 <Button x:Name="CompactViewButton"
                         VerticalAlignment="Top"
@@ -112,7 +115,7 @@
                     Background="Transparent"
                     BorderThickness="0"
                     DisplayMemberPath="Title"
-                    ItemsSource="{x:Bind model:AudiobookViewModel.Audiobook.Chapters}"
+                    ItemsSource="{x:Bind AudiobookViewModel.Chapters}"
                     SelectedIndex="0"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
 
@@ -155,7 +158,7 @@
                     VerticalAlignment="Center"
                     Opacity="0.5"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind model:AudiobookViewModel.Audiobook.CurTimeText}"
+                    Text="{x:Bind AudiobookViewModel.CurTimeText}"
                     TextAlignment="Left" />
 
                 <ProgressBar
@@ -166,8 +169,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="#84e2c9"
-                    Maximum="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDur}"
-                    Value="{x:Bind model:AudiobookViewModel.Audiobook.CurTimeMs}" />
+                    Maximum="{x:Bind AudiobookViewModel.CurChapterDur}"
+                    Value="{x:Bind AudiobookViewModel.CurTimeMs}" />
 
                 <TextBlock
                     x:Name="CurrentChapterDurationTextBlock"
@@ -177,7 +180,7 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDurText}"
+                    Text="{x:Bind AudiobookViewModel.CurChapterDurText}"
                     TextAlignment="Right" />
             </Grid>
             <!--#endregion-->
@@ -280,7 +283,7 @@
                 BorderThickness="0"
                 ToolTipService.ToolTip="Playback Speed">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEC57;" />
-                <!--Glyph="{x:Bind model:AudiobookViewModel.Audiobook.PlaybackGlyph}" /> -->
+                <!--Glyph="{x:Bind AudiobookViewModel.Audiobook.PlaybackGlyph}" /> -->
                 <Button.Flyout>
                     <Flyout>
                         <Flyout.FlyoutPresenterStyle>
@@ -305,7 +308,7 @@
                                 Minimum="0.5"
                                 StepFrequency="0.1"
                                 SnapsTo="StepValues"
-                                Value="{x:Bind model:AudiobookViewModel.Audiobook.PlaybackSpeed}"
+                                Value="{x:Bind AudiobookViewModel.PlaybackSpeed}"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Playback Speed"
                                 ValueChanged="PlaybackSpeedSlider_ValueChanged">
@@ -338,7 +341,7 @@
                 <FontIcon
                     x:Name="AudioLevelButtonIcon"
                     FontFamily="Segoe MDL2 Assets"
-                    Glyph="{x:Bind model:AudiobookViewModel.Audiobook.VolumeLevelGlyph}" />
+                    Glyph="{x:Bind AudiobookViewModel.VolumeLevelGlyph}" />
                 <Button.Flyout>
                     <Flyout>
                         <Flyout.FlyoutPresenterStyle>
@@ -365,7 +368,7 @@
                                 SmallChange="1"
                                 LargeChange="25"
                                 SnapsTo="StepValues"
-                                Value="{x:Bind model:AudiobookViewModel.Audiobook.Volume}"
+                                Value="{x:Bind AudiobookViewModel.Volume}"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Volume Level"
                                 ValueChanged="VolumeSlider_ValueChanged">

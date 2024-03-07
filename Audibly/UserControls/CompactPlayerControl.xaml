@@ -2,15 +2,19 @@
 <!-- Date: 03/13/2023 -->
 
 <UserControl
-    x:Class="Audibly.Controls.CompactPlayerControl"
+    x:Class="Audibly.UserControls.CompactPlayerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Audibly.Controls"
     xmlns:model="using:Audibly.Model"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="using:Audibly.ViewModel"
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d">
+    
+    <UserControl.DataContext>
+        <viewModel:AudiobookViewModel x:Name="AudiobookViewModel"/>
+    </UserControl.DataContext>
     
     <Grid x:Name="CompactPlayerGrid">
         
@@ -41,7 +45,7 @@
             Stretch="UniformToFill"
             StretchDirection="Both">
             <Border BorderBrush="Transparent" BorderThickness="0">
-                <Image Source="{x:Bind model:AudiobookViewModel.Audiobook.CoverImgSrc}" />
+                <Image Source="{x:Bind AudiobookViewModel.CoverImgSrc}" />
             </Border>
         </Viewbox>
 
@@ -156,7 +160,7 @@
                     Grid.Column="0"
                     HorizontalAlignment="Left"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind model:AudiobookViewModel.Audiobook.CurTimeText}"/>
+                    Text="{x:Bind AudiobookViewModel.CurTimeText}"/>
 
                 <ProgressBar
                     x:Name="ChapterProgress_ProgressBar"
@@ -164,15 +168,15 @@
                     Width="150" 
                     Foreground="#84e2c9"
                     Margin="10, 0, 10, 0"
-                    Maximum="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDur}"
-                    Value="{x:Bind model:AudiobookViewModel.Audiobook.CurTimeMs}" />
+                    Maximum="{x:Bind AudiobookViewModel.CurChapterDur}"
+                    Value="{x:Bind AudiobookViewModel.CurTimeMs}" />
 
                 <TextBlock
                     x:Name="CurrentChapterDuration_TextBlock"
                     Grid.Column="2"
                     HorizontalAlignment="Right"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind model:AudiobookViewModel.Audiobook.CurChapterDurText}"/>
+                    Text="{x:Bind AudiobookViewModel.CurChapterDurText}"/>
             </Grid>
 
         </Grid>

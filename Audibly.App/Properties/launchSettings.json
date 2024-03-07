@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Audibly.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Audibly.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

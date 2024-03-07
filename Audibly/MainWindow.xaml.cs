@@ -3,6 +3,7 @@
 
 using Audibly.Extensions;
 using Audibly.Model;
+using Audibly.ViewModel;
 using Microsoft.UI.Xaml;
 using System;
 
@@ -21,7 +22,7 @@ public sealed partial class MainWindow
         // TODO -> use a bind in the xaml
         TogglePlayerView();
 
-        AudiobookViewModel.Audiobook.ViewChanged += AudiobookOnViewChanged;
+        // AudiobookViewModel.ViewChanged += AudiobookViewModelOnViewChanged;
     }
 
     private void TogglePlayerView(Visibility defaultVisibility = Visibility.Visible)
@@ -37,7 +38,7 @@ public sealed partial class MainWindow
         CompactViewGrid.Visibility = Visibility.Visible;
     }
 
-    private void AudiobookOnViewChanged(object sender, EventArgs e)
+    private void AudiobookViewModelOnViewChanged(object sender, EventArgs e)
     {
         if (e is ViewChangedEventArgs { IsCompact: true })
         {

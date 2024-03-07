@@ -1,21 +1,22 @@
 //   Author: Ryan Stewart
 //   Date: 03/13/2023
 
-using Audibly.Model;
-using FlyleafLib.MediaFramework.MediaDemuxer;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
 using System.IO;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Audibly.Helpers;
+using FlyleafLib.MediaFramework.MediaDemuxer;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using WinRT.Interop;
 using Settings = Audibly.Helpers.AudiblySettingsHelper;
+using Audibly.ViewModel;
 
-namespace Audibly.Controls;
+namespace Audibly.UserControls;
 
 public sealed partial class DefaultPlayerControl : UserControl
 {
@@ -32,7 +33,7 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private DateTime TimePlayerPaused { get; set; }
 
-    private MediaPlayer MediaPlayer => AudiobookViewModel.Audiobook.MediaPlayer;
+    private MediaPlayer MediaPlayer => AudiobookViewModel.MediaPlayer;
 
     public DefaultPlayerControl()
     {
@@ -44,7 +45,7 @@ public sealed partial class DefaultPlayerControl : UserControl
 #endif
 
         // setting MediaPlayer properties
-        AudioPlayerElement.SetMediaPlayer(AudiobookViewModel.Audiobook.MediaPlayer);
+        AudioPlayerElement.SetMediaPlayer(AudiobookViewModel.MediaPlayer);
         MediaPlayer.AutoPlay = false;
         MediaPlayer.AudioCategory = MediaPlayerAudioCategory.Media;
         MediaPlayer.AudioDeviceType = MediaPlayerAudioDeviceType.Multimedia;
@@ -59,12 +60,12 @@ public sealed partial class DefaultPlayerControl : UserControl
         // means an audiobook wasn't open when the application last closed and/or its the 1st time the application has been run
         if (Settings.CurrentAudiobookPath == null)
         {
-            AudiobookViewModel.Audiobook.VolumeLevelGlyph = Audiobook.Volume3;
+            AudiobookViewModel.VolumeLevelGlyph = Constants.Volume3;
             return;
         }
 
         // gets and/or sets the current audiobooks metadata and viewmodel
-        if (!AudiobookViewModel.Audiobook.Init(Settings.CurrentAudiobookPath)) 
+        if (!AudiobookViewModel.Init(Settings.CurrentAudiobookPath)) 
         {
             ShowDialogOnError(Settings.CurrentAudiobookPath);
             return; 
@@ -143,8 +144,8 @@ public sealed partial class DefaultPlayerControl : UserControl
             if (MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
                 CanSmartRewind = false;
 
-            AudiobookViewModel.Audiobook.Update(MediaPlayer.PlaybackSession.Position.TotalMilliseconds);
-            ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
+            AudiobookViewModel.Update(MediaPlayer.PlaybackSession.Position.TotalMilliseconds);
+            ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.CurChapter);
 
             Settings.CurrentPosition = CurPos.TotalMilliseconds;
         });
@@ -173,7 +174,7 @@ public sealed partial class DefaultPlayerControl : UserControl
 
         Settings.CurrentAudiobookPath = file.Path;
 
-        if (!AudiobookViewModel.Audiobook.Init(file.Path)) 
+        if (!AudiobookViewModel.Init(file.Path)) 
         {
             ShowDialogOnError(file.Path);
             return; 
@@ -188,7 +189,7 @@ public sealed partial class DefaultPlayerControl : UserControl
         {
             // TODO: the following 2 properties should probably be in the viewmodel
             MediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
-            ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
+            ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.CurChapter);
 
             ToggleAudioControls(true);
         });
@@ -198,19 +199,19 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            Settings.CurrentBookName = Path.GetFileNameWithoutExtension(AudiobookViewModel.Audiobook.FilePath);
+            Settings.CurrentBookName = Path.GetFileNameWithoutExtension(AudiobookViewModel.FilePath);
 
             Settings.CurrentPosition ??= 0;
             CurPos = TimeSpan.FromMilliseconds(Settings.CurrentPosition ?? 0);
 
             Settings.Volume ??= 100;
-            AudiobookViewModel.Audiobook.Volume = Settings.Volume ?? 100;
+            AudiobookViewModel.Volume = Settings.Volume ?? 100;
 
             if (Settings.PlaybackSpeed == null || Settings.PlaybackSpeed < 0.5)
             {
                 Settings.PlaybackSpeed = 1;
             }
-            AudiobookViewModel.Audiobook.PlaybackSpeed = (double) Settings.PlaybackSpeed;
+            AudiobookViewModel.PlaybackSpeed = (double) Settings.PlaybackSpeed;
 
             UpdateVolumeIcon();
 
@@ -260,14 +261,14 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        CurPos = AudiobookViewModel.Audiobook.GetNextChapter();
-        ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
+        CurPos = AudiobookViewModel.GetNextChapter();
+        ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.CurChapter);
     }
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        CurPos = AudiobookViewModel.Audiobook.GetPrevChapter(CurPos.TotalMilliseconds);
-        ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter);
+        CurPos = AudiobookViewModel.GetPrevChapter(CurPos.TotalMilliseconds);
+        ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(AudiobookViewModel.CurChapter);
     }
 
     private void SkipForward30Button_Click(object sender, RoutedEventArgs e)
@@ -285,7 +286,7 @@ public sealed partial class DefaultPlayerControl : UserControl
         var container = sender as ComboBox;
         if (container == null || container.SelectedItem is not Demuxer.Chapter chapter) return;
 
-        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(AudiobookViewModel.Audiobook.CurChapter)) return;
+        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(AudiobookViewModel.CurChapter)) return;
 
         CurPos = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
@@ -294,7 +295,7 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            Settings.PlaybackSpeed = AudiobookViewModel.Audiobook.PlaybackSpeed = e.NewValue;
+            Settings.PlaybackSpeed = AudiobookViewModel.PlaybackSpeed = e.NewValue;
             MediaPlayer.PlaybackRate = e.NewValue;
         });
     }
@@ -303,7 +304,7 @@ public sealed partial class DefaultPlayerControl : UserControl
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            Settings.Volume = AudiobookViewModel.Audiobook.Volume = e.NewValue;
+            Settings.Volume = AudiobookViewModel.Volume = e.NewValue;
 
             MediaPlayer.Volume = e.NewValue / 100;
             UpdateVolumeIcon();
@@ -312,13 +313,13 @@ public sealed partial class DefaultPlayerControl : UserControl
 
     private void UpdateVolumeIcon()
     {
-        AudiobookViewModel.Audiobook.VolumeLevelGlyph = AudiobookViewModel.Audiobook.Volume == 0 ? Audiobook.Volume0 :
-            AudiobookViewModel.Audiobook.Volume <= 33 ? Audiobook.Volume1 :
-            AudiobookViewModel.Audiobook.Volume <= 66 ? Audiobook.Volume2 : Audiobook.Volume3;
+        AudiobookViewModel.VolumeLevelGlyph = AudiobookViewModel.Volume == 0 ? Constants.Volume0 :
+            AudiobookViewModel.Volume <= 33 ? Constants.Volume1 :
+            AudiobookViewModel.Volume <= 66 ? Constants.Volume2 : Constants.Volume3;
     }
 
     private void CompactViewButton_Click(object sender, RoutedEventArgs e)
     {
-        AudiobookViewModel.Audiobook.IsCompact = true;
+        AudiobookViewModel.IsCompact = true;
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Audibly.App.ViewModels;
@@ -169,5 +170,11 @@ public sealed partial class AudiobookListPage : Page
     private void DataGrid_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         ViewModel.SelectedAudiobook = (e.OriginalSource as FrameworkElement).DataContext as AudiobookViewModel;
+    }
+
+    private void AudiobookListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var selectedAudiobook = (sender as ListView)?.SelectedItem as AudiobookViewModel;
+        ViewModel.SelectedAudiobook = selectedAudiobook;
     }
 }

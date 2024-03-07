@@ -15,12 +15,12 @@
                             <ResourceDictionary x:Key="Light">
                                 <SolidColorBrush
                                 x:Key="AccentBackgroundColor"
-                                Color="LightSteelBlue" />
+                                Color="#80D7B4" />
                             </ResourceDictionary>
                             <ResourceDictionary x:Key="Dark">
                                 <SolidColorBrush
                                 x:Key="AccentBackgroundColor"
-                                Color="SteelBlue" />
+                                Color="#4ac694" />
                             </ResourceDictionary>
                         </ResourceDictionary.ThemeDictionaries>
                     </ResourceDictionary>

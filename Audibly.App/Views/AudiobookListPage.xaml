@@ -10,24 +10,32 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
+    <!-- TODO: 3rd pane for now playing -->
+    <!-- TODO: or player controls underneath description -->
+    <!-- TODO: top can be scroll view while bottom is player -->
+    
+    
     <Page.Resources>
         <DataTemplate x:Key="AudiobookListViewTemplate" x:DataType="vm:AudiobookViewModel">
             <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="150"/>
+                    <ColumnDefinition Width="Auto" MinWidth="150" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Image Source="{x:Bind CoverImagePath}" MaxHeight="150" Stretch="UniformToFill"/>
+                <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
+                    <Image Source="{x:Bind CoverImagePath}" MaxHeight="150" Stretch="UniformToFill" />
+                </Border>
 
-                <StackPanel Margin="12,0,0,0" Grid.Column="1" >
-                    <TextBlock Text="{x:Bind Title}" FontSize="14" FontWeight="SemiBold" Style="{ThemeResource BaseTextBlockStyle}"
-                               HorizontalAlignment="Left" Margin="0,0,0,6" LineHeight="20"/>
-                    <TextBlock Text="{x:Bind Description}" FontFamily="Segoe UI" FontWeight="Normal" Style="{ThemeResource BodyTextBlockStyle}"
-                               TextTrimming="CharacterEllipsis" Width="350" MaxLines="1"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Duration: " HorizontalAlignment="Left" Style="{ThemeResource CaptionTextBlockStyle}"/>
-                        <TextBlock Text="{x:Bind DurationStr}" HorizontalAlignment="Left" Style="{ThemeResource CaptionTextBlockStyle}" Margin="0,0,0,0"/>
-                    </StackPanel>
+                <StackPanel Margin="12,0,0,0" Grid.Column="1" HorizontalAlignment="Left">
+                    <TextBlock Text="{x:Bind Title}" FontSize="20" FontWeight="SemiBold"
+                               Style="{ThemeResource HeaderTextBlockStyle}"
+                               Margin="0,0,0,6" LineHeight="20" Width="350" />
+                    <TextBlock Text="{x:Bind Author}" FontSize="16" FontWeight="Normal"
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Margin="0,0,0,6" LineHeight="20" />
+                    <!-- <TextBlock Text="{x:Bind Author}" FontFamily="Segoe UI" FontWeight="Normal" -->
+                    <!--            Style="{ThemeResource BodyTextBlockStyle}" -->
+                    <!--            TextTrimming="CharacterEllipsis" Width="350" MaxLines="1" /> -->
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -79,19 +87,105 @@
             Loaded="AudiobookSearchBox_Loaded"
             RelativePanel.AlignRightWithPanel="True" />
 
-        <Grid
-            Margin="0,10,0,0"
-            RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.Below="PageTitle">
+        <Grid x:Name="ListViewGrid"
+              Margin="0,10,0,0"
+              RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.Below="PageTitle">
+
+            <!-- <Grid Margin="0" -->
+            <!--       ColumnSpacing="0" -->
+            <!--       RowSpacing="0"> -->
+            <!--     <ColumnDefinition> -->
+            <!--         <ColumnDefinition Width="*"/> -->
+            <!--         <ColumnDefinition Width="2*"/> -->
+            <!--     </ColumnDefinition> -->
+            <!-- </Grid> -->
 
             <ListView
                 x:Name="AudiobookListView"
                 SelectionMode="Single"
                 ShowsScrollingPlaceholders="True"
                 ItemsSource="{x:Bind ViewModel.Audiobooks}"
-                SelectedItem="{x:Bind ViewModel.SelectedAudiobook}" 
-                ItemTemplate="{StaticResource AudiobookListViewTemplate}"/>
+                SelectedItem="{x:Bind ViewModel.SelectedAudiobook}"
+                ItemTemplate="{StaticResource AudiobookListViewTemplate}"
+                IsItemClickEnabled="False"
+                SelectionChanged="AudiobookListView_OnSelectionChanged"
+                RelativePanel.LeftOf="DetailView" />
+
+        </Grid>
+
+        <Grid x:Name="DetailViewGrid"
+              RelativePanel.RightOf="ListViewGrid"
+              RelativePanel.AlignRightWithPanel="True"
+              RelativePanel.Below="PageTitle">
+
+            <Grid x:Name="DetailView"
+                  Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
+                  Margin="20"
+                  RelativePanel.RightOf="AudiobookListView">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal"
+                            Grid.Row="0">
+
+                    <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
+                        <Image Source="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               MaxHeight="400"
+                               MaxWidth="400"
+                               Stretch="UniformToFill" />
+                    </Border>
+
+                    <StackPanel Orientation="Vertical" Margin="40 0">
+                        <TextBlock VerticalAlignment="Top" TextWrapping="WrapWholeWords">
+                            <Run Text="{x:Bind ViewModel.SelectedAudiobook.Title, Mode=OneWay}"
+                                 FontSize="48"
+                                 FontWeight="SemiBold" />
+                            <LineBreak />
+                            <Run Text="{x:Bind ViewModel.SelectedAudiobook.Author, Mode=OneWay}"
+                                 FontSize="36" />
+                        </TextBlock>
+                        
+                        <Button Content="Play this book" VerticalAlignment="Bottom"></Button>
+                    </StackPanel>
+
+                </StackPanel>
+
+                <!-- <TextBlock VerticalAlignment="Center" Margin="100 0"> -->
+                <!--     <Run Text="{x:Bind ViewModel.SelectedAudiobook.Title, Mode=OneWay}" -->
+                <!--          FontSize="32" -->
+                <!--          FontWeight="SemiBold" /> -->
+                <!--     <LineBreak /> -->
+                <!--     <Run Text="{x:Bind ViewModel.SelectedAudiobook.Author, Mode=OneWay}" /> -->
+                <!-- </TextBlock> -->
+                <!-- -->
+                <!-- <Image Source="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}" -->
+                <!--        VerticalAlignment="Center" -->
+                <!--        HorizontalAlignment="Right" -->
+                <!--        Opacity=".4" -->
+                <!--        Grid.RowSpan="2" /> -->
+
+                <TextBlock Margin="0, 40, 0, 0" Grid.Row="1" TextWrapping="WrapWholeWords">
+                    <Run Text="Description" FontSize="32" FontWeight="SemiBold" />
+                    <LineBreak />
+                    <LineBreak />
+                    <Run Text="{x:Bind ViewModel.SelectedAudiobook.Description, Mode=OneWay}" FontSize="26" />
+                </TextBlock>
+                <!-- <TextBlock Text="{x:Bind ViewModel.SelectedAudiobook.Description, Mode=OneWay}" -->
+                <!--            VerticalAlignment="Center" -->
+                <!--            HorizontalAlignment="Left" -->
+                <!--            Margin="0, 20, 0, 0" -->
+                <!--            TextWrapping="Wrap" -->
+                <!--            TextTrimming="CharacterEllipsis" -->
+                <!--            MaxWidth="700" -->
+                <!--            FontSize="20" -->
+                <!--            Grid.Row="1" /> -->
+
+            </Grid>
             <!-- <toolkit:DataGrid -->
             <!--         CanUserReorderColumns="False" -->
             <!--         CanUserResizeColumns="False" -->

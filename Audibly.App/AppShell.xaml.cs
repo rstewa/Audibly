@@ -88,8 +88,6 @@ namespace Audibly.App
 
         public readonly string AudiobookListLabel = "Audiobook list";
 
-        public readonly string OrderListLabel = "Order list";
-
         /// <summary>
         /// Navigates to the page corresponding to the tapped item.
         /// </summary>

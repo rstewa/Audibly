@@ -14,11 +14,8 @@ public class SqlAudiblyRepository : IAudiblyRepository
     public SqlAudiblyRepository(DbContextOptionsBuilder<AudiblyContext> dbOptionsBuilder)
     {
         _dbOptions = dbOptionsBuilder.Options;
-        using (var db = new AudiblyContext(_dbOptions))
-        {
-            db.Database.EnsureCreated();
-        }
-        
+        using var db = new AudiblyContext(_dbOptions);
+        db.Database.EnsureCreated();
     } 
     
     public IAudiobookRepository Audiobooks => new SqlAudiobookRepository(

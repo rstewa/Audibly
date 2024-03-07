@@ -1,23 +1,3 @@
-<!--
-    Copyright (c) Microsoft Corporation.  All rights reserved.
-    The MIT License (MIT)
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
--->
-
 <Page
     x:Class="Audibly.App.Views.AudiobookListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -25,116 +5,141 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:vm="using:Audibly.App.ViewModels"
     xmlns:userControls="using:Audibly.App.UserControls"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <MenuFlyout x:Key="DataGridContextMenu">
-            <MenuFlyoutItem
-                Click="ViewDetails_Click"
-                Text="View details"
-                Icon="OpenFile">
-            </MenuFlyoutItem>
-        </MenuFlyout>
+        <DataTemplate x:Key="AudiobookListViewTemplate" x:DataType="vm:AudiobookViewModel">
+            <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="150"/>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Source="{x:Bind CoverImagePath}" MaxHeight="150" Stretch="UniformToFill"/>
+
+                <StackPanel Margin="12,0,0,0" Grid.Column="1" >
+                    <TextBlock Text="{x:Bind Title}" FontSize="14" FontWeight="SemiBold" Style="{ThemeResource BaseTextBlockStyle}"
+                               HorizontalAlignment="Left" Margin="0,0,0,6" LineHeight="20"/>
+                    <TextBlock Text="{x:Bind Description}" FontFamily="Segoe UI" FontWeight="Normal" Style="{ThemeResource BodyTextBlockStyle}"
+                               TextTrimming="CharacterEllipsis" Width="350" MaxLines="1"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Duration: " HorizontalAlignment="Left" Style="{ThemeResource CaptionTextBlockStyle}"/>
+                        <TextBlock Text="{x:Bind DurationStr}" HorizontalAlignment="Left" Style="{ThemeResource CaptionTextBlockStyle}" Margin="0,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
 
     <RelativePanel x:Name="LayoutRoot">
         <TextBlock
-                x:Name="PageTitle"
-                Style="{StaticResource PageTitleTextBlockStyle}"
-                Text="Audiobooks"/>
+            x:Name="PageTitle"
+            Style="{StaticResource PageTitleTextBlockStyle}"
+            Text="Audiobooks" />
 
         <CommandBar
-                x:Name="MainCommandBar"
-                HorizontalAlignment="Stretch"
-                Background="Transparent"
-                DefaultLabelPosition="Right"
-                RelativePanel.LeftOf="AudiobookSearchBox"
-                RelativePanel.RightOf="PageTitle">
+            x:Name="MainCommandBar"
+            HorizontalAlignment="Stretch"
+            Background="Transparent"
+            DefaultLabelPosition="Right"
+            RelativePanel.LeftOf="AudiobookSearchBox"
+            RelativePanel.RightOf="PageTitle">
             <AppBarButton
-                    Click="ViewDetails_Click"
-                    Icon="Contact"
-                    IsEnabled="{x:Bind vm:Converters.IsNotNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
-                    Label="View details"
-                    ToolTipService.ToolTip="View details" />
-            <AppBarSeparator/>
+                Click="ViewDetails_Click"
+                Icon="Contact"
+                IsEnabled="{x:Bind vm:Converters.IsNotNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
+                Label="View details"
+                ToolTipService.ToolTip="View details" />
+            <AppBarSeparator />
             <AppBarButton
-                    Click="CreateAudiobook_Click"
-                    Icon="Add"
-                    Label="New"
-                    ToolTipService.ToolTip="New audiobook" />
+                Click="CreateAudiobook_Click"
+                Icon="Add"
+                Label="New"
+                ToolTipService.ToolTip="New audiobook" />
             <AppBarButton
-                    Click="{x:Bind ViewModel.Sync}"
-                    Icon="Refresh"
-                    Label="Sync"
-                    ToolTipService.ToolTip="Sync with server" />
+                Click="{x:Bind ViewModel.Sync}"
+                Icon="Refresh"
+                Label="Sync"
+                ToolTipService.ToolTip="Sync with server" />
+            <AppBarButton
+                Click="{x:Bind ViewModel.ImportAudiobooks}"
+                Label="Import Audiobooks"
+                ToolTipService.ToolTip="Import audiobooks from directory">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B5;" />
+            </AppBarButton>
         </CommandBar>
 
         <userControls:CollapsibleSearchBox
-                x:Name="AudiobookSearchBox"
-                Width="240"
-                Margin="12,8,12,0"
-                CollapseWidth="{StaticResource LargeWindowSnapPoint}"
-                Loaded="AudiobookSearchBox_Loaded"
-                RelativePanel.AlignRightWithPanel="True"/>
+            x:Name="AudiobookSearchBox"
+            Width="240"
+            Margin="12,8,12,0"
+            CollapseWidth="{StaticResource LargeWindowSnapPoint}"
+            Loaded="AudiobookSearchBox_Loaded"
+            RelativePanel.AlignRightWithPanel="True" />
 
         <Grid
-                Margin="0,10,0,0"
-                RelativePanel.AlignLeftWithPanel="True"
-                RelativePanel.AlignRightWithPanel="True"
-                RelativePanel.Below="PageTitle">
+            Margin="0,10,0,0"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.Below="PageTitle">
 
-            <toolkit:DataGrid
-                    CanUserReorderColumns="False"
-                    CanUserResizeColumns="False"
-                    AutoGenerateColumns="False"
-                    Sorting="DataGrid_Sorting"
-                    BorderThickness="0"
-                    GridLinesVisibility="None"
-                    ItemsSource="{x:Bind ViewModel.Audiobooks}"
-                    SelectedItem="{x:Bind ViewModel.SelectedAudiobook, Mode=TwoWay}"
-                    SelectionMode="Single"
-                    KeyDown="DataGrid_KeyDown"
-                    RightTapped="DataGrid_RightTapped"
-                    DoubleTapped="DataGrid_DoubleTapped"
-                    ContextFlyout="{StaticResource DataGridContextMenu}">
-                <toolkit:DataGrid.Columns>
-                    <toolkit:DataGridTextColumn
-                            Header="First name"
-                            Tag="FirstName"
-                            Binding="{Binding FirstName}"
-                            CanUserSort="False"/>
-                    <toolkit:DataGridTextColumn
-                            Header="Last name"
-                            Tag="LastName"
-                            Binding="{Binding LastName}"/>
-                    <toolkit:DataGridTextColumn
-                            Header="Address"
-                            Binding="{Binding Address}"
-                            CanUserSort="False"/>
-                    <toolkit:DataGridTextColumn
-                            Header="Company"
-                            Binding="{Binding Company}"/>
-                    <toolkit:DataGridTextColumn
-                            Header="Phone"
-                            Binding="{Binding Phone}"
-                            CanUserSort="False"/>
-                    <toolkit:DataGridTextColumn
-                            Header="Email"
-                            Binding="{Binding Email}"
-                            CanUserSort="False"/>
-                </toolkit:DataGrid.Columns>
-            </toolkit:DataGrid>
+            <ListView
+                x:Name="AudiobookListView"
+                SelectionMode="Single"
+                ShowsScrollingPlaceholders="True"
+                ItemsSource="{x:Bind ViewModel.Audiobooks}"
+                SelectedItem="{x:Bind ViewModel.SelectedAudiobook}" 
+                ItemTemplate="{StaticResource AudiobookListViewTemplate}"/>
+            <!-- <toolkit:DataGrid -->
+            <!--         CanUserReorderColumns="False" -->
+            <!--         CanUserResizeColumns="False" -->
+            <!--         AutoGenerateColumns="False" -->
+            <!--         Sorting="DataGrid_Sorting" -->
+            <!--         BorderThickness="0" -->
+            <!--         GridLinesVisibility="None" -->
+            <!--         ItemsSource="{x:Bind ViewModel.Audiobooks}" -->
+            <!--         SelectedItem="{x:Bind ViewModel.SelectedAudiobook, Mode=TwoWay}" -->
+            <!--         SelectionMode="Single" -->
+            <!--         KeyDown="DataGrid_KeyDown" -->
+            <!--         RightTapped="DataGrid_RightTapped" -->
+            <!--         DoubleTapped="DataGrid_DoubleTapped" -->
+            <!--         ContextFlyout="{StaticResource DataGridContextMenu}"> -->
+            <!--     <toolkit:DataGrid.Columns> -->
+            <!--         <toolkit:DataGridTextColumn -->
+            <!--                 Header="First name" -->
+            <!--                 Tag="FirstName" -->
+            <!--                 Binding="{Binding FirstName}" -->
+            <!--                 CanUserSort="False"/> -->
+            <!--         <toolkit:DataGridTextColumn -->
+            <!--                 Header="Last name" -->
+            <!--                 Tag="LastName" -->
+            <!--                 Binding="{Binding LastName}"/> -->
+            <!--         <toolkit:DataGridTextColumn -->
+            <!--                 Header="Address" -->
+            <!--                 Binding="{Binding Address}" -->
+            <!--                 CanUserSort="False"/> -->
+            <!--         <toolkit:DataGridTextColumn -->
+            <!--                 Header="Company" -->
+            <!--                 Binding="{Binding Company}"/> -->
+            <!--         <toolkit:DataGridTextColumn -->
+            <!--                 Header="Phone" -->
+            <!--                 Binding="{Binding Phone}" -->
+            <!--                 CanUserSort="False"/> -->
+            <!--         <toolkit:DataGridTextColumn -->
+            <!--                 Header="Email" -->
+            <!--                 Binding="{Binding Email}" -->
+            <!--                 CanUserSort="False"/> -->
+            <!--     </toolkit:DataGrid.Columns> -->
+            <!-- </toolkit:DataGrid> -->
 
             <muxc:ProgressBar
-                    Margin="0,50,0,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    IsIndeterminate="True"
-                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                Margin="0,50,0,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                IsIndeterminate="True"
+                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         </Grid>
 
 
@@ -155,7 +160,7 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource MinWindowSnapPoint}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="MainCommandBar.DefaultLabelPosition" Value="Bottom"/>
+                        <Setter Target="MainCommandBar.DefaultLabelPosition" Value="Bottom" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

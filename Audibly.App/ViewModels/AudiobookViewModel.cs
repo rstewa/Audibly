@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using ATL;
+using Audibly.App.Extensions;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -94,6 +95,11 @@ namespace Audibly.App.ViewModels
         }
         
         /// <summary>
+        /// Gets the duration of the audiobook as a string in the format "hh:mm:ss".
+        /// </summary>
+        public string DurationStr => Model.Duration.ToStr_s();
+        
+        /// <summary>
         /// Gets or sets the current time in milliseconds of the audiobook.
         /// </summary>
         public int CurrentTimeMs
@@ -131,19 +137,19 @@ namespace Audibly.App.ViewModels
         /// <summary>
         /// Gets or sets the current position in the book.
         /// </summary>
-        public string CurrentPositionInBook
-        {
-            get => Model.CurrentPositionInBook;
-            set
-            {
-                if (value != Model.CurrentPositionInBook)
-                {
-                    Model.CurrentPositionInBook = value;
-                    IsModified = true;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        // public string CurrentPositionInBook
+        // {
+        //     get => Model.CurrentPositionInBook;
+        //     set
+        //     {
+        //         if (value != Model.CurrentPositionInBook)
+        //         {
+        //             Model.CurrentPositionInBook = value;
+        //             IsModified = true;
+        //             OnPropertyChanged();
+        //         }
+        //     }
+        // }
         
         /// <summary>
         /// Gets or sets the file path of the audiobook.
@@ -217,19 +223,19 @@ namespace Audibly.App.ViewModels
         /// <summary>
         /// Gets or sets the volume level glyph of the audiobook.
         /// </summary>
-        public string VolumeLevelGlyph
-        {
-            get => Model.VolumeLevelGlyph;
-            set
-            {
-                if (value != Model.VolumeLevelGlyph)
-                {
-                    Model.VolumeLevelGlyph = value;
-                    IsModified = true;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        // public string VolumeLevelGlyph
+        // {
+        //     get => Model.VolumeLevelGlyph;
+        //     set
+        //     {
+        //         if (value != Model.VolumeLevelGlyph)
+        //         {
+        //             Model.VolumeLevelGlyph = value;
+        //             IsModified = true;
+        //             OnPropertyChanged();
+        //         }
+        //     }
+        // }
         
         /// <summary>
         /// Gets or sets the current chapter of the audiobook.

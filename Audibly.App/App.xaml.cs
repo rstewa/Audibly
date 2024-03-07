@@ -17,6 +17,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Globalization;
 using Windows.Storage;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using Audibly.Repository;
@@ -44,7 +45,7 @@ namespace Audibly.App
         /// <summary>
         /// Gets the app-wide MainViewModel singleton instance.
         /// </summary>
-        public static MainViewModel ViewModel { get; } = new MainViewModel();
+        public static MainViewModel ViewModel { get; } = new(new FileImportService());
         
         /// <summary>
         /// Pipeline for interacting with backend service or database.
@@ -92,9 +93,11 @@ namespace Audibly.App
             // string demoDatabasePath = Package.Current.InstalledLocation.Path + @"\Assets\Contoso.db";
             // string databasePath = ApplicationData.Current.LocalFolder.Path + @"\Contoso.db";
             
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
-            var dbPath = System.IO.Path.Join(path, "audibly.db");
+            // var folder = Environment.SpecialFolder.LocalApplicationData;
+            // var path = Environment.GetFolderPath(folder);
+            // var dbPath = System.IO.Path.Join(path, "audibly.db");
+            
+            var dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db";
             
             // if (!File.Exists(databasePath))
             // {

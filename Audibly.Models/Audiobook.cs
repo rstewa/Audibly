@@ -16,14 +16,14 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public long Duration { get; set; }
     public int CurrentTimeMs { get; set; }
     public string CoverImagePath { get; set; }
-    public string CurrentPositionInBook { get; set; }
+    // public string CurrentPositionInBook { get; set; }
     public string FilePath { get; set; }
     public double PlaybackSpeed { get; set; }
     public string Title { get; set;  }
     public double Volume { get; set; }
-    public string VolumeLevelGlyph { get; set; }
+    // public string VolumeLevelGlyph { get; set; }
     
-    public ChapterInfo CurrentChapter { get; set; }
+    public ChapterInfo? CurrentChapter { get; set; }
     public List<ChapterInfo> Chapters { get; set; }
 
     public bool Equals(Audiobook? other)

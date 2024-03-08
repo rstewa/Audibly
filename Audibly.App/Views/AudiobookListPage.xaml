@@ -7,24 +7,61 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:vm="using:Audibly.App.ViewModels"
     xmlns:userControls="using:Audibly.App.UserControls"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
+
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <!-- TODO: 3rd pane for now playing -->
     <!-- TODO: or player controls underneath description -->
     <!-- TODO: top can be scroll view while bottom is player -->
-    
-    
+
+
     <Page.Resources>
         <DataTemplate x:Key="AudiobookListViewTemplate" x:DataType="vm:AudiobookViewModel">
-            <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}">
+            <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}" MinHeight="200">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="150" />
+                    <ColumnDefinition Width="Auto" MinWidth="200" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
-                    <Image Source="{x:Bind CoverImagePath}" MaxHeight="150" Stretch="UniformToFill" />
+
+                <!-- <Border Width="200" Height="200"> -->
+                <Border>
+                    <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
+                        <Border.Background>
+                            <ImageBrush
+                                ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                        </Border.Background>
+                        <!-- <Image Source="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}" -->
+                        <!--        VerticalAlignment="Center" -->
+                        <!--        HorizontalAlignment="Left" -->
+                        <!--        MaxHeight="400" -->
+                        <!--        MaxWidth="400" -->
+                        <!--        Stretch="UniformToFill" /> -->
+                    </Border>
+                    <ui:Effects.Shadow>
+                        <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
+                    </ui:Effects.Shadow>
+
                 </Border>
+                <!-- <Border CornerRadius="15"  -->
+                <!--         Margin="0" -->
+                <!--         BorderBrush="Transparent"  -->
+                <!--         BorderThickness="1" -->
+                <!--         HorizontalAlignment="Center" -->
+                <!--         VerticalAlignment="Center"> -->
+                <!--     <Border.Background> -->
+                <!--         <ImageBrush ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill"/> -->
+                <!--     </Border.Background> -->
+                <!-- </Border> -->
+                <!-- <Image Source="{x:Bind CoverImagePath, Mode=OneWay}" MinWidth="150" MaxWidth="150" Stretch="UniformToFill"/> -->
+                <!-- <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1" MinWidth="150" MaxWidth="150"> -->
+                <!--     <Border.Background> -->
+                <!--         <ImageBrush ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" /> -->
+                <!--     </Border.Background> -->
+                <!--     ~1~ <Image Source="{x:Bind CoverImagePath}" MaxHeight="150" Stretch="UniformToFill" /> @1@ -->
+                <!-- </Border> -->
 
                 <StackPanel Margin="12,0,0,0" Grid.Column="1" HorizontalAlignment="Left">
                     <TextBlock Text="{x:Bind Title}" FontSize="20" FontWeight="SemiBold"
@@ -39,6 +76,15 @@
                 </StackPanel>
             </Grid>
         </DataTemplate>
+        <media:AttachedCardShadow x:Key="CommonShadow"
+                                  Offset="4" />
+
+        <Style BasedOn="{StaticResource DefaultButtonStyle}"
+               TargetType="Button">
+            <Setter Property="ui:Effects.Shadow" Value="{StaticResource CommonShadow}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
     </Page.Resources>
 
     <RelativePanel x:Name="LayoutRoot">
@@ -131,16 +177,21 @@
                 <StackPanel Orientation="Horizontal"
                             Grid.Row="0">
 
-                    <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
-                        <Image Source="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Left"
-                               MaxHeight="400"
-                               MaxWidth="400"
-                               Stretch="UniformToFill" />
+                    <Border Width="400" Height="400">
+                        <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="1">
+                            <Border.Background>
+                                <ImageBrush
+                                    ImageSource="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}"
+                                    Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                        <ui:Effects.Shadow>
+                            <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
+                        </ui:Effects.Shadow>
+
                     </Border>
 
-                    <StackPanel Orientation="Vertical" Margin="40 0">
+                    <StackPanel Orientation="Vertical" Margin="40 0" MaxWidth="800">
                         <TextBlock VerticalAlignment="Top" TextWrapping="WrapWholeWords">
                             <Run Text="{x:Bind ViewModel.SelectedAudiobook.Title, Mode=OneWay}"
                                  FontSize="48"
@@ -149,8 +200,8 @@
                             <Run Text="{x:Bind ViewModel.SelectedAudiobook.Author, Mode=OneWay}"
                                  FontSize="36" />
                         </TextBlock>
-                        
-                        <Button Content="Play this book" VerticalAlignment="Bottom"></Button>
+
+                        <Button Content="Play this book" VerticalAlignment="Bottom" />
                     </StackPanel>
 
                 </StackPanel>

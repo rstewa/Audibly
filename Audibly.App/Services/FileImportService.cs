@@ -41,7 +41,7 @@ public class FileImportService : IImportFiles
             // save the cover image somewhere
             var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
             var coverImage =
-                await bookAppdataDir.CreateFileAsync("CoverImage.jpg", CreationCollisionOption.ReplaceExisting);
+                await bookAppdataDir.CreateFileAsync("CoverImage.png", CreationCollisionOption.ReplaceExisting);
             await FileIO.WriteBytesAsync(coverImage, imageBytes);
 
             audiobook.CoverImagePath = coverImage.Path;

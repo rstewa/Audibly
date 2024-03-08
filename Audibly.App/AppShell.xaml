@@ -13,7 +13,8 @@
         <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
     </Page.Resources>
     <Grid
-        x:Name="LayoutRoot">
+        x:Name="LayoutRoot"
+        Background="#121212">
         <Border x:Name="AppTitleBar"
                 IsHitTestVisible="True"
                 VerticalAlignment="Top"

@@ -86,7 +86,7 @@ namespace Audibly.App
             }
         }
 
-        public readonly string AudiobookListLabel = "Audiobook list";
+        public readonly string AudiobookListLabel = "Audiobooks";
 
         /// <summary>
         /// Navigates to the page corresponding to the tapped item.

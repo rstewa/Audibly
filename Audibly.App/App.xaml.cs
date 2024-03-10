@@ -2,6 +2,7 @@
 // Created: 3/5/2024
 // Updated: 3/7/2024
 
+using System.Diagnostics;
 using Windows.Globalization;
 using Windows.Storage;
 using Audibly.App.Services;
@@ -95,6 +96,10 @@ public partial class App : Application
         // var dbPath = System.IO.Path.Join(path, "audibly.db");
 
         var dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db";
+
+#if DEBUG
+        Debug.WriteLine($"Database path: {dbPath}");
+#endif
 
         // if (!File.Exists(databasePath))
         // {

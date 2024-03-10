@@ -12,6 +12,9 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="UserControls\ProgressBarWithText.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -36,6 +39,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
     <Manifest Include="$(ApplicationManifest)" />
+    <PackageReference Include="Sharpener" Version="0.2.4" />
     <PackageReference Include="z440.atl.core" Version="5.20.0" />
   </ItemGroup>
 
@@ -50,6 +54,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
     <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="UserControls\ProgressBarWithText.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!-- 

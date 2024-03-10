@@ -12,6 +12,7 @@ namespace Audibly.Models;
 public class Audiobook : DbObject, IEquatable<Audiobook>
 {
     public string Author { get; set; }
+    public string Composer { get; set; }
     public string Description { get; set; }
     public long Duration { get; set; }
     public int CurrentTimeMs { get; set; }
@@ -19,6 +20,7 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     // public string CurrentPositionInBook { get; set; }
     public string FilePath { get; set; }
     public double PlaybackSpeed { get; set; }
+    public DateTime? ReleaseDate { get; set; }
     public string Title { get; set;  }
     public double Volume { get; set; }
     // public string VolumeLevelGlyph { get; set; }

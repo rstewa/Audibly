@@ -101,27 +101,23 @@
             RelativePanel.LeftOf="AudiobookSearchBox"
             RelativePanel.RightOf="PageTitle">
             <AppBarButton
-                Click="ViewDetails_Click"
-                Icon="Contact"
-                IsEnabled="{x:Bind vm:Converters.IsNotNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
-                Label="View details"
-                ToolTipService.ToolTip="View details" />
+                Click="{x:Bind ViewModel.Refresh}"
+                Icon="Refresh"
+                Label="Refresh"
+                ToolTipService.ToolTip="Refresh audiobooks" />
             <AppBarSeparator />
             <AppBarButton
-                Click="CreateAudiobook_Click"
+                Click="OpenAudiobook_Click"
                 Icon="Add"
-                Label="New"
-                ToolTipService.ToolTip="New audiobook" />
-            <AppBarButton
-                Click="{x:Bind ViewModel.Sync}"
-                Icon="Refresh"
-                Label="Sync"
-                ToolTipService.ToolTip="Sync with server" />
+                Label="Open"
+                ToolTipService.ToolTip="Open audiobook">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+            </AppBarButton>
             <AppBarButton
                 Click="{x:Bind ViewModel.ImportAudiobooks}"
-                Label="Import Audiobooks"
-                ToolTipService.ToolTip="Import audiobooks from directory">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B5;" />
+                Label="Import"
+                ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
             </AppBarButton>
         </CommandBar>
 
@@ -138,15 +134,6 @@
               RelativePanel.AlignLeftWithPanel="True"
               RelativePanel.Below="PageTitle">
 
-            <!-- <Grid Margin="0" -->
-            <!--       ColumnSpacing="0" -->
-            <!--       RowSpacing="0"> -->
-            <!--     <ColumnDefinition> -->
-            <!--         <ColumnDefinition Width="*"/> -->
-            <!--         <ColumnDefinition Width="2*"/> -->
-            <!--     </ColumnDefinition> -->
-            <!-- </Grid> -->
-
             <ListView
                 x:Name="AudiobookListView"
                 SelectionMode="Single"
@@ -157,6 +144,13 @@
                 IsItemClickEnabled="False"
                 SelectionChanged="AudiobookListView_OnSelectionChanged"
                 RelativePanel.LeftOf="DetailView" />
+
+            <!-- <muxc:ProgressBar -->
+            <!--     Margin="0,50,0,0" -->
+            <!--     HorizontalAlignment="Stretch" -->
+            <!--     VerticalAlignment="Top" -->
+            <!--     IsIndeterminate="True" -->
+            <!--     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" /> -->
 
         </Grid>
 
@@ -206,87 +200,62 @@
 
                 </StackPanel>
 
-                <!-- <TextBlock VerticalAlignment="Center" Margin="100 0"> -->
-                <!--     <Run Text="{x:Bind ViewModel.SelectedAudiobook.Title, Mode=OneWay}" -->
-                <!--          FontSize="32" -->
-                <!--          FontWeight="SemiBold" /> -->
-                <!--     <LineBreak /> -->
-                <!--     <Run Text="{x:Bind ViewModel.SelectedAudiobook.Author, Mode=OneWay}" /> -->
-                <!-- </TextBlock> -->
-                <!-- -->
-                <!-- <Image Source="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}" -->
-                <!--        VerticalAlignment="Center" -->
-                <!--        HorizontalAlignment="Right" -->
-                <!--        Opacity=".4" -->
-                <!--        Grid.RowSpan="2" /> -->
-
                 <TextBlock Margin="0, 40, 0, 0" Grid.Row="1" TextWrapping="WrapWholeWords">
                     <Run Text="Description" FontSize="32" FontWeight="SemiBold" />
                     <LineBreak />
                     <LineBreak />
                     <Run Text="{x:Bind ViewModel.SelectedAudiobook.Description, Mode=OneWay}" FontSize="26" />
                 </TextBlock>
-                <!-- <TextBlock Text="{x:Bind ViewModel.SelectedAudiobook.Description, Mode=OneWay}" -->
-                <!--            VerticalAlignment="Center" -->
-                <!--            HorizontalAlignment="Left" -->
-                <!--            Margin="0, 20, 0, 0" -->
-                <!--            TextWrapping="Wrap" -->
-                <!--            TextTrimming="CharacterEllipsis" -->
-                <!--            MaxWidth="700" -->
-                <!--            FontSize="20" -->
-                <!--            Grid.Row="1" /> -->
 
             </Grid>
-            <!-- <toolkit:DataGrid -->
-            <!--         CanUserReorderColumns="False" -->
-            <!--         CanUserResizeColumns="False" -->
-            <!--         AutoGenerateColumns="False" -->
-            <!--         Sorting="DataGrid_Sorting" -->
-            <!--         BorderThickness="0" -->
-            <!--         GridLinesVisibility="None" -->
-            <!--         ItemsSource="{x:Bind ViewModel.Audiobooks}" -->
-            <!--         SelectedItem="{x:Bind ViewModel.SelectedAudiobook, Mode=TwoWay}" -->
-            <!--         SelectionMode="Single" -->
-            <!--         KeyDown="DataGrid_KeyDown" -->
-            <!--         RightTapped="DataGrid_RightTapped" -->
-            <!--         DoubleTapped="DataGrid_DoubleTapped" -->
-            <!--         ContextFlyout="{StaticResource DataGridContextMenu}"> -->
-            <!--     <toolkit:DataGrid.Columns> -->
-            <!--         <toolkit:DataGridTextColumn -->
-            <!--                 Header="First name" -->
-            <!--                 Tag="FirstName" -->
-            <!--                 Binding="{Binding FirstName}" -->
-            <!--                 CanUserSort="False"/> -->
-            <!--         <toolkit:DataGridTextColumn -->
-            <!--                 Header="Last name" -->
-            <!--                 Tag="LastName" -->
-            <!--                 Binding="{Binding LastName}"/> -->
-            <!--         <toolkit:DataGridTextColumn -->
-            <!--                 Header="Address" -->
-            <!--                 Binding="{Binding Address}" -->
-            <!--                 CanUserSort="False"/> -->
-            <!--         <toolkit:DataGridTextColumn -->
-            <!--                 Header="Company" -->
-            <!--                 Binding="{Binding Company}"/> -->
-            <!--         <toolkit:DataGridTextColumn -->
-            <!--                 Header="Phone" -->
-            <!--                 Binding="{Binding Phone}" -->
-            <!--                 CanUserSort="False"/> -->
-            <!--         <toolkit:DataGridTextColumn -->
-            <!--                 Header="Email" -->
-            <!--                 Binding="{Binding Email}" -->
-            <!--                 CanUserSort="False"/> -->
-            <!--     </toolkit:DataGrid.Columns> -->
-            <!-- </toolkit:DataGrid> -->
 
             <muxc:ProgressBar
                 Margin="0,50,0,0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                Visibility="{x:Bind vm:Converters.CollapsedIfNot(ViewModel.IsLoading), Mode=OneWay}" />
+
+            <!-- <muxc:ProgressBar -->
+            <!--     Margin="0,50,0,0" -->
+            <!--     HorizontalAlignment="Stretch" -->
+            <!--     VerticalAlignment="Top" -->
+            <!--     IsIndeterminate="False" -->
+            <!--     Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" -->
+            <!--     Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" /> -->
+
+            <!-- <muxc:ProgressRing -->
+            <!--     Margin="0, 50, 0, 0" -->
+            <!--     HorizontalAlignment="Center" -->
+            <!--     VerticalAlignment="Center" -->
+            <!--     IsIndeterminate="False" -->
+            <!--     Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" -->
+            <!--     Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" /> -->
         </Grid>
 
+        <!-- <userControls:ProgressBarWithText RelativePanel.AlignHorizontalCenterWithPanel="True" -->
+        <!--                                   RelativePanel.AlignVerticalCenterWithPanel="True" -->
+        <!--                                   Progress="{x:Bind ViewModel.ImportProgress}" -->
+        <!--                                   ProgressText="{x:Bind ViewModel.IsImportingText}" -->
+        <!--                                   Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" /> -->
+
+        <muxc:ProgressBar
+            RelativePanel.AlignHorizontalCenterWithPanel="True"
+            RelativePanel.AlignVerticalCenterWithPanel="True"
+            Width="700"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            IsIndeterminate="False"
+            Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />
+
+        <!-- <TextBlock -->
+        <!--     RelativePanel.AlignHorizontalCenterWithPanel="True" -->
+        <!--     RelativePanel.Below="IsImportingProgressRing" -->
+        <!--     Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" -->
+        <!--     x:Name="IsImportingText" -->
+        <!--     Style="{StaticResource PageTitleTextBlockStyle}" -->
+        <!--     Text="{x:Bind ViewModel.IsImportingText}"/> -->
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

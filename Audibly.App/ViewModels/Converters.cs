@@ -46,6 +46,9 @@ namespace Audibly.App.ViewModels
         /// </summary>
         public static Visibility CollapsedIf(bool value) =>
             value ? Visibility.Collapsed : Visibility.Visible;
+        
+        public static Visibility CollapsedIfNot(bool value) =>
+            value ? Visibility.Visible : Visibility.Collapsed;
 
         /// <summary>
         /// Returns Visibility.Collapsed if the specified value is null; otherwise, returns Visibility.Visible.

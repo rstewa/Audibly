@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
 using Audibly.Models;
+using Sharpener.Extensions;
 
 namespace Audibly.App.Services;
 
@@ -16,9 +17,12 @@ public class FileImportService : IImportFiles
 {
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
-    public async Task ImportAsync(string path)
+    public async Task ImportAsync(string path, Func<int, int, string, Task> progressCallback)
     {
         var files = Directory.GetFiles(path, "*.m4b", SearchOption.AllDirectories);
+        var numberOfFiles = files.Length;
+        var filesList = files.AsList();
+        
         foreach (var file in files)
         {
             var track = new Track(file);
@@ -27,12 +31,14 @@ public class FileImportService : IImportFiles
             var audiobook = new Audiobook
             {
                 Title = track.Title,
+                Composer = track.Composer,
                 Author = track.Artist,
                 Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
                 FilePath = file,
                 Duration = track.Duration,
                 CurrentTimeMs = 0,
                 PlaybackSpeed = 1.0,
+                ReleaseDate = track.Date,
                 Volume = 1.0,
                 CurrentChapter = null,
                 Chapters = []
@@ -48,6 +54,11 @@ public class FileImportService : IImportFiles
 
             // insert the audiobook into the database
             await App.Repository.Audiobooks.UpsertAsync(audiobook);
+            
+            // TODO: insert the chapters into the database
+            
+            // report progress
+            await progressCallback(filesList.IndexOf(file), numberOfFiles, audiobook.Title);
         }
     }
 }

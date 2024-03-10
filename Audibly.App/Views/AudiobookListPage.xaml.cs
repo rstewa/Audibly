@@ -159,7 +159,7 @@ public sealed partial class AudiobookListPage : Page
     /// <summary>
     ///     Navigates to a blank audiobook details page for the user to fill in.
     /// </summary>
-    private void CreateAudiobook_Click(object sender, RoutedEventArgs e)
+    private void OpenAudiobook_Click(object sender, RoutedEventArgs e)
     {
         Frame.Navigate(typeof(AudiobookDetailPage), null, new DrillInNavigationTransitionInfo());
     }

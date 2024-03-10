@@ -24,6 +24,7 @@ public class SqlAudiobookRepository : IAudiobookRepository
             .ToListAsync();
     }
     
+    // TODO: fix this bug
     public async Task<Audiobook> GetAsync(Guid id)
     {
         return await _db.Audiobooks

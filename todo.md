@@ -9,3 +9,4 @@
 - [ ] fix TODO (which is a bug) in SqlAudiobookRepository.cs
 - [ ] todo: update ui as each book is imported
 - [ ] fix light mode
+- [ ] bug when you refresh audiobooks and some of the images in the list view are blank

@@ -19,6 +19,7 @@
 
 
     <Page.Resources>
+        
         <DataTemplate x:Key="AudiobookListViewTemplate" x:DataType="vm:AudiobookViewModel">
             <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}" MinHeight="200">
                 <Grid.ColumnDefinitions>
@@ -107,7 +108,7 @@
                 ToolTipService.ToolTip="Refresh audiobooks" />
             <AppBarSeparator />
             <AppBarButton
-                Click="OpenAudiobook_Click"
+                Click="{x:Bind ViewModel.ImportAudiobook}"
                 Icon="Add"
                 Label="Open"
                 ToolTipService.ToolTip="Open audiobook">
@@ -155,6 +156,7 @@
         </Grid>
 
         <Grid x:Name="DetailViewGrid"
+              Background="{StaticResource SolidBackgroundFillColorTertiaryBrush}"
               RelativePanel.RightOf="ListViewGrid"
               RelativePanel.AlignRightWithPanel="True"
               RelativePanel.Below="PageTitle">
@@ -214,30 +216,9 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 IsIndeterminate="True"
-                Visibility="{x:Bind vm:Converters.CollapsedIfNot(ViewModel.IsLoading), Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
-            <!-- <muxc:ProgressBar -->
-            <!--     Margin="0,50,0,0" -->
-            <!--     HorizontalAlignment="Stretch" -->
-            <!--     VerticalAlignment="Top" -->
-            <!--     IsIndeterminate="False" -->
-            <!--     Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" -->
-            <!--     Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" /> -->
-
-            <!-- <muxc:ProgressRing -->
-            <!--     Margin="0, 50, 0, 0" -->
-            <!--     HorizontalAlignment="Center" -->
-            <!--     VerticalAlignment="Center" -->
-            <!--     IsIndeterminate="False" -->
-            <!--     Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" -->
-            <!--     Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" /> -->
         </Grid>
-
-        <!-- <userControls:ProgressBarWithText RelativePanel.AlignHorizontalCenterWithPanel="True" -->
-        <!--                                   RelativePanel.AlignVerticalCenterWithPanel="True" -->
-        <!--                                   Progress="{x:Bind ViewModel.ImportProgress}" -->
-        <!--                                   ProgressText="{x:Bind ViewModel.IsImportingText}" -->
-        <!--                                   Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" /> -->
 
         <muxc:ProgressBar
             RelativePanel.AlignHorizontalCenterWithPanel="True"
@@ -248,14 +229,6 @@
             IsIndeterminate="False"
             Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />
-
-        <!-- <TextBlock -->
-        <!--     RelativePanel.AlignHorizontalCenterWithPanel="True" -->
-        <!--     RelativePanel.Below="IsImportingProgressRing" -->
-        <!--     Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" -->
-        <!--     x:Name="IsImportingText" -->
-        <!--     Style="{StaticResource PageTitleTextBlockStyle}" -->
-        <!--     Text="{x:Bind ViewModel.IsImportingText}"/> -->
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

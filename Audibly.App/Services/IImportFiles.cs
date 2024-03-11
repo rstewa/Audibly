@@ -9,5 +9,7 @@ namespace Audibly.App.Services;
 
 public interface IImportFiles
 {
-    Task ImportAsync(string path, Func<int, int, string, Task> progressCallback);
+    Task ImportDirectoryAsync(string path, Func<int, int, string, Task> progressCallback);
+    
+    Task ImportFileAsync(string path, Func<int, int, string, Task> progressCallback);
 }

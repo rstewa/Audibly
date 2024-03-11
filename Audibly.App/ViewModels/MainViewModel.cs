@@ -126,6 +126,50 @@ public class MainViewModel : BindableBase
             await GetAudiobookListAsync();
         });
     }
+    
+    public async void ImportAudiobook()
+    {
+        // Create a folder picker
+        var openPicker = new FileOpenPicker();
+
+        // See the sample code below for how to make the window accessible from the App class.
+        var window = App.Window;
+
+        // Retrieve the window handle (HWND) of the current WinUI 3 window.
+        var hWnd = WindowNative.GetWindowHandle(window);
+
+        // Initialize the folder picker with the window handle (HWND).
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+
+        // Set options for your folder picker
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        // todo: maybe remove this; trying it out
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add(".m4b");
+
+        // Open the picker for the user to pick a folder
+        var file = await openPicker.PickSingleFileAsync();
+        
+        if (file == null) return;
+
+        await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
+        
+        await Task.Run(async () =>
+        {
+            await _fileImporter.ImportFileAsync(file.Path, async (progress, total, text) =>
+            {
+                await dispatcherQueue.EnqueueAsync(() =>
+                {
+                    ImportProgress = (int)((double)progress / total * 100);
+                    IsImportingText = $"Importing {text}...";
+                });
+            });
+
+            await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
+
+            await GetAudiobookListAsync();
+        });
+    }
 
     public async void ImportAudiobooks()
     {
@@ -159,7 +203,7 @@ public class MainViewModel : BindableBase
         
         await Task.Run(async () =>
         {
-            await _fileImporter.ImportAsync(folder.Path, async (progress, total, text) =>
+            await _fileImporter.ImportDirectoryAsync(folder.Path, async (progress, total, text) =>
             {
                 await dispatcherQueue.EnqueueAsync(() =>
                 {

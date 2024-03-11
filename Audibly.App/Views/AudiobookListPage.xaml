@@ -156,7 +156,6 @@
         </Grid>
 
         <Grid x:Name="DetailViewGrid"
-              Background="{StaticResource SolidBackgroundFillColorTertiaryBrush}"
               RelativePanel.RightOf="ListViewGrid"
               RelativePanel.AlignRightWithPanel="True"
               RelativePanel.Below="PageTitle">

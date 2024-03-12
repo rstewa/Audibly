@@ -1,3 +1,4 @@
+- [ ] import chapters when adding audiobook to database
 - [ ] add ability to see most recent
 - [ ] add filter button to change how audiobooks are sorted by default
 - [ ] add now playing bar
@@ -10,3 +11,17 @@
 - [ ] todo: update ui as each book is imported
 - [ ] fix light mode
 - [ ] bug when you refresh audiobooks and some of the images in the list view are blank
+- [ ] create annoted scroll bar
+
+NOTES:
+
+make a card:
+
+```
+<StackPanel 
+                    CornerRadius="8"
+                    Padding="12"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+```

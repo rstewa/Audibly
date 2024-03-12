@@ -19,7 +19,7 @@
 
 
     <Page.Resources>
-        
+
         <DataTemplate x:Key="AudiobookListViewTemplate" x:DataType="vm:AudiobookViewModel">
             <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}" MinHeight="200">
                 <Grid.ColumnDefinitions>
@@ -27,42 +27,18 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- <Border Width="200" Height="200"> -->
                 <Border>
                     <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
                         <Border.Background>
                             <ImageBrush
                                 ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
                         </Border.Background>
-                        <!-- <Image Source="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}" -->
-                        <!--        VerticalAlignment="Center" -->
-                        <!--        HorizontalAlignment="Left" -->
-                        <!--        MaxHeight="400" -->
-                        <!--        MaxWidth="400" -->
-                        <!--        Stretch="UniformToFill" /> -->
                     </Border>
                     <ui:Effects.Shadow>
                         <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
                     </ui:Effects.Shadow>
 
                 </Border>
-                <!-- <Border CornerRadius="15"  -->
-                <!--         Margin="0" -->
-                <!--         BorderBrush="Transparent"  -->
-                <!--         BorderThickness="1" -->
-                <!--         HorizontalAlignment="Center" -->
-                <!--         VerticalAlignment="Center"> -->
-                <!--     <Border.Background> -->
-                <!--         <ImageBrush ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill"/> -->
-                <!--     </Border.Background> -->
-                <!-- </Border> -->
-                <!-- <Image Source="{x:Bind CoverImagePath, Mode=OneWay}" MinWidth="150" MaxWidth="150" Stretch="UniformToFill"/> -->
-                <!-- <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1" MinWidth="150" MaxWidth="150"> -->
-                <!--     <Border.Background> -->
-                <!--         <ImageBrush ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" /> -->
-                <!--     </Border.Background> -->
-                <!--     ~1~ <Image Source="{x:Bind CoverImagePath}" MaxHeight="150" Stretch="UniformToFill" /> @1@ -->
-                <!-- </Border> -->
 
                 <StackPanel Margin="12,0,0,0" Grid.Column="1" HorizontalAlignment="Left">
                     <TextBlock Text="{x:Bind Title}" FontSize="20" FontWeight="SemiBold"
@@ -71,12 +47,10 @@
                     <TextBlock Text="{x:Bind Author}" FontSize="16" FontWeight="Normal"
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Margin="0,0,0,6" LineHeight="20" />
-                    <!-- <TextBlock Text="{x:Bind Author}" FontFamily="Segoe UI" FontWeight="Normal" -->
-                    <!--            Style="{ThemeResource BodyTextBlockStyle}" -->
-                    <!--            TextTrimming="CharacterEllipsis" Width="350" MaxLines="1" /> -->
                 </StackPanel>
             </Grid>
         </DataTemplate>
+
         <media:AttachedCardShadow x:Key="CommonShadow"
                                   Offset="4" />
 
@@ -88,7 +62,7 @@
 
     </Page.Resources>
 
-    <RelativePanel x:Name="LayoutRoot">
+    <RelativePanel x:Name="LayoutRoot" Margin="0, 5, 5, 5">
         <TextBlock
             x:Name="PageTitle"
             Style="{StaticResource PageTitleTextBlockStyle}"
@@ -131,20 +105,28 @@
             RelativePanel.AlignRightWithPanel="True" />
 
         <Grid x:Name="ListViewGrid"
-              Margin="0,10,0,0"
+              Margin="0,12,0,12"
               RelativePanel.AlignLeftWithPanel="True"
-              RelativePanel.Below="PageTitle">
+              RelativePanel.Below="PageTitle"
+              CornerRadius="8"
+              Padding="12"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
 
             <ListView
                 x:Name="AudiobookListView"
                 SelectionMode="Single"
-                ShowsScrollingPlaceholders="True"
+                ShowsScrollingPlaceholders="False"
                 ItemsSource="{x:Bind ViewModel.Audiobooks}"
                 SelectedItem="{x:Bind ViewModel.SelectedAudiobook}"
                 ItemTemplate="{StaticResource AudiobookListViewTemplate}"
                 IsItemClickEnabled="False"
                 SelectionChanged="AudiobookListView_OnSelectionChanged"
                 RelativePanel.LeftOf="DetailView" />
+
+            <!-- TODO -->
+            <!-- <AnnotatedScrollBar /> -->
 
             <!-- <muxc:ProgressBar -->
             <!--     Margin="0,50,0,0" -->
@@ -156,9 +138,15 @@
         </Grid>
 
         <Grid x:Name="DetailViewGrid"
+              Margin="12"
               RelativePanel.RightOf="ListViewGrid"
               RelativePanel.AlignRightWithPanel="True"
-              RelativePanel.Below="PageTitle">
+              RelativePanel.Below="PageTitle"
+              CornerRadius="8"
+              Padding="12"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
 
             <Grid x:Name="DetailView"
                   Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
@@ -217,6 +205,22 @@
                 IsIndeterminate="True"
                 Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
+        </Grid>
+        
+        <Grid x:Name="Player"
+              Margin="12, 0, 12, 12"
+              RelativePanel.RightOf="ListViewGrid"
+              RelativePanel.AlignRightWithPanel="True"
+              RelativePanel.AlignBottomWithPanel="True"
+              RelativePanel.Below="DetailViewGrid"
+              CornerRadius="8"
+              Padding="12"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            
+            <MediaPlayerElement x:Name="AudioPlayerElement"/>
+            
         </Grid>
 
         <muxc:ProgressBar

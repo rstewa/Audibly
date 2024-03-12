@@ -33,7 +33,7 @@ public partial class App : Application
     /// <summary>
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
-    public static MainViewModel ViewModel { get; } = new(new FileImportService());
+    public static MainViewModel ViewModel { get; } = new(new M4BFileImportService());
 
     /// <summary>
     ///     Pipeline for interacting with backend service or database.

@@ -1,21 +1,21 @@
-// Author: rstewa
+// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/6/2024
+// Updated: 3/11/2024
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Media.Playback;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
-using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
+using Sharpener.Extensions;
 
 namespace Audibly.App.Views;
 
@@ -24,7 +24,7 @@ namespace Audibly.App.Views;
 /// </summary>
 public sealed partial class AudiobookListPage : Page
 {
-    private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
     ///     Initializes the page.
@@ -64,15 +64,28 @@ public sealed partial class AudiobookListPage : Page
             // If no search query is entered, refresh the complete list.
             if (string.IsNullOrEmpty(sender.Text))
             {
-                await dispatcherQueue.EnqueueAsync(async () =>
+                await _dispatcherQueue.EnqueueAsync(async () =>
                     await ViewModel.GetAudiobookListAsync());
                 sender.ItemsSource = null;
             }
             else
             {
-                sender.ItemsSource = GetFilteredAudiobooks(sender.Text);
+                // sender.ItemsSource = GetFilteredAudiobooks(sender.Text);
+                sender.ItemsSource = GetAudiobookTitles(sender.Text);
             }
         }
+    }
+    
+    private List<string> GetAudiobookTitles(string text)
+    {
+        var parameters = text.Split(new[] { ' ' },
+            StringSplitOptions.RemoveEmptyEntries);
+
+        return ViewModel.Audiobooks.Where(audiobook => parameters
+                .Any(parameter =>
+                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
+            .Select(audiobook => audiobook.Title)
+            .AsList();
     }
 
     /// <summary>
@@ -92,7 +105,7 @@ public sealed partial class AudiobookListPage : Page
     /// </summary>
     private async Task ResetAudiobookList()
     {
-        await dispatcherQueue.EnqueueAsync(async () =>
+        await _dispatcherQueue.EnqueueAsync(async () =>
             await ViewModel.GetAudiobookListAsync());
     }
 
@@ -118,7 +131,7 @@ public sealed partial class AudiobookListPage : Page
     {
         var matches = GetFilteredAudiobooks(text);
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ViewModel.Audiobooks.Clear();
             foreach (var match in matches) ViewModel.Audiobooks.Add(match);

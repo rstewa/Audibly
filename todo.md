@@ -12,6 +12,7 @@
 - [ ] fix light mode
 - [ ] bug when you refresh audiobooks and some of the images in the list view are blank
 - [ ] create annoted scroll bar
+- [ ] add support for different file types
 
 NOTES:
 

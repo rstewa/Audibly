@@ -1,19 +1,16 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/11/2024
+// Updated: 3/13/2024
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Media.Playback;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Sharpener.Extensions;
 
@@ -33,6 +30,7 @@ public sealed partial class AudiobookListPage : Page
     {
         InitializeComponent();
     }
+
 
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
@@ -75,7 +73,7 @@ public sealed partial class AudiobookListPage : Page
             }
         }
     }
-    
+
     private List<string> GetAudiobookTitles(string text)
     {
         var parameters = text.Split(new[] { ' ' },
@@ -153,36 +151,6 @@ public sealed partial class AudiobookListPage : Page
     {
         if (!string.IsNullOrWhiteSpace(AudiobookSearchBox.AutoSuggestBox.Text))
             await FilterAudiobookList(AudiobookSearchBox.AutoSuggestBox.Text);
-    }
-
-    /// <summary>
-    ///     Menu flyout click control for selecting a audiobook and displaying details.
-    /// </summary>
-    private void ViewDetails_Click(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel.SelectedAudiobook != null)
-            Frame.Navigate(typeof(AudiobookDetailPage), ViewModel.SelectedAudiobook.Model.Id,
-                new DrillInNavigationTransitionInfo());
-    }
-
-    // private void DataGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) =>
-    //     Frame.Navigate(typeof(AudiobookDetailPage), ViewModel.SelectedAudiobook.Model.Id,
-    //             new DrillInNavigationTransitionInfo());
-
-    /// <summary>
-    ///     Navigates to a blank audiobook details page for the user to fill in.
-    /// </summary>
-    private void OpenAudiobook_Click(object sender, RoutedEventArgs e)
-    {
-        Frame.Navigate(typeof(AudiobookDetailPage), null, new DrillInNavigationTransitionInfo());
-    }
-
-    /// <summary>
-    ///     Selects the tapped audiobook.
-    /// </summary>
-    private void DataGrid_RightTapped(object sender, RightTappedRoutedEventArgs e)
-    {
-        ViewModel.SelectedAudiobook = (e.OriginalSource as FrameworkElement).DataContext as AudiobookViewModel;
     }
 
     private void AudiobookListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)

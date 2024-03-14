@@ -13,6 +13,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="UserControls\Player.xaml" />
     <None Remove="UserControls\ProgressBarWithText.xaml" />
   </ItemGroup>
 
@@ -54,6 +55,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
     <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="UserControls\Player.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="UserControls\ProgressBarWithText.xaml">

@@ -219,7 +219,7 @@
               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
               Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
             
-            <MediaPlayerElement x:Name="AudioPlayerElement"/>
+            <userControls:Player/>
             
         </Grid>
 

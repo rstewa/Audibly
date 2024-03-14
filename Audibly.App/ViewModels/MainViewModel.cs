@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Media.Playback;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Audibly.App.Services;
@@ -36,6 +37,8 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
+    
+    public readonly MediaPlayer mediaPlayer = new();
 
     private AudiobookViewModel _selectedAudiobook;
 

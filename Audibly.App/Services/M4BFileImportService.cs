@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/6/2024
-// Updated: 3/11/2024
+// Updated: 3/16/2024
 
 using System;
 using System.IO;
@@ -9,14 +9,22 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
 using Audibly.Models;
+using AutoMapper;
 using Sharpener.Extensions;
+using ChapterInfo = Audibly.Models.ChapterInfo;
 
 namespace Audibly.App.Services;
 
 public class M4BFileImportService : IImportFiles
 {
-    private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
+    private static IMapper _mapper;
 
+    public M4BFileImportService()
+    {
+        _mapper = new MapperConfiguration(cfg => { cfg.CreateMap<ATL.ChapterInfo, ChapterInfo>(); }).CreateMapper();
+    }
+
+    private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
     public async Task ImportDirectoryAsync(string path, Func<int, int, string, Task> progressCallback)
     {
@@ -56,7 +64,8 @@ public class M4BFileImportService : IImportFiles
     {
         var track = new Track(path);
         var bookAppdataDir = await StorageFolder.CreateFolderAsync(
-            $"{Path.GetFileNameWithoutExtension(path)} [{track.Artist}]", CreationCollisionOption.OpenIfExists);
+            $"{Path.GetFileNameWithoutExtension(path)} [{track.Artist}]",
+            CreationCollisionOption.OpenIfExists);
         var audiobook = new Audiobook
         {
             Title = track.Title,
@@ -69,7 +78,7 @@ public class M4BFileImportService : IImportFiles
             PlaybackSpeed = 1.0,
             ReleaseDate = track.Date,
             Volume = 1.0,
-            CurrentChapter = null,
+            CurrentChapterIndex = 0,
             Chapters = []
         };
 
@@ -80,6 +89,15 @@ public class M4BFileImportService : IImportFiles
         await FileIO.WriteBytesAsync(coverImage, imageBytes);
 
         audiobook.CoverImagePath = coverImage.Path;
+
+        // read in the chapters
+        var chapterIndex = 0;
+        foreach (var ch in track.Chapters)
+        {
+            var tmp = _mapper.Map<ChapterInfo>(ch);
+            tmp.Index = chapterIndex++;
+            audiobook.Chapters.Add(tmp);
+        }
 
         return audiobook;
     }

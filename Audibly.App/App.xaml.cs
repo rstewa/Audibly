@@ -1,6 +1,6 @@
-﻿// Author: rstewa
+﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/7/2024
+// Updated: 3/16/2024
 
 using System.Diagnostics;
 using Windows.Globalization;
@@ -36,6 +36,11 @@ public partial class App : Application
     public static MainViewModel ViewModel { get; } = new(new M4BFileImportService());
 
     /// <summary>
+    ///     Gets the app-wide PlayerViewModel singleton instance.
+    /// </summary>
+    public static PlayerViewModel PlayerViewModel { get; } = new();
+
+    /// <summary>
     ///     Pipeline for interacting with backend service or database.
     /// </summary>
     public static IAudiblyRepository Repository { get; private set; }
@@ -47,15 +52,13 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-        
+
         // Get theme choice from LocalSettings.
         var value = ApplicationData.Current.LocalSettings.Values["themeSetting"];
 
         if (value != null)
-        {
             // Apply theme choice.
-            App.Current.RequestedTheme = (ApplicationTheme)(int)value;
-        }
+            Current.RequestedTheme = (ApplicationTheme)(int)value;
     }
 
     /// <summary>

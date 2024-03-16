@@ -1,10 +1,11 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/11/2024
-// Updated: 3/13/2024
+// Updated: 3/16/2024
 
 using System;
 using Windows.Media.Playback;
 using Audibly.App.ViewModels;
+using Audibly.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -17,6 +18,11 @@ public sealed partial class Player : UserControl
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
+
+    /// <summary>
+    ///     Gets the app-wide PlayerViewModel instance.
+    /// </summary>
+    public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
     public Player()
     {
@@ -92,6 +98,35 @@ public sealed partial class Player : UserControl
     }
 
     private void NextButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var chapter = (ChapterInfo)ChapterCombo.SelectedItem;
+        if (chapter == null)
+        {
+            ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
+        }
+        else
+        {
+            // TODO: i feel like this is gross ...
+            PlayerViewModel.NowPlaying.CurrentChapterIndex = PlayerViewModel.NowPlaying.Chapters.IndexOf(chapter);
+            PlayerViewModel.NowPlaying.CurrentChapter = chapter;
+            // AudioPlayer.MediaPlayer.PlaybackSession.Position = TimeSpan.FromMilliseconds(chapter.StartTimeMs);
+        }
+
+        // throw new NotImplementedException();
+        // todo
+    }
+
+    private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
         throw new NotImplementedException();
     }

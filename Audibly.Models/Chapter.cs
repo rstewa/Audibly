@@ -1,8 +1,6 @@
-﻿// Author: rstewa
+﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/5/2024
-
-using ATL;
+// Updated: 3/16/2024
 
 namespace Audibly.Models;
 
@@ -11,7 +9,9 @@ namespace Audibly.Models;
 /// </summary>
 public class ChapterInfo : DbObject, IEquatable<Audiobook>
 {
-    private const char InternalValueSeparator = '˵'; // Some obscure unicode character that hopefully won't be used anywhere in an actual tag
+    private const char
+        InternalValueSeparator =
+            '˵'; // Some obscure unicode character that hopefully won't be used anywhere in an actual tag
 
     /// <summary>
     ///     Information describing an URL
@@ -68,6 +68,11 @@ public class ChapterInfo : DbObject, IEquatable<Audiobook>
             return Description + InternalValueSeparator + Url;
         }
     }
+
+    /// <summary>
+    ///     This is a sequential value that is used to keep the Chapters in order
+    /// </summary>
+    public int Index { get; set; }
 
     /// <summary>
     ///     Start time (ms)

@@ -4,11 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Contoso.Models"
-    xmlns:vm="using:Contoso.App.ViewModels"
-    xmlns:sys="using:System"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:uc="using:Contoso.App.UserControls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
     xmlns:userControls="using:Audibly.App.UserControls"
@@ -17,93 +12,94 @@
 
     <RelativePanel>
         <TextBlock
-                x:Name="PageTitle"
-                Style="{StaticResource PageTitleTextBlockStyle}"
-                Text="{x:Bind ViewModel.Title, Mode=OneWay}" />
+            x:Name="PageTitle"
+            Style="{StaticResource PageTitleTextBlockStyle}"
+            Text="{x:Bind ViewModel.Title, Mode=OneWay}" />
 
         <CommandBar
-                x:Name="MainCommandBar"
-                HorizontalAlignment="Stretch"
-                Background="Transparent"
-                DefaultLabelPosition="Right"
-                RelativePanel.LeftOf="AudiobookSearchBox"
-                RelativePanel.RightOf="PageTitle">
+            x:Name="MainCommandBar"
+            HorizontalAlignment="Stretch"
+            Background="Transparent"
+            DefaultLabelPosition="Right"
+            RelativePanel.LeftOf="AudiobookSearchBox"
+            RelativePanel.RightOf="PageTitle">
             <AppBarButton
-                    Click="{x:Bind ViewModel.SaveAsync}"
-                    Icon="Save"
-                    Label="Save"
-                    Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}"/>
+                Click="{x:Bind ViewModel.SaveAsync}"
+                Icon="Save"
+                Label="Save"
+                Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
             <AppBarButton
-                    Click="{x:Bind ViewModel.CancelEditsAsync}"
-                    Icon="Cancel"
-                    Label="Cancel"
-                    Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
-            <AppBarSeparator Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}"/>
+                Click="{x:Bind ViewModel.CancelEditsAsync}"
+                Icon="Cancel"
+                Label="Cancel"
+                Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
+            <AppBarSeparator Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
             <AppBarButton
-                    Click="{x:Bind ViewModel.StartEdit}"
-                    Icon="Edit"
-                    IsEnabled="{x:Bind viewModels:Converters.Not(ViewModel.IsInEdit), Mode=OneWay}"
-                    Visibility="{x:Bind viewModels:Converters.CollapsedIf(ViewModel.IsNewAudiobook), Mode=OneWay}"
-                    Label="Edit" />
+                Click="{x:Bind ViewModel.StartEdit}"
+                Icon="Edit"
+                IsEnabled="{x:Bind viewModels:Converters.Not(ViewModel.IsInEdit), Mode=OneWay}"
+                Visibility="{x:Bind viewModels:Converters.CollapsedIf(ViewModel.IsNewAudiobook), Mode=OneWay}"
+                Label="Edit" />
         </CommandBar>
 
         <userControls:CollapsibleSearchBox
-                x:Name="AudiobookSearchBox"
-                Width="240"
-                Margin="12,8,12,0"
-                CollapseWidth="{StaticResource LargeWindowSnapPoint}"
-                Loaded="AudiobookSearchBox_Loaded"
-                RelativePanel.AlignRightWithPanel="True" />
+            x:Name="AudiobookSearchBox"
+            Width="240"
+            Margin="12,8,12,0"
+            CollapseWidth="{StaticResource LargeWindowSnapPoint}"
+            Loaded="AudiobookSearchBox_Loaded"
+            RelativePanel.AlignRightWithPanel="True" />
 
         <ScrollViewer
-                x:Name="DetailPanel"
-                RelativePanel.AlignLeftWithPanel="True"
-                RelativePanel.AlignRightWithPanel="True"
-                RelativePanel.Below="PageTitle"
-                VerticalScrollBarVisibility="Auto"
-                VerticalScrollMode="Auto">
+            Visibility="{x:Bind viewModels:Converters.CollapsedIfNull(MainViewModel.SelectedAudiobook), Mode=OneWay}"
+            x:Name="DetailPanel"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.Below="PageTitle"
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Auto">
 
-            <StackPanel 
-                    Margin="0,8,4,0">
+            <StackPanel
+                Margin="0,8,4,0">
                 <StackPanel.Resources>
                     <Style TargetType="muxc:Expander">
-                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
                     </Style>
                 </StackPanel.Resources>
 
                 <muxc:Expander x:Name="GeneralExpander">
                     <muxc:Expander.Header>
                         <Grid>
-                            <TextBlock 
-                                    Text="General"
-                                    Style="{ThemeResource SubtitleTextBlockStyle}"/>
                             <TextBlock
-                                    Text="{x:Bind ViewModel.Title, Mode=OneWay}" 
-                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                Text="General"
+                                Style="{ThemeResource SubtitleTextBlockStyle}" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.Title, Mode=OneWay}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" />
                         </Grid>
                     </muxc:Expander.Header>
 
                     <RelativePanel Margin="8,0,0,12">
                         <TextBox
-                                x:Name="Author"
-                                MinWidth="120"
-                                Margin="0,8,16,8"
-                                Header="First name"
-                                IsReadOnly="{x:Bind viewModels:Converters.Not(ViewModel.IsInEdit), Mode=OneWay}"
-                                RelativePanel.AlignLeftWithPanel="True"
-                                Text="{x:Bind ViewModel.Author, Mode=TwoWay}"
-                                Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
+                            x:Name="Author"
+                            MinWidth="120"
+                            Margin="0,8,16,8"
+                            Header="First name"
+                            IsReadOnly="{x:Bind viewModels:Converters.Not(ViewModel.IsInEdit), Mode=OneWay}"
+                            RelativePanel.AlignLeftWithPanel="True"
+                            Text="{x:Bind ViewModel.Author, Mode=TwoWay}"
+                            Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
                         <TextBox
-                                x:Name="Description"
-                                MinWidth="120"
-                                Margin="0,8,16,8"
-                                Header="Last name"
-                                IsReadOnly="{x:Bind viewModels:Converters.Not(ViewModel.IsInEdit), Mode=OneWay}"
-                                RelativePanel.RightOf="Author"
-                                Text="{x:Bind ViewModel.Description, Mode=TwoWay}"
-                                Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
+                            x:Name="Description"
+                            MinWidth="120"
+                            Margin="0,8,16,8"
+                            Header="Last name"
+                            IsReadOnly="{x:Bind viewModels:Converters.Not(ViewModel.IsInEdit), Mode=OneWay}"
+                            RelativePanel.RightOf="Author"
+                            Text="{x:Bind ViewModel.Description, Mode=TwoWay}"
+                            Visibility="{x:Bind ViewModel.IsInEdit, Mode=OneWay}" />
                     </RelativePanel>
 
                 </muxc:Expander>
@@ -131,14 +127,14 @@
                         <Setter Target="EmailText.(RelativePanel.AlignLeftWithPanel)" Value="True" />
                         <Setter Target="EmailText.(RelativePanel.Below)" Value="CompanyText" />
                         <Setter Target="DetailPanel.Margin" Value="12,0,0,0" />
-                        <Setter Target="MainCommandBar.DefaultLabelPosition" Value="Bottom"/>
+                        <Setter Target="MainCommandBar.DefaultLabelPosition" Value="Bottom" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
             <VisualStateGroup>
                 <VisualState x:Name="NewAudiobook">
                     <VisualState.Setters>
-                        <Setter Target="GeneralExpander.IsExpanded" Value="True"/>
+                        <Setter Target="GeneralExpander.IsExpanded" Value="True" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

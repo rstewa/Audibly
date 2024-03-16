@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/13/2024
+// Updated: 3/16/2024
 
 using System;
 using System.Collections.Generic;
@@ -36,6 +36,11 @@ public sealed partial class AudiobookListPage : Page
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
+
+    /// <summary>
+    ///     Gets the app-wide PlayerViewModel instance.
+    /// </summary>
+    public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
     /// <summary>
     ///     Initializes the AutoSuggestBox portion of the search box.
@@ -157,5 +162,12 @@ public sealed partial class AudiobookListPage : Page
     {
         var selectedAudiobook = (sender as ListView)?.SelectedItem as AudiobookViewModel;
         ViewModel.SelectedAudiobook = selectedAudiobook;
+        // todo: this is a hack
+        // PlayerViewModel.NowPlaying = selectedAudiobook;
+    }
+
+    private void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
     }
 }

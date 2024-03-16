@@ -1,7 +1,7 @@
-- [ ] import chapters when adding audiobook to database
+- [x] import chapters when adding audiobook to database
 - [ ] add ability to see most recent
 - [ ] add filter button to change how audiobooks are sorted by default
-- [ ] add now playing bar
+- [ ] add now playing bar -- in progress
 - [x] ~~add progress bar when importing audiobooks~~
 - [x] ~~add file dialog when importing audiobooks~~
 - [x] ~~automatically refresh audiobooks list after importing audiobooks~~
@@ -13,6 +13,13 @@
 - [ ] bug when you refresh audiobooks and some of the images in the list view are blank
 - [ ] create annoted scroll bar
 - [ ] add support for different file types
+- [ ] allow user to select accent color in settings
+- [ ] disable media controls when no audiobook is opened
+- [ ] only set now playing audiobook when user clicks on the play audiobook button (not when an audiobook is selected in the list view)
+- [ ] fix view when no audiobooks have been imported yet
+- [ ] add check to see if user has modified or deleted app files (e.g., the db file or the cover image files)
+- [ ] add text underneath importing progress bar
+- [ ] save playerviewmodel to DB
 
 NOTES:
 

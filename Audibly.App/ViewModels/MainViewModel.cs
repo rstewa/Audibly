@@ -1,6 +1,6 @@
-// Author: rstewa
+// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/10/2024
+// Updated: 3/16/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -37,7 +37,7 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
-    
+
     public readonly MediaPlayer mediaPlayer = new();
 
     private AudiobookViewModel _selectedAudiobook;
@@ -85,7 +85,7 @@ public class MainViewModel : BindableBase
     }
 
     private string _isImportingText;
-    
+
     /// <summary>
     ///     Gets or sets the text to display while importing audiobooks.
     /// </summary>
@@ -129,7 +129,7 @@ public class MainViewModel : BindableBase
             await GetAudiobookListAsync();
         });
     }
-    
+
     public async void ImportAudiobook()
     {
         // Create a folder picker
@@ -152,11 +152,11 @@ public class MainViewModel : BindableBase
 
         // Open the picker for the user to pick a folder
         var file = await openPicker.PickSingleFileAsync();
-        
+
         if (file == null) return;
 
         await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
-        
+
         await Task.Run(async () =>
         {
             await _fileImporter.ImportFileAsync(file.Path, async (progress, total, text) =>
@@ -203,7 +203,7 @@ public class MainViewModel : BindableBase
 
         // await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
         await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
-        
+
         await Task.Run(async () =>
         {
             await _fileImporter.ImportDirectoryAsync(folder.Path, async (progress, total, text) =>

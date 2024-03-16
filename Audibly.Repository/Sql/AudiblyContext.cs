@@ -1,6 +1,6 @@
-﻿// Author: rstewa
+﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/10/2024
+// Updated: 3/16/2024
 
 using Audibly.Models;
 using Microsoft.EntityFrameworkCore;
@@ -31,4 +31,6 @@ public class AudiblyContext : DbContext
     ///     Gets the audiobooks DbSet.
     /// </summary>
     public DbSet<Audiobook> Audiobooks { get; set; }
+
+    public DbSet<ChapterInfo> Chapters { get; set; }
 }

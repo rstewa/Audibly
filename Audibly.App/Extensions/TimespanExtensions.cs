@@ -43,6 +43,6 @@ public static class TimespanExtensions
     public static string ToStr_ms(this int ms)
     {
         var t = TimeSpan.FromMilliseconds(ms);
-        return $@"{t.TotalHours}:{t:mm}:{t:ss}";
+        return $"{(int)t.TotalHours}:{t:mm}:{t:ss}";
     }
 }

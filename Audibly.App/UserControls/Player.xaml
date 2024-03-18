@@ -7,6 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:ui="using:CommunityToolkit.WinUI.UI"
              xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
+             xmlns:local="using:Audibly.App.UserControls"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -17,6 +18,8 @@
             <!-- <Setter Property="Margin" Value="0" /> -->
             <Setter Property="FontSize" Value="100" />
         </Style>
+        <local:ProgressSliderValueConverter x:Key="ProgressSliderValueConverter"/>
+
     </UserControl.Resources>
 
     <Grid>
@@ -108,16 +111,19 @@
                    FontSize="20"
                    HorizontalAlignment="Left"
                    VerticalAlignment="Center"
-                   Margin="30,0,30,0"
-                   Text="00:00" />
+                   Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}" />
 
+                <!-- Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}" -->
         <Slider Grid.Row="1" Grid.Column="1"
                 x:Name="NowPlayingBar"
+                Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
+                PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
                 ValueChanged="NowPlayingBar_OnValueChanged"
                 DragStarting="NowPlayingBar_OnDragStarting"
                 DropCompleted="NowPlayingBar_OnDropCompleted"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Center" />
+                VerticalAlignment="Center"
+                ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}"/>
 
         <TextBlock Grid.Row="1" Grid.Column="2"
                    x:Name="RemainingTimeTextBlock"
@@ -125,8 +131,7 @@
                    FontSize="20"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
-                   Margin="30,0,30,0"
-                   Text="99:99" />
+                   Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}" />
 
         <Button Grid.Row="2" Grid.Column="0"
                 x:Name="PreviousButton"
@@ -140,10 +145,14 @@
                 Grid.Column="1"
                 x:Name="PlayPauseButton"
                 Style="{StaticResource AudioButtonStyle}"
-                Content="&#xE768;"
                 Click="PlayPauseButton_OnClick"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center" />
+                VerticalAlignment="Center"
+                Tag="play">
+            <Viewbox MaxWidth="24" MaxHeight="24">
+                <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
+            </Viewbox>
+        </Button>
 
         <Button Grid.Row="2" Grid.Column="2"
                 x:Name="NextButton"

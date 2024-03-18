@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Media.Core;
+using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -169,5 +171,6 @@ public sealed partial class AudiobookListPage : Page
     private void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
+        PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
     }
 }

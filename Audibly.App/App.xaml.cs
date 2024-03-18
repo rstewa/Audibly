@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/16/2024
+// Updated: 3/18/2024
 
 using System.Diagnostics;
 using Windows.Globalization;
@@ -58,7 +58,7 @@ public partial class App : Application
 
         if (value != null)
             // Apply theme choice.
-            Current.RequestedTheme = (ApplicationTheme)(int)value;
+            Current.RequestedTheme = value.ToString() == "Light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
     }
 
     /// <summary>

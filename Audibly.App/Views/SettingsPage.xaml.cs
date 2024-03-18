@@ -1,8 +1,9 @@
-﻿// Author: rstewa
+﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/7/2024
+// Updated: 3/18/2024
 
 using System;
+using System.Reflection;
 using Windows.Storage;
 using Windows.System;
 using Microsoft.UI.Xaml;
@@ -12,52 +13,40 @@ namespace Audibly.App.Views;
 
 public sealed partial class SettingsPage : Page
 {
-    public const string DataSourceKey = "data_source";
+    public string Version
+    {
+        get
+        {
+            var version = Assembly.GetEntryAssembly().GetName().Version;
+            return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
+        }
+    }
 
-    /// <summary>
-    ///     Initializes a new instance of the SettingsPage class.
-    /// </summary>
     public SettingsPage()
     {
         InitializeComponent();
+        Loaded += OnSettingsPageLoaded;
     }
 
-    /// <summary>
-    ///     Launches the privacy statement in the user's default browser.
-    /// </summary>
-    private async void OnPrivacyButtonClick(object sender, RoutedEventArgs e)
+    private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
-        await Launcher.LaunchUriAsync(new Uri("https://go.microsoft.com/fwlink/?LinkId=521839"));
+        var currentTheme = ApplicationData.Current.LocalSettings.Values["themeSetting"];
+        themeMode.SelectedIndex = currentTheme switch
+        {
+            "Light" => 0,
+            "Dark" => 1,
+            _ => themeMode.SelectedIndex
+        };
     }
 
-    /// <summary>
-    ///     Launches the license terms in the user's default browser.
-    /// </summary>
-    private async void OnLicenseButtonClick(object sender, RoutedEventArgs e)
+    private void themeMode_SelectionChanged(object sender, RoutedEventArgs e)
     {
-        await Launcher.LaunchUriAsync(new Uri("https://go.microsoft.com/fwlink/?LinkId=822631"));
+        var selectedTheme = ((ComboBoxItem)themeMode.SelectedItem)?.Tag?.ToString();
+        if (selectedTheme != null) ApplicationData.Current.LocalSettings.Values["themeSetting"] = selectedTheme;
     }
 
-    /// <summary>
-    ///     Launches the sample's GitHub page in the user's default browser.
-    /// </summary>
-    private async void OnCodeButtonClick(object sender, RoutedEventArgs e)
+    private async void bugRequestCard_Click(object sender, RoutedEventArgs e)
     {
-        await Launcher.LaunchUriAsync(
-            new Uri("https://github.com/Microsoft/Windows-appsample-customers-orders-database"));
-    }
-
-    // TODO: tell user they need to restart the app for changes to take effect
-    private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
-    {
-        // Save theme choice to LocalSettings. 
-        // ApplicationTheme enum values: 0 = Light, 1 = Dark
-        ApplicationData.Current.LocalSettings.Values["themeSetting"] =
-            ((ToggleSwitch)sender).IsOn ? 0 : 1;
-    }
-
-    private void ToggleSwitch_Loaded(object sender, RoutedEventArgs e)
-    {
-        ((ToggleSwitch)sender).IsOn = Application.Current.RequestedTheme == ApplicationTheme.Light;
+        await Launcher.LaunchUriAsync(new Uri("https://github.com/rstewa/Audibly/issues/new/choose"));
     }
 }

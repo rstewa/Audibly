@@ -86,6 +86,8 @@
         <!-- </Grid> -->
 
         <MediaPlayerElement
+            Grid.Row="1"
+            Visibility="Collapsed"
             x:Name="AudioPlayer"
             AreTransportControlsEnabled="False" />
 
@@ -112,9 +114,6 @@
                 Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}"
                 Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
                 PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
-                ValueChanged="NowPlayingBar_OnValueChanged"
-                DragStarting="NowPlayingBar_OnDragStarting"
-                DropCompleted="NowPlayingBar_OnDropCompleted"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}" />

@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
@@ -63,12 +64,12 @@ public sealed partial class Player : UserControl
 
     private async void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
     {
-        await _dispatcherQueue.EnqueueAsync(async () =>
+        _dispatcherQueue.TryEnqueue(() =>
         {
             ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
             PlayerViewModel.ChapterDurationMs = (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
                                                       PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-            
+
             // todo: set current position here from audiobook record
         });
 
@@ -137,25 +138,6 @@ public sealed partial class Player : UserControl
 
             ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter);
         });
-    }
-
-    private void NowPlayingBar_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        // if (_isDragging)
-        // {
-        //     _currentPosition = TimeSpan.FromMilliseconds(e.NewValue);
-        // }
-    }
-
-    private void NowPlayingBar_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-    {
-        _isDragging = true;
-    }
-
-    private void NowPlayingBar_OnDropCompleted(UIElement sender, DropCompletedEventArgs args)
-    {
-        _isDragging = false;
-        _currentPosition = TimeSpan.FromMilliseconds(NowPlayingBar.Value);
     }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)

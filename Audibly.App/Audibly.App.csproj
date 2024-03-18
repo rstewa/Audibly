@@ -6,8 +6,8 @@
         <RootNamespace>Audibly.App</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <Platforms>x86;x64;ARM64</Platforms>
-        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-        <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+        <PublishProfile>win-$(Platform).pubxml</PublishProfile>
         <UseRidGraph>true</UseRidGraph>
         <UseWinUI>true</UseWinUI>
         <EnableMsixTooling>true</EnableMsixTooling>
@@ -29,17 +29,16 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="13.0.1"/>
-        <PackageReference Include="CommunityToolkit.WinUI" Version="7.1.2"/>
-        <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2"/>
-        <PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
+        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.2"/>
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230913002"/>
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
         <Manifest Include="$(ApplicationManifest)"/>
         <PackageReference Include="Sharpener" Version="0.2.4"/>
         <PackageReference Include="z440.atl.core" Version="5.20.0"/>

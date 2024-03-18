@@ -7,8 +7,8 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:vm="using:Audibly.App.ViewModels"
     xmlns:userControls="using:Audibly.App.UserControls"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
-    xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
 
     NavigationCacheMode="Required"
     mc:Ignorable="d">
@@ -34,9 +34,9 @@
                                 ImageSource="{x:Bind CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
                         </Border.Background>
                     </Border>
-                    <ui:Effects.Shadow>
+                    <winUi:Effects.Shadow>
                         <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
-                    </ui:Effects.Shadow>
+                    </winUi:Effects.Shadow>
 
                 </Border>
 
@@ -51,14 +51,14 @@
             </Grid>
         </DataTemplate>
 
-        <media:AttachedCardShadow x:Key="CommonShadow"
-                                  Offset="4" />
-
-        <Style BasedOn="{StaticResource DefaultButtonStyle}"
-               TargetType="Button">
-            <Setter Property="ui:Effects.Shadow" Value="{StaticResource CommonShadow}" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-        </Style>
+        <!-- <media:AttachedCardShadow x:Key="CommonShadow" -->
+        <!--                           Offset="4" /> -->
+        <!-- -->
+        <!-- <Style BasedOn="{StaticResource DefaultButtonStyle}" -->
+        <!--        TargetType="Button"> -->
+        <!--     <Setter Property="winUi:Effects.Shadow" Value="{StaticResource CommonShadow}" /> -->
+        <!--     <Setter Property="HorizontalAlignment" Value="Center" /> -->
+        <!-- </Style> -->
 
     </Page.Resources>
 
@@ -169,9 +169,9 @@
                                     Stretch="UniformToFill" />
                             </Border.Background>
                         </Border>
-                        <ui:Effects.Shadow>
+                        <winUi:Effects.Shadow>
                             <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
-                        </ui:Effects.Shadow>
+                        </winUi:Effects.Shadow>
 
                     </Border>
 

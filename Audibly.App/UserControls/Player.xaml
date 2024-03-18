@@ -5,21 +5,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:ui="using:CommunityToolkit.WinUI.UI"
-             xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
              xmlns:local="using:Audibly.App.UserControls"
+             xmlns:winUi="using:CommunityToolkit.WinUI"
+             xmlns:media="using:CommunityToolkit.WinUI.Media"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
-        <Style x:Key="AudioButtonStyle" TargetType="Button">
-            <!-- <Setter Property="Background" Value="Transparent" /> -->
-            <!-- <Setter Property="BorderThickness" Value="0" /> -->
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
-            <!-- <Setter Property="Margin" Value="0" /> -->
-            <Setter Property="FontSize" Value="100" />
-        </Style>
-        <local:ProgressSliderValueConverter x:Key="ProgressSliderValueConverter"/>
 
+    <UserControl.Resources>
+        <local:ProgressSliderValueConverter x:Key="ProgressSliderValueConverter" />
     </UserControl.Resources>
 
     <Grid>
@@ -29,26 +22,18 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+        <!-- <Grid -->
+        <!--     x:Name="ChapterGrid" -->
+        <!--     Grid.Row="0"> -->
+        <!--     <Grid.ColumnDefinitions> -->
+        <!--         <ColumnDefinition Width="Auto" /> -->
+        <!--         <ColumnDefinition Width="Auto" /> -->
+        <!--         <ColumnDefinition Width="*" /> -->
+        <!--         <ColumnDefinition Width="Auto" /> -->
+        <!--     </Grid.ColumnDefinitions> -->
+        <StackPanel Orientation="Horizontal">
 
-        <Grid
-            x:Name="ChapterGrid"
-            Grid.Row="0"
-            Grid.ColumnSpan="3"
-            HorizontalAlignment="Stretch"
-            Margin="0,0,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" Width="200" Height="200">
+            <Border Width="200" Height="200">
                 <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="1">
                     <Border.Background>
                         <ImageBrush
@@ -56,14 +41,13 @@
                             Stretch="UniformToFill" />
                     </Border.Background>
                 </Border>
-                <ui:Effects.Shadow>
+                <winUi:Effects.Shadow>
                     <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
-                </ui:Effects.Shadow>
+                </winUi:Effects.Shadow>
             </Border>
 
             <Button
                 x:Name="PreviousChapterButton"
-                Grid.Column="1"
                 Margin="0,0,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
@@ -76,7 +60,6 @@
 
             <ComboBox
                 x:Name="ChapterCombo"
-                Grid.Column="2"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 HorizontalContentAlignment="Center"
@@ -89,7 +72,6 @@
 
             <Button
                 x:Name="NextChapterButton"
-                Grid.Column="3"
                 Margin="0,0,0,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
@@ -99,23 +81,35 @@
                 Content="&#xE76C;"
                 FontFamily="Segoe MDL2 Assets"
                 ToolTipService.ToolTip="Next Chapter" />
-        </Grid>
+
+        </StackPanel>
+        <!-- </Grid> -->
 
         <MediaPlayerElement
             x:Name="AudioPlayer"
             AreTransportControlsEnabled="False" />
 
-        <TextBlock Grid.Row="1" Grid.Column="0"
-                   x:Name="CurrentTimeTextBlock"
-                   Style="{StaticResource CaptionTextBlockStyle}"
-                   FontSize="20"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center"
-                   Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}" />
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" ColumnSpacing="30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                <!-- Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}" -->
-        <Slider Grid.Row="1" Grid.Column="1"
+            <TextBlock
+                Grid.Column="0"
+                x:Name="CurrentTimeTextBlock"
+                Margin="30, 0, 0, 0"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                FontSize="20"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}" />
+
+            <Slider
+                Grid.Column="1"
                 x:Name="NowPlayingBar"
+                Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}"
                 Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
                 PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
                 ValueChanged="NowPlayingBar_OnValueChanged"
@@ -123,44 +117,120 @@
                 DropCompleted="NowPlayingBar_OnDropCompleted"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
-                ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}"/>
+                ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}" />
 
-        <TextBlock Grid.Row="1" Grid.Column="2"
-                   x:Name="RemainingTimeTextBlock"
-                   Style="{StaticResource CaptionTextBlockStyle}"
-                   FontSize="20"
-                   HorizontalAlignment="Right"
-                   VerticalAlignment="Center"
-                   Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}" />
-
-        <Button Grid.Row="2" Grid.Column="0"
-                x:Name="PreviousButton"
-                Style="{StaticResource AudioButtonStyle}"
-                Content="&#xED3C;"
-                Click="PreviousButton_OnClick"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center" />
-
-        <Button Grid.Row="2"
-                Grid.Column="1"
-                x:Name="PlayPauseButton"
-                Style="{StaticResource AudioButtonStyle}"
-                Click="PlayPauseButton_OnClick"
-                HorizontalAlignment="Center"
+            <TextBlock
+                Grid.Column="2"
+                x:Name="RemainingTimeTextBlock"
+                Margin="0, 0, 30, 0"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                FontSize="20"
+                HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Tag="play">
-            <Viewbox MaxWidth="24" MaxHeight="24">
-                <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
-            </Viewbox>
-        </Button>
+                Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}" />
+        </Grid>
 
-        <Button Grid.Row="2" Grid.Column="2"
-                x:Name="NextButton"
-                Style="{StaticResource AudioButtonStyle}"
-                Content="&#xED3D;"
-                Click="NextButton_OnClick"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center" />
+
+        <StackPanel
+            Grid.ColumnSpan="3"
+            Grid.Row="2"
+            Margin="0,5,0,0"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+
+            <StackPanel.Resources>
+                <!-- ReSharper disable all Xaml.RedundantResource -->
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                    <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
+                    <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                    <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                    <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
+
+                </ResourceDictionary>
+            </StackPanel.Resources>
+
+            <RepeatButton
+                x:Name="SkipBackButton"
+                BorderThickness="0"
+                Click="SkipBackButton_OnClick"
+                Delay="500"
+                Interval="100"
+                ToolTipService.ToolTip="Skip backward 10 seconds">
+                <FontIcon
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="24"
+                    Glyph="&#xED3C;" />
+            </RepeatButton>
+
+            <Button
+                x:Name="PlayPauseButton"
+                BorderThickness="0"
+                Click="PlayPauseButton_OnClick"
+                Tag="play"
+                ToolTipService.ToolTip="Play/Pause">
+                <Viewbox MaxWidth="24" MaxHeight="24">
+                    <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
+                </Viewbox>
+            </Button>
+
+            <RepeatButton
+                x:Name="SkipForwardButton"
+                BorderThickness="0"
+                Click="SkipForwardButton_OnClick"
+                Delay="500"
+                Interval="100"
+                ToolTipService.ToolTip="Skip forward 30 seconds">
+                <FontIcon
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="24"
+                    Glyph="&#xED3D;" />
+            </RepeatButton>
+
+        </StackPanel>
+
+        <!-- <Button Grid.Row="2" Grid.Column="0" -->
+        <!--         x:Name="SkipBackButton" -->
+        <!--         Style="{StaticResource AudioButtonStyle}" -->
+        <!--         Content="&#xED3C;" -->
+        <!--         Click="PreviousButton_OnClick" -->
+        <!--         HorizontalAlignment="Center" -->
+        <!--         VerticalAlignment="Center" /> -->
+        <!-- -->
+        <!-- <Button Grid.Row="2" -->
+        <!--         Grid.Column="1" -->
+        <!--         x:Name="PlayPauseButton" -->
+        <!--         Style="{StaticResource AudioButtonStyle}" -->
+        <!--         Click="PlayPauseButton_OnClick" -->
+        <!--         HorizontalAlignment="Center" -->
+        <!--         VerticalAlignment="Center" -->
+        <!--         Tag="play"> -->
+        <!--     <Viewbox MaxWidth="24" MaxHeight="24"> -->
+        <!--         <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" /> -->
+        <!--     </Viewbox> -->
+        <!-- </Button> -->
+        <!-- -->
+        <!-- <Button Grid.Row="2" Grid.Column="2" -->
+        <!--         x:Name="NextButton" -->
+        <!--         Style="{StaticResource AudioButtonStyle}" -->
+        <!--         Content="&#xED3D;" -->
+        <!--         Click="NextButton_OnClick" -->
+        <!--         HorizontalAlignment="Center" -->
+        <!--         VerticalAlignment="Center" /> -->
 
     </Grid>
 </UserControl>

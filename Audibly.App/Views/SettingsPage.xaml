@@ -2,56 +2,160 @@
     x:Class="Audibly.App.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:win="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     mc:Ignorable="d">
-    <Grid>
-        <StackPanel Spacing="4">
+        <Page.Resources>
+        <!--  These styles can be referenced to create a consistent SettingsPage layout  -->
 
-            <TextBlock x:Name="PageTitle"
-                       Style="{StaticResource PageTitleTextBlockStyle}"
-                       Text="Settings" />
-            
-            <ToggleSwitch Header="Theme" OnContent="Light" OffContent="Dark"
-                          Toggled="ToggleSwitch_Toggled" Loaded="ToggleSwitch_Loaded"/>
+        <!--  Spacing between cards  -->
+        <x:Double x:Key="SettingsCardSpacing">4</x:Double>
 
-            <HyperlinkButton
-                x:Name="PrivacyButton"
-                Margin="0,25,0,0"
-                Click="OnPrivacyButtonClick"
-                Content="Privacy statement" />
-            <HyperlinkButton
-                x:Name="LicenseButton"
-                Click="OnLicenseButtonClick"
-                Content="Additional license terms" />
-            <HyperlinkButton
-                x:Name="GitHubButton"
-                Click="OnCodeButtonClick"
-                Content="GitHub repository" />
-        </StackPanel>
+        <!--  Style (inc. the correct spacing) of a section header  -->
+        <Style x:Key="SettingsSectionHeaderTextBlockStyle"
+               BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+               TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="Margin" Value="1,30,0,6" />
+            </Style.Setters>
+        </Style>
+    </Page.Resources>
+    <ScrollViewer>
+        <Grid>
+            <StackPanel MaxWidth="1000"
+                        HorizontalAlignment="Stretch"
+                        Spacing="{StaticResource SettingsCardSpacing}">
+                <win:StackPanel.ChildrenTransitions>
+                    <win:EntranceThemeTransition FromVerticalOffset="50" />
+                    <win:RepositionThemeTransition IsStaggeringEnabled="False" />
+                </win:StackPanel.ChildrenTransitions>
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                           Text="Appearance + behavior" />
+                <controls:SettingsCard Description="App theme"
+                                       Header="Select which theme you want to use"
+                                       HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <ComboBox SelectedIndex="0">
+                        <ComboBoxItem>Light</ComboBoxItem>
+                        <ComboBoxItem>Dark</ComboBoxItem>
+                        <ComboBoxItem>Use system setting</ComboBoxItem>
+                    </ComboBox>
+                </controls:SettingsCard>
 
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource LargeWindowSnapPoint}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource MediumWindowSnapPoint}" />
-                    </VisualState.StateTriggers>
-                </VisualState>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="{StaticResource MinWindowSnapPoint}" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="PageTitle.Margin" Value="64,4,0,0" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-    </Grid>
+                <controls:SettingsExpander Description="The SettingsExpander has the same properties as a SettingsCard"
+                                           Header="SettingsExpander"
+                                           HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
+                    <Button Content="Content"
+                            Style="{StaticResource AccentButtonStyle}" />
+
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard Header="A basic SettingsCard within an SettingsExpander">
+                            <Button Content="Button" />
+                        </controls:SettingsCard>
+                        <controls:SettingsCard Description="SettingsCard within an Expander can be made clickable too!"
+                                               Header="This item can be clicked"
+                                               IsClickEnabled="True" />
+
+                        <controls:SettingsCard ContentAlignment="Left">
+                            <CheckBox Content="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons" />
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                           Text="Section 2" />
+                <controls:SettingsCard Description="Another card to show grouping of cards"
+                                       Header="Another SettingsCard"
+                                       HeaderIcon="{ui:FontIcon Glyph=&#xE799;}">
+                    <ComboBox SelectedIndex="0">
+                        <ComboBoxItem>Option 1</ComboBoxItem>
+                        <ComboBoxItem>Option 2</ComboBoxItem>
+                        <ComboBoxItem>Option 3</ComboBoxItem>
+                    </ComboBox>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard Description="Another card to show grouping of cards"
+                                       Header="Yet another SettingsCard"
+                                       HeaderIcon="{ui:FontIcon Glyph=&#xE768;}">
+                    <Button Content="Content" />
+                </controls:SettingsCard>
+
+                <!--  Example 'About' section  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                           Text="About" />
+
+                <controls:SettingsExpander Description="© 2023. All rights reserved."
+                                           Header="Community Toolkit Gallery"
+                                           HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/AppTitleBar.scale-200.png}">
+                    <TextBlock win:IsTextSelectionEnabled="True"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Version 8.0.0" />
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard HorizontalContentAlignment="Left"
+                                               ContentAlignment="Left">
+                            <StackPanel Margin="-12,0,0,0"
+                                        Orientation="Vertical">
+                                <HyperlinkButton Content="Link 1" />
+                                <HyperlinkButton Content="Link 2" />
+                                <HyperlinkButton Content="Link 3" />
+                            </StackPanel>
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
+                <HyperlinkButton Margin="0,8,0,0"
+                                 Content="Send feedback" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+
+    <!-- <Grid> -->
+    <!--     <StackPanel Spacing="4"> -->
+    <!-- -->
+    <!--         <TextBlock x:Name="PageTitle" -->
+    <!--                    Style="{StaticResource PageTitleTextBlockStyle}" -->
+    <!--                    Text="Settings" /> -->
+    <!--          -->
+    <!--         <ToggleSwitch Header="Theme" OnContent="Light" OffContent="Dark" -->
+    <!--                       Toggled="ToggleSwitch_Toggled" Loaded="ToggleSwitch_Loaded"/> -->
+    <!-- -->
+    <!--         <HyperlinkButton -->
+    <!--             x:Name="PrivacyButton" -->
+    <!--             Margin="0,25,0,0" -->
+    <!--             Click="OnPrivacyButtonClick" -->
+    <!--             Content="Privacy statement" /> -->
+    <!--         <HyperlinkButton -->
+    <!--             x:Name="LicenseButton" -->
+    <!--             Click="OnLicenseButtonClick" -->
+    <!--             Content="Additional license terms" /> -->
+    <!--         <HyperlinkButton -->
+    <!--             x:Name="GitHubButton" -->
+    <!--             Click="OnCodeButtonClick" -->
+    <!--             Content="GitHub repository" /> -->
+    <!--     </StackPanel> -->
+    <!-- -->
+    <!--     <VisualStateManager.VisualStateGroups> -->
+    <!--         <VisualStateGroup> -->
+    <!--             <VisualState> -->
+    <!--                 <VisualState.StateTriggers> -->
+    <!--                     <AdaptiveTrigger MinWindowWidth="{StaticResource LargeWindowSnapPoint}" /> -->
+    <!--                 </VisualState.StateTriggers> -->
+    <!--             </VisualState> -->
+    <!--             <VisualState> -->
+    <!--                 <VisualState.StateTriggers> -->
+    <!--                     <AdaptiveTrigger MinWindowWidth="{StaticResource MediumWindowSnapPoint}" /> -->
+    <!--                 </VisualState.StateTriggers> -->
+    <!--             </VisualState> -->
+    <!--             <VisualState> -->
+    <!--                 <VisualState.StateTriggers> -->
+    <!--                     <AdaptiveTrigger MinWindowWidth="{StaticResource MinWindowSnapPoint}" /> -->
+    <!--                 </VisualState.StateTriggers> -->
+    <!--                 <VisualState.Setters> -->
+    <!--                     <Setter Target="PageTitle.Margin" Value="64,4,0,0" /> -->
+    <!--                 </VisualState.Setters> -->
+    <!--             </VisualState> -->
+    <!--         </VisualStateGroup> -->
+    <!--     </VisualStateManager.VisualStateGroups> -->
+    <!-- </Grid> -->
 </Page>

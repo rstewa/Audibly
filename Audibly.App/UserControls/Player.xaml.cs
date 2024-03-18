@@ -158,11 +158,6 @@ public sealed partial class Player : UserControl
         _currentPosition = TimeSpan.FromMilliseconds(NowPlayingBar.Value);
     }
 
-    private void PreviousButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
     {
         DispatcherQueue.TryEnqueue(() =>
@@ -172,11 +167,6 @@ public sealed partial class Player : UserControl
             else
                 PlayerViewModel.MediaPlayer.Pause();
         });
-    }
-
-    private void NextButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
     }
 
     private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -215,6 +205,16 @@ public sealed partial class Player : UserControl
         {
             _currentPosition = TimeSpan.FromMilliseconds(slider.Value);
         }
+    }
+
+    private void SkipBackButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void SkipForwardButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }
 

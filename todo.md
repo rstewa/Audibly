@@ -20,6 +20,8 @@
 - [ ] add check to see if user has modified or deleted app files (e.g., the db file or the cover image files)
 - [ ] add text underneath importing progress bar
 - [ ] save playerviewmodel to DB
+- [ ] allow user to change skip button amounts
+  - [ ] add a setting for this
 
 NOTES:
 

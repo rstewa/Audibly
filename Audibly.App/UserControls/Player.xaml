@@ -16,25 +16,21 @@
     </UserControl.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+        <MediaPlayerElement
+            Visibility="Collapsed"
+            x:Name="AudioPlayer"
+            AreTransportControlsEnabled="False" />
 
-        <!-- <Grid -->
-        <!--     x:Name="ChapterGrid" -->
-        <!--     Grid.Row="0"> -->
-        <!--     <Grid.ColumnDefinitions> -->
-        <!--         <ColumnDefinition Width="Auto" /> -->
-        <!--         <ColumnDefinition Width="Auto" /> -->
-        <!--         <ColumnDefinition Width="*" /> -->
-        <!--         <ColumnDefinition Width="Auto" /> -->
-        <!--     </Grid.ColumnDefinitions> -->
-        <StackPanel Orientation="Horizontal">
+        <Grid VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <Border Width="200" Height="200">
-                <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="1">
+            <!-- Cover Image -->
+            <Border Grid.Column="0" Width="100" Height="100">
+                <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
                     <Border.Background>
                         <ImageBrush
                             ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}"
@@ -46,190 +42,208 @@
                 </winUi:Effects.Shadow>
             </Border>
 
-            <Button
-                x:Name="PreviousChapterButton"
-                Margin="0,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="PreviousChapterButton_Click"
-                Content="&#xE76B;"
-                FontFamily="Segoe MDL2 Assets"
-                ToolTipService.ToolTip="Previous Chapter" />
-
-            <ComboBox
-                x:Name="ChapterCombo"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HorizontalContentAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0"
-                DisplayMemberPath="Title"
-                ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
-                SelectedIndex="0"
-                SelectionChanged="ChapterCombo_SelectionChanged" />
-
-            <Button
-                x:Name="NextChapterButton"
-                Margin="0,0,0,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="NextChapterButton_Click"
-                Content="&#xE76C;"
-                FontFamily="Segoe MDL2 Assets"
-                ToolTipService.ToolTip="Next Chapter" />
-
-        </StackPanel>
-        <!-- </Grid> -->
-
-        <MediaPlayerElement
-            Grid.Row="1"
-            Visibility="Collapsed"
-            x:Name="AudioPlayer"
-            AreTransportControlsEnabled="False" />
-
-        <Grid Grid.Row="1" HorizontalAlignment="Stretch" ColumnSpacing="30">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                Grid.Column="0"
-                x:Name="CurrentTimeTextBlock"
-                Margin="30, 0, 0, 0"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                FontSize="20"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}" />
-
-            <Slider
-                Grid.Column="1"
-                x:Name="NowPlayingBar"
-                Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}"
-                Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
-                PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}" />
-
-            <TextBlock
+            <!-- player controls -->
+            <!-- <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Center"> -->
+            <RelativePanel
                 Grid.Column="2"
-                x:Name="RemainingTimeTextBlock"
-                Margin="0, 0, 30, 0"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                FontSize="20"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}" />
+                VerticalAlignment="Center">
+                
+                <!-- Title and Artist -->
+                <StackPanel 
+                    Margin="30, 0, 0, 0"
+                    Orientation="Vertical" 
+                    HorizontalAlignment="Left"
+                    RelativePanel.LeftOf="PlayPauseControls"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True">
+                    
+                    <!-- Title -->
+                    <TextBlock
+                        x:Name="TitleTextBlock"
+                        Margin="0,0,0,0"
+                        Style="{StaticResource TitleTextBlockStyle}"
+                        Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
+                        FontSize="16"
+                        TextWrapping="WrapWholeWords"
+                        TextTrimming="WordEllipsis"
+                        MaxHeight="150" />
+
+                    <!-- Artist -->
+                    <TextBlock
+                        x:Name="ArtistTextBlock"
+                        Margin="0,0,0,0"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}"
+                        FontSize="14"
+                        TextWrapping="WrapWholeWords"
+                        TextTrimming="WordEllipsis" />
+                </StackPanel>
+
+                <!-- play/pause buttons -->
+                <StackPanel
+                    x:Name="PlayPauseControls"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True">
+
+                    <StackPanel.Resources>
+                        <!-- ReSharper disable all Xaml.RedundantResource -->
+                        <ResourceDictionary>
+                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                            <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
+
+                            <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                            <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
+
+                        </ResourceDictionary>
+                    </StackPanel.Resources>
+
+                    <RepeatButton
+                        x:Name="SkipBackButton"
+                        BorderThickness="0"
+                        Click="SkipBackButton_OnClick"
+                        Delay="500"
+                        Interval="100"
+                        ToolTipService.ToolTip="Skip backward 10 seconds">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xED3C;" />
+                    </RepeatButton>
+
+                    <Button
+                        x:Name="PlayPauseButton"
+                        BorderThickness="0"
+                        Click="PlayPauseButton_OnClick"
+                        Tag="play"
+                        ToolTipService.ToolTip="Play/Pause">
+                        <Viewbox MaxWidth="24" MaxHeight="24">
+                            <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
+                        </Viewbox>
+                    </Button>
+
+                    <RepeatButton
+                        x:Name="SkipForwardButton"
+                        BorderThickness="0"
+                        Click="SkipForwardButton_OnClick"
+                        Delay="500"
+                        Interval="100"
+                        ToolTipService.ToolTip="Skip forward 30 seconds">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xED3D;" />
+                    </RepeatButton>
+
+                </StackPanel>
+
+                <!-- chapter controls -->
+                <StackPanel
+                    x:Name="ChapterControls"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    RelativePanel.Below="PlayPauseControls"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True">
+
+                    <Button
+                        x:Name="PreviousChapterButton"
+                        Margin="0,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="PreviousChapterButton_Click"
+                        Content="&#xE76B;"
+                        FontFamily="Segoe MDL2 Assets"
+                        ToolTipService.ToolTip="Previous Chapter" />
+
+                    <ComboBox
+                        x:Name="ChapterCombo"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        DisplayMemberPath="Title"
+                        ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
+                        SelectedIndex="0"
+                        SelectionChanged="ChapterCombo_SelectionChanged" />
+
+                    <Button
+                        x:Name="NextChapterButton"
+                        Margin="0,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="NextChapterButton_Click"
+                        Content="&#xE76C;"
+                        FontFamily="Segoe MDL2 Assets"
+                        ToolTipService.ToolTip="Next Chapter" />
+                </StackPanel>
+
+                <!-- now playing bar -->
+                <Grid HorizontalAlignment="Stretch"
+                      ColumnSpacing="30"
+                      RelativePanel.Below="ChapterControls"
+                      RelativePanel.AlignLeftWithPanel="True"
+                      RelativePanel.AlignRightWithPanel="True">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        Grid.Column="0"
+                        x:Name="CurrentTimeTextBlock"
+                        Margin="30, 0, 0, 0"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        FontSize="20"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}" />
+
+                    <Slider
+                        Grid.Column="1"
+                        x:Name="NowPlayingBar"
+                        Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}"
+                        Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
+                        PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}" />
+
+                    <TextBlock
+                        Grid.Column="2"
+                        x:Name="RemainingTimeTextBlock"
+                        Margin="0"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        FontSize="20"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}" />
+
+                </Grid>
+
+            </RelativePanel>
+
         </Grid>
-
-
-        <StackPanel
-            Grid.ColumnSpan="3"
-            Grid.Row="2"
-            Margin="0,5,0,0"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-
-            <StackPanel.Resources>
-                <!-- ReSharper disable all Xaml.RedundantResource -->
-                <ResourceDictionary>
-                    <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-
-                    <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
-                    <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
-                    <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
-                    <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
-
-                    <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
-                    <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
-
-                    <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
-                    <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
-                    <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
-                    <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
-
-                </ResourceDictionary>
-            </StackPanel.Resources>
-
-            <RepeatButton
-                x:Name="SkipBackButton"
-                BorderThickness="0"
-                Click="SkipBackButton_OnClick"
-                Delay="500"
-                Interval="100"
-                ToolTipService.ToolTip="Skip backward 10 seconds">
-                <FontIcon
-                    FontFamily="Segoe MDL2 Assets"
-                    FontSize="24"
-                    Glyph="&#xED3C;" />
-            </RepeatButton>
-
-            <Button
-                x:Name="PlayPauseButton"
-                BorderThickness="0"
-                Click="PlayPauseButton_OnClick"
-                Tag="play"
-                ToolTipService.ToolTip="Play/Pause">
-                <Viewbox MaxWidth="24" MaxHeight="24">
-                    <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
-                </Viewbox>
-            </Button>
-
-            <RepeatButton
-                x:Name="SkipForwardButton"
-                BorderThickness="0"
-                Click="SkipForwardButton_OnClick"
-                Delay="500"
-                Interval="100"
-                ToolTipService.ToolTip="Skip forward 30 seconds">
-                <FontIcon
-                    FontFamily="Segoe MDL2 Assets"
-                    FontSize="24"
-                    Glyph="&#xED3D;" />
-            </RepeatButton>
-
-        </StackPanel>
-
-        <!-- <Button Grid.Row="2" Grid.Column="0" -->
-        <!--         x:Name="SkipBackButton" -->
-        <!--         Style="{StaticResource AudioButtonStyle}" -->
-        <!--         Content="&#xED3C;" -->
-        <!--         Click="PreviousButton_OnClick" -->
-        <!--         HorizontalAlignment="Center" -->
-        <!--         VerticalAlignment="Center" /> -->
-        <!-- -->
-        <!-- <Button Grid.Row="2" -->
-        <!--         Grid.Column="1" -->
-        <!--         x:Name="PlayPauseButton" -->
-        <!--         Style="{StaticResource AudioButtonStyle}" -->
-        <!--         Click="PlayPauseButton_OnClick" -->
-        <!--         HorizontalAlignment="Center" -->
-        <!--         VerticalAlignment="Center" -->
-        <!--         Tag="play"> -->
-        <!--     <Viewbox MaxWidth="24" MaxHeight="24"> -->
-        <!--         <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" /> -->
-        <!--     </Viewbox> -->
-        <!-- </Button> -->
-        <!-- -->
-        <!-- <Button Grid.Row="2" Grid.Column="2" -->
-        <!--         x:Name="NextButton" -->
-        <!--         Style="{StaticResource AudioButtonStyle}" -->
-        <!--         Content="&#xED3D;" -->
-        <!--         Click="NextButton_OnClick" -->
-        <!--         HorizontalAlignment="Center" -->
-        <!--         VerticalAlignment="Center" /> -->
 
     </Grid>
 </UserControl>

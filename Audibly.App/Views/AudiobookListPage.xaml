@@ -137,92 +137,104 @@
 
         </Grid>
 
-        <Grid x:Name="DetailViewGrid"
-              Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
-              Margin="12"
-              RelativePanel.RightOf="ListViewGrid"
-              RelativePanel.AlignRightWithPanel="True"
-              RelativePanel.Below="PageTitle"
-              CornerRadius="8"
-              Padding="12"
-              BorderThickness="1"
-              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+        <!-- detail view & player -->
+        <Grid
+            RelativePanel.RightOf="ListViewGrid"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.Below="PageTitle"
+            RelativePanel.AlignBottomWithPanel="True">
 
-            <Grid x:Name="DetailView"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- detail view -->
+            <Grid x:Name="DetailViewGrid"
+                  Grid.Row="0"
                   Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
-                  Margin="20"
-                  RelativePanel.RightOf="AudiobookListView">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                  Margin="12"
+                  CornerRadius="8"
+                  Padding="12"
+                  BorderThickness="1"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
 
-                <StackPanel Orientation="Horizontal"
-                            Grid.Row="0">
+                <Grid x:Name="DetailView"
+                      Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
+                      Margin="20"
+                      RelativePanel.RightOf="AudiobookListView">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                    <Border Width="400" Height="400">
-                        <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="1">
-                            <Border.Background>
-                                <ImageBrush
-                                    ImageSource="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}"
-                                    Stretch="UniformToFill" />
-                            </Border.Background>
+                    <StackPanel Orientation="Horizontal"
+                                Grid.Row="0">
+
+                        <Border Width="400" Height="400">
+                            <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="1">
+                                <Border.Background>
+                                    <ImageBrush
+                                        ImageSource="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}"
+                                        Stretch="UniformToFill" />
+                                </Border.Background>
+                            </Border>
+                            <winUi:Effects.Shadow>
+                                <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
+                            </winUi:Effects.Shadow>
+
                         </Border>
-                        <winUi:Effects.Shadow>
-                            <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
-                        </winUi:Effects.Shadow>
 
-                    </Border>
+                        <StackPanel Orientation="Vertical" Margin="40 0" MaxWidth="800">
+                            <TextBlock VerticalAlignment="Top" TextWrapping="WrapWholeWords">
+                                <Run Text="{x:Bind ViewModel.SelectedAudiobook.Title, Mode=OneWay}"
+                                     FontSize="48"
+                                     FontWeight="SemiBold" />
+                                <LineBreak />
+                                <Run Text="{x:Bind ViewModel.SelectedAudiobook.Author, Mode=OneWay}"
+                                     FontSize="36" />
+                            </TextBlock>
 
-                    <StackPanel Orientation="Vertical" Margin="40 0" MaxWidth="800">
-                        <TextBlock VerticalAlignment="Top" TextWrapping="WrapWholeWords">
-                            <Run Text="{x:Bind ViewModel.SelectedAudiobook.Title, Mode=OneWay}"
-                                 FontSize="48"
-                                 FontWeight="SemiBold" />
-                            <LineBreak />
-                            <Run Text="{x:Bind ViewModel.SelectedAudiobook.Author, Mode=OneWay}"
-                                 FontSize="36" />
-                        </TextBlock>
+                            <Button Content="Play this book"
+                                    VerticalAlignment="Bottom"
+                                    Click="PlayThisBookButton_OnClick" />
+                        </StackPanel>
 
-                        <Button Content="Play this book"
-                                VerticalAlignment="Bottom"
-                                Click="PlayThisBookButton_OnClick" />
                     </StackPanel>
 
-                </StackPanel>
+                    <TextBlock Margin="0, 40, 0, 0" Grid.Row="1" TextWrapping="WrapWholeWords">
+                        <Run Text="Description" FontSize="32" FontWeight="SemiBold" />
+                        <LineBreak />
+                        <LineBreak />
+                        <Run Text="{x:Bind ViewModel.SelectedAudiobook.Description, Mode=OneWay}" FontSize="26" />
+                    </TextBlock>
 
-                <TextBlock Margin="0, 40, 0, 0" Grid.Row="1" TextWrapping="WrapWholeWords">
-                    <Run Text="Description" FontSize="32" FontWeight="SemiBold" />
-                    <LineBreak />
-                    <LineBreak />
-                    <Run Text="{x:Bind ViewModel.SelectedAudiobook.Description, Mode=OneWay}" FontSize="26" />
-                </TextBlock>
+                </Grid>
+
+                <muxc:ProgressBar
+                    Margin="0,50,0,0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    IsIndeterminate="True"
+                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
             </Grid>
 
-            <muxc:ProgressBar
-                Margin="0,50,0,0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+            <!-- player -->
+            <Grid x:Name="Player"
+                  Grid.Row="1"
+                  MaxHeight="200"
+                  Margin="12, 0, 12, 12"
+                  CornerRadius="8"
+                  Padding="12"
+                  BorderThickness="1"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
 
-        </Grid>
+                <userControls:Player />
 
-        <Grid x:Name="Player"
-              Margin="12, 0, 12, 12"
-              RelativePanel.RightOf="ListViewGrid"
-              RelativePanel.AlignRightWithPanel="True"
-              RelativePanel.AlignBottomWithPanel="True"
-              RelativePanel.Below="DetailViewGrid"
-              CornerRadius="8"
-              Padding="12"
-              BorderThickness="1"
-              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-
-            <userControls:Player />
+            </Grid>
 
         </Grid>
 

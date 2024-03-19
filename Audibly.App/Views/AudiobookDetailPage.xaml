@@ -107,6 +107,24 @@
             </StackPanel>
         </ScrollViewer>
 
+        <Border x:Name="NowPlayingBar"
+                CornerRadius="8"
+                Padding="12"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+
+            <!-- Now Playing bar -->
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="50" Background="Black">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Button Content="Previous" Margin="10" />
+                    <Button Content="Play/Pause" Margin="10" />
+                    <Button Content="Next" Margin="10" />
+                    <TextBlock Text="Now Playing: Song Title" Margin="10" Foreground="White" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState>

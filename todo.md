@@ -1,4 +1,17 @@
+- [ ] combine all this update todo commits together
+
 - [ ] create or find a tool that finds all todo's in solution and puts them in a file with line numbers
+
+- [ ] add ability to check for updates
+  - [ ] popup message to user about update
+  - [ ] genie type thing to show them the new features
+  - [ ] maybe add a way to auto import any book that has ever been played
+  - [ ] popup to tell user an update is available in the store (if they dont have auto update turned on in store)
+
+- [ ] add multiple language support (whichever languages people ask for)
+
+- [ ] allow user to minimize to taskbar
+- [ ] should mini player and main player be allowed to both be open at the same time?
 
 - [x] import chapters when adding audiobook to database
 - [x] add progress bar when importing audiobooks

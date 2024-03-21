@@ -1,10 +1,9 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/11/2024
-// Updated: 3/17/2024
+// Updated: 3/21/2024
 
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
@@ -13,7 +12,6 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 
@@ -45,6 +43,8 @@ public sealed partial class Player : UserControl
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
         InitializeAudioPlayer();
+
+        // todo: load most recently played audiobook into the player
     }
 
     private void InitializeAudioPlayer()
@@ -66,11 +66,16 @@ public sealed partial class Player : UserControl
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
+            PlayerViewModel.NowPlaying.CurrentChapter =
+                PlayerViewModel.NowPlaying.Chapters[PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0];
             ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
             PlayerViewModel.ChapterDurationMs = (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
                                                       PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-
-            // todo: set current position here from audiobook record
+            PlayerViewModel.ChapterPositionMs =
+                _currentPosition.TotalMilliseconds > PlayerViewModel.NowPlaying.CurrentChapter.StartTime
+                    ? (int)(_currentPosition.TotalMilliseconds - PlayerViewModel.NowPlaying.CurrentChapter.StartTime)
+                    : 0;
+            _currentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentTimeMs);
         });
 
         // todo: add toggle player controls function
@@ -115,28 +120,30 @@ public sealed partial class Player : UserControl
 
     private void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
     {
-        _dispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.EnqueueAsync(async () =>
         {
-            // NowPlayingBar.Value = sender.Position.TotalSeconds;
-            // ChapterPositionText.Text = sender.Position.ToString(@"hh\:mm\:ss");
             if (!PlayerViewModel.NowPlaying.CurrentChapter.InRange(_currentPosition.TotalMilliseconds))
             {
-                var tmp = PlayerViewModel.NowPlaying.Chapters.FirstOrDefault(c => c.InRange(_currentPosition.TotalMilliseconds));
+                var tmp = PlayerViewModel.NowPlaying.Chapters.FirstOrDefault(c =>
+                    c.InRange(_currentPosition.TotalMilliseconds));
                 if (tmp != null)
                 {
                     PlayerViewModel.NowPlaying.CurrentChapter = tmp;
+                    PlayerViewModel.NowPlaying.CurrentChapterIndex = PlayerViewModel.NowPlaying.Chapters.IndexOf(tmp);
+                    ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter);
                     PlayerViewModel.ChapterDurationMs = (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
                                                               PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
                 }
             }
 
-            PlayerViewModel.ChapterPositionMs = _currentPosition.TotalMilliseconds > PlayerViewModel.NowPlaying.CurrentChapter.StartTime
-                ? (int)(_currentPosition.TotalMilliseconds - PlayerViewModel.NowPlaying.CurrentChapter.StartTime)
-                : 0;
 
+            PlayerViewModel.ChapterPositionMs = (int)(_currentPosition.TotalMilliseconds -
+                                                      PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
             PlayerViewModel.ChapterPositionText = PlayerViewModel.ChapterPositionMs.ToStr_ms();
+            PlayerViewModel.NowPlaying.CurrentTimeMs = (int)_currentPosition.TotalMilliseconds;
 
-            ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter);
+            // todo: find out what the performance impact of this is
+            await PlayerViewModel.NowPlaying.SaveAsync();
         });
     }
 
@@ -153,18 +160,25 @@ public sealed partial class Player : UserControl
 
     private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var chapter = (ChapterInfo)ChapterCombo.SelectedItem;
-        if (chapter == null)
-        {
-            ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
-        }
-        else
-        {
-            // TODO: i feel like this is gross ...
-            PlayerViewModel.NowPlaying.CurrentChapterIndex = PlayerViewModel.NowPlaying.Chapters.IndexOf(chapter);
-            PlayerViewModel.NowPlaying.CurrentChapter = chapter;
-            // AudioPlayer.MediaPlayer.PlaybackSession.Position = TimeSpan.FromMilliseconds(chapter.StartTimeMs);
-        }
+        var container = sender as ComboBox;
+        if (container == null || container.SelectedItem is not ChapterInfo chapter) return;
+
+        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter)) return;
+
+        _currentPosition = TimeSpan.FromMilliseconds(chapter.StartTime);
+
+        // var chapter = (ChapterInfo)ChapterCombo.SelectedItem;
+        // if (chapter == null)
+        // {
+        //     ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
+        // }
+        // else
+        // {
+        //     // TODO: i feel like this is gross ...
+        //     PlayerViewModel.NowPlaying.CurrentChapterIndex = PlayerViewModel.NowPlaying.Chapters.IndexOf(chapter);
+        //     PlayerViewModel.NowPlaying.CurrentChapter = chapter;
+        //     // AudioPlayer.MediaPlayer.PlaybackSession.Position = TimeSpan.FromMilliseconds(chapter.StartTimeMs);
+        // }
 
         // throw new NotImplementedException();
         // todo
@@ -172,31 +186,59 @@ public sealed partial class Player : UserControl
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var newChapterIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex - 1 >= 0
+            ? PlayerViewModel.NowPlaying.CurrentChapterIndex - 1
+            : PlayerViewModel.NowPlaying.CurrentChapterIndex;
+
+        if (newChapterIndex == null) return;
+
+        PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
+        PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
+        ChapterCombo.SelectedIndex = (int)newChapterIndex;
+        _currentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var newChapterIndex =
+            PlayerViewModel.NowPlaying.CurrentChapterIndex + 1 < PlayerViewModel.NowPlaying.Chapters.Count
+                ? PlayerViewModel.NowPlaying.CurrentChapterIndex + 1
+                : PlayerViewModel.NowPlaying.CurrentChapterIndex;
+
+        if (newChapterIndex == null) return;
+
+        PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
+        PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
+        ChapterCombo.SelectedIndex = (int)newChapterIndex;
+        _currentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
 
     private void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
         var slider = sender as Slider;
-        if (slider != null)
-        {
-            _currentPosition = TimeSpan.FromMilliseconds(slider.Value);
-        }
+        // todo: not sure about this 2nd check here
+        if (slider != null && slider.Value != 0)
+            _currentPosition =
+                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime + slider.Value);
     }
+
+    private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan _skipForwardButtonAmount = TimeSpan.FromSeconds(30);
 
     private void SkipBackButton_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        _currentPosition = _currentPosition - _skipBackButtonAmount > TimeSpan.Zero
+            ? _currentPosition - _skipBackButtonAmount
+            : TimeSpan.Zero;
     }
 
     private void SkipForwardButton_OnClick(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        // todo: might need to switch this to using the duration from the audiobook record
+        _currentPosition = _currentPosition + _skipForwardButtonAmount <=
+                           PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration
+            ? _currentPosition + _skipForwardButtonAmount
+            : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
     }
 }
 

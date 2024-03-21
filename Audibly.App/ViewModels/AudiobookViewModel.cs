@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/16/2024
+// Updated: 3/21/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -256,17 +256,6 @@ public class AudiobookViewModel : BindableBase, IEditableObject
     }
 
     public ObservableCollection<ChapterInfo> Chapters { get; set; } = new();
-
-    // private List<ChapterInfo> _chapters;
-    //
-    // /// <summary>
-    // ///     Gets or sets the chapters of the audiobook.
-    // /// </summary>
-    // public List<ChapterInfo> Chapters
-    // {
-    //     get => _chapters;
-    //     set => Set(ref _chapters, value);
-    // }
 
     private ChapterInfo _selectedChapter;
 

@@ -222,19 +222,19 @@
             </Grid>
 
             <!-- player -->
-            <Grid x:Name="Player"
-                  Grid.Row="1"
-                  MaxHeight="200"
-                  Margin="12, 0, 12, 12"
-                  CornerRadius="8"
-                  Padding="12"
-                  BorderThickness="1"
-                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-
-                <userControls:Player />
-
-            </Grid>
+            <!-- <Grid x:Name="Player" -->
+            <!--       Grid.Row="1" -->
+            <!--       MaxHeight="250" -->
+            <!--       Margin="12, 0, 12, 12" -->
+            <!--       CornerRadius="8" -->
+            <!--       Padding="12" -->
+            <!--       BorderThickness="1" -->
+            <!--       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" -->
+            <!--       Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"> -->
+            <!-- -->
+            <!--     <userControls:Player /> -->
+            <!-- -->
+            <!-- </Grid> -->
 
         </Grid>
 
@@ -247,6 +247,23 @@
             IsIndeterminate="False"
             Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />
+
+        <Grid x:Name="Player"
+              RelativePanel.AlignBottomWithPanel="True"
+              RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignRightWithPanel="True"
+              MaxHeight="250"
+              Margin="-12, 0, 0, 0"
+              CornerRadius="8"
+              Padding="12"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              Background="{ThemeResource ControlOnImageFillColorTertiaryBrush}">
+
+            <userControls:Player />
+
+        </Grid>
+
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

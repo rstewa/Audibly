@@ -30,7 +30,7 @@
 
             <!-- Cover Image -->
             <Border Grid.Column="0" Width="100" Height="100">
-                <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
+                <Border CornerRadius="10" BorderBrush="Transparent" BorderThickness="1">
                     <Border.Background>
                         <ImageBrush
                             ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}"
@@ -38,7 +38,7 @@
                     </Border.Background>
                 </Border>
                 <winUi:Effects.Shadow>
-                    <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
+                    <media:AttachedCardShadow CornerRadius="10" Offset="4, 4" />
                 </winUi:Effects.Shadow>
             </Border>
 
@@ -47,16 +47,17 @@
             <RelativePanel
                 Grid.Column="2"
                 VerticalAlignment="Center">
-                
+
                 <!-- Title and Artist -->
-                <StackPanel 
-                    Margin="30, 0, 0, 0"
-                    Orientation="Vertical" 
+                <StackPanel
+                    Margin="30, 0, 0, 30"
+                    Orientation="Vertical"
                     HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
                     RelativePanel.LeftOf="PlayPauseControls"
                     RelativePanel.AlignTopWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True">
-                    
+
                     <!-- Title -->
                     <TextBlock
                         x:Name="TitleTextBlock"
@@ -84,6 +85,7 @@
                     x:Name="PlayPauseControls"
                     HorizontalAlignment="Center"
                     Orientation="Horizontal"
+                    RelativePanel.AlignTopWithPanel="True"
                     RelativePanel.AlignHorizontalCenterWithPanel="True">
 
                     <StackPanel.Resources>
@@ -156,7 +158,8 @@
                     x:Name="ChapterControls"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
-                    RelativePanel.Below="PlayPauseControls"
+                    RelativePanel.RightOf="PlayPauseControls"
+                    RelativePanel.AlignTopWithPanel="True"
                     RelativePanel.AlignHorizontalCenterWithPanel="True">
 
                     <Button
@@ -176,12 +179,11 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         HorizontalContentAlignment="Center"
-                        Background="Transparent"
-                        BorderThickness="0"
                         DisplayMemberPath="Title"
                         ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
                         SelectedIndex="0"
-                        SelectionChanged="ChapterCombo_SelectionChanged" />
+                        SelectionChanged="ChapterCombo_SelectionChanged"
+                        ToolTipService.ToolTip="Chapter Selection" />
 
                     <Button
                         x:Name="NextChapterButton"
@@ -197,11 +199,13 @@
                 </StackPanel>
 
                 <!-- now playing bar -->
-                <Grid HorizontalAlignment="Stretch"
+                <Grid x:Name="NowPlayingBarGrid"
+                      HorizontalAlignment="Stretch"
                       ColumnSpacing="30"
-                      RelativePanel.Below="ChapterControls"
+                      RelativePanel.Below="PlayPauseControls"
                       RelativePanel.AlignLeftWithPanel="True"
-                      RelativePanel.AlignRightWithPanel="True">
+                      RelativePanel.AlignRightWithPanel="True"
+                      RelativePanel.AlignBottomWithPanel="True">
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />

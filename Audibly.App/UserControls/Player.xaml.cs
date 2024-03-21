@@ -6,7 +6,9 @@ using System;
 using System.Linq;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
+using Audibly.App.Views;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -239,6 +241,19 @@ public sealed partial class Player : UserControl
                            PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration
             ? _currentPosition + _skipForwardButtonAmount
             : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
+    }
+
+    private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var window = WindowHelper.CreateWindow();
+
+        // C# code to create a new window
+        // todo: check if there is already an instance of the mini player open and if so, bring it to the front
+        var newWindow = WindowHelper.CreateWindow();
+        var rootPage = new MiniPlayerPage();
+        // rootPage.RequestedTheme = ThemeHelper.RootTheme;
+        newWindow.Content = rootPage;
+        newWindow.Activate();
     }
 }
 

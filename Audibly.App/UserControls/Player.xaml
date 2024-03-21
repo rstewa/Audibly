@@ -21,9 +21,8 @@
             x:Name="AudioPlayer"
             AreTransportControlsEnabled="False" />
 
-        <Grid VerticalAlignment="Center">
+        <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -44,9 +43,7 @@
 
             <!-- player controls -->
             <!-- <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Center"> -->
-            <RelativePanel
-                Grid.Column="2"
-                VerticalAlignment="Center">
+            <RelativePanel Grid.Column="1">
 
                 <!-- Title and Artist -->
                 <StackPanel
@@ -84,8 +81,8 @@
                 <StackPanel
                     x:Name="PlayPauseControls"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Orientation="Horizontal"
-                    RelativePanel.AlignTopWithPanel="True"
                     RelativePanel.AlignHorizontalCenterWithPanel="True">
 
                     <StackPanel.Resources>
@@ -156,10 +153,10 @@
                 <!-- chapter controls -->
                 <StackPanel
                     x:Name="ChapterControls"
+                    VerticalAlignment="Center"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     RelativePanel.RightOf="PlayPauseControls"
-                    RelativePanel.AlignTopWithPanel="True"
                     RelativePanel.AlignHorizontalCenterWithPanel="True">
 
                     <Button
@@ -184,6 +181,7 @@
                         SelectedIndex="0"
                         SelectionChanged="ChapterCombo_SelectionChanged"
                         ToolTipService.ToolTip="Chapter Selection" />
+                    <!-- todo: this tooltip doesn't show for some reason -->
 
                     <Button
                         x:Name="NextChapterButton"
@@ -198,9 +196,25 @@
                         ToolTipService.ToolTip="Next Chapter" />
                 </StackPanel>
 
+                <Button
+                    RelativePanel.RightOf="ChapterControls"
+                    RelativePanel.AlignRightWithPanel="True"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    x:Name="OpenMiniPlayerButton"
+                    BorderThickness="0"
+                    Click="OpenMiniPlayerButton_OnClick"
+                    ToolTipService.ToolTip="Open in Mini-Player">
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="24"
+                        Glyph="&#xE8A7;" />
+                </Button>
+
                 <!-- now playing bar -->
                 <Grid x:Name="NowPlayingBarGrid"
                       HorizontalAlignment="Stretch"
+                      VerticalAlignment="Bottom"
                       ColumnSpacing="30"
                       RelativePanel.Below="PlayPauseControls"
                       RelativePanel.AlignLeftWithPanel="True"

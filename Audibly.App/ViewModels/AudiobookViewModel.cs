@@ -211,6 +211,13 @@ public class AudiobookViewModel : BindableBase, IEditableObject
             }
         }
     }
+    
+    private string _volumeGlyph;
+    public string VolumeGlyph
+    {
+        get => _volumeGlyph;
+        set => Set(ref _volumeGlyph, value);
+    }
 
     /// <summary>
     ///     Gets or sets the volume of the audiobook.
@@ -223,6 +230,12 @@ public class AudiobookViewModel : BindableBase, IEditableObject
             if (value != Model.Volume)
             {
                 Model.Volume = value;
+                VolumeGlyph = value switch
+                {
+                    0 => "\uE992",
+                    < 0.5 => "\uE993",
+                    _ => "\uE994"
+                };
                 IsModified = true;
                 OnPropertyChanged();
             }

@@ -15,6 +15,7 @@
     <ItemGroup>
         <None Remove="UserControls\Player.xaml"/>
         <None Remove="UserControls\ProgressBarWithText.xaml"/>
+        <None Remove="Views\MiniPlayerPage.xaml"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -29,16 +30,16 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="13.0.1"/>
-        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
-        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109"/>
+        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3"/>
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000"/>
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233"/>
         <Manifest Include="$(ApplicationManifest)"/>
         <PackageReference Include="Sharpener" Version="0.2.4"/>
         <PackageReference Include="z440.atl.core" Version="5.20.0"/>
@@ -55,6 +56,11 @@
     <ItemGroup>
         <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj"/>
         <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Page Update="Views\MiniPlayerPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
         <Page Update="UserControls\Player.xaml">

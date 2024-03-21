@@ -1,3 +1,5 @@
+- [ ] create or find a tool that finds all todo's in solution and puts them in a file with line numbers
+
 - [x] import chapters when adding audiobook to database
 - [x] add progress bar when importing audiobooks
 - [x] add file dialog when importing audiobooks
@@ -5,10 +7,15 @@
 - [ ] filtering:
   - [ ] add ability to see most recent
   - [ ] add filter button to change how audiobooks are sorted by default
+  - [ ] show recent searches as suggestions
 
 - [ ] add now playing bar -- in progress
-  - [ ] make all buttons for player work
+  - [x] make all buttons for player work
+  - [ ] make chapter combobox a fixed width
+
 - [ ] add button to open mini audiobook player -> use OpenInNewWindow icon <FontIcon Glyph="&#xE8A7;" />
+  - [ ] add check to make sure only one instance of mini player is open
+
 - [ ] add check that verifies that the audiobooks in the database are pointing to valid files (i.e., they haven't been moved or deleted)
 - [ ] fix TODO (which is a bug) in SqlAudiobookRepository.cs
 - [ ] todo: update ui as each book is imported
@@ -25,6 +32,8 @@
 - [ ] save playerviewmodel to DB
 - [ ] allow user to change skip button amounts
   - [ ] add a setting for this
+- [ ] add setting to allow user to choose to set audio for global or each book
+- [ ] add setting to allow user to choose to set playback speed for global or each book
 
 NOTES:
 

@@ -8,48 +8,84 @@
     KeyDown="AppShell_KeyDown"
     TabNavigation="Cycle"
     mc:Ignorable="d">
-    <Page.Resources>
-        <!-- ReSharper disable all Xaml.RedundantResource -->
-        <!-- This top margin is the height of the custom titleBar -->
-        <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
-        <Thickness x:Key="NavigationViewMinimalContentMargin">0,48,0,0</Thickness>
-        <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
-        <!-- This is the rounded corner on the Top left of the L Pattern -->
-        <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
-    </Page.Resources>
-    <Grid
-        x:Name="LayoutRoot"
-        Background="#121212">
-        <Border x:Name="AppTitleBar"
-                IsHitTestVisible="True"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Left"
-                Background="Transparent"
-                Height="48"
-                Width="auto"
-                Canvas.ZIndex="1"
-                Margin="48,0,0,0">
-            <StackPanel Orientation="Horizontal">
-                <Border Background="{ThemeResource SystemAccentColor}"
-                        HorizontalAlignment="Left"
-                        Width="20" Height="20">
-                    <Image Source="Assets/Square44x44Logo.png" />
-                </Border>
-                <TextBlock x:Name="AppTitle"
-                           VerticalAlignment="Center"
-                           Margin="12,0,0,0"
-                           Style="{StaticResource CaptionTextBlockStyle}" />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  TitleBar  -->
+            <RowDefinition Height="*" />
+            <!--  NavView  -->
+        </Grid.RowDefinitions>
+
+        <!--
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="TitleBarStates">
+                <VisualState x:Name="Default" />
+                <VisualState x:Name="Compact">
+                    <VisualState.Setters>
+                        <Setter Target="AppTitleBar.Margin" Value="96,0,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Top">
+                    <VisualState.Setters>
+                        <Setter Target="AppTitleBar.Margin" Value="16,0,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="WindowActivationStates">
+                <VisualState x:Name="Activated" />
+                <VisualState x:Name="Deactivated">
+                    <VisualState.Setters>
+                        <Setter Target="AppTitle.Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        -->
+
+        <Border
+            x:Name="AppTitleBar"
+            Grid.Column="1"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
+            Margin="48,0,0,0"
+            VerticalAlignment="Stretch"
+            AutomationProperties.AutomationId="AppTitleBar"
+            Canvas.ZIndex="1"
+            IsHitTestVisible="True">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                <Image Width="24" Source="ms-appx:///Assets/book-open-flat.png" />
+                <TextBlock
+                    x:Name="AppTitle"
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Audibly" />
             </StackPanel>
         </Border>
 
         <muxc:NavigationView
             x:Name="NavView"
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Canvas.ZIndex="0"
             AlwaysShowHeader="False"
             IsSettingsVisible="True"
             ItemInvoked="NavigationView_ItemInvoked"
             BackRequested="NavigationView_BackRequested"
             IsBackEnabled="{x:Bind AppFrame.CanGoBack, Mode=OneWay}"
             IsTitleBarAutoPaddingEnabled="True">
+            <NavigationView.Resources>
+                <!-- ReSharper disable all Xaml.RedundantResource -->
+                <!-- This top margin is the height of the custom titleBar -->
+                <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
+                <Thickness x:Key="NavigationViewMinimalContentMargin">0,48,0,0</Thickness>
+                <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+                <!-- This is the rounded corner on the Top left of the L Pattern -->
+                <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+            </NavigationView.Resources>
 
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem

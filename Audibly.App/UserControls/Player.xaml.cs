@@ -245,10 +245,14 @@ public sealed partial class Player : UserControl
 
     private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
     {
-        var window = WindowHelper.CreateWindow();
-
-        // C# code to create a new window
-        // todo: check if there is already an instance of the mini player open and if so, bring it to the front
+        // check if there is already an instance of the mini player open and if so, bring it to the front
+        foreach (var window in WindowHelper.ActiveWindows)
+        {
+            if (window.Content is not MiniPlayerPage) continue;
+            window.Activate();
+            return;
+        }
+        
         var newWindow = WindowHelper.CreateWindow();
 
         const int width = 315;

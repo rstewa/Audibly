@@ -250,6 +250,13 @@ public sealed partial class Player : UserControl
         // C# code to create a new window
         // todo: check if there is already an instance of the mini player open and if so, bring it to the front
         var newWindow = WindowHelper.CreateWindow();
+
+        const int width = 315;
+        const int height = 420;
+
+        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
+
+        // newWindow.SetTitleBar(DefaultApp);
         var rootPage = new MiniPlayerPage();
         // rootPage.RequestedTheme = ThemeHelper.RootTheme;
         newWindow.Content = rootPage;

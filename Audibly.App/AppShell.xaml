@@ -9,8 +9,13 @@
     TabNavigation="Cycle"
     mc:Ignorable="d">
     <Page.Resources>
-        <!--This top margin is the height of the custom TitleBar-->
+        <!-- ReSharper disable all Xaml.RedundantResource -->
+        <!-- This top margin is the height of the custom titleBar -->
         <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
+        <Thickness x:Key="NavigationViewMinimalContentMargin">0,48,0,0</Thickness>
+        <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+        <!-- This is the rounded corner on the Top left of the L Pattern -->
+        <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
     </Page.Resources>
     <Grid
         x:Name="LayoutRoot"
@@ -22,21 +27,21 @@
                 Background="Transparent"
                 Height="48"
                 Width="auto"
-                Canvas.ZIndex="1" 
+                Canvas.ZIndex="1"
                 Margin="48,0,0,0">
             <StackPanel Orientation="Horizontal">
-                <Border Background="{ThemeResource SystemAccentColor}" 
-                        HorizontalAlignment="Left" 
-                        Width="20" Height="20" >
-                    <Image Source="Assets/Square44x44Logo.png"/>
+                <Border Background="{ThemeResource SystemAccentColor}"
+                        HorizontalAlignment="Left"
+                        Width="20" Height="20">
+                    <Image Source="Assets/Square44x44Logo.png" />
                 </Border>
                 <TextBlock x:Name="AppTitle"
-                    VerticalAlignment="Center"
-                    Margin="12,0,0,0"
-                    Style="{StaticResource CaptionTextBlockStyle}" />
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0"
+                           Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Border>
-        
+
         <muxc:NavigationView
             x:Name="NavView"
             AlwaysShowHeader="False"
@@ -44,15 +49,15 @@
             ItemInvoked="NavigationView_ItemInvoked"
             BackRequested="NavigationView_BackRequested"
             IsBackEnabled="{x:Bind AppFrame.CanGoBack, Mode=OneWay}"
-            IsTitleBarAutoPaddingEnabled="False">
+            IsTitleBarAutoPaddingEnabled="True">
 
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem
                     x:Name="AudiobookListMenuItem"
-                    Content="{x:Bind AudiobookListLabel}" 
+                    Content="{x:Bind AudiobookListLabel}"
                     ToolTipService.ToolTip="{x:Bind AudiobookListLabel}">
                     <muxc:NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;"/>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
@@ -64,7 +69,7 @@
                         ToolTipService.ToolTip="View code"
                         Tapped="ViewCodeNavPaneButton_Tapped">
                         <muxc:NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xE943;"/>
+                            <FontIcon Glyph="&#xE943;" />
                         </muxc:NavigationViewItem.Icon>
                     </muxc:NavigationViewItem>
                 </StackPanel>
@@ -86,7 +91,7 @@
                 </Frame.ContentTransitions>
             </Frame>
         </muxc:NavigationView>
-        
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState>
@@ -104,11 +109,10 @@
                         <AdaptiveTrigger MinWindowWidth="{StaticResource MinWindowSnapPoint}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="AppTitleBar.Margin" Value="88,0,0,0"/>
+                        <Setter Target="AppTitleBar.Margin" Value="88,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>
-

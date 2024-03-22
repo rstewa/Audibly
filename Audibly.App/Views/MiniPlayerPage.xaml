@@ -111,7 +111,7 @@
                     BorderThickness="0"
                     DisplayMemberPath="Title"
                     ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters}"
-                    SelectedIndex="0"
+                    SelectedItem="{x:Bind PlayerViewModel.NowPlaying.CurrentChapter, Mode=TwoWay}"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
 
                 <Button
@@ -151,9 +151,9 @@
                     Margin="0,0,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Opacity="0.5"
+                    Opacity="1.0"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind PlayerViewModel.ChapterPositionText}"
+                    Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}"
                     TextAlignment="Left" />
 
                 <!-- todo: make this a slider -->
@@ -172,7 +172,7 @@
                     x:Name="CurrentChapterDurationTextBlock"
                     Grid.Column="2"
                     Margin="0,0,0,0"
-                    Opacity="0.5"
+                    Opacity="1.0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Foreground="#9d9d9d"

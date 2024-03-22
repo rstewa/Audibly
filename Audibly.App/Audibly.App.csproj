@@ -41,6 +41,7 @@
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000"/>
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233"/>
         <Manifest Include="$(ApplicationManifest)"/>
+        <PackageReference Include="PInvoke.User32" Version="0.7.124" />
         <PackageReference Include="Sharpener" Version="0.2.4"/>
         <PackageReference Include="z440.atl.core" Version="5.20.0"/>
     </ItemGroup>

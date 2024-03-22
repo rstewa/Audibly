@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.System;
 using Audibly.App.Views;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -33,8 +34,9 @@ namespace Audibly.App
             App.Window.ExtendsContentIntoTitleBar = true;
             // Set XAML element as a draggable region.
             App.Window.SetTitleBar(AppTitleBar);
-            
             AppTitle.Text = Windows.ApplicationModel.Package.Current.DisplayName;
+
+            var nonClientInputSource = InputNonClientPointerSource.GetForWindowId(App.Window.AppWindow.Id);
         }
 
         /// <summary>

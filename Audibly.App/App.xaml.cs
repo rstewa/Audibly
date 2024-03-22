@@ -14,6 +14,7 @@ using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
+using WinUIGallery.Helper;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -25,6 +26,8 @@ namespace Audibly.App;
 /// </summary>
 public partial class App : Application
 {
+    private static Win32WindowHelper win32WindowHelper;
+    
     /// <summary>
     ///     Gets main App Window
     /// </summary>
@@ -68,6 +71,10 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         Window = new MainWindow();
+        
+        win32WindowHelper = new Win32WindowHelper(Window);
+        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 800, y = 800 });
+        
         Window.Activate();
 
         UseSqlite();
@@ -89,7 +96,7 @@ public partial class App : Application
     ///     Configures the app to use the Sqlite data source. If no existing Sqlite database exists,
     ///     loads a demo database filled with fake data so the app has content.
     /// </summary>
-    public static void UseSqlite()
+    private static void UseSqlite()
     {
         // string demoDatabasePath = Package.Current.InstalledLocation.Path + @"\Assets\Contoso.db";
         // string databasePath = ApplicationData.Current.LocalFolder.Path + @"\Contoso.db";

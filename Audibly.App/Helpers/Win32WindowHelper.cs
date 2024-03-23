@@ -1,4 +1,7 @@
 // Author: rstewa · https://github.com/rstewa
+// Created: 3/21/2024
+// Updated: 3/22/2024
+
 // Created: TODO
 // Updated: 3/21/2024
 
@@ -7,7 +10,7 @@ using Microsoft.UI.Xaml;
 using WinRT.Interop;
 using static Audibly.App.Helpers.Win32;
 
-namespace WinUIGallery.Helper;
+namespace Audibly.App.Helpers;
 
 internal class Win32WindowHelper
 {

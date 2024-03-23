@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/16/2024
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
 using System;
 using System.Collections.Generic;
@@ -21,18 +21,17 @@ namespace Audibly.App.Views;
 /// <summary>
 ///     An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class AudiobookListPage : Page
+public sealed partial class LibraryPage : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
     ///     Initializes the page.
     /// </summary>
-    public AudiobookListPage()
+    public LibraryPage()
     {
         InitializeComponent();
     }
-
 
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
@@ -168,9 +167,25 @@ public sealed partial class AudiobookListPage : Page
         // PlayerViewModel.NowPlaying = selectedAudiobook;
     }
 
-    private void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)
+    private async void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
-        PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            if (PlayerViewModel.NowPlaying != null)
+                PlayerViewModel.NowPlaying.IsNowPlaying = false;
+
+            PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
+            PlayerViewModel.NowPlaying.IsNowPlaying = true;
+            PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
+        });
+    }
+
+    private async void LibraryPage_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.GetAudiobookListAsync();
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+        });
     }
 }

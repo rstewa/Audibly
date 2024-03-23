@@ -122,6 +122,8 @@ public class AudiobookViewModel : BindableBase, IEditableObject
                 Model.CurrentTimeMs = value;
                 IsModified = true;
                 OnPropertyChanged();
+
+                Task.Run(SaveAsync);
             }
         }
     }
@@ -174,6 +176,25 @@ public class AudiobookViewModel : BindableBase, IEditableObject
                 Model.FilePath = value;
                 IsModified = true;
                 OnPropertyChanged();
+            }
+        }
+    }
+    
+    /// <summary>
+    ///     Gets or sets whether the audiobook is currently playing or not.
+    /// </summary>
+    public bool IsNowPlaying
+    {
+        get => Model.IsNowPlaying;
+        set
+        {
+            if (value != Model.IsNowPlaying)
+            {
+                Model.IsNowPlaying = value;
+                IsModified = true;
+                OnPropertyChanged();
+                
+                Task.Run(SaveAsync);
             }
         }
     }

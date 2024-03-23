@@ -25,7 +25,11 @@
 - [ ] add now playing bar -- in progress
   - [x] make all buttons for player work
   - [ ] make chapter combobox a fixed width
-  - [ ] disable media controls when no audiobook is opened
+  - [x] disable media controls when no audiobook is opened
+  - [x] open most recently played audiobook on startup
+
+- [ ] what happens if there are multiple users on the same pc?
+
 
 - [ ] add button to open mini audiobook player -> use OpenInNewWindow icon <FontIcon Glyph="&#xE8A7;" />
   - [ ] add check to make sure only one instance of mini player is open
@@ -33,6 +37,11 @@
 - [ ] progress bar
   - [ ] add text underneath importing progress bar
   - [ ] add card around progress bar
+
+- [ ] fix view when no audiobooks have been imported yet
+  - [ ] look at how vscode does it
+
+- [ ] BUG: move seeker many times == buggy
 
 - [ ] add check that verifies that the audiobooks in the database are pointing to valid files (i.e., they haven't been moved or deleted)
 - [ ] fix TODO (which is a bug) in SqlAudiobookRepository.cs
@@ -43,7 +52,6 @@
 - [ ] add support for different file types
 - [ ] allow user to select accent color in settings
 - [x] only set now playing audiobook when user clicks on the play audiobook button (not when an audiobook is selected in the list view)
-- [ ] fix view when no audiobooks have been imported yet
 - [ ] add check to see if user has modified or deleted app files (e.g., the db file or the cover image files)
 - [ ] allow user to change skip button amounts
   - [ ] add a setting for this

@@ -266,6 +266,11 @@ public sealed partial class Player : UserControl
         newWindow.Content = rootPage;
         newWindow.Activate();
     }
+
+    private void Player_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
+    }
 }
 
 public class ProgressSliderValueConverter : IValueConverter

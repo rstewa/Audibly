@@ -89,7 +89,7 @@ public sealed partial class AppShell : Page
     /// </summary>
     private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        var pageType = args.IsSettingsInvoked ? typeof(SettingsPage) : typeof(AudiobookListPage);
+        var pageType = args.IsSettingsInvoked ? typeof(SettingsPage) : typeof(LibraryPage);
         if (pageType != null && pageType != AppFrame.CurrentSourcePageType) AppFrame.Navigate(pageType);
     }
 
@@ -101,7 +101,7 @@ public sealed partial class AppShell : Page
     {
         if (e.NavigationMode == NavigationMode.Back)
         {
-            if (e.SourcePageType == typeof(AudiobookListPage))
+            if (e.SourcePageType == typeof(LibraryPage))
                 NavView.SelectedItem = AudiobookListMenuItem;
             else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
         }

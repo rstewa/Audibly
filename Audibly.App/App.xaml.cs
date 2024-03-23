@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using Windows.Globalization;
 using Windows.Storage;
+using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
@@ -14,7 +15,6 @@ using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
-using WinUIGallery.Helper;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -86,7 +86,7 @@ public partial class App : Application
         if (shell.AppFrame.Content == null)
             // When the navigation stack isn't restored, navigate to the first page
             // suppressing the initial entrance animation.
-            shell.AppFrame.Navigate(typeof(AudiobookListPage), null,
+            shell.AppFrame.Navigate(typeof(LibraryPage), null,
                 new SuppressNavigationTransitionInfo());
 
         Window.Activate();

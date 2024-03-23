@@ -19,6 +19,7 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
 
     // public string CurrentPositionInBook { get; set; }
     public string FilePath { get; set; }
+    public bool IsNowPlaying { get; set; }
     public double PlaybackSpeed { get; set; }
     public DateTime? ReleaseDate { get; set; }
     public string Title { get; set; }

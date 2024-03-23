@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:vm="using:Audibly.App.ViewModels"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:winUi="using:CommunityToolkit.WinUI"
@@ -13,10 +12,7 @@
     mc:Ignorable="d"
     Loaded="LibraryPage_OnLoaded">
     <!-- ReSharper disable all Xaml.RedundantResource -->
-    <!-- TODO: 3rd pane for now playing -->
-    <!-- TODO: or player controls underneath description -->
     <!-- TODO: top can be scroll view while bottom is player -->
-
 
     <Page.Resources>
 
@@ -50,15 +46,6 @@
                 </StackPanel>
             </Grid>
         </DataTemplate>
-
-        <!-- <media:AttachedCardShadow x:Key="CommonShadow" -->
-        <!--                           Offset="4" /> -->
-        <!-- -->
-        <!-- <Style BasedOn="{StaticResource DefaultButtonStyle}" -->
-        <!--        TargetType="Button"> -->
-        <!--     <Setter Property="winUi:Effects.Shadow" Value="{StaticResource CommonShadow}" /> -->
-        <!--     <Setter Property="HorizontalAlignment" Value="Center" /> -->
-        <!-- </Style> -->
 
     </Page.Resources>
 
@@ -105,6 +92,7 @@
             RelativePanel.AlignRightWithPanel="True" />
 
         <Grid x:Name="ListViewGrid"
+              Visibility="{x:Bind vm:Converters.CollapsedIf(ViewModel.IsLoading), Mode=OneWay}"
               Margin="0,12,0,12"
               RelativePanel.AlignLeftWithPanel="True"
               RelativePanel.AlignBottomWithPanel="True"
@@ -119,8 +107,8 @@
                 x:Name="AudiobookListView"
                 SelectionMode="Single"
                 ShowsScrollingPlaceholders="True"
-                ItemsSource="{x:Bind ViewModel.Audiobooks}"
-                SelectedItem="{x:Bind ViewModel.SelectedAudiobook}"
+                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedAudiobook, Mode=OneWay}"
                 ItemTemplate="{StaticResource AudiobookListViewTemplate}"
                 IsItemClickEnabled="False"
                 SelectionChanged="AudiobookListView_OnSelectionChanged"
@@ -208,34 +196,21 @@
 
             </Grid>
 
-            <!-- player -->
-            <!-- <Grid x:Name="Player" -->
-            <!--       Grid.Row="1" -->
-            <!--       MaxHeight="250" -->
-            <!--       Margin="12, 0, 12, 12" -->
-            <!--       CornerRadius="8" -->
-            <!--       Padding="12" -->
-            <!--       BorderThickness="1" -->
-            <!--       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" -->
-            <!--       Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"> -->
-            <!-- -->
-            <!--     <userControls:Player /> -->
-            <!-- -->
-            <!-- </Grid> -->
-
         </Grid>
 
-        <muxc:ProgressBar
-            RelativePanel.AlignHorizontalCenterWithPanel="True"
-            RelativePanel.AlignVerticalCenterWithPanel="True"
-            Width="700"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Center"
-            IsIndeterminate="False"
-            Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
-            Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />
+        <!-- progress bar for when importing audiobooks -->
+        <userControls:ProgressBarCard IsIndeterminate="False"
+                                      Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}"
+                                      Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+                                      Margin="25, 0, 50, 0"
+                                      RelativePanel.AlignRightWithPanel="True"
+                                      RelativePanel.AlignLeftWithPanel="True"
+                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
 
-        <userControls:ProgressBarCard Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+        <!-- progress bar for when library view is loading -->
+        <userControls:ProgressBarCard IsIndeterminate="True"
+                                      Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
                                       Margin="25, 0, 50, 0"
                                       RelativePanel.AlignRightWithPanel="True"
                                       RelativePanel.AlignLeftWithPanel="True"

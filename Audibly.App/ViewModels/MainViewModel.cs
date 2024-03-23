@@ -98,9 +98,12 @@ public class MainViewModel : BindableBase
     public async Task GetAudiobookListAsync()
     {
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        
+        // NOTE: THIS IS FOR TESTING -> NEED TO REMOVE THIS
+        await Task.Delay(TimeSpan.FromSeconds(5));
 
         var audiobooks = await App.Repository.Audiobooks.GetAsync();
-
+        
         // todo: fix this bug
         if (audiobooks == null) return;
 

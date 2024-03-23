@@ -4,6 +4,7 @@
   - [ ] add card around progress bar
   - [ ] create into a user control
 
+- [x] check all `x:Bind` and make sure they are using `Mode=OneWay`
 
 # TODO
 

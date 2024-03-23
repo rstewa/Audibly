@@ -110,7 +110,7 @@
                     Background="Transparent"
                     BorderThickness="0"
                     DisplayMemberPath="Title"
-                    ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters}"
+                    ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
                     SelectedItem="{x:Bind PlayerViewModel.NowPlaying.CurrentChapter, Mode=TwoWay}"
                     SelectionChanged="ChapterCombo_SelectionChanged" />
 
@@ -165,8 +165,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="#84e2c9"
-                    Maximum="{x:Bind PlayerViewModel.ChapterDurationMs}"
-                    Value="{x:Bind PlayerViewModel.ChapterPositionMs}" />
+                    Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
+                    Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}" />
 
                 <TextBlock
                     x:Name="CurrentChapterDurationTextBlock"
@@ -176,7 +176,7 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Foreground="#9d9d9d"
-                    Text="{x:Bind PlayerViewModel.ChapterDurationText}"
+                    Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}"
                     TextAlignment="Right" />
             </Grid>
             <!--#endregion-->
@@ -305,7 +305,7 @@
                                 Minimum="0.5"
                                 StepFrequency="0.1"
                                 SnapsTo="StepValues"
-                                Value="{x:Bind PlayerViewModel.NowPlaying.PlaybackSpeed}"
+                                Value="{x:Bind PlayerViewModel.NowPlaying.PlaybackSpeed, Mode=TwoWay}"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Playback Speed"
                                 ValueChanged="PlaybackSpeedSlider_ValueChanged">
@@ -338,7 +338,7 @@
                 <FontIcon
                     x:Name="AudioLevelButtonIcon"
                     FontFamily="Segoe MDL2 Assets"
-                    Glyph="{x:Bind PlayerViewModel.NowPlaying.VolumeGlyph}" />
+                    Glyph="{x:Bind PlayerViewModel.NowPlaying.VolumeGlyph, Mode=OneWay}" />
                 <Button.Flyout>
                     <Flyout>
                         <Flyout.FlyoutPresenterStyle>
@@ -365,7 +365,7 @@
                                 SmallChange="1"
                                 LargeChange="25"
                                 SnapsTo="StepValues"
-                                Value="{x:Bind PlayerViewModel.VolumeLevel}"
+                                Value="{x:Bind PlayerViewModel.VolumeLevel, Mode=TwoWay}"
                                 Orientation="Vertical"
                                 ToolTipService.ToolTip="Volume Level"
                                 ValueChanged="VolumeSlider_ValueChanged">

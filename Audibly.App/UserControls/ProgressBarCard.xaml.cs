@@ -2,6 +2,7 @@
 // Created: 3/21/2024
 // Updated: 3/22/2024
 
+using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -9,18 +10,8 @@ namespace Audibly.App.UserControls;
 
 public partial class ProgressBarCard : UserControl
 {
-    public static readonly DependencyProperty ProgressBarVisibilityProperty = DependencyProperty.Register(
-        "ProgressBarVisibility", typeof(Visibility), typeof(ProgressBarCard),
-        new PropertyMetadata(Visibility.Collapsed));
-
-    public Visibility ProgressBarVisibility
-    {
-        get => (Visibility)GetValue(ProgressBarVisibilityProperty);
-        set => SetValue(ProgressBarVisibilityProperty, value);
-    }
-
     public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(
-        "Progress", typeof(double), typeof(ProgressBarCard), new PropertyMetadata(0.0));
+        nameof(Progress), typeof(double), typeof(ProgressBarCard), new PropertyMetadata(0.0));
 
     public double Progress
     {
@@ -28,15 +19,15 @@ public partial class ProgressBarCard : UserControl
         set => SetValue(ProgressProperty, value);
     }
 
-    public static readonly DependencyProperty ProgressTextProperty = DependencyProperty.Register(
-        "ProgressText", typeof(string), typeof(ProgressBarCard), new PropertyMetadata(string.Empty));
+    public static readonly DependencyProperty IsIndeterminateProperty = DependencyProperty.Register(
+        nameof(IsIndeterminate), typeof(bool), typeof(ProgressBarCard), new PropertyMetadata(false));
 
-    public string ProgressText
+    public bool IsIndeterminate
     {
-        get => (string)GetValue(ProgressTextProperty);
-        set => SetValue(ProgressTextProperty, value);
+        get => (bool)GetValue(IsIndeterminateProperty);
+        set => SetValue(IsIndeterminateProperty, value);
     }
-
+    
     public ProgressBarCard()
     {
         InitializeComponent();

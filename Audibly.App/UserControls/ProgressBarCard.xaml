@@ -6,21 +6,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-             mc:Ignorable="d"
-             d:DesignHeight="50"
-             d:DesignWidth="400">
+             mc:Ignorable="d">
 
     <!-- BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" -->
-    <Grid
-        CornerRadius="8"
-        Padding="12"
-        BorderThickness="1"
-        Background="{ThemeResource SmokeFillColorDefaultBrush}">
+    <Grid DataContext="{Binding ElementName=ThisControl}"
+          MinHeight="40"
+          CornerRadius="8"
+          Padding="12"
+          BorderThickness="1"
+          Background="{ThemeResource SmokeFillColorDefaultBrush}">
+
         <muxc:ProgressBar
-            RelativePanel.AlignHorizontalCenterWithPanel="True"
-            RelativePanel.AlignVerticalCenterWithPanel="True"
+            VerticalAlignment="Center"
             HorizontalAlignment="Stretch"
-            IsIndeterminate="True" />
+            IsIndeterminate="{x:Bind IsIndeterminate, Mode=OneWay}"
+            Value="{x:Bind Progress, Mode=OneWay}" />
+
     </Grid>
 
 </UserControl>

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/5/2024
-// Updated: 3/18/2024
+// Updated: 3/22/2024
 
 using System.Diagnostics;
 using Windows.Globalization;
@@ -27,7 +27,7 @@ namespace Audibly.App;
 public partial class App : Application
 {
     private static Win32WindowHelper win32WindowHelper;
-    
+
     /// <summary>
     ///     Gets main App Window
     /// </summary>
@@ -71,10 +71,10 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         Window = new MainWindow();
-        
+
         win32WindowHelper = new Win32WindowHelper(Window);
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 800, y = 800 });
-        
+
         Window.Activate();
 
         UseSqlite();

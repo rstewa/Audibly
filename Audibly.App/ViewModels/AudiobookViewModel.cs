@@ -1,14 +1,11 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/21/2024
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
-using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Audibly.App.Extensions;
 using Audibly.Models;
-using Microsoft.UI.Dispatching;
 using ChapterInfo = Audibly.Models.ChapterInfo;
 
 namespace Audibly.App.ViewModels;
@@ -16,10 +13,8 @@ namespace Audibly.App.ViewModels;
 /// <summary>
 ///     Provides a bindable wrapper for the Customer model class, encapsulating various services for access by the UI.
 /// </summary>
-public class AudiobookViewModel : BindableBase, IEditableObject
+public class AudiobookViewModel : BindableBase
 {
-    private DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
     /// <summary>
     ///     Initializes a new instance of the CustomerViewModel class that wraps a Customer object.
     /// </summary>
@@ -179,7 +174,7 @@ public class AudiobookViewModel : BindableBase, IEditableObject
             }
         }
     }
-    
+
     /// <summary>
     ///     Gets or sets whether the audiobook is currently playing or not.
     /// </summary>
@@ -193,7 +188,7 @@ public class AudiobookViewModel : BindableBase, IEditableObject
                 Model.IsNowPlaying = value;
                 IsModified = true;
                 OnPropertyChanged();
-                
+
                 Task.Run(SaveAsync);
             }
         }
@@ -232,8 +227,9 @@ public class AudiobookViewModel : BindableBase, IEditableObject
             }
         }
     }
-    
+
     private string _volumeGlyph;
+
     public string VolumeGlyph
     {
         get => _volumeGlyph;
@@ -276,6 +272,7 @@ public class AudiobookViewModel : BindableBase, IEditableObject
         }
     }
 
+    // todo: i don't think this is needed
     /// <summary>
     ///     Gets or sets the current chapter index of the audiobook.
     /// </summary>
@@ -291,17 +288,6 @@ public class AudiobookViewModel : BindableBase, IEditableObject
 
     public ObservableCollection<ChapterInfo> Chapters { get; set; } = new();
 
-    private ChapterInfo _selectedChapter;
-
-    /// <summary>
-    ///     Gets or sets the selected chapter of the audiobook.
-    /// </summary>
-    public ChapterInfo SelectedChapter
-    {
-        get => _selectedChapter;
-        set => Set(ref _selectedChapter, value);
-    }
-
     /// <summary>
     ///     Gets or sets a value that indicates whether the underlying model has been modified.
     /// </summary>
@@ -309,17 +295,6 @@ public class AudiobookViewModel : BindableBase, IEditableObject
     ///     Used when sync'ing with the server to reduce load and only upload the models that have changed.
     /// </remarks>
     public bool IsModified { get; set; }
-
-    private bool _isLoading;
-
-    /// <summary>
-    ///     Gets or sets a value that indicates whether to show a progress bar.
-    /// </summary>
-    public bool IsLoading
-    {
-        get => _isLoading;
-        set => Set(ref _isLoading, value);
-    }
 
     private bool _isNewAudiobook;
 
@@ -332,23 +307,11 @@ public class AudiobookViewModel : BindableBase, IEditableObject
         set => Set(ref _isNewAudiobook, value);
     }
 
-    private bool _isInEdit;
-
-    /// <summary>
-    ///     Gets or sets a value that indicates whether the audiobook data is being edited.
-    /// </summary>
-    public bool IsInEdit
-    {
-        get => _isInEdit;
-        set => Set(ref _isInEdit, value);
-    }
-
     /// <summary>
     ///     Saves audiobook data that has been edited.
     /// </summary>
     public async Task SaveAsync()
     {
-        IsInEdit = false;
         IsModified = false;
         if (IsNewAudiobook)
         {
@@ -357,74 +320,5 @@ public class AudiobookViewModel : BindableBase, IEditableObject
         }
 
         await App.Repository.Audiobooks.UpsertAsync(Model);
-    }
-
-    /// <summary>
-    ///     Raised when the user cancels the changes they've made to the audiobook data.
-    /// </summary>
-    public event EventHandler AddNewAudiobookCanceled;
-
-    /// <summary>
-    ///     Cancels any in progress edits.
-    /// </summary>
-    public async Task CancelEditsAsync()
-    {
-        if (IsNewAudiobook)
-            AddNewAudiobookCanceled?.Invoke(this, EventArgs.Empty);
-        else
-            await RevertChangesAsync();
-    }
-
-    /// <summary>
-    ///     Discards any edits that have been made, restoring the original values.
-    /// </summary>
-    public async Task RevertChangesAsync()
-    {
-        IsInEdit = false;
-        if (IsModified)
-        {
-            await RefreshAudiobookAsync();
-            IsModified = false;
-        }
-    }
-
-    /// <summary>
-    ///     Enables edit mode.
-    /// </summary>
-    public void StartEdit()
-    {
-        IsInEdit = true;
-    }
-
-    /// <summary>
-    ///     Reloads all of the audiobook data.
-    /// </summary>
-    public async Task RefreshAudiobookAsync()
-    {
-        Model = await App.Repository.Audiobooks.GetAsync(Model.Id);
-    }
-
-    /// <summary>
-    ///     Called when a bound DataGrid control causes the audiobook to enter edit mode.
-    /// </summary>
-    public void BeginEdit()
-    {
-        // Not used.
-    }
-
-    /// <summary>
-    ///     Called when a bound DataGrid control cancels the edits that have been made to a audiobook.
-    /// </summary>
-    public async void CancelEdit()
-    {
-        await CancelEditsAsync();
-    }
-
-    /// <summary>
-    ///     Called when a bound DataGrid control commits the edits that have been made to a audiobook.
-    /// </summary>
-    public async void EndEdit()
-    {
-        await SaveAsync();
     }
 }

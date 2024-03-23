@@ -12,7 +12,7 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d"
     Loaded="LibraryPage_OnLoaded">
-
+    <!-- ReSharper disable all Xaml.RedundantResource -->
     <!-- TODO: 3rd pane for now playing -->
     <!-- TODO: or player controls underneath description -->
     <!-- TODO: top can be scroll view while bottom is player -->
@@ -128,12 +128,12 @@
             <!-- TODO -->
             <!-- <AnnotatedScrollBar /> -->
 
-            <!-- <muxc:ProgressBar -->
-            <!--     Margin="0,50,0,0" -->
-            <!--     HorizontalAlignment="Stretch" -->
-            <!--     VerticalAlignment="Top" -->
-            <!--     IsIndeterminate="True" -->
-            <!--     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" /> -->
+            <muxc:ProgressBar
+                Margin="0,50,0,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                IsIndeterminate="True"
+                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         </Grid>
 

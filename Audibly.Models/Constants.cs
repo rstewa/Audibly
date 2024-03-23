@@ -1,4 +1,8 @@
-﻿namespace Audibly.Models;
+﻿// Author: rstewa · https://github.com/rstewa
+// Created: 2/23/2024
+// Updated: 3/22/2024
+
+namespace Audibly.Models;
 
 public static class Constants
 {

@@ -1,5 +1,6 @@
-﻿//   Author: Ryan Stewart
-//   Date: 05/20/2022
+﻿// Author: rstewa · https://github.com/rstewa
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
 using Audibly.Models;
 

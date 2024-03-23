@@ -12,17 +12,17 @@ public static class StateHelper
     {
         return ApplicationData.Current.LocalSettings.Values["themeSetting"].ToString();
     }
-    
+
     public static void SetThemeSetting(string theme)
     {
         ApplicationData.Current.LocalSettings.Values["themeSetting"] = theme;
     }
-    
+
     public static void SetLastPlayedAudiobook(string audiobookId)
     {
         ApplicationData.Current.LocalSettings.Values["lastPlayedAudiobook"] = audiobookId;
     }
-    
+
     public static string GetLastPlayedAudiobook()
     {
         return ApplicationData.Current.LocalSettings.Values["lastPlayedAudiobook"].ToString();

@@ -14,7 +14,7 @@
         <muxc:ProgressBar Width="400"
                           IsIndeterminate="False"
                           Value="{x:Bind Progress, Mode=OneWay}"
-                          Background="LightGray"/>
+                          Background="LightGray" />
         <TextBlock Text="{x:Bind ProgressText, Mode=OneWay}"
                    HorizontalAlignment="Center" />
     </StackPanel>

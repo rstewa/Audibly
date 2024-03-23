@@ -22,17 +22,17 @@
   - [ ] add filter button to change how audiobooks are sorted by default
   - [ ] show recent searches as suggestions
 
-- [ ] add now playing bar -- in progress
+- [x] add now playing bar
   - [x] make all buttons for player work
-  - [ ] make chapter combobox a fixed width
+  - [ ] make chapter combobox a fixed width -- not sure if i need to do this or not
   - [x] disable media controls when no audiobook is opened
   - [x] open most recently played audiobook on startup
 
 - [ ] what happens if there are multiple users on the same pc?
 
 
-- [ ] add button to open mini audiobook player -> use OpenInNewWindow icon <FontIcon Glyph="&#xE8A7;" />
-  - [ ] add check to make sure only one instance of mini player is open
+- [x] add button to open mini audiobook player -> use OpenInNewWindow icon <FontIcon Glyph="&#xE8A7;" />
+  - [x] add check to make sure only one instance of mini player is open
 
 - [ ] progress bar
   - [ ] add text underneath importing progress bar

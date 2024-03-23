@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/11/2024
-// Updated: 3/21/2024
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
 using System;
 using System.Linq;
@@ -252,7 +252,7 @@ public sealed partial class Player : UserControl
             window.Activate();
             return;
         }
-        
+
         var newWindow = WindowHelper.CreateWindow();
 
         const int width = 315;

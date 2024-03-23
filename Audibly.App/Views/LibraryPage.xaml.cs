@@ -163,8 +163,6 @@ public sealed partial class LibraryPage : Page
     {
         var selectedAudiobook = (sender as ListView)?.SelectedItem as AudiobookViewModel;
         ViewModel.SelectedAudiobook = selectedAudiobook;
-        // todo: this is a hack
-        // PlayerViewModel.NowPlaying = selectedAudiobook;
     }
 
     private async void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)

@@ -30,16 +30,16 @@
                     FontSize="16"
                     Glyph="&#xE16E;"
                     Visibility="Collapsed"
-                    Foreground="{ThemeResource SystemAccentColor}"/>
+                    Foreground="{ThemeResource SystemAccentColor}" />
                 <muxc:AnimatedIcon
                     x:Name="DefaultIcon">
-                    <animatedvisuals:AnimatedFindVisualSource/>
+                    <animatedvisuals:AnimatedFindVisualSource />
                     <!-- FallbackIconSource uses FontIconSource because the FontSize needs to be
                          set to a size that fits into the same space allowed for the animated icon. -->
                     <muxc:AnimatedIcon.FallbackIconSource>
                         <muxc:FontIconSource
                             FontSize="16"
-                            Glyph="&#xE11A;"/>
+                            Glyph="&#xE11A;" />
                     </muxc:AnimatedIcon.FallbackIconSource>
                 </muxc:AnimatedIcon>
             </Grid>
@@ -53,11 +53,11 @@
             TextChanged="SearchBox_TextChanged">
             <AutoSuggestBox.QueryIcon>
                 <muxc:AnimatedIcon>
-                    <animatedvisuals:AnimatedFindVisualSource/>
+                    <animatedvisuals:AnimatedFindVisualSource />
                     <muxc:AnimatedIcon.FallbackIconSource>
                         <muxc:FontIconSource
                             FontSize="16"
-                            Glyph="&#xE11A;"/>
+                            Glyph="&#xE11A;" />
                     </muxc:AnimatedIcon.FallbackIconSource>
                 </muxc:AnimatedIcon>
             </AutoSuggestBox.QueryIcon>
@@ -66,23 +66,23 @@
             <VisualStateGroup>
                 <VisualState x:Name="OpenState">
                     <VisualState.Setters>
-                        <Setter Target="Root.Width" Value="240"/>
+                        <Setter Target="Root.Width" Value="240" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="CollapsedState">
                     <VisualState.Setters>
-                        <Setter Target="SearchBox.Visibility" Value="Collapsed"/>
-                        <Setter Target="SearchButton.Visibility" Value="Visible"/>
-                        <Setter Target="Root.Width" Value="32"/>
+                        <Setter Target="SearchBox.Visibility" Value="Collapsed" />
+                        <Setter Target="SearchButton.Visibility" Value="Visible" />
+                        <Setter Target="Root.Width" Value="32" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
             <VisualStateGroup>
-                <VisualState x:Name="NonFilteredState"/>
+                <VisualState x:Name="NonFilteredState" />
                 <VisualState x:Name="FilteredState">
                     <VisualState.Setters>
-                        <Setter Target="DefaultIcon.Visibility" Value="Collapsed"/>
-                        <Setter Target="FilteredIcon.Visibility" Value="Visible"/>
+                        <Setter Target="DefaultIcon.Visibility" Value="Collapsed" />
+                        <Setter Target="FilteredIcon.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

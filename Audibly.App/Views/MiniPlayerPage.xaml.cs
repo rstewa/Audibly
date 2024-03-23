@@ -1,7 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/21/2024
-// Updated: 3/21/2024
+// Updated: 3/22/2024
 
+using System;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -38,12 +39,12 @@ public sealed partial class MiniPlayerPage : Page
 
     private void CompactViewButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -54,27 +55,27 @@ public sealed partial class MiniPlayerPage : Page
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void SkipBack10Button_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void SkipForward30Button_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void OpenAudiobook_Click(object sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)

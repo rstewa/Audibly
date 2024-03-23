@@ -1,5 +1,6 @@
-﻿//   Author: Ryan Stewart
-//   Date: 05/20/2022
+﻿// Author: rstewa · https://github.com/rstewa
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
 using System;
 
@@ -33,7 +34,7 @@ public static class TimespanExtensions
         var t = TimeSpan.FromMilliseconds(ms);
         return $@"{(int)t.TotalHours}:{t:mm}:{t:ss}";
     }
-    
+
     public static string ToStr_s(this long s)
     {
         var t = TimeSpan.FromSeconds(s);

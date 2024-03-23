@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/17/2024
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
 using System.Linq;
 using Windows.Media.Playback;
@@ -85,8 +85,9 @@ public class PlayerViewModel : BindableBase
             ChapterPositionText = _chapterPositionMs.ToStr_ms();
         }
     }
-    
+
     private long _chapterDurationMs;
+
     public int ChapterDurationMs
     {
         get => (int)_chapterDurationMs;

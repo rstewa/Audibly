@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/10/2024
-// Updated: 3/10/2024
+// Created: 3/21/2024
+// Updated: 3/22/2024
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,14 +10,15 @@ namespace Audibly.App.UserControls;
 public partial class ProgressBarWithText : UserControl
 {
     public static readonly DependencyProperty ProgressBarVisibilityProperty = DependencyProperty.Register(
-        "ProgressBarVisibility", typeof(Visibility), typeof(ProgressBarWithText), new PropertyMetadata(Visibility.Collapsed));
+        "ProgressBarVisibility", typeof(Visibility), typeof(ProgressBarWithText),
+        new PropertyMetadata(Visibility.Collapsed));
 
     public Visibility ProgressBarVisibility
     {
         get => (Visibility)GetValue(ProgressBarVisibilityProperty);
         set => SetValue(ProgressBarVisibilityProperty, value);
     }
-    
+
     public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(
         "Progress", typeof(double), typeof(ProgressBarWithText), new PropertyMetadata(0.0));
 

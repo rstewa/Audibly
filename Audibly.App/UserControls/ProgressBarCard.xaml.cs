@@ -7,10 +7,10 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.UserControls;
 
-public partial class ProgressBarWithText : UserControl
+public partial class ProgressBarCard : UserControl
 {
     public static readonly DependencyProperty ProgressBarVisibilityProperty = DependencyProperty.Register(
-        "ProgressBarVisibility", typeof(Visibility), typeof(ProgressBarWithText),
+        "ProgressBarVisibility", typeof(Visibility), typeof(ProgressBarCard),
         new PropertyMetadata(Visibility.Collapsed));
 
     public Visibility ProgressBarVisibility
@@ -20,7 +20,7 @@ public partial class ProgressBarWithText : UserControl
     }
 
     public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(
-        "Progress", typeof(double), typeof(ProgressBarWithText), new PropertyMetadata(0.0));
+        "Progress", typeof(double), typeof(ProgressBarCard), new PropertyMetadata(0.0));
 
     public double Progress
     {
@@ -29,7 +29,7 @@ public partial class ProgressBarWithText : UserControl
     }
 
     public static readonly DependencyProperty ProgressTextProperty = DependencyProperty.Register(
-        "ProgressText", typeof(string), typeof(ProgressBarWithText), new PropertyMetadata(string.Empty));
+        "ProgressText", typeof(string), typeof(ProgressBarCard), new PropertyMetadata(string.Empty));
 
     public string ProgressText
     {
@@ -37,7 +37,7 @@ public partial class ProgressBarWithText : UserControl
         set => SetValue(ProgressTextProperty, value);
     }
 
-    public ProgressBarWithText()
+    public ProgressBarCard()
     {
         InitializeComponent();
     }

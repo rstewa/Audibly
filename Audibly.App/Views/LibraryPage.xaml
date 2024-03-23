@@ -107,6 +107,7 @@
         <Grid x:Name="ListViewGrid"
               Margin="0,12,0,12"
               RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignBottomWithPanel="True"
               RelativePanel.Below="PageTitle"
               CornerRadius="8"
               Padding="12"
@@ -127,13 +128,6 @@
 
             <!-- TODO -->
             <!-- <AnnotatedScrollBar /> -->
-
-            <muxc:ProgressBar
-                Margin="0,50,0,0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
         </Grid>
 
@@ -212,13 +206,6 @@
 
                 </Grid>
 
-                <muxc:ProgressBar
-                    Margin="0,50,0,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    IsIndeterminate="True"
-                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
-
             </Grid>
 
             <!-- player -->
@@ -247,6 +234,13 @@
             IsIndeterminate="False"
             Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />
+
+        <userControls:ProgressBarCard Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                                      Margin="25, 0, 50, 0"
+                                      RelativePanel.AlignRightWithPanel="True"
+                                      RelativePanel.AlignLeftWithPanel="True"
+                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
 
         <Grid x:Name="Player"
               Visibility="{x:Bind vm:Converters.CollapsedIfNull(PlayerViewModel.NowPlaying), Mode=OneWay}"

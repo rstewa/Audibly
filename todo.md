@@ -1,3 +1,12 @@
+# IN PROGRESS
+- [ ] progress bar
+  - [ ] add text underneath importing progress bar
+  - [ ] add card around progress bar
+  - [ ] create into a user control
+
+
+# TODO
+
 - [x] combine all this update todo commits together
 
 - [ ] create or find a tool that finds all todo's in solution and puts them in a file with line numbers

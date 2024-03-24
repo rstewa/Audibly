@@ -50,6 +50,7 @@
     </Page.Resources>
 
     <RelativePanel x:Name="LayoutRoot" Margin="0, 5, 5, 5">
+        
         <TextBlock
             x:Name="PageTitle"
             Style="{StaticResource PageTitleTextBlockStyle}"
@@ -234,6 +235,15 @@
 
         </Grid>
 
+        <InfoBar x:Name="InfoBarNotification"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.Above="Player"
+            Margin="0, 0, 8, 12"
+            IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=OneWay}"
+            IsIconVisible="True"
+            IsClosable="True"
+            Severity="{x:Bind ViewModel.NotificationSeverity, Mode=OneWay}"
+            Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}"/>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

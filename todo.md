@@ -1,8 +1,8 @@
 # IN PROGRESS
 - [ ] progress bar
   - [ ] add text underneath importing progress bar
-  - [ ] add card around progress bar
-  - [ ] create into a user control
+  - [x] add card around progress bar
+  - [x] create into a user control
 
 - [x] check all `x:Bind` and make sure they are using `Mode=OneWay`
 

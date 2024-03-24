@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/21/2024
-// Updated: 3/22/2024
+// Updated: 3/24/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -11,6 +11,7 @@ using Windows.Storage.Pickers;
 using Audibly.App.Services;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 
 namespace Audibly.App.ViewModels;
@@ -91,6 +92,30 @@ public class MainViewModel : BindableBase
         get => _isImportingText;
         set => Set(ref _isImportingText, value);
     }
+    
+    private string _notificationText;
+    
+    public string NotificationText
+    {
+        get => _notificationText;
+        set => Set(ref _notificationText, value);
+    }
+    
+    private bool _isNotificationVisible;
+    
+    public bool IsNotificationVisible
+    {
+        get => _isNotificationVisible;
+        set => Set(ref _isNotificationVisible, value);
+    }
+    
+    private InfoBarSeverity _notificationSeverity;
+    
+    public InfoBarSeverity NotificationSeverity
+    {
+        get => _notificationSeverity;
+        set => Set(ref _notificationSeverity, value);
+    }
 
     /// <summary>
     ///     Gets the complete list of audiobooks from the database.
@@ -98,12 +123,14 @@ public class MainViewModel : BindableBase
     public async Task GetAudiobookListAsync()
     {
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
-        
+
         // NOTE: THIS IS FOR TESTING -> NEED TO REMOVE THIS
-        await Task.Delay(TimeSpan.FromSeconds(5));
+#if DEBUG
+        // await Task.Delay(TimeSpan.FromSeconds(5));
+#endif
 
         var audiobooks = await App.Repository.Audiobooks.GetAsync();
-        
+
         // todo: fix this bug
         if (audiobooks == null) return;
 
@@ -171,6 +198,13 @@ public class MainViewModel : BindableBase
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
+            
+            await dispatcherQueue.EnqueueAsync(() =>
+            {
+                NotificationText = "Audiobook imported successfully!";
+                NotificationSeverity = InfoBarSeverity.Success;
+                IsNotificationVisible = true;
+            });
         });
     }
 
@@ -201,15 +235,16 @@ public class MainViewModel : BindableBase
         else
             return;
 
-        // await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
         await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
 
+        var totalBooks = 0;
         await Task.Run(async () =>
         {
             await _fileImporter.ImportDirectoryAsync(folder.Path, async (progress, total, text) =>
             {
                 await dispatcherQueue.EnqueueAsync(() =>
                 {
+                    totalBooks = total;
                     ImportProgress = (int)((double)progress / total * 100);
                     IsImportingText = $"Importing {text}...";
                 });
@@ -218,6 +253,13 @@ public class MainViewModel : BindableBase
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
+            
+            await dispatcherQueue.EnqueueAsync(() =>
+            {
+                NotificationText = $"{totalBooks} Audiobooks imported successfully!";
+                NotificationSeverity = InfoBarSeverity.Success;
+                IsNotificationVisible = true;
+            });
         });
     }
 }

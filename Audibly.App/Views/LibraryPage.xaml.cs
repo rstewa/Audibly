@@ -178,6 +178,7 @@ public sealed partial class LibraryPage : Page
         });
     }
 
+    // TODO: find out if there is a better way to do this
     private async void LibraryPage_OnLoaded(object sender, RoutedEventArgs e)
     {
         await ViewModel.GetAudiobookListAsync();

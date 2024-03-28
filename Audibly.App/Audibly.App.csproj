@@ -11,39 +11,42 @@
         <UseRidGraph>true</UseRidGraph>
         <UseWinUI>true</UseWinUI>
         <EnableMsixTooling>true</EnableMsixTooling>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <None Remove="UserControls\Player.xaml"/>
-        <None Remove="UserControls\ProgressBarWithText.xaml"/>
-        <None Remove="Views\MiniPlayerPage.xaml"/>
+        <None Remove="UserControls\Player.xaml" />
+        <None Remove="UserControls\ProgressBarWithText.xaml" />
+        <None Remove="Views\ControlPages\ImportDialogContent.xaml" />
+        <None Remove="Views\Library.xaml" />
+        <None Remove="Views\MiniPlayerPage.xaml" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Assets\SplashScreen.scale-200.png"/>
-        <Content Include="Assets\LockScreenLogo.scale-200.png"/>
-        <Content Include="Assets\Square150x150Logo.scale-200.png"/>
-        <Content Include="Assets\Square44x44Logo.scale-200.png"/>
-        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png"/>
-        <Content Include="Assets\StoreLogo.png"/>
-        <Content Include="Assets\Wide310x150Logo.scale-200.png"/>
+        <Content Include="Assets\SplashScreen.scale-200.png" />
+        <Content Include="Assets\LockScreenLogo.scale-200.png" />
+        <Content Include="Assets\Square150x150Logo.scale-200.png" />
+        <Content Include="Assets\Square44x44Logo.scale-200.png" />
+        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+        <Content Include="Assets\StoreLogo.png" />
+        <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoMapper" Version="13.0.1"/>
-        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109"/>
-        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3"/>
+        <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
+        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3"/>
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000"/>
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233"/>
-        <Manifest Include="$(ApplicationManifest)"/>
-        <PackageReference Include="PInvoke.User32" Version="0.7.124"/>
-        <PackageReference Include="Sharpener" Version="0.2.4"/>
-        <PackageReference Include="z440.atl.core" Version="5.20.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+        <Manifest Include="$(ApplicationManifest)" />
+        <PackageReference Include="PInvoke.User32" Version="0.7.124" />
+        <PackageReference Include="Sharpener" Version="0.2.4" />
+        <PackageReference Include="z440.atl.core" Version="5.20.0" />
     </ItemGroup>
 
     <!-- 
@@ -52,11 +55,16 @@
       package has not yet been restored.
     -->
     <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-        <ProjectCapability Include="Msix"/>
+        <ProjectCapability Include="Msix" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj"/>
-        <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj"/>
+        <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
+        <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Views\Library.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
     <ItemGroup>
         <Page Update="Views\MiniPlayerPage.xaml">
@@ -72,6 +80,11 @@
         <Page Update="UserControls\ProgressBarWithText.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Views\ControlPages\ImportDialogContent.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
 
     <!-- 

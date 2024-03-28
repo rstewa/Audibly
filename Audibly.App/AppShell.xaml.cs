@@ -83,14 +83,27 @@ public sealed partial class AppShell : Page
     }
 
     public readonly string AudiobookListLabel = "Audiobooks";
+    public readonly string LibraryLabel = "Library";
 
     /// <summary>
     ///     Navigates to the page corresponding to the tapped item.
     /// </summary>
     private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        var pageType = args.IsSettingsInvoked ? typeof(SettingsPage) : typeof(LibraryPage);
-        if (pageType != null && pageType != AppFrame.CurrentSourcePageType) AppFrame.Navigate(pageType);
+        if (args.InvokedItemContainer is not NavigationViewItem item) return;
+        
+        if (item == AudiobookListMenuItem)
+        {
+            AppFrame.Navigate(typeof(LibraryPage));
+        }
+        else if (item == LibraryMenuItem)
+        {
+            AppFrame.Navigate(typeof(Library));
+        }
+        else if (item == NavView.SettingsItem)
+        {
+            AppFrame.Navigate(typeof(SettingsPage));
+        }
     }
 
     /// <summary>

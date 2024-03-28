@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Page
+    x:Class="Audibly.App.Views.ControlPages.ImportDialogContent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControls="using:Audibly.App.UserControls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <userControls:ProgressBarCard IsIndeterminate="False"
+                                      Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+                                      Margin="25, 0, 50, 0"
+                                      RelativePanel.AlignRightWithPanel="True"
+                                      RelativePanel.AlignLeftWithPanel="True"
+                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
+    </StackPanel>
+</Page>

@@ -8,6 +8,8 @@
 
 # TODO
 
+- [ ] Add a context menu entry that supports startup parameters
+
 - [x] combine all this update todo commits together
 
 - [ ] create or find a tool that finds all todo's in solution and puts them in a file with line numbers

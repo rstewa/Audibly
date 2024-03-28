@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/21/2024
-// Updated: 3/22/2024
+// Updated: 3/25/2024
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using Windows.Media.Core;
 using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
+using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -181,10 +183,41 @@ public sealed partial class LibraryPage : Page
     // TODO: find out if there is a better way to do this
     private async void LibraryPage_OnLoaded(object sender, RoutedEventArgs e)
     {
-        await ViewModel.GetAudiobookListAsync();
-        await _dispatcherQueue.EnqueueAsync(() =>
+        // await ViewModel.GetAudiobookListAsync();
+        // await _dispatcherQueue.EnqueueAsync(() =>
+        // {
+        //     PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+        // });
+    }
+
+    private ContentDialog _dialog;
+    private async void ImportAudiobooks_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.ImportAudiobooksAsync(this.XamlRoot);
+        
+        // // create a dialog
+        // _dialog = new ContentDialog
+        // {
+        //     // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+        //     XamlRoot = XamlRoot,
+        //     Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+        //     Title = "Import Audiobooks",
+        //     CloseButtonText = "Cancel",
+        //     DefaultButton = ContentDialogButton.Close,
+        //     Content = new ImportDialogContent()
+        // };
+        //
+        // ViewModel.ImportCompleted += ViewModel_OnImportCompleted;
+        //
+        // var result = await _dialog.ShowAsync();
+    }
+
+    private void ViewModel_OnImportCompleted()
+    {
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+            _dialog.Hide();
         });
+        ViewModel.ImportCompleted -= ViewModel_OnImportCompleted;
     }
 }

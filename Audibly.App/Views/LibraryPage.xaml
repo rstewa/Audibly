@@ -50,7 +50,7 @@
     </Page.Resources>
 
     <RelativePanel x:Name="LayoutRoot" Margin="0, 5, 5, 5">
-        
+
         <TextBlock
             x:Name="PageTitle"
             Style="{StaticResource PageTitleTextBlockStyle}"
@@ -70,14 +70,14 @@
                 ToolTipService.ToolTip="Refresh audiobooks" />
             <AppBarSeparator />
             <AppBarButton
-                Click="{x:Bind ViewModel.ImportAudiobook}"
+                Click="{x:Bind ViewModel.ImportAudiobookAsync}"
                 Icon="Add"
                 Label="Open"
                 ToolTipService.ToolTip="Open audiobook">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
             </AppBarButton>
             <AppBarButton
-                Click="{x:Bind ViewModel.ImportAudiobooks}"
+                Click="ImportAudiobooks_OnClick"
                 Label="Import"
                 ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
@@ -87,66 +87,58 @@
         <userControls:CollapsibleSearchBox
             x:Name="AudiobookSearchBox"
             Width="240"
-            Margin="12,8,12,0"
+            Margin="12,8,6,0"
             CollapseWidth="{StaticResource LargeWindowSnapPoint}"
             Loaded="AudiobookSearchBox_Loaded"
             RelativePanel.AlignRightWithPanel="True" />
 
-        <Grid x:Name="ListViewGrid"
+        <Grid x:Name="ListAndDetailViewGrid"
               Visibility="{x:Bind vm:Converters.CollapsedIf(ViewModel.IsLoading), Mode=OneWay}"
-              Margin="0,12,0,12"
+              Margin="0,4,4,8"
               RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignRightWithPanel="True"
               RelativePanel.AlignBottomWithPanel="True"
-              RelativePanel.Below="PageTitle"
-              CornerRadius="8"
-              Padding="12"
-              BorderThickness="1"
-              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+              RelativePanel.Below="PageTitle">
 
-            <ListView
-                x:Name="AudiobookListView"
-                SelectionMode="Single"
-                ShowsScrollingPlaceholders="True"
-                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedAudiobook, Mode=OneWay}"
-                ItemTemplate="{StaticResource AudiobookListViewTemplate}"
-                IsItemClickEnabled="False"
-                SelectionChanged="AudiobookListView_OnSelectionChanged"
-                RelativePanel.LeftOf="DetailView" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="6*" />
+            </Grid.ColumnDefinitions>
 
-            <!-- TODO -->
-            <!-- <AnnotatedScrollBar /> -->
-
-        </Grid>
-
-        <!-- detail view & player -->
-        <Grid
-            RelativePanel.RightOf="ListViewGrid"
-            RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.Below="PageTitle"
-            RelativePanel.AlignBottomWithPanel="True">
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
-            <!-- detail view -->
-            <Grid x:Name="DetailViewGrid"
-                  Grid.Row="0"
-                  Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
-                  Margin="12"
+            <!-- audiobook list view card -->
+            <Grid Grid.Column="0"
                   CornerRadius="8"
                   Padding="12"
                   BorderThickness="1"
                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <ListView
+                    x:Name="AudiobookListView"
+                    SelectionMode="Single"
+                    ShowsScrollingPlaceholders="True"
+                    ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedAudiobook, Mode=OneWay}"
+                    ItemTemplate="{StaticResource AudiobookListViewTemplate}"
+                    IsItemClickEnabled="False"
+                    SelectionChanged="AudiobookListView_OnSelectionChanged"
+                    RelativePanel.LeftOf="DetailView" />
+            </Grid>
+
+            <!-- TODO -->
+            <!-- <AnnotatedScrollBar /> -->
+            <!-- detail view -->
+            <Grid Grid.Column="1"
+                  Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
+                  CornerRadius="8"
+                  Padding="12"
+                  BorderThickness="1"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  RelativePanel.RightOf="AudiobookListView">
 
                 <Grid x:Name="DetailView"
                       Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
-                      Margin="20"
-                      RelativePanel.RightOf="AudiobookListView">
+                      Margin="20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
@@ -155,8 +147,9 @@
                     <StackPanel Orientation="Horizontal"
                                 Grid.Row="0">
 
+                        <!-- cover image -->
                         <Border Width="400" Height="400">
-                            <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="1">
+                            <Border CornerRadius="20" BorderBrush="Transparent" BorderThickness="0">
                                 <Border.Background>
                                     <ImageBrush
                                         ImageSource="{x:Bind ViewModel.SelectedAudiobook.CoverImagePath, Mode=OneWay}"
@@ -166,7 +159,6 @@
                             <winUi:Effects.Shadow>
                                 <media:AttachedCardShadow CornerRadius="20" Offset="4, 4" />
                             </winUi:Effects.Shadow>
-
                         </Border>
 
                         <StackPanel Orientation="Vertical" Margin="40 0" MaxWidth="800">
@@ -199,15 +191,16 @@
 
         </Grid>
 
+
         <!-- progress bar for when importing audiobooks -->
-        <userControls:ProgressBarCard IsIndeterminate="False"
-                                      Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}"
-                                      Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
-                                      Margin="25, 0, 50, 0"
-                                      RelativePanel.AlignRightWithPanel="True"
-                                      RelativePanel.AlignLeftWithPanel="True"
-                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
-                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
+        <!-- <userControls:ProgressBarCard IsIndeterminate="False" -->
+        <!--                               Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" -->
+        <!--                               Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" -->
+        <!--                               Margin="25, 0, 50, 0" -->
+        <!--                               RelativePanel.AlignRightWithPanel="True" -->
+        <!--                               RelativePanel.AlignLeftWithPanel="True" -->
+        <!--                               RelativePanel.AlignHorizontalCenterWithPanel="True" -->
+        <!--                               RelativePanel.AlignVerticalCenterWithPanel="True" /> -->
 
         <!-- progress bar for when library view is loading -->
         <userControls:ProgressBarCard IsIndeterminate="True"
@@ -218,6 +211,7 @@
                                       RelativePanel.AlignHorizontalCenterWithPanel="True"
                                       RelativePanel.AlignVerticalCenterWithPanel="True" />
 
+        <!-- player -->
         <Grid x:Name="Player"
               Visibility="{x:Bind vm:Converters.CollapsedIfNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
               RelativePanel.AlignBottomWithPanel="True"
@@ -235,15 +229,16 @@
 
         </Grid>
 
+        <!-- notification bar -->
         <InfoBar x:Name="InfoBarNotification"
-            RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.Above="Player"
-            Margin="0, 0, 8, 12"
-            IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=OneWay}"
-            IsIconVisible="True"
-            IsClosable="True"
-            Severity="{x:Bind ViewModel.NotificationSeverity, Mode=OneWay}"
-            Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}"/>
+                 RelativePanel.AlignRightWithPanel="True"
+                 RelativePanel.Above="Player"
+                 Margin="0, 0, 8, 12"
+                 IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=OneWay}"
+                 IsIconVisible="True"
+                 IsClosable="True"
+                 Severity="{x:Bind ViewModel.NotificationSeverity, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>

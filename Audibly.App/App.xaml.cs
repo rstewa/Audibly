@@ -47,6 +47,8 @@ public partial class App : Application
     ///     Pipeline for interacting with backend service or database.
     /// </summary>
     public static IAudiblyRepository Repository { get; private set; }
+        
+    public static FrameworkElement MainRoot { get; private set; }
 
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
@@ -90,6 +92,8 @@ public partial class App : Application
                 new SuppressNavigationTransitionInfo());
 
         Window.Activate();
+        
+        MainRoot = shell.Content as FrameworkElement;
     }
 
     /// <summary>

@@ -15,7 +15,7 @@ public abstract class BindableBase : INotifyPropertyChanged
     /// <summary>
     ///     Occurs when a property value changes.
     /// </summary>
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
     ///     Notifies listeners that a property value has changed.
@@ -25,7 +25,7 @@ public abstract class BindableBase : INotifyPropertyChanged
     ///     value is optional and can be provided automatically when invoked from compilers
     ///     that support <see cref="CallerMemberNameAttribute" />.
     /// </param>
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -47,7 +47,7 @@ public abstract class BindableBase : INotifyPropertyChanged
     ///     desired value.
     /// </returns>
     protected bool Set<T>(ref T storage, T value,
-        [CallerMemberName] string propertyName = null)
+        [CallerMemberName] string? propertyName = null)
     {
         if (Equals(storage, value)) return false;
 

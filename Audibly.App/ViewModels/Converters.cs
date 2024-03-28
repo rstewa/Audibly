@@ -2,6 +2,7 @@
 // Created: 3/21/2024
 // Updated: 3/22/2024
 
+using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 
 namespace Audibly.App.ViewModels;
@@ -43,7 +44,7 @@ public static class Converters
     /// <summary>
     ///     Returns Visibility.Collapsed if the specified value is null; otherwise, returns Visibility.Visible.
     /// </summary>
-    public static Visibility CollapsedIfNull(object value)
+    public static Visibility CollapsedIfNull(object? value)
     {
         return value == null ? Visibility.Collapsed : Visibility.Visible;
     }
@@ -54,5 +55,18 @@ public static class Converters
     public static Visibility CollapsedIfNullOrEmpty(string value)
     {
         return string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>
+    ///     Returns Visibility.Collapsed if the specified string is null or empty; otherwise, returns Visibility.Visible.
+    /// </summary>
+    public static Visibility CollapsedIfNullOrEmpty<TEntity>(ObservableCollection<TEntity> value)
+    {
+        return value == null || value.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+    }
+    
+    public static Visibility VisibleIfNullOrEmpty<TEntity>(ObservableCollection<TEntity> value)
+    {
+        return value == null || value.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 }

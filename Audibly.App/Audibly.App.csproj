@@ -14,6 +14,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+        <None Remove="UserControls\CustomHyperlinkButton.xaml" />
         <None Remove="UserControls\Player.xaml" />
         <None Remove="UserControls\ProgressBarWithText.xaml" />
         <None Remove="Views\ControlPages\ImportDialogContent.xaml" />
@@ -37,6 +38,7 @@
         <PackageReference Include="CommunityToolkit.WinUI.Controls.RadialGauge" Version="8.0.240109" />
         <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
         <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109" />
+        <PackageReference Include="CommunityToolkit.WinUI.Triggers" Version="8.0.240109" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
             <PrivateAssets>all</PrivateAssets>
@@ -62,6 +64,11 @@
     <ItemGroup>
         <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
         <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="UserControls\CustomHyperlinkButton.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
     <ItemGroup>
       <Page Update="Views\Library.xaml">

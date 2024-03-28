@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/21/2024
-// Updated: 3/25/2024
+// Updated: 3/28/2024
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 using Windows.Media.Core;
 using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
-using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -33,6 +31,10 @@ public sealed partial class LibraryPage : Page
     public LibraryPage()
     {
         InitializeComponent();
+
+#if DEBUG
+        DeleteButton.Visibility = Visibility.Visible;
+#endif
     }
 
     /// <summary>

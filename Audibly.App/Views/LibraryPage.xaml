@@ -15,7 +15,6 @@
     <!-- TODO: top can be scroll view while bottom is player -->
 
     <Page.Resources>
-
         <DataTemplate x:Key="AudiobookListViewTemplate" x:DataType="vm:AudiobookViewModel">
             <Grid Margin="0,12,0,12" AutomationProperties.Name="{x:Bind Title}" MinHeight="200">
                 <Grid.ColumnDefinitions>
@@ -23,6 +22,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+                <!-- cover image -->
                 <Border>
                     <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
                         <Border.Background>
@@ -33,9 +33,9 @@
                     <winUi:Effects.Shadow>
                         <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
                     </winUi:Effects.Shadow>
-
                 </Border>
 
+                <!-- Audiobook details -->
                 <StackPanel Margin="12,0,0,0" Grid.Column="1" HorizontalAlignment="Left">
                     <TextBlock Text="{x:Bind Title}" FontSize="20" FontWeight="SemiBold"
                                Style="{ThemeResource HeaderTextBlockStyle}"
@@ -46,16 +46,17 @@
                 </StackPanel>
             </Grid>
         </DataTemplate>
-
     </Page.Resources>
 
     <RelativePanel x:Name="LayoutRoot" Margin="0, 5, 5, 5">
 
+        <!-- page title -->
         <TextBlock
             x:Name="PageTitle"
             Style="{StaticResource PageTitleTextBlockStyle}"
             Text="Audiobooks" />
 
+        <!-- command bar -->
         <CommandBar
             x:Name="MainCommandBar"
             HorizontalAlignment="Stretch"
@@ -64,6 +65,11 @@
             RelativePanel.LeftOf="AudiobookSearchBox"
             RelativePanel.RightOf="PageTitle">
             <AppBarButton
+                Click="PlayThisBookButton_OnClick"
+                Icon="Play"
+                Label="Play"
+                ToolTipService.ToolTip="Play selected audiobook" />
+            <AppBarButton
                 Click="{x:Bind ViewModel.Refresh}"
                 Icon="Refresh"
                 Label="Refresh"
@@ -71,7 +77,6 @@
             <AppBarSeparator />
             <AppBarButton
                 Click="{x:Bind ViewModel.ImportAudiobookAsync}"
-                Icon="Add"
                 Label="Open"
                 ToolTipService.ToolTip="Open audiobook">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
@@ -82,8 +87,16 @@
                 ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
             </AppBarButton>
+            <AppBarButton
+                x:Name="DeleteButton"
+                Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
+                Label="Delete"
+                Icon="Delete"
+                ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
+                Visibility="Collapsed"/>
         </CommandBar>
 
+        <!-- search box -->
         <userControls:CollapsibleSearchBox
             x:Name="AudiobookSearchBox"
             Width="240"
@@ -92,8 +105,43 @@
             Loaded="AudiobookSearchBox_Loaded"
             RelativePanel.AlignRightWithPanel="True" />
 
+        <!-- start panel (shown when no audiobooks have been imported yet) -->
+        <StackPanel
+            x:Name="StartPanel"
+            Orientation="Vertical"
+            RelativePanel.AlignVerticalCenterWithPanel="True"
+            RelativePanel.AlignHorizontalCenterWithPanel="True"
+            Visibility="{x:Bind ViewModel.ShowStartPanel, Mode=OneWay}">
+        
+            <TextBlock
+                Style="{StaticResource TitleTextBlockStyle}"
+                Text="Audibly"
+                FontSize="36"
+                Margin="0, 0, 0, 16"
+                Opacity="0.8"
+                TextAlignment="Left" />
+        
+            <TextBlock
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="Start"
+                FontSize="24"
+                Margin="0, 0, 0, 8"
+                Opacity="0.6"
+                TextAlignment="Left" />
+        
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobookAsync}"
+                Icon="&#xE8E5;"
+                Text="Open Audiobook (.m4b)" />
+        
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                Icon="&#xED25;"
+                Text="Import Audiobooks from a directory (recursively)" />
+        
+        </StackPanel>
+
         <Grid x:Name="ListAndDetailViewGrid"
-              Visibility="{x:Bind vm:Converters.CollapsedIf(ViewModel.IsLoading), Mode=OneWay}"
               Margin="-8, 0, 0, 0"
               RelativePanel.AlignLeftWithPanel="True"
               RelativePanel.AlignRightWithPanel="True"
@@ -128,7 +176,7 @@
             <!-- <AnnotatedScrollBar /> -->
             <!-- detail view -->
             <Grid Grid.Column="1"
-                  Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
+                  x:Name="DetailViewCard"
                   CornerRadius="8"
                   Padding="12"
                   BorderThickness="1"
@@ -137,7 +185,6 @@
                   RelativePanel.RightOf="AudiobookListView">
 
                 <Grid x:Name="DetailView"
-                      Visibility="{x:Bind vm:Converters.CollapsedIfNull(ViewModel.SelectedAudiobook), Mode=OneWay}"
                       Margin="20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -193,14 +240,14 @@
 
 
         <!-- progress bar for when importing audiobooks -->
-        <!-- <userControls:ProgressBarCard IsIndeterminate="False" -->
-        <!--                               Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" -->
-        <!--                               Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" -->
-        <!--                               Margin="25, 0, 50, 0" -->
-        <!--                               RelativePanel.AlignRightWithPanel="True" -->
-        <!--                               RelativePanel.AlignLeftWithPanel="True" -->
-        <!--                               RelativePanel.AlignHorizontalCenterWithPanel="True" -->
-        <!--                               RelativePanel.AlignVerticalCenterWithPanel="True" /> -->
+        <userControls:ProgressBarCard IsIndeterminate="False"
+                                      Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}"
+                                      Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+                                      Margin="25, 0, 50, 0"
+                                      RelativePanel.AlignRightWithPanel="True"
+                                      RelativePanel.AlignLeftWithPanel="True"
+                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
 
         <!-- progress bar for when library view is loading -->
         <userControls:ProgressBarCard IsIndeterminate="True"
@@ -241,6 +288,29 @@
                  Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ListAndDetailGridVisibility">
+                <!-- when no audiobooks have been imported yet -->
+                <VisualState x:Name="NoAudiobooksState">
+                    <VisualState.StateTriggers>
+                        <winUi:IsEqualStateTrigger Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                                                   To="true"/>
+                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind ViewModel.Audiobooks, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ListAndDetailViewGrid.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                
+                <VisualState x:Name="NoSelectedAudiobookState">
+                    <VisualState.StateTriggers>
+                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind ViewModel.SelectedAudiobook, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DetailViewCard.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                
+            </VisualStateGroup>
             <VisualStateGroup>
                 <VisualState>
                     <VisualState.StateTriggers>

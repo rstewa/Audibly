@@ -18,9 +18,9 @@ public class PlayerViewModel : BindableBase
 
     private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    private AudiobookViewModel _nowPlaying;
+    private AudiobookViewModel? _nowPlaying;
 
-    public AudiobookViewModel NowPlaying
+    public AudiobookViewModel? NowPlaying
     {
         get => _nowPlaying;
         set => Set(ref _nowPlaying, value);

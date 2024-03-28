@@ -14,6 +14,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Sharpener.Extensions;
 using WinRT.Interop;
 
 namespace Audibly.App.ViewModels;
@@ -40,15 +41,26 @@ public class MainViewModel : BindableBase
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
 
-    private AudiobookViewModel _selectedAudiobook;
-
+    private AudiobookViewModel? _selectedAudiobook;
+    
     /// <summary>
     ///     Gets or sets the selected audiobook, or null if no audiobook is selected.
     /// </summary>
-    public AudiobookViewModel SelectedAudiobook
+    public AudiobookViewModel? SelectedAudiobook
     {
         get => _selectedAudiobook;
         set => Set(ref _selectedAudiobook, value);
+    }
+
+    private bool _showStartPanel;
+    
+    /// <summary>
+    ///     Gets or sets a value indicating whether the start panel is visible.
+    /// </summary>
+    public bool ShowStartPanel
+    {
+        get => _showStartPanel;
+        private set => Set(ref _showStartPanel, value);
     }
 
     private bool _isLoading;
@@ -131,13 +143,15 @@ public class MainViewModel : BindableBase
         // await Task.Delay(TimeSpan.FromSeconds(5));
 #endif
 
-        var audiobooks = await App.Repository.Audiobooks.GetAsync();
+        var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
 
         // todo: fix this bug
-        if (audiobooks == null) return;
+        // if (audiobooks == null) return;
 
         await dispatcherQueue.EnqueueAsync(() =>
         {
+            ShowStartPanel = audiobooks.Count == 0;
+            
             Audiobooks.Clear();
             foreach (var c in audiobooks) Audiobooks.Add(new AudiobookViewModel(c));
             IsLoading = false;
@@ -159,6 +173,30 @@ public class MainViewModel : BindableBase
         });
     }
 
+    public async void DeleteAudiobooksAsync()
+    {
+        await dispatcherQueue.EnqueueAsync(() => SelectedAudiobook = null);
+
+        await Task.Run(async () =>
+        {
+            var count = 0;
+            foreach (var audiobook in Audiobooks)
+            {
+                await App.Repository.Audiobooks.DeleteAsync(audiobook.Id);
+                count++;
+            }
+            
+            await GetAudiobookListAsync();
+            
+            await dispatcherQueue.EnqueueAsync(() =>
+            {
+                NotificationText = $"{count} Audiobooks deleted successfully!";
+                NotificationSeverity = InfoBarSeverity.Success;
+                IsNotificationVisible = true;
+            });
+        });
+    }
+    
     public async void ImportAudiobookAsync()
     {
         // Create a folder picker

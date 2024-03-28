@@ -2,6 +2,7 @@
 // Created: 3/21/2024
 // Updated: 3/22/2024
 
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Audibly.App.Extensions;
@@ -47,6 +48,11 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
+    
+    /// <summary>
+    ///     Gets the unique identifier for the audiobook.
+    /// </summary>
+    public Guid Id => Model.Id;
 
     /// <summary>
     ///     Gets or sets the author of the audiobook.

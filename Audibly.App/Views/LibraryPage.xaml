@@ -77,7 +77,7 @@
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
             </AppBarButton>
             <AppBarButton
-                Click="ImportAudiobooks_OnClick"
+                Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
                 Label="Import"
                 ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
@@ -94,7 +94,7 @@
 
         <Grid x:Name="ListAndDetailViewGrid"
               Visibility="{x:Bind vm:Converters.CollapsedIf(ViewModel.IsLoading), Mode=OneWay}"
-              Margin="0,4,4,8"
+              Margin="-8, 0, 0, 0"
               RelativePanel.AlignLeftWithPanel="True"
               RelativePanel.AlignRightWithPanel="True"
               RelativePanel.AlignBottomWithPanel="True"

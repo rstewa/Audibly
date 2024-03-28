@@ -7,20 +7,20 @@
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     Width="300"
-    Height="350"
+    Height="400"
     mc:Ignorable="d">
 
     <Grid
-        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+        Background="Transparent"
         BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
-        CornerRadius="8">
+        CornerRadius="8"
+        Padding="16">
         <Grid
-            Padding="24"
             VerticalAlignment="Stretch"
             RowSpacing="16">
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 

@@ -8,7 +8,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     KeyDown="AppShell_KeyDown"
     TabNavigation="Cycle"
-    Background="{ThemeResource GalleryBackgroundBrush}"
+    Background="{ThemeResource AudiblyBackgroundBrush}"
     mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -59,7 +59,7 @@
                 <Image Width="24" Source="ms-appx:///Assets/book-open-flat.png" />
                 <TextBlock
                     x:Name="AppTitle"
-                    Margin="12,0,0,0"
+                    Margin="12,4,0,0"
                     VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="Audibly" />
@@ -108,6 +108,10 @@
                 </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
 
+            <NavigationView.AutoSuggestBox> 
+                <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="Search" /> 
+            </NavigationView.AutoSuggestBox> 
+            
             <muxc:NavigationView.PaneFooter>
                 <StackPanel>
                     <muxc:NavigationViewItem

@@ -189,35 +189,4 @@ public sealed partial class LibraryPage : Page
         //     PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
         // });
     }
-
-    private ContentDialog _dialog;
-    private async void ImportAudiobooks_OnClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.ImportAudiobooksAsync(this.XamlRoot);
-        
-        // // create a dialog
-        // _dialog = new ContentDialog
-        // {
-        //     // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-        //     XamlRoot = XamlRoot,
-        //     Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-        //     Title = "Import Audiobooks",
-        //     CloseButtonText = "Cancel",
-        //     DefaultButton = ContentDialogButton.Close,
-        //     Content = new ImportDialogContent()
-        // };
-        //
-        // ViewModel.ImportCompleted += ViewModel_OnImportCompleted;
-        //
-        // var result = await _dialog.ShowAsync();
-    }
-
-    private void ViewModel_OnImportCompleted()
-    {
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            _dialog.Hide();
-        });
-        ViewModel.ImportCompleted -= ViewModel_OnImportCompleted;
-    }
 }

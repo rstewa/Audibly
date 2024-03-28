@@ -35,10 +35,6 @@ public class MainViewModel : BindableBase
         Task.Run(GetAudiobookListAsync);
     }
     
-    // TODO
-    public event Action ImportCompleted;
-    
-    
     /// <summary>
     ///     The collection of audiobooks in the list.
     /// </summary>
@@ -188,20 +184,6 @@ public class MainViewModel : BindableBase
 
         if (file == null) return;
         
-        // create a dialog
-        var dialog = new ContentDialog
-        {
-            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-            XamlRoot = App.MainRoot.XamlRoot,
-            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-            Title = "Import Audiobooks",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Close,
-            Content = new ImportDialogContent()
-        };
-        
-        var result = await dialog.ShowAsync();
-        
         // todo: switch the result
 
         await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
@@ -226,13 +208,11 @@ public class MainViewModel : BindableBase
                 NotificationText = "Audiobook imported successfully!";
                 NotificationSeverity = InfoBarSeverity.Success;
                 IsNotificationVisible = true;
-            
-                dialog.Hide();
             });
         });
     }
 
-    public async void ImportAudiobooksAsync(XamlRoot xamlRoot)
+    public async void ImportAudiobooksAsync()
     {
         // Create a folder picker
         var openPicker = new FolderPicker();
@@ -258,20 +238,6 @@ public class MainViewModel : BindableBase
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("PickedFolderToken", folder);
         else
             return;
-        
-        // create a dialog
-        var dialog = new ContentDialog
-        {
-            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-            XamlRoot = xamlRoot,
-            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-            Title = "Import Audiobooks",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Close,
-            Content = new ImportDialogContent()
-        };
-        
-        var result = await dialog.ShowAsync();
         
         // todo: switch the result
 
@@ -299,8 +265,6 @@ public class MainViewModel : BindableBase
                 NotificationText = $"{totalBooks} Audiobooks imported successfully!";
                 NotificationSeverity = InfoBarSeverity.Success;
                 IsNotificationVisible = true;
-                
-                dialog.Hide();
             });
         });
     }

@@ -1,3 +1,4 @@
+<!-- NOTE: until i figure out why a bordered image inside a list view is causing memory to spike to 700 mb, i won't be using this -->
 <Page
     x:Class="Audibly.App.Views.LibraryPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

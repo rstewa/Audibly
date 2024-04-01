@@ -2,6 +2,12 @@
 
 
 # TODO
+- [ ] high memory usage even after deleting all audiobooks
+  - [ ] is garbage collection slow or do we have a memory leak?
+    - [ ] turns out ListView uses a fuck ton of memory
+      * listview unloaded (card view is loaded) : 122.5 mb
+      * listview loaded (card view unloaded) : ~700 mb (goes up from 500 mb when you make the window full screen)
+  - [ ] need to try cleaning up library page maybe? (source: https://github.com/microsoft/WindowsAppSDK/issues/1895#issuecomment-991754095)
 
 - [ ] use stackednotificationsbehavior to show notifications
 

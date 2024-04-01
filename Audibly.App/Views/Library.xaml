@@ -8,6 +8,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -36,20 +38,20 @@
             HorizontalAlignment="Stretch"
             Background="Transparent"
             DefaultLabelPosition="Right">
-            
+
             <AppBarButton
                 Click="PlayButton_Click"
                 Icon="Play"
                 Label="Play"
                 ToolTipService.ToolTip="Play Audiobook" />
             <AppBarSeparator />
-            
+
             <AppBarButton
                 Icon="Filter"
                 Label="Filter"
                 ToolTipService.ToolTip="Filter Audiobooks" />
             <AppBarSeparator />
-            
+
         </CommandBar>
 
         <CommandBar
@@ -78,6 +80,13 @@
                 ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
             </AppBarButton>
+            <AppBarButton
+                x:Name="DeleteButton"
+                Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
+                Label="Delete"
+                Icon="Delete"
+                ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
+                Visibility="Collapsed" />
         </CommandBar>
 
         <userControls:CollapsibleSearchBox
@@ -88,14 +97,54 @@
             Loaded="AudiobookSearchBox_Loaded"
             RelativePanel.AlignRightWithPanel="True" />
 
-        <GridView
+        <!-- start panel (shown when no audiobooks have been imported yet) -->
+        <StackPanel
+            x:Name="StartPanel"
+            Orientation="Vertical"
+            RelativePanel.AlignVerticalCenterWithPanel="True"
+            RelativePanel.AlignHorizontalCenterWithPanel="True"
+            Visibility="{x:Bind ViewModel.ShowStartPanel, Mode=OneWay}">
+
+            <TextBlock
+                Style="{StaticResource TitleTextBlockStyle}"
+                Text="Audibly"
+                FontSize="36"
+                Margin="0, 0, 0, 16"
+                Opacity="0.8"
+                TextAlignment="Left" />
+
+            <TextBlock
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="Start"
+                FontSize="24"
+                Margin="0, 0, 0, 8"
+                Opacity="0.6"
+                TextAlignment="Left" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobookAsync}"
+                Icon="&#xE8E5;"
+                Text="Open Audiobook (.m4b)" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                Icon="&#xED25;"
+                Text="Import Audiobooks from a directory (recursively)" />
+
+        </StackPanel>
+
+        <!-- library card view -->
+        <GridView 
+            x:Name="LibraryCardView"
+            Canvas.ZIndex="0"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
             RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.Below="LeftCommandBar"
-            x:Name="StyledGrid"
+            IsItemClickEnabled="True"
             ItemTemplate="{StaticResource AudiobookTemplate}"
-            ItemsSource="{x:Bind ViewModel.Audiobooks}">
+            ItemsSource="{x:Bind ViewModel.Audiobooks}"
+            ItemClick="LibraryCardView_OnItemClick">
 
             <GridView.ItemContainerStyle>
                 <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
@@ -111,6 +160,72 @@
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
         </GridView>
-    </RelativePanel>
 
+        <!-- progress bar for when importing audiobooks -->
+        <userControls:ProgressBarCard IsIndeterminate="False"
+                                      Canvas.ZIndex="10"
+                                      Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}"
+                                      Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+                                      Margin="25, 0, 50, 0"
+                                      RelativePanel.AlignRightWithPanel="True"
+                                      RelativePanel.AlignLeftWithPanel="True"
+                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
+
+        <!-- progress bar for when library view is loading -->
+        <userControls:ProgressBarCard IsIndeterminate="True"
+                                      Canvas.ZIndex="10"
+                                      Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                                      Margin="25, 0, 50, 0"
+                                      RelativePanel.AlignRightWithPanel="True"
+                                      RelativePanel.AlignLeftWithPanel="True"
+                                      RelativePanel.AlignHorizontalCenterWithPanel="True"
+                                      RelativePanel.AlignVerticalCenterWithPanel="True" />
+
+        <!-- player -->
+        <Grid x:Name="Player"
+              Canvas.ZIndex="2"
+              Visibility="{x:Bind viewModels:Converters.CollapsedIfNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
+              RelativePanel.AlignBottomWithPanel="True"
+              RelativePanel.AlignLeftWithPanel="True"
+              RelativePanel.AlignRightWithPanel="True"
+              MaxHeight="250"
+              Margin="-6, 0, 0, 0"
+              CornerRadius="8"
+              Padding="12"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
+
+            <userControls:Player />
+
+        </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LibraryCardViewVisibility">
+                <!-- when no audiobooks have been imported yet -->
+                <VisualState x:Name="NoAudiobooksState">
+                    <VisualState.StateTriggers>
+                        <winUi:IsEqualStateTrigger Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                                                   To="true" />
+                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind ViewModel.Audiobooks, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LibraryCardView.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <!-- <VisualStateGroup x:Name="PlayerVisibility"> -->
+            <!--     ~1~ when no audiobooks have been imported yet @1@ -->
+            <!--     <VisualState x:Name="PlayerState"> -->
+            <!--         <VisualState.StateTriggers> -->
+            <!--             <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind PlayerViewModel.NowPlaying, Mode=OneWay}" /> -->
+            <!--         </VisualState.StateTriggers> -->
+            <!--         <VisualState.Setters> -->
+            <!--             <Setter Target="Player.Visibility" Value="Visible" /> -->
+            <!--         </VisualState.Setters> -->
+            <!--     </VisualState> -->
+            <!-- </VisualStateGroup> -->
+        </VisualStateManager.VisualStateGroups>
+    </RelativePanel>
 </Page>

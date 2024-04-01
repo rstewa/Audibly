@@ -27,7 +27,8 @@ public sealed partial class AppShell : Page
     {
         InitializeComponent();
 
-        Loaded += (sender, args) => { NavView.SelectedItem = AudiobookListMenuItem; };
+        // Loaded += (sender, args) => { NavView.SelectedItem = AudiobookListMenuItem; };
+        Loaded += (sender, args) => { NavView.SelectedItem = LibraryMenuItem; };
 
         // Set up custom title bar.
         App.Window.ExtendsContentIntoTitleBar = true;
@@ -92,11 +93,11 @@ public sealed partial class AppShell : Page
     {
         if (args.InvokedItemContainer is not NavigationViewItem item) return;
         
-        if (item == AudiobookListMenuItem)
-        {
-            AppFrame.Navigate(typeof(LibraryPage));
-        }
-        else if (item == LibraryMenuItem)
+        // if (item == AudiobookListMenuItem)
+        // {
+        //     AppFrame.Navigate(typeof(LibraryPage));
+        // }
+        if (item == LibraryMenuItem)
         {
             AppFrame.Navigate(typeof(Library));
         }
@@ -114,8 +115,8 @@ public sealed partial class AppShell : Page
     {
         if (e.NavigationMode == NavigationMode.Back)
         {
-            if (e.SourcePageType == typeof(LibraryPage))
-                NavView.SelectedItem = AudiobookListMenuItem;
+            // if (e.SourcePageType == typeof(LibraryPage)) NavView.SelectedItem = AudiobookListMenuItem;
+            if (e.SourcePageType == typeof(Library)) NavView.SelectedItem = LibraryMenuItem;
             else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
         }
     }

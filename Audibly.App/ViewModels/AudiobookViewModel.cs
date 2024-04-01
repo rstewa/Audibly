@@ -129,7 +129,6 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    // todo: convert to image to use here
     /// <summary>
     ///     Gets or sets the cover image path of the audiobook.
     /// </summary>
@@ -141,6 +140,23 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.CoverImagePath)
             {
                 Model.CoverImagePath = value;
+                IsModified = true;
+                OnPropertyChanged();
+            }
+        }
+    }
+    
+    /// <summary>
+    ///     Gets or sets the thumbnail path of the audiobook.
+    /// </summary>
+    public string ThumbnailPath
+    {
+        get => Model.ThumbnailPath;
+        set
+        {
+            if (value != Model.ThumbnailPath)
+            {
+                Model.ThumbnailPath = value;
                 IsModified = true;
                 OnPropertyChanged();
             }

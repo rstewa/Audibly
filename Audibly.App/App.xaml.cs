@@ -36,7 +36,7 @@ public partial class App : Application
     /// <summary>
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
-    public static MainViewModel ViewModel { get; } = new(new M4BFileImportService());
+    public static MainViewModel ViewModel { get; } = new(new M4BFileImportService(), new AppDataService());
 
     /// <summary>
     ///     Gets the app-wide PlayerViewModel singleton instance.

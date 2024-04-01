@@ -2,6 +2,8 @@
 // Created: 3/26/2024
 // Updated: 3/26/2024
 
+using System.Linq;
+using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -27,7 +29,7 @@ public sealed partial class AudiobookTile : UserControl
     public static readonly DependencyProperty AuthorProperty =
         DependencyProperty.Register("Author", typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
 
-    public  object Source
+    public object Source
     {
         get => GetValue(SourceProperty);
         set => SetValue(SourceProperty, value);
@@ -39,5 +41,10 @@ public sealed partial class AudiobookTile : UserControl
     public AudiobookTile()
     {
         InitializeComponent();
+    }
+
+    private void Audiobook_OnClick(object sender, RoutedEventArgs e)
+    {
+        App.ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
     }
 }

@@ -5,7 +5,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Audibly.App.Services;
+namespace Audibly.App.Services.Interfaces;
 
 public interface IImportFiles
 {

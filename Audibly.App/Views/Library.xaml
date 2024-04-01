@@ -9,7 +9,6 @@
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
     xmlns:winUi="using:CommunityToolkit.WinUI"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -19,7 +18,7 @@
                 Title="{x:Bind Title, Mode=OneWay}"
                 Author="{x:Bind Author}">
                 <userControls:AudiobookTile.Source>
-                    <Image Source="{x:Bind CoverImagePath, Mode=OneWay}"
+                    <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}"
                            Stretch="Uniform" />
                 </userControls:AudiobookTile.Source>
             </userControls:AudiobookTile>
@@ -134,32 +133,54 @@
         </StackPanel>
 
         <!-- library card view -->
-        <GridView 
-            x:Name="LibraryCardView"
+        <!-- <GridView  -->
+        <!--     x:Name="LibraryCardView" -->
+        <!--     Canvas.ZIndex="0" -->
+        <!--     RelativePanel.AlignLeftWithPanel="True" -->
+        <!--     RelativePanel.AlignRightWithPanel="True" -->
+        <!--     RelativePanel.AlignBottomWithPanel="True" -->
+        <!--     RelativePanel.Below="LeftCommandBar" -->
+        <!--     IsItemClickEnabled="True" -->
+        <!--     ItemTemplate="{StaticResource AudiobookTemplate}" -->
+        <!--     ItemsSource="{x:Bind ViewModel.Audiobooks}" -->
+        <!--     ItemClick="LibraryCardView_OnItemClick"> -->
+        <!-- -->
+        <!--     <GridView.ItemContainerStyle> -->
+        <!--         <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}"> -->
+        <!--             <Setter Property="Margin" Value="28, 34, 28, 34" /> -->
+        <!--         </Style> -->
+        <!--     </GridView.ItemContainerStyle> -->
+        <!-- -->
+        <!--     <GridView.ItemsPanel> -->
+        <!--         <ItemsPanelTemplate> -->
+        <!--             <ItemsWrapGrid x:Name="MaxItemsWrapGrid" -->
+        <!--                            MaximumRowsOrColumns="6" -->
+        <!--                            Orientation="Horizontal" /> -->
+        <!--         </ItemsPanelTemplate> -->
+        <!--     </GridView.ItemsPanel> -->
+        <!-- </GridView> -->
+
+        <ScrollViewer
+            x:Name="LibraryCardScrollView"
             Canvas.ZIndex="0"
+            IsVerticalScrollChainingEnabled="False"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
             RelativePanel.AlignBottomWithPanel="True"
-            RelativePanel.Below="LeftCommandBar"
-            IsItemClickEnabled="True"
-            ItemTemplate="{StaticResource AudiobookTemplate}"
-            ItemsSource="{x:Bind ViewModel.Audiobooks}"
-            ItemClick="LibraryCardView_OnItemClick">
+            RelativePanel.Below="LeftCommandBar">
+            <ItemsRepeater
+                x:Name="LibraryCardView"
+                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
+                ItemTemplate="{StaticResource AudiobookTemplate}">
 
-            <GridView.ItemContainerStyle>
-                <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
-                    <Setter Property="Margin" Value="28, 34, 28, 34" />
-                </Style>
-            </GridView.ItemContainerStyle>
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="300"
+                                       MinColumnSpacing="28"
+                                       ItemsJustification="SpaceEvenly" />
+                </ItemsRepeater.Layout>
 
-            <GridView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsWrapGrid x:Name="MaxItemsWrapGrid"
-                                   MaximumRowsOrColumns="6"
-                                   Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </GridView.ItemsPanel>
-        </GridView>
+            </ItemsRepeater>
+        </ScrollViewer>
 
         <!-- progress bar for when importing audiobooks -->
         <userControls:ProgressBarCard IsIndeterminate="False"
@@ -195,7 +216,7 @@
               Padding="12"
               BorderThickness="1"
               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-              Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
+              Background="{ThemeResource ControlOnImageFillColorDefaultBrush}">
 
             <userControls:Player />
 
@@ -211,7 +232,7 @@
                         <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind ViewModel.Audiobooks, Mode=OneWay}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="LibraryCardView.Visibility" Value="Collapsed" />
+                        <Setter Target="LibraryCardScrollView.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

@@ -16,6 +16,8 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public int CurrentTimeMs { get; set; }
 
     public string CoverImagePath { get; set; }
+    
+    public string ThumbnailPath { get; set; }
 
     // public string CurrentPositionInBook { get; set; }
     public string FilePath { get; set; }

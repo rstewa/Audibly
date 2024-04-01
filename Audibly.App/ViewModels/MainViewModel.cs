@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Audibly.App.Services;
+using Audibly.App.Services.Interfaces;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -26,13 +27,15 @@ public class MainViewModel : BindableBase
 {
     private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private readonly IImportFiles _fileImporter;
+    public readonly IAppDataService AppDataService;
 
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
-    public MainViewModel(IImportFiles fileImporter)
+    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService)
     {
         _fileImporter = fileImporter;
+        AppDataService = appDataService;
         Task.Run(GetAudiobookListAsync);
     }
     
@@ -183,6 +186,7 @@ public class MainViewModel : BindableBase
             foreach (var audiobook in Audiobooks)
             {
                 await App.Repository.Audiobooks.DeleteAsync(audiobook.Id);
+                await App.ViewModel.AppDataService.DeleteCoverImageAsync(audiobook.CoverImagePath);
                 count++;
             }
             

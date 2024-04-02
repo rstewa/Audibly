@@ -69,9 +69,9 @@ public class M4BFileImportService : IImportFiles
         
         // TESTING: NEED TO REMOVE
 
-        var fileName = @$"C:\Users\rstewa\source\repos\mine\Audibly\logs\{track.Title}_metadata.json";
-        _ = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true })
-            .WriteToFile(fileName);
+        // var fileName = @$"C:\Users\rstewa\source\repos\mine\Audibly\logs\{track.Title}_metadata.json";
+        // _ = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true })
+        //     .WriteToFile(fileName);
         
         // END TESTING
         

@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
-    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     Width="300"
     Height="400"
     mc:Ignorable="d">
@@ -64,15 +63,15 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind Author, Mode=OneWay}" />
                 </StackPanel>
-                <controls:RadialGauge RelativePanel.RightOf="TitleAuthorPanel"
-                                      RelativePanel.AlignRightWithPanel="True"
-                                      IsInteractive="False"
-                                      
-                                      Width="50"
-                                      Minimum="0"
-                                      Maximum="100"
-                                      TickWidth="0"
-                                      TickLength="0" />
+                <ProgressRing
+                    RelativePanel.RightOf="TitleAuthorPanel"
+                    RelativePanel.AlignRightWithPanel="True"
+                    HorizontalAlignment="Right"
+                    Width="50"
+                    Height="50"
+                    Value="50"
+                    IsIndeterminate="False"
+                    Background="LightGray" />
             </RelativePanel>
         </Grid>
     </Button>

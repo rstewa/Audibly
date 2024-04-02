@@ -1,9 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/26/2024
-// Updated: 3/26/2024
+// Created: 3/29/2024
+// Updated: 4/2/2024
 
 using System.Linq;
-using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 

@@ -21,6 +21,7 @@
         <None Remove="Views\Library.xaml" />
         <None Remove="Views\MiniPlayerPage.xaml" />
         <None Remove="UserControls\RadialGauge\**" />
+        <None Remove="obj\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -35,6 +36,7 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="CommunityToolkit.Labs.WinUI.MarqueeText" Version="0.1.230830" />
         <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
         <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109" />
         <PackageReference Include="CommunityToolkit.WinUI.Triggers" Version="8.0.240109" />
@@ -69,6 +71,7 @@
       <Page Update="UserControls\CustomHyperlinkButton.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
+      <Page Remove="obj\**" />
     </ItemGroup>
     <ItemGroup>
       <Page Update="Views\Library.xaml">
@@ -94,6 +97,15 @@
       <Page Update="Views\ControlPages\ImportDialogContent.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="obj\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Remove="obj\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <Resource Remove="obj\**" />
     </ItemGroup>
 
     <!-- 

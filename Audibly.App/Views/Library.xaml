@@ -14,7 +14,10 @@
 
     <Page.Resources>
         <DataTemplate x:DataType="viewModels:AudiobookViewModel" x:Key="AudiobookTemplate">
-            <userControls:AudiobookTile Author="{x:Bind Author}" Title="{x:Bind Title, Mode=OneWay}">
+            <userControls:AudiobookTile
+                Author="{x:Bind Author}"
+                Progress="{x:Bind Progress, Mode=OneWay}"
+                Title="{x:Bind Title, Mode=OneWay}">
                 <userControls:AudiobookTile.Source>
                     <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
                 </userControls:AudiobookTile.Source>
@@ -23,39 +26,28 @@
     </Page.Resources>
 
     <RelativePanel Margin="0,5,5,5" x:Name="LayoutRoot">
-        <!--  <TextBlock  -->
-        <!--  x:Name="PageTitle"  -->
-        <!--  Style="{StaticResource PageTitleTextBlockStyle}"  -->
-        <!--  Text="Audiobooks" />  -->
-
-        <CommandBar
-            Background="Transparent"
-            DefaultLabelPosition="Right"
-            HorizontalAlignment="Stretch"
-            x:Name="LeftCommandBar">
-
-            <AppBarButton
-                Click="PlayButton_Click"
-                Icon="Play"
-                Label="Play"
-                ToolTipService.ToolTip="Play Audiobook" />
-            <AppBarSeparator />
-
-            <AppBarButton
-                Icon="Filter"
-                Label="Filter"
-                ToolTipService.ToolTip="Filter Audiobooks" />
-            <AppBarSeparator />
-
-        </CommandBar>
+        <TextBlock
+            Style="{StaticResource PageTitleTextBlockStyle}"
+            Text="Audiobooks"
+            x:Name="PageTitle" />
 
         <CommandBar
             Background="Transparent"
             DefaultLabelPosition="Right"
             HorizontalAlignment="Stretch"
             RelativePanel.LeftOf="AudiobookSearchBox"
-            RelativePanel.RightOf="LeftCommandBar"
+            RelativePanel.RightOf="PageTitle"
             x:Name="MainCommandBar">
+            <AppBarButton
+                Click="PlayButton_Click"
+                Icon="Play"
+                Label="Play"
+                ToolTipService.ToolTip="Play Audiobook" />
+            <AppBarButton
+                Icon="Filter"
+                Label="Filter"
+                ToolTipService.ToolTip="Filter Audiobooks" />
+            <AppBarSeparator />
             <AppBarButton
                 Click="{x:Bind ViewModel.Refresh}"
                 Icon="Refresh"
@@ -129,40 +121,13 @@
         </StackPanel>
 
         <!--  library card view  -->
-        <!--  <GridView  -->
-        <!--  x:Name="LibraryCardView"  -->
-        <!--  Canvas.ZIndex="0"  -->
-        <!--  RelativePanel.AlignLeftWithPanel="True"  -->
-        <!--  RelativePanel.AlignRightWithPanel="True"  -->
-        <!--  RelativePanel.AlignBottomWithPanel="True"  -->
-        <!--  RelativePanel.Below="LeftCommandBar"  -->
-        <!--  IsItemClickEnabled="True"  -->
-        <!--  ItemTemplate="{StaticResource AudiobookTemplate}"  -->
-        <!--  ItemsSource="{x:Bind ViewModel.Audiobooks}"  -->
-        <!--  ItemClick="LibraryCardView_OnItemClick">  -->
-        <!--    -->
-        <!--     <GridView.ItemContainerStyle> -->
-        <!--         <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}"> -->
-        <!--             <Setter Property="Margin" Value="28, 34, 28, 34" /> -->
-        <!--         </Style> -->
-        <!--     </GridView.ItemContainerStyle> -->
-        <!--    -->
-        <!--     <GridView.ItemsPanel> -->
-        <!--         <ItemsPanelTemplate> -->
-        <!--  <ItemsWrapGrid x:Name="MaxItemsWrapGrid"  -->
-        <!--  MaximumRowsOrColumns="6"  -->
-        <!--  Orientation="Horizontal" />  -->
-        <!--         </ItemsPanelTemplate> -->
-        <!--     </GridView.ItemsPanel> -->
-        <!-- </GridView> -->
-
         <ScrollViewer
             Canvas.ZIndex="0"
             IsVerticalScrollChainingEnabled="False"
             RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.Below="LeftCommandBar"
+            RelativePanel.Below="PageTitle"
             x:Name="LibraryCardScrollView">
             <ItemsRepeater
                 ItemTemplate="{StaticResource AudiobookTemplate}"
@@ -204,12 +169,12 @@
 
         <!--  player  -->
         <Grid
-            Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
             Canvas.ZIndex="2"
             CornerRadius="8"
-            Margin="-6,0,0,0"
+            Margin="0,0,6,6"
             MaxHeight="250"
             Padding="12"
             RelativePanel.AlignBottomWithPanel="True"

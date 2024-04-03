@@ -1,77 +1,120 @@
 <UserControl
+    Height="400"
+    Width="300"
+    mc:Ignorable="d"
     x:Class="Audibly.App.UserControls.AudiobookTile"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
-    Width="300"
-    Height="400"
-    mc:Ignorable="d">
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Button
-        Background="{ThemeResource ControlFillColorDefaultBrush}"
-        BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        Click="Audiobook_OnClick"
         CornerRadius="8"
         Padding="16"
-        Click="Audiobook_OnClick">
-        <Grid
-            VerticalAlignment="Stretch"
-            RowSpacing="16">
+        PointerEntered="AudiobookTile_OnPointerEntered"
+        PointerExited="AudiobookTile_OnPointerExited">
+        <Grid RowSpacing="16" VerticalAlignment="Stretch">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- <ContentPresenter -->
-            <!--     HorizontalAlignment="Center" -->
-            <!--     VerticalAlignment="Top" -->
-            <!--     Content="{x:Bind Source, Mode=OneWay}"/> -->
-
-            <Border>
-                <Border CornerRadius="15" BorderBrush="Transparent" BorderThickness="1">
+            <Border Grid.Row="0">
+                <Border
+                    BorderBrush="Transparent"
+                    BorderThickness="1"
+                    CornerRadius="15">
                     <ContentPresenter
+                        Content="{x:Bind Source, Mode=OneWay}"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Top"
-                        Content="{x:Bind Source, Mode=OneWay}" />
-                    <!-- <Border.Background> -->
-                    <!--     <ImageBrush -->
-                    <!--         ImageSource="{x:Bind Source, Mode=OneWay}" Stretch="UniformToFill" /> -->
-                    <!-- </Border.Background> -->
+                        VerticalAlignment="Top" />
                 </Border>
                 <winUi:Effects.Shadow>
                     <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
                 </winUi:Effects.Shadow>
-
             </Border>
+
+            <Grid
+                Grid.Row="0"
+                Visibility="Collapsed"
+                x:Name="BlackOverlayGrid">
+                <Grid
+                    Background="Black"
+                    CornerRadius="15"
+                    Opacity="0.55" />
+                <Button
+                    BorderThickness="0"
+                    Click="PlayButton_Click"
+                    HorizontalAlignment="Center"
+                    Tag="play"
+                    ToolTipService.ToolTip="Play"
+                    VerticalAlignment="Center"
+                    x:Name="PlayPauseButton">
+                    <Button.Resources>
+                        <ResourceDictionary>
+                            <!--  ReSharper disable all Xaml.RedundantResource  -->
+                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
+                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
+                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
+                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
+                        </ResourceDictionary>
+                    </Button.Resources>
+                    <Viewbox MaxHeight="70" MaxWidth="70">
+                        <FontIcon Glyph="&#xF5B0;" />
+                    </Viewbox>
+                </Button>
+            </Grid>
+
             <RelativePanel Grid.Row="1">
                 <StackPanel
-                    x:Name="TitleAuthorPanel"
-                    RelativePanel.AlignLeftWithPanel="True"
                     Orientation="Vertical"
-                    Spacing="4">
+                    RelativePanel.AlignLeftWithPanel="True"
+                    Spacing="4"
+                    x:Name="TitleAuthorPanel">
                     <TextBlock
-                        x:Name="TitleText"
                         FontSize="18"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                         Style="{StaticResource BodyTextBlockStyle}"
-                        Text="{x:Bind Title, Mode=OneWay}" />
+                        Text="{x:Bind Title, Mode=OneWay}"
+                        x:Name="TitleText" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind Author, Mode=OneWay}" />
                 </StackPanel>
-                <ProgressRing
-                    RelativePanel.RightOf="TitleAuthorPanel"
-                    RelativePanel.AlignRightWithPanel="True"
+                <Grid
                     HorizontalAlignment="Right"
-                    Width="50"
-                    Height="50"
-                    Value="50"
-                    IsIndeterminate="False"
-                    Background="LightGray" />
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.RightOf="TitleAuthorPanel"
+                    Visibility="Collapsed"
+                    x:Name="ProgressGrid">
+                    <ProgressRing
+                        Background="LightGray"
+                        Height="50"
+                        HorizontalAlignment="Center"
+                        IsIndeterminate="False"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="{x:Bind Progress, Mode=OneWay}"
+                        VerticalAlignment="Center"
+                        Width="50" />
+                    <TextBlock
+                        FontSize="18"
+                        HorizontalAlignment="Center"
+                        Text="{x:Bind Progress, Mode=OneWay}"
+                        VerticalAlignment="Center" />
+                </Grid>
             </RelativePanel>
         </Grid>
     </Button>

@@ -145,6 +145,11 @@ public sealed partial class Player : UserControl
             PlayerViewModel.ChapterPositionText = PlayerViewModel.ChapterPositionMs.ToStr_ms();
             PlayerViewModel.NowPlaying.CurrentTimeMs = (int)_currentPosition.TotalMilliseconds;
 
+            if (PlayerViewModel.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+            {
+                var tmp = _currentPosition.TotalSeconds;
+                PlayerViewModel.NowPlaying.Progress = Math.Floor(tmp / PlayerViewModel.NowPlaying.Duration * 100);
+            }
             // todo: find out what the performance impact of this is
             await PlayerViewModel.NowPlaying.SaveAsync();
         });

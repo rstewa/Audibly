@@ -89,7 +89,7 @@ public class AudiobookViewModel : BindableBase
     }
 
     /// <summary>
-    ///     Gets or sets the duration of the audiobook.
+    ///     Gets or sets the duration of the audiobook (seconds).
     /// </summary>
     public long Duration
     {
@@ -227,6 +227,23 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.PlaybackSpeed)
             {
                 Model.PlaybackSpeed = value;
+                IsModified = true;
+                OnPropertyChanged();
+            }
+        }
+    }
+    
+    /// <summary>
+    ///     Gets or sets the progress of the audiobook.
+    /// </summary>
+    public double Progress
+    {
+        get => Model.Progress;
+        set
+        {
+            if (value != Model.Progress)
+            {
+                Model.Progress = value;
                 IsModified = true;
                 OnPropertyChanged();
             }

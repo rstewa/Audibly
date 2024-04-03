@@ -10,6 +10,11 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
+> [!IMPORTANT]
+> Audibly v2 is under construction. Hope to have it finished sometime in April 2024.
+
+Sample Screenshot
+
 
 <!-- PROJECT LOGO -->
 <br />

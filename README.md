@@ -13,7 +13,9 @@
 > [!IMPORTANT]
 > Audibly v2 is under construction. Hope to have it finished sometime in April 2024.
 
-Sample Screenshot
+Audibly v2 Sample Screenshot
+
+![audibly_v2_as_of_04-03-24](https://github.com/rstewa/Audibly/assets/70178227/6614f016-aeba-4383-b678-c04e041973b9)
 
 
 <!-- PROJECT LOGO -->
@@ -39,41 +41,11 @@ Sample Screenshot
   </p>
 </div>
 
-
-
 <a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">
 	<img src="https://get.microsoft.com/images/en-US%20dark.svg" style="width:250px"/>
 </a>
 <br>
 <br>
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -97,16 +69,10 @@ This is a minimalist desktop audiobook player for Windows 10/11. It currently on
   <img src="images/compact_controls_screenshot.png" width=48%" />
 </p> 
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
 [![WinUI 3][winui]][winui-url]
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- GETTING STARTED -->
@@ -126,9 +92,6 @@ TODO
    ```
 2. TODO
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -136,9 +99,6 @@ TODO
 - [[#26](https://github.com/rstewa/Audibly/issues/26)] Library View
 
 See the [open issues](https://github.com/rstewa35/Audibly/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -155,26 +115,17 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the GNU License. See `LICENSE.txt` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTACT -->
 ## Contact
 
 Project Link: [https://github.com/rstewa35/Audibly](https://github.com/rstewa35/Audibly)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

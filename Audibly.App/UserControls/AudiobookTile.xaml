@@ -25,7 +25,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0">
+            <Border BorderThickness="0" Grid.Row="0">
                 <Border
                     BorderBrush="Transparent"
                     BorderThickness="1"

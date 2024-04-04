@@ -88,7 +88,7 @@ public partial class App : Application
         if (shell.AppFrame.Content == null)
             // When the navigation stack isn't restored, navigate to the first page
             // suppressing the initial entrance animation.
-            shell.AppFrame.Navigate(typeof(Library), null,
+            shell.AppFrame.Navigate(typeof(LibraryCardPage), null,
                 new SuppressNavigationTransitionInfo());
             // shell.AppFrame.Navigate(typeof(LibraryPage), null,
             //     new SuppressNavigationTransitionInfo());

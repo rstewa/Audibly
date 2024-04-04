@@ -156,6 +156,8 @@
 
                 </StackPanel>
 
+                <!--  todo: add margin here  -->
+
                 <!--  chapter controls  -->
                 <StackPanel
                     HorizontalAlignment="Center"

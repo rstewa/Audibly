@@ -21,7 +21,7 @@ namespace Audibly.App.Views;
 /// <summary>
 ///     An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class Library : Page
+public sealed partial class LibraryCardPage : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     
@@ -35,7 +35,7 @@ public sealed partial class Library : Page
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
-    public Library()
+    public LibraryCardPage()
     {
         InitializeComponent();
         

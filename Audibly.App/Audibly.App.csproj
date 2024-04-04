@@ -20,6 +20,7 @@
         <None Remove="Views\ControlPages\ImportDialogContent.xaml" />
         <None Remove="Views\Library.xaml" />
         <None Remove="Views\MiniPlayerPage.xaml" />
+        <None Remove="Views\PlayerPage.xaml" />
         <None Remove="UserControls\RadialGauge\**" />
         <None Remove="obj\**" />
     </ItemGroup>
@@ -74,7 +75,7 @@
       <Page Remove="obj\**" />
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Views\Library.xaml">
+      <Page Update="Views\LibraryCardPage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>
@@ -106,6 +107,11 @@
     </ItemGroup>
     <ItemGroup>
       <Resource Remove="obj\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Views\PlayerPage.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
 
     <!-- 

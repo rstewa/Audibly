@@ -28,11 +28,20 @@ public sealed partial class AppShell : Page
         InitializeComponent();
 
         // Loaded += (sender, args) => { NavView.SelectedItem = AudiobookListMenuItem; };
-        Loaded += (sender, args) => { NavView.SelectedItem = LibraryMenuItem; };
+        Loaded += (sender, args) =>
+        {
+            NavView.SelectedItem = LibraryMenuItem;
+            var window = App.Window; // idk if this works or not
+            window.Title = AppTitleText;
+            window.ExtendsContentIntoTitleBar = true;
+            window.SetTitleBar(this.AppTitleBar);
+        };
 
         // Set up custom title bar.
-        App.Window.ExtendsContentIntoTitleBar = true;
+        // App.Window.ExtendsContentIntoTitleBar = true;
     }
+
+    public string AppTitleText => "Audibly";
 
     /// <summary>
     ///     Gets the navigation frame instance.
@@ -99,7 +108,7 @@ public sealed partial class AppShell : Page
         // }
         if (item == LibraryMenuItem)
         {
-            AppFrame.Navigate(typeof(Library));
+            AppFrame.Navigate(typeof(LibraryCardPage));
         }
         else if (item == NavView.SettingsItem)
         {
@@ -116,7 +125,7 @@ public sealed partial class AppShell : Page
         if (e.NavigationMode == NavigationMode.Back)
         {
             // if (e.SourcePageType == typeof(LibraryPage)) NavView.SelectedItem = AudiobookListMenuItem;
-            if (e.SourcePageType == typeof(Library)) NavView.SelectedItem = LibraryMenuItem;
+            if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryMenuItem;
             else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
         }
     }

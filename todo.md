@@ -1,13 +1,18 @@
 # IN PROGRESS
 
+- [ ] create full screen player
+  - [ ] add button on mini player to allow user to make it full screen
+  - [ ] add player as a page in the navigation view
 
 # TODO
-- [ ] high memory usage even after deleting all audiobooks
-  - [ ] is garbage collection slow or do we have a memory leak?
-    - [ ] turns out ListView uses a fuck ton of memory
-      * listview unloaded (card view is loaded) : 122.5 mb
-      * listview loaded (card view unloaded) : ~700 mb (goes up from 500 mb when you make the window full screen)
-  - [ ] need to try cleaning up library page maybe? (source: https://github.com/microsoft/WindowsAppSDK/issues/1895#issuecomment-991754095)
+
+- [x] high memory usage even after deleting all audiobooks
+  - [x] ~~is garbage collection slow or do we have a memory leak?~~
+    - [x] ~~turns out ListView uses a fuck ton of memory~~
+      * ~~listview unloaded (card view is loaded) : 122.5 mb~~
+      * ~~listview loaded (card view unloaded) : ~700 mb (goes up from 500 mb when you make the window full screen)~~
+  - [x] ~~need to try cleaning up library page maybe? (source: https://github.com/microsoft/WindowsAppSDK/issues/1895#issuecomment-991754095)~~
+  - [x] turns out the audiobook cover images were insanely large. converted them to thumbnails and no longer have any memory problems
 
 - [ ] use stackednotificationsbehavior to show notifications
 

@@ -25,64 +25,14 @@
         </DataTemplate>
     </Page.Resources>
 
-    <RelativePanel Margin="0,5,5,5" x:Name="LayoutRoot">
-        <TextBlock
-            Style="{StaticResource PageTitleTextBlockStyle}"
-            Text="Audiobooks"
-            x:Name="PageTitle" />
-
-        <CommandBar
-            Background="Transparent"
-            DefaultLabelPosition="Right"
-            HorizontalAlignment="Stretch"
-            RelativePanel.LeftOf="AudiobookSearchBox"
-            RelativePanel.RightOf="PageTitle"
-            x:Name="MainCommandBar">
-            <AppBarButton
-                Click="PlayButton_Click"
-                Icon="Play"
-                Label="Play"
-                ToolTipService.ToolTip="Play Audiobook" />
-            <AppBarButton
-                Icon="Filter"
-                Label="Filter"
-                ToolTipService.ToolTip="Filter Audiobooks" />
-            <AppBarSeparator />
-            <AppBarButton
-                Click="{x:Bind ViewModel.Refresh}"
-                Icon="Refresh"
-                Label="Refresh"
-                ToolTipService.ToolTip="Refresh audiobooks" />
-            <AppBarSeparator />
-            <AppBarButton
-                Click="{x:Bind ViewModel.ImportAudiobookAsync}"
-                Icon="Add"
-                Label="Open"
-                ToolTipService.ToolTip="Open audiobook">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
-            </AppBarButton>
-            <AppBarButton
-                Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
-                Label="Import"
-                ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
-            </AppBarButton>
-            <AppBarButton
-                Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
-                Icon="Delete"
-                Label="Delete"
-                ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
-                Visibility="Collapsed"
-                x:Name="DeleteButton" />
-        </CommandBar>
-
-        <userControls:CollapsibleSearchBox
-            CollapseWidth="{StaticResource LargeWindowSnapPoint}"
-            Loaded="AudiobookSearchBox_Loaded"
-            Margin="12,8,6,0"
-            RelativePanel.AlignRightWithPanel="True"
-            Width="240"
-            x:Name="AudiobookSearchBox" />
+    <RelativePanel Padding="36,36,36,0" x:Name="LayoutRoot">
+        <!--  <userControls:CollapsibleSearchBox  -->
+        <!--  CollapseWidth="{StaticResource LargeWindowSnapPoint}"  -->
+        <!--  Loaded="AudiobookSearchBox_Loaded"  -->
+        <!--  Margin="12,8,6,0"  -->
+        <!--  RelativePanel.AlignRightWithPanel="True"  -->
+        <!--  Width="240"  -->
+        <!--  x:Name="AudiobookSearchBox" />  -->
 
         <!--  start panel (shown when no audiobooks have been imported yet)  -->
         <StackPanel
@@ -120,14 +70,65 @@
 
         </StackPanel>
 
+        <!--  title and command bar  -->
+        <StackPanel
+            HorizontalAlignment="Left"
+            Orientation="Vertical"
+            x:Name="TitleAndCommandBarPanel">
+            <TextBlock
+                Margin="20,8,6,0"
+                Style="{StaticResource PageTitleTextBlockStyle}"
+                Text="Audiobooks"
+                x:Name="PageTitle" />
+            <CommandBar
+                Background="Transparent"
+                DefaultLabelPosition="Right"
+                HorizontalAlignment="Left"
+                Margin="4,0,0,0"
+                RelativePanel.LeftOf="AudiobookSearchBox"
+                RelativePanel.RightOf="PageTitle"
+                x:Name="MainCommandBar">
+                <AppBarButton
+                    Icon="Filter"
+                    Label="Filter"
+                    ToolTipService.ToolTip="Filter Audiobooks" />
+                <AppBarButton
+                    Click="{x:Bind ViewModel.Refresh}"
+                    Icon="Refresh"
+                    Label="Refresh"
+                    ToolTipService.ToolTip="Refresh audiobooks" />
+                <AppBarSeparator />
+                <AppBarButton
+                    Click="{x:Bind ViewModel.ImportAudiobookAsync}"
+                    Icon="Add"
+                    Label="Open"
+                    ToolTipService.ToolTip="Open audiobook">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                    Label="Import"
+                    ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
+                    Icon="Delete"
+                    Label="Delete"
+                    ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
+                    Visibility="Collapsed"
+                    x:Name="DeleteButton" />
+            </CommandBar>
+        </StackPanel>
+
         <!--  library card view  -->
         <ScrollViewer
-            Canvas.ZIndex="0"
             IsVerticalScrollChainingEnabled="False"
+            Padding="0,8,0,8"
             RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.Below="PageTitle"
+            RelativePanel.Below="TitleAndCommandBarPanel"
             x:Name="LibraryCardScrollView">
             <ItemsRepeater
                 ItemTemplate="{StaticResource AudiobookTemplate}"
@@ -136,7 +137,7 @@
 
                 <ItemsRepeater.Layout>
                     <UniformGridLayout
-                        ItemsJustification="SpaceEvenly"
+                        ItemsJustification="SpaceBetween"
                         MinColumnSpacing="28"
                         MinItemWidth="300" />
                 </ItemsRepeater.Layout>
@@ -174,7 +175,7 @@
             BorderThickness="1"
             Canvas.ZIndex="2"
             CornerRadius="8"
-            Margin="0,0,6,6"
+            Margin="-36,0,-26,12"
             MaxHeight="250"
             Padding="12"
             RelativePanel.AlignBottomWithPanel="True"

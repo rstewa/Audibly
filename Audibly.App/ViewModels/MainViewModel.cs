@@ -310,4 +310,13 @@ public class MainViewModel : BindableBase
             });
         });
     }
+    
+    /// <summary>
+    ///     Resets the audiobook list.
+    /// </summary>
+    public async Task ResetAudiobookList()
+    {
+        await dispatcherQueue.EnqueueAsync(async () =>
+            await GetAudiobookListAsync());
+    }
 }

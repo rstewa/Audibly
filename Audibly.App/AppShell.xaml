@@ -32,7 +32,7 @@
             VerticalAlignment="Stretch"
             x:Name="AppTitleBar">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Image Source="ms-appx:///Assets/book-open-flat.png" Width="18" />
+                <Image Source="ms-appx:///Assets/book-open-flat.png" Width="24" />
                 <TextBlock
                     Margin="12,0,0,0"
                     Style="{StaticResource CaptionTextBlockStyle}"
@@ -87,7 +87,11 @@
             </muxc:NavigationView.MenuItems>
 
             <NavigationView.AutoSuggestBox>
-                <AutoSuggestBox AutomationProperties.Name="Search" QueryIcon="Find" />
+                <AutoSuggestBox
+                    AutomationProperties.Name="AudiobookSearchBox"
+                    Loaded="AudiobookSearchBox_Loaded"
+                    QueryIcon="Find"
+                    x:Name="AudiobookSearchBox" />
             </NavigationView.AutoSuggestBox>
 
             <muxc:NavigationView.PaneFooter>

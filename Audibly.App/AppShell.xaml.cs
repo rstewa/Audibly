@@ -3,12 +3,19 @@
 // Updated: 3/22/2024
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.System;
+using Audibly.App.ViewModels;
 using Audibly.App.Views;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using Sharpener.Extensions;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Audibly.App;
 
@@ -18,6 +25,13 @@ namespace Audibly.App;
 /// </summary>
 public sealed partial class AppShell : Page
 {
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    
+    /// <summary>
+    ///     Gets the app-wide ViewModel instance.
+    /// </summary>
+    public MainViewModel ViewModel => App.ViewModel;
+    
     /// <summary>
     ///     Initializes a new instance of the AppShell, sets the static 'Current' reference,
     ///     adds callbacks for Back requests and changes in the SplitView's DisplayMode, and
@@ -144,5 +158,92 @@ public sealed partial class AppShell : Page
     private void NavigationView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
     {
         if (AppFrame.CanGoBack) AppFrame.GoBack();
+    }
+    
+    private void AudiobookSearchBox_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (AudiobookSearchBox == null) return;
+        AudiobookSearchBox.QuerySubmitted += AudiobookSearchBox_QuerySubmitted;
+        AudiobookSearchBox.TextChanged += AudiobookSearchBox_TextChanged;
+        AudiobookSearchBox.PlaceholderText = "Search audiobooks...";
+    }
+    
+    /// <summary>
+    ///     Filters or resets the audiobook list based on the search text.
+    /// </summary>
+    private async void AudiobookSearchBox_QuerySubmitted(AutoSuggestBox sender,
+        AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (string.IsNullOrEmpty(args.QueryText))
+            await ViewModel.ResetAudiobookList();
+        else
+            await FilterAudiobookList(args.QueryText);
+    }
+    
+    private List<AudiobookViewModel> GetFilteredAudiobooks(string text)
+    {
+        var parameters = text.Split(new[] { ' ' },
+            StringSplitOptions.RemoveEmptyEntries);
+
+        return ViewModel.Audiobooks.Where(audiobook => parameters
+                .Any(parameter =>
+                    audiobook.Author.Contains(parameter, StringComparison.OrdinalIgnoreCase) ||
+                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
+            .OrderByDescending(audiobook => parameters.Count(parameter =>
+                audiobook.Author.Contains(parameter, StringComparison.OrdinalIgnoreCase) ||
+                audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+    }
+
+    /// <summary>
+    ///     Filters the audiobook list based on the search text.
+    /// </summary>
+    private async Task FilterAudiobookList(string text)
+    {
+        var matches = GetFilteredAudiobooks(text);
+
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            ViewModel.Audiobooks.Clear();
+            foreach (var match in matches) ViewModel.Audiobooks.Add(match);
+        });
+    }
+    
+    /// <summary>
+    ///     Updates the search box items source when the user changes the search text.
+    /// </summary>
+    private async void AudiobookSearchBox_TextChanged(AutoSuggestBox sender,
+        AutoSuggestBoxTextChangedEventArgs args)
+    {
+        // We only want to get results when it was a user typing,
+        // otherwise we assume the value got filled in by TextMemberPath
+        // or the handler for SuggestionChosen.
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            // If no search query is entered, refresh the complete list.
+            if (string.IsNullOrEmpty(sender.Text))
+            {
+                await _dispatcherQueue.EnqueueAsync(async () =>
+                    await ViewModel.GetAudiobookListAsync());
+                sender.ItemsSource = null;
+            }
+            else
+            {
+                // sender.ItemsSource = GetFilteredAudiobooks(sender.Text);
+                sender.ItemsSource = GetAudiobookTitles(sender.Text);
+            }
+        }
+    }
+    
+    private List<string> GetAudiobookTitles(string text)
+    {
+        var parameters = text.Split(new[] { ' ' },
+            StringSplitOptions.RemoveEmptyEntries);
+
+        return ViewModel.Audiobooks.Where(audiobook => parameters
+                .Any(parameter =>
+                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
+            .Select(audiobook => audiobook.Title)
+            .AsList();
     }
 }

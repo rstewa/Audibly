@@ -12,10 +12,11 @@ namespace Audibly.App.UserControls;
 public sealed partial class CustomHyperlinkButton : UserControl
 {
     public event EventHandler? ButtonClick;
-    
+
     public static readonly DependencyProperty ButtonClickProperty =
-        DependencyProperty.Register("ButtonClick", typeof(EventHandler), typeof(CustomHyperlinkButton), new PropertyMetadata(null));
-    
+        DependencyProperty.Register("ButtonClick", typeof(EventHandler), typeof(CustomHyperlinkButton),
+            new PropertyMetadata(null));
+
     public string Icon
     {
         get => (string)GetValue(IconProperty);
@@ -30,10 +31,10 @@ public sealed partial class CustomHyperlinkButton : UserControl
         get => (string)GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
-    
+
     public static readonly DependencyProperty TextProperty =
         DependencyProperty.Register("Text", typeof(string), typeof(CustomHyperlinkButton), new PropertyMetadata(null));
-    
+
     public CustomHyperlinkButton()
     {
         InitializeComponent();

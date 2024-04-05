@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/4/2024
 
 using System;
 using System.Collections.Generic;
@@ -26,12 +26,12 @@ namespace Audibly.App;
 public sealed partial class AppShell : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    
+
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
-    
+
     /// <summary>
     ///     Initializes a new instance of the AppShell, sets the static 'Current' reference,
     ///     adds callbacks for Back requests and changes in the SplitView's DisplayMode, and
@@ -48,7 +48,7 @@ public sealed partial class AppShell : Page
             var window = App.Window; // idk if this works or not
             window.Title = AppTitleText;
             window.ExtendsContentIntoTitleBar = true;
-            window.SetTitleBar(this.AppTitleBar);
+            window.SetTitleBar(AppTitleBar);
         };
 
         // Set up custom title bar.
@@ -115,19 +115,14 @@ public sealed partial class AppShell : Page
     private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if (args.InvokedItemContainer is not NavigationViewItem item) return;
-        
+
         // if (item == AudiobookListMenuItem)
         // {
         //     AppFrame.Navigate(typeof(LibraryPage));
         // }
         if (item == LibraryMenuItem)
-        {
             AppFrame.Navigate(typeof(LibraryCardPage));
-        }
-        else if (item == NavView.SettingsItem)
-        {
-            AppFrame.Navigate(typeof(SettingsPage));
-        }
+        else if (item == NavView.SettingsItem) AppFrame.Navigate(typeof(SettingsPage));
     }
 
     /// <summary>
@@ -159,7 +154,7 @@ public sealed partial class AppShell : Page
     {
         if (AppFrame.CanGoBack) AppFrame.GoBack();
     }
-    
+
     private void AudiobookSearchBox_Loaded(object sender, RoutedEventArgs e)
     {
         if (AudiobookSearchBox == null) return;
@@ -167,7 +162,7 @@ public sealed partial class AppShell : Page
         AudiobookSearchBox.TextChanged += AudiobookSearchBox_TextChanged;
         AudiobookSearchBox.PlaceholderText = "Search audiobooks...";
     }
-    
+
     /// <summary>
     ///     Filters or resets the audiobook list based on the search text.
     /// </summary>
@@ -179,7 +174,7 @@ public sealed partial class AppShell : Page
         else
             await FilterAudiobookList(args.QueryText);
     }
-    
+
     private List<AudiobookViewModel> GetFilteredAudiobooks(string text)
     {
         var parameters = text.Split(new[] { ' ' },
@@ -208,7 +203,7 @@ public sealed partial class AppShell : Page
             foreach (var match in matches) ViewModel.Audiobooks.Add(match);
         });
     }
-    
+
     /// <summary>
     ///     Updates the search box items source when the user changes the search text.
     /// </summary>
@@ -234,7 +229,7 @@ public sealed partial class AppShell : Page
             }
         }
     }
-    
+
     private List<string> GetAudiobookTitles(string text)
     {
         var parameters = text.Split(new[] { ' ' },

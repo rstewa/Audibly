@@ -48,7 +48,7 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
-    
+
     /// <summary>
     ///     Gets the unique identifier for the audiobook.
     /// </summary>
@@ -145,7 +145,7 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
-    
+
     /// <summary>
     ///     Gets or sets the thumbnail path of the audiobook.
     /// </summary>
@@ -232,7 +232,7 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
-    
+
     /// <summary>
     ///     Gets or sets the progress of the audiobook.
     /// </summary>

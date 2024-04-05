@@ -20,14 +20,14 @@ public sealed partial class AudiobookTile : UserControl
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
-    
+
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
-    
+
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    
+
     public string Title
     {
         get => (string)GetValue(TitleProperty);
@@ -54,15 +54,16 @@ public sealed partial class AudiobookTile : UserControl
 
     public static readonly DependencyProperty SourceProperty =
         DependencyProperty.Register("Source", typeof(object), typeof(AudiobookTile), new PropertyMetadata(null));
-    
+
     public double Progress
     {
         get => (double)GetValue(ProgressProperty);
         set => SetValue(ProgressProperty, value);
     }
-    
+
     public static readonly DependencyProperty ProgressProperty =
-        DependencyProperty.Register("Progress", typeof(double), typeof(AudiobookTile), new PropertyMetadata(defaultValue: 0.0, propertyChangedCallback: ProgressPropertyChangedCallback));
+        DependencyProperty.Register("Progress", typeof(double), typeof(AudiobookTile),
+            new PropertyMetadata(0.0, ProgressPropertyChangedCallback));
 
     private static void ProgressPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -90,20 +91,20 @@ public sealed partial class AudiobookTile : UserControl
     {
         BlackOverlayGrid.Visibility = Visibility.Collapsed;
     }
-    
+
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
         await _dispatcherQueue.EnqueueAsync(() =>
         {
             if (PlayerViewModel.NowPlaying != null)
                 PlayerViewModel.NowPlaying.IsNowPlaying = false;
-            
+
             ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-            
+
             PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
-            
+
             if (PlayerViewModel.NowPlaying == null) return;
-            
+
             PlayerViewModel.NowPlaying.IsNowPlaying = true;
             PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
         });

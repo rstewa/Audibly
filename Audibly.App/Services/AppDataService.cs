@@ -23,11 +23,11 @@ public class AppDataService : IAppDataService
         var coverImage =
             await bookAppdataDir.CreateFileAsync("CoverImage.jpeg", CreationCollisionOption.ReplaceExisting);
         await FileIO.WriteBytesAsync(coverImage, imageBytes);
-        
+
         // create 400x400 thumbnail
         var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
         await ShrinkAndSaveAsync(coverImage.Path, thumbnailPath, 400, 400);
-        
+
         return new Tuple<string, string>(coverImage.Path, thumbnailPath);
     }
 
@@ -43,7 +43,7 @@ public class AppDataService : IAppDataService
         using var image = await Image.LoadAsync(path);
 
         // check if resize is needed
-        if (ResizeNeeded(image.Height, image.Width, maxHeight, maxWidth, out int newHeight, out int newWidth))
+        if (ResizeNeeded(image.Height, image.Width, maxHeight, maxWidth, out var newHeight, out var newWidth))
             // swap this part out if not using ImageSharp
             image.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -78,7 +78,8 @@ public class AppDataService : IAppDataService
         if (newWidth > maxWidth)
         {
             // if so, re-calculate height to fit for maxWidth
-            var widthReductionRatio = maxWidth / newWidth; // ratio of maxWidth:newWidth (height reduction ratio may have been applied)
+            var widthReductionRatio =
+                maxWidth / newWidth; // ratio of maxWidth:newWidth (height reduction ratio may have been applied)
             newHeight = maxHeight * widthReductionRatio; // apply new ratio to maxHeight to get final height
             newWidth = maxWidth;
         }

@@ -47,7 +47,7 @@ public partial class App : Application
     ///     Pipeline for interacting with backend service or database.
     /// </summary>
     public static IAudiblyRepository Repository { get; private set; }
-        
+
     public static FrameworkElement MainRoot { get; private set; }
 
     /// <summary>
@@ -90,11 +90,11 @@ public partial class App : Application
             // suppressing the initial entrance animation.
             shell.AppFrame.Navigate(typeof(LibraryCardPage), null,
                 new SuppressNavigationTransitionInfo());
-            // shell.AppFrame.Navigate(typeof(LibraryPage), null,
-            //     new SuppressNavigationTransitionInfo());
+        // shell.AppFrame.Navigate(typeof(LibraryPage), null,
+        //     new SuppressNavigationTransitionInfo());
 
         Window.Activate();
-        
+
         MainRoot = shell.Content as FrameworkElement;
     }
 

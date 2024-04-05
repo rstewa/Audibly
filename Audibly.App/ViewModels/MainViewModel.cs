@@ -8,12 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
-using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
-using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Sharpener.Extensions;
 using WinRT.Interop;
@@ -38,14 +35,14 @@ public class MainViewModel : BindableBase
         AppDataService = appDataService;
         Task.Run(GetAudiobookListAsync);
     }
-    
+
     /// <summary>
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
 
     private AudiobookViewModel? _selectedAudiobook;
-    
+
     /// <summary>
     ///     Gets or sets the selected audiobook, or null if no audiobook is selected.
     /// </summary>
@@ -56,7 +53,7 @@ public class MainViewModel : BindableBase
     }
 
     private bool _showStartPanel;
-    
+
     /// <summary>
     ///     Gets or sets a value indicating whether the start panel is visible.
     /// </summary>
@@ -109,25 +106,25 @@ public class MainViewModel : BindableBase
         get => _isImportingText;
         set => Set(ref _isImportingText, value);
     }
-    
+
     private string _notificationText;
-    
+
     public string NotificationText
     {
         get => _notificationText;
         set => Set(ref _notificationText, value);
     }
-    
+
     private bool _isNotificationVisible;
-    
+
     public bool IsNotificationVisible
     {
         get => _isNotificationVisible;
         set => Set(ref _isNotificationVisible, value);
     }
-    
+
     private InfoBarSeverity _notificationSeverity;
-    
+
     public InfoBarSeverity NotificationSeverity
     {
         get => _notificationSeverity;
@@ -154,7 +151,7 @@ public class MainViewModel : BindableBase
         await dispatcherQueue.EnqueueAsync(() =>
         {
             ShowStartPanel = audiobooks.Count == 0;
-            
+
             Audiobooks.Clear();
             foreach (var c in audiobooks) Audiobooks.Add(new AudiobookViewModel(c));
             IsLoading = false;
@@ -189,9 +186,9 @@ public class MainViewModel : BindableBase
                 await App.ViewModel.AppDataService.DeleteCoverImageAsync(audiobook.CoverImagePath);
                 count++;
             }
-            
+
             await GetAudiobookListAsync();
-            
+
             await dispatcherQueue.EnqueueAsync(() =>
             {
                 NotificationText = $"{count} Audiobooks deleted successfully!";
@@ -200,7 +197,7 @@ public class MainViewModel : BindableBase
             });
         });
     }
-    
+
     public async void ImportAudiobookAsync()
     {
         // Create a folder picker
@@ -225,7 +222,7 @@ public class MainViewModel : BindableBase
         var file = await openPicker.PickSingleFileAsync();
 
         if (file == null) return;
-        
+
         // todo: switch the result
 
         await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
@@ -244,7 +241,7 @@ public class MainViewModel : BindableBase
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
-            
+
             await dispatcherQueue.EnqueueAsync(() =>
             {
                 NotificationText = "Audiobook imported successfully!";
@@ -280,7 +277,7 @@ public class MainViewModel : BindableBase
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("PickedFolderToken", folder);
         else
             return;
-        
+
         // todo: switch the result
 
         await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
@@ -301,7 +298,7 @@ public class MainViewModel : BindableBase
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
-            
+
             await dispatcherQueue.EnqueueAsync(() =>
             {
                 NotificationText = $"{totalBooks} Audiobooks imported successfully!";
@@ -310,7 +307,7 @@ public class MainViewModel : BindableBase
             });
         });
     }
-    
+
     /// <summary>
     ///     Resets the audiobook list.
     /// </summary>

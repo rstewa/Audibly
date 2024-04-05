@@ -10,11 +10,10 @@ using Windows.Media.Core;
 using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
-// using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Sharpener.Extensions;
+// using CommunityToolkit.WinUI;
 
 namespace Audibly.App.Views;
 
@@ -24,12 +23,12 @@ namespace Audibly.App.Views;
 public sealed partial class LibraryCardPage : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    
+
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
-    
+
     /// <summary>
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
@@ -38,7 +37,7 @@ public sealed partial class LibraryCardPage : Page
     public LibraryCardPage()
     {
         InitializeComponent();
-        
+
 #if DEBUG
         DeleteButton.Visibility = Visibility.Visible;
 #endif
@@ -63,7 +62,7 @@ public sealed partial class LibraryCardPage : Page
     //     else
     //         await FilterAudiobookList(args.QueryText);
     // }
-    
+
     /// <summary>
     ///     Resets the audiobook list.
     /// </summary>
@@ -72,7 +71,7 @@ public sealed partial class LibraryCardPage : Page
     //     await _dispatcherQueue.EnqueueAsync(async () =>
     //         await ViewModel.GetAudiobookListAsync());
     // }
-    
+
     // private List<AudiobookViewModel> GetFilteredAudiobooks(string text)
     // {
     //     var parameters = text.Split(new[] { ' ' },
@@ -139,7 +138,6 @@ public sealed partial class LibraryCardPage : Page
     //         .Select(audiobook => audiobook.Title)
     //         .AsList();
     // }
-
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
         await _dispatcherQueue.EnqueueAsync(() =>
@@ -148,9 +146,9 @@ public sealed partial class LibraryCardPage : Page
                 PlayerViewModel.NowPlaying.IsNowPlaying = false;
 
             PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
-            
+
             if (PlayerViewModel.NowPlaying == null) return;
-            
+
             PlayerViewModel.NowPlaying.IsNowPlaying = true;
             PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
         });
@@ -158,6 +156,6 @@ public sealed partial class LibraryCardPage : Page
 
     private void LibraryCardView_OnItemClick(object sender, ItemClickEventArgs e)
     {
-        ViewModel.SelectedAudiobook = (AudiobookViewModel) e.ClickedItem;
+        ViewModel.SelectedAudiobook = (AudiobookViewModel)e.ClickedItem;
     }
 }

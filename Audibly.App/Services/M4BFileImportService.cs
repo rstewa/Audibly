@@ -5,11 +5,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
-using Audibly.App.Extensions;
 using Audibly.App.Services.Interfaces;
 using Audibly.Models;
 using AutoMapper;
@@ -66,15 +64,15 @@ public class M4BFileImportService : IImportFiles
     private static async Task<Audiobook> CreateAudiobook(string path)
     {
         var track = new Track(path);
-        
+
         // TESTING: NEED TO REMOVE
 
         // var fileName = @$"C:\Users\rstewa\source\repos\mine\Audibly\logs\{track.Title}_metadata.json";
         // _ = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true })
         //     .WriteToFile(fileName);
-        
+
         // END TESTING
-        
+
         var audiobook = new Audiobook
         {
             Title = track.Title,
@@ -95,7 +93,8 @@ public class M4BFileImportService : IImportFiles
         var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
 
         var dir = $"{Path.GetFileNameWithoutExtension(path)} [{track.Artist}]";
-        (audiobook.CoverImagePath, audiobook.ThumbnailPath) = await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
+        (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
+            await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
 
         // read in the chapters
         var chapterIndex = 0;

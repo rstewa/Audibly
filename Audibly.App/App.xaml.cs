@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using Windows.Globalization;
 using Windows.Storage;
+using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
@@ -72,12 +73,13 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        Window = new MainWindow();
+        Window = WindowHelper.CreateWindow();
+        // Window = new MainWindow();
 
         win32WindowHelper = new Win32WindowHelper(Window);
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 800, y = 800 });
 
-        Window.Activate();
+        // Window.Activate();
 
         UseSqlite();
 
@@ -93,6 +95,8 @@ public partial class App : Application
         // shell.AppFrame.Navigate(typeof(LibraryPage), null,
         //     new SuppressNavigationTransitionInfo());
 
+        Window.CenterWindow();
+        
         Window.Activate();
 
         MainRoot = shell.Content as FrameworkElement;

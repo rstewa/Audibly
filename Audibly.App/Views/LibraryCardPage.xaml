@@ -176,7 +176,7 @@
             Visibility="{x:Bind viewModels:Converters.CollapsedIfNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
             x:Name="Player">
 
-            <userControls:MiniPlayerControl />
+            <userControls:PlayerControl />
 
         </Grid>
 

@@ -35,7 +35,7 @@ public sealed partial class AudiobookTile : UserControl
     }
 
     public static readonly DependencyProperty TitleProperty =
-        DependencyProperty.Register("Title", typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Title), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
 
     public string Author
     {
@@ -44,7 +44,7 @@ public sealed partial class AudiobookTile : UserControl
     }
 
     public static readonly DependencyProperty AuthorProperty =
-        DependencyProperty.Register("Author", typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Author), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
 
     public object Source
     {
@@ -53,7 +53,7 @@ public sealed partial class AudiobookTile : UserControl
     }
 
     public static readonly DependencyProperty SourceProperty =
-        DependencyProperty.Register("Source", typeof(object), typeof(AudiobookTile), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Source), typeof(object), typeof(AudiobookTile), new PropertyMetadata(null));
 
     public double Progress
     {
@@ -62,7 +62,7 @@ public sealed partial class AudiobookTile : UserControl
     }
 
     public static readonly DependencyProperty ProgressProperty =
-        DependencyProperty.Register("Progress", typeof(double), typeof(AudiobookTile),
+        DependencyProperty.Register(nameof(Progress), typeof(double), typeof(AudiobookTile),
             new PropertyMetadata(0.0, ProgressPropertyChangedCallback));
 
     private static void ProgressPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)

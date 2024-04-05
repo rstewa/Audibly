@@ -5,6 +5,7 @@
   - [ ] add player as a page in the navigation view
 
 # TODO
+- [ ] create function in vim that allows you to yank and then comment selected text
 
 - [ ] if you click play on an audiobook that is already playing, the app crashes
 

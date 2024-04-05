@@ -25,12 +25,9 @@
                 </media:PipelineVisualFactory>
             </media:UIElementExtensions.VisualFactory>
         </Grid>
+
         <!--  got this from RiseMediaPlayer: https://github.com/Rise-Software/Rise-Media-Player  -->
-        <Border
-            Grid.ColumnSpan="2"
-            Grid.RowSpan="3"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Border.Background>
                 <AcrylicBrush
                     FallbackColor="Transparent"
@@ -39,14 +36,14 @@
             </Border.Background>
         </Border>
 
-        <RelativePanel>
+        <RelativePanel HorizontalAlignment="Stretch">
             <!--  cover image  -->
             <Border
                 BorderThickness="0"
-                Height="400"
+                Height="300"
                 RelativePanel.AlignHorizontalCenterWithPanel="True"
                 RelativePanel.AlignVerticalCenterWithPanel="True"
-                Width="400">
+                Width="300">
                 <Border
                     BorderBrush="Transparent"
                     BorderThickness="1"
@@ -61,7 +58,14 @@
             </Border>
 
             <!--  player controls  -->
-            <userControls:MiniPlayerControl RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignHorizontalCenterWithPanel="True" />
+            <userControls:PlayerControl
+                HorizontalAlignment="Stretch"
+                Margin="0,20,20,20"
+                RelativePanel.AlignBottomWithPanel="True"
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                RelativePanel.AlignLeftWithPanel="True"
+                RelativePanel.AlignRightWithPanel="True"
+                ShowCoverImage="False" />
         </RelativePanel>
     </Grid>
 </Page>

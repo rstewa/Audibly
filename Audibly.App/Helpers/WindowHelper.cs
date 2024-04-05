@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Microsoft.UI;
@@ -23,12 +24,21 @@ public class WindowHelper
 {
     public static Window CreateWindow()
     {
-        var newWindow = new Window
-        {
-            SystemBackdrop = new MicaBackdrop()
-        };
+        // var newWindow = new Window
+        // {
+        //     SystemBackdrop = new MicaBackdrop()
+        // };
+        var newWindow = new Window();
         TrackWindow(newWindow);
         return newWindow;
+    }
+
+    public static void HideMainWindow()
+    {
+        var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);
+        if (mainWindow == null) return;
+        (mainWindow.AppWindow.Presenter as OverlappedPresenter)?.Minimize();
+        mainWindow.AppWindow.IsShownInSwitchers = false;
     }
 
     public static void TrackWindow(Window window)

@@ -13,17 +13,6 @@
         <EnableMsixTooling>true</EnableMsixTooling>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    <ItemGroup>
-        <None Remove="UserControls\CustomHyperlinkButton.xaml" />
-        <None Remove="UserControls\Player.xaml" />
-        <None Remove="UserControls\ProgressBarWithText.xaml" />
-        <None Remove="Views\ControlPages\ImportDialogContent.xaml" />
-        <None Remove="Views\Library.xaml" />
-        <None Remove="Views\MiniPlayerPage.xaml" />
-        <None Remove="Views\PlayerPage.xaml" />
-        <None Remove="UserControls\RadialGauge\**" />
-        <None Remove="obj\**" />
-    </ItemGroup>
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -72,7 +61,6 @@
       <Page Update="UserControls\CustomHyperlinkButton.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
-      <Page Remove="obj\**" />
     </ItemGroup>
     <ItemGroup>
       <Page Update="Views\LibraryCardPage.xaml">
@@ -85,11 +73,6 @@
         </Page>
     </ItemGroup>
     <ItemGroup>
-        <Page Update="UserControls\MiniPlayerControl.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-    </ItemGroup>
-    <ItemGroup>
         <Page Update="UserControls\ProgressBarWithText.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
@@ -98,15 +81,6 @@
       <Page Update="Views\ControlPages\ImportDialogContent.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
-    </ItemGroup>
-    <ItemGroup>
-      <Compile Remove="obj\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <EmbeddedResource Remove="obj\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <Resource Remove="obj\**" />
     </ItemGroup>
     <ItemGroup>
       <Page Update="Views\PlayerPage.xaml">

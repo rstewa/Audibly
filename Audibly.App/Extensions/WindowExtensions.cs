@@ -16,7 +16,7 @@ namespace Audibly.App.Extensions;
 public static class WindowExtensions
 {
     public static void CustomizeWindow(this Window window, int width, int height, bool centerWindow,
-        bool extendsContentIntoTitleBar, bool isResizable, bool isMinimizable, bool isMaximizable)
+        bool extendsContentIntoTitleBar, bool isResizable, bool isMinimizable, bool isMaximizable, bool getSizeFromDisplay = false)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -33,6 +33,16 @@ public static class WindowExtensions
         var x = 0;
         var y = 0;
 
+        if (getSizeFromDisplay)
+        {
+            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+            if (displayArea is not null)
+            {
+                width = (displayArea.WorkArea.Width * 0.75).ToInt();
+                height = (displayArea.WorkArea.Height * 0.75).ToInt();
+            }
+        }
+        
         if (centerWindow)
         {
             var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
@@ -43,13 +53,29 @@ public static class WindowExtensions
             }
         }
 
-        appWindow.MoveAndResize(new RectInt32(x, y, 315, 420));
+        appWindow.MoveAndResize(new RectInt32(x, y, width, height));
 
         window.ExtendsContentIntoTitleBar = extendsContentIntoTitleBar;
 
         presenter!.IsResizable = isResizable;
         presenter!.IsMaximizable = isMaximizable;
         presenter!.IsMinimizable = isMinimizable;
+    }
+    
+    public static void CenterWindow(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+
+        if (displayArea is not null)
+        {
+            var x = (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
+            var y = (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
+
+            appWindow.Move(new PointInt32(x, y));
+        }
     }
     
     public static void Maximize(this Window window)

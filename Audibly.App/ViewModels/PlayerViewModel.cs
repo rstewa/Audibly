@@ -97,4 +97,12 @@ public class PlayerViewModel : BindableBase
             ChapterDurationText = _chapterDurationMs.ToStr_ms();
         }
     }
+
+    private bool _fullScreenPlayer;
+
+    public bool FullScreenPlayer
+    {
+        get => _fullScreenPlayer;
+        set => Set(ref _fullScreenPlayer, value);
+    }
 }

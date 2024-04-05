@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/5/2024
 
 using System.Diagnostics;
 using Windows.Globalization;
@@ -16,9 +16,6 @@ using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Audibly.App;
 
@@ -74,12 +71,9 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         Window = WindowHelper.CreateWindow();
-        // Window = new MainWindow();
 
         win32WindowHelper = new Win32WindowHelper(Window);
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 800, y = 800 });
-
-        // Window.Activate();
 
         UseSqlite();
 
@@ -92,11 +86,9 @@ public partial class App : Application
             // suppressing the initial entrance animation.
             shell.AppFrame.Navigate(typeof(LibraryCardPage), null,
                 new SuppressNavigationTransitionInfo());
-        // shell.AppFrame.Navigate(typeof(LibraryPage), null,
-        //     new SuppressNavigationTransitionInfo());
 
-        Window.CenterWindow();
-        
+        Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
+
         Window.Activate();
 
         MainRoot = shell.Content as FrameworkElement;
@@ -108,19 +100,13 @@ public partial class App : Application
     /// </summary>
     private static void UseSqlite()
     {
-        // string demoDatabasePath = Package.Current.InstalledLocation.Path + @"\Assets\Contoso.db";
-        // string databasePath = ApplicationData.Current.LocalFolder.Path + @"\Contoso.db";
-
-        // var folder = Environment.SpecialFolder.LocalApplicationData;
-        // var path = Environment.GetFolderPath(folder);
-        // var dbPath = System.IO.Path.Join(path, "audibly.db");
-
         var dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db";
 
 #if DEBUG
         Debug.WriteLine($"Database path: {dbPath}");
 #endif
 
+        // TODO: add demo database
         // if (!File.Exists(databasePath))
         // {
         //     File.Copy(demoDatabasePath, databasePath);

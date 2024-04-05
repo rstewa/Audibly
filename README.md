@@ -13,10 +13,12 @@
 > [!IMPORTANT]
 > Audibly v2 is under construction. Hope to have it finished sometime in April 2024.
 
-Audibly v2 Sample Screenshot
+## Audibly v2 Sample Screenshots
 
-![audibly_v2_as_of_04-03-24](https://github.com/rstewa/Audibly/assets/70178227/6614f016-aeba-4383-b678-c04e041973b9)
-
+<p align="middle">
+  <img src="images/v2/LibraryCardPage_2.PNG" width="49%" />
+  <img src="images/v2/PlayerPage.PNG" width="49%" />
+</p> 
 
 <!-- PROJECT LOGO -->
 <br />

@@ -293,31 +293,32 @@ public sealed partial class PlayerControl : UserControl
 
     private void MaximizePlayerButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (!PlayerViewModel.FullScreenPlayer)
+        if (!PlayerViewModel.IsPlayerFullScreen)
         {
-            PlayerViewModel.FullScreenPlayer = true;
+            PlayerViewModel.IsPlayerFullScreen = true;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
 
-            var newWindow = WindowHelper.CreateWindow();
+            var playerWindow = WindowHelper.CreateWindow();
 
-            newWindow.Closed += (o, args) =>
+            playerWindow.Closed += (o, args) =>
             {
-                PlayerViewModel.FullScreenPlayer = false;
+                PlayerViewModel.IsPlayerFullScreen = false;
                 WindowHelper.RestoreMainWindow();
             };
 
-            newWindow.CustomizeWindow(-1, -1, true, true, true, true, true, true);
-            newWindow.Maximize();
+            playerWindow.CustomizeWindow(-1, -1, true, true, true, true, true, true);
+            // newWindow.Maximize();
+            playerWindow.MakeWindowFullScreen();
 
             var rootPage = new PlayerPage();
-            newWindow.Content = rootPage;
-            newWindow.Activate();
+            playerWindow.Content = rootPage;
+            playerWindow.Activate();
 
             WindowHelper.HideMainWindow();
         }
         else
         {
-            PlayerViewModel.FullScreenPlayer = false;
+            PlayerViewModel.IsPlayerFullScreen = false;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
             WindowHelper.ActiveWindows.FirstOrDefault(w => w.Content is PlayerPage)?.Close();
             WindowHelper.RestoreMainWindow();

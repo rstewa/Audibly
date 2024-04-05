@@ -99,12 +99,12 @@ public class PlayerViewModel : BindableBase
         }
     }
 
-    private bool _fullScreenPlayer = false;
+    private bool _isPlayerFullScreen = false;
 
-    public bool FullScreenPlayer
+    public bool IsPlayerFullScreen
     {
-        get => _fullScreenPlayer;
-        set => Set(ref _fullScreenPlayer, value);
+        get => _isPlayerFullScreen;
+        set => Set(ref _isPlayerFullScreen, value);
     }
 
     private string _maximizeMinimizeGlyph = Constants.MaximizeGlyph;

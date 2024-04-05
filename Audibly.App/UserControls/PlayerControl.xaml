@@ -63,7 +63,6 @@
             <!--  player controls  -->
             <!-- <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Center"> -->
             <RelativePanel Grid.Column="1" x:Name="PlayerControlsPanel">
-
                 <!--  Title and Artist  -->
                 <StackPanel
                     HorizontalAlignment="Left"
@@ -71,8 +70,8 @@
                     Orientation="Vertical"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignTopWithPanel="True"
-                    RelativePanel.LeftOf="PlayPauseControls"
-                    VerticalAlignment="Top">
+                    VerticalAlignment="Top"
+                    x:Name="TitleArtistStackPanel">
 
                     <!--  Title  -->
                     <TextBlock
@@ -95,6 +94,31 @@
                         TextWrapping="WrapWholeWords"
                         x:Name="ArtistTextBlock" />
                 </StackPanel>
+
+                <Border
+                    Background="{ThemeResource AppBarSeparatorForeground}"
+                    Height="40"
+                    Margin="12,0"
+                    RelativePanel.RightOf="TitleArtistStackPanel"
+                    VerticalAlignment="Center"
+                    Width="1"
+                    x:Name="Separator" />
+
+                <!--  chapter selection  -->
+                <ComboBox
+                    Background="Transparent"
+                    BorderThickness="0"
+                    DisplayMemberPath="Title"
+                    FontSize="16"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
+                    RelativePanel.RightOf="Separator"
+                    SelectedIndex="0"
+                    SelectionChanged="ChapterCombo_SelectionChanged"
+                    ToolTipService.ToolTip="Chapter Selection"
+                    VerticalAlignment="Center"
+                    x:Name="ChapterCombo" />
 
                 <!--  play/pause buttons  -->
                 <StackPanel
@@ -128,6 +152,21 @@
                         </ResourceDictionary>
                     </StackPanel.Resources>
 
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="PreviousChapterButton_Click"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,0"
+                        ToolTipService.ToolTip="Previous Chapter"
+                        VerticalAlignment="Center"
+                        x:Name="PreviousChapterButton">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xE76B;" />
+                    </Button>
+
                     <RepeatButton
                         BorderThickness="0"
                         Click="SkipBackButton_OnClick"
@@ -147,7 +186,7 @@
                         Tag="play"
                         ToolTipService.ToolTip="Play/Pause"
                         x:Name="PlayPauseButton">
-                        <Viewbox MaxHeight="24" MaxWidth="24">
+                        <Viewbox MaxHeight="32" MaxWidth="32">
                             <SymbolIcon Symbol="Play" x:Name="PlayPauseIcon" />
                         </Viewbox>
                     </Button>
@@ -165,66 +204,84 @@
                             Glyph="&#xED3D;" />
                     </RepeatButton>
 
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="NextChapterButton_Click"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,0"
+                        ToolTipService.ToolTip="Next Chapter"
+                        VerticalAlignment="Center"
+                        x:Name="NextChapterButton">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xE76C;" />
+                    </Button>
+
                 </StackPanel>
 
                 <!--  todo: add margin here  -->
 
                 <!--  chapter controls  -->
-                <StackPanel
-                    HorizontalAlignment="Center"
-                    Orientation="Horizontal"
-                    RelativePanel.AlignHorizontalCenterWithPanel="True"
-                    RelativePanel.RightOf="PlayPauseControls"
-                    Spacing="12"
-                    VerticalAlignment="Center"
-                    x:Name="ChapterControls">
-
-                    <Button
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="PreviousChapterButton_Click"
-                        Content="&#xE76B;"
-                        FontFamily="Segoe MDL2 Assets"
-                        HorizontalAlignment="Left"
-                        Margin="0,0,0,0"
-                        ToolTipService.ToolTip="Previous Chapter"
-                        VerticalAlignment="Center"
-                        x:Name="PreviousChapterButton" />
-
-                    <ComboBox
-                        DisplayMemberPath="Title"
-                        HorizontalAlignment="Center"
-                        HorizontalContentAlignment="Center"
-                        ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
-                        SelectedIndex="0"
-                        SelectionChanged="ChapterCombo_SelectionChanged"
-                        ToolTipService.ToolTip="Chapter Selection"
-                        VerticalAlignment="Center"
-                        x:Name="ChapterCombo" />
-                    <!--  todo: this tooltip doesn't show for some reason  -->
-
-                    <Button
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="NextChapterButton_Click"
-                        Content="&#xE76C;"
-                        FontFamily="Segoe MDL2 Assets"
-                        HorizontalAlignment="Right"
-                        Margin="0,0,0,0"
-                        ToolTipService.ToolTip="Next Chapter"
-                        VerticalAlignment="Center"
-                        x:Name="NextChapterButton" />
-                </StackPanel>
+                <!--  <StackPanel  -->
+                <!--  HorizontalAlignment="Center"  -->
+                <!--  Orientation="Horizontal"  -->
+                <!--  RelativePanel.AlignHorizontalCenterWithPanel="True"  -->
+                <!--  RelativePanel.RightOf="PlayPauseControls"  -->
+                <!--  Spacing="12"  -->
+                <!--  VerticalAlignment="Center"  -->
+                <!--  x:Name="ChapterControls">  -->
+                <!--    -->
+                <!--  <Button  -->
+                <!--  Background="Transparent"  -->
+                <!--  BorderThickness="0"  -->
+                <!--  Click="PreviousChapterButton_Click"  -->
+                <!--  Content="&#xE76B;"  -->
+                <!--  FontFamily="Segoe MDL2 Assets"  -->
+                <!--  HorizontalAlignment="Left"  -->
+                <!--  Margin="0,0,0,0"  -->
+                <!--  ToolTipService.ToolTip="Previous Chapter"  -->
+                <!--  VerticalAlignment="Center"  -->
+                <!--  x:Name="PreviousChapterButton" />  -->
+                <!--    -->
+                <!--  <ComboBox  -->
+                <!--  DisplayMemberPath="Title"  -->
+                <!--  HorizontalAlignment="Center"  -->
+                <!--  HorizontalContentAlignment="Center"  -->
+                <!--  ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"  -->
+                <!--  SelectedIndex="0"  -->
+                <!--  SelectionChanged="ChapterCombo_SelectionChanged"  -->
+                <!--  ToolTipService.ToolTip="Chapter Selection"  -->
+                <!--  VerticalAlignment="Center"  -->
+                <!--  x:Name="ChapterCombo" />  -->
+                <!--  ~1~  todo: this tooltip doesn't show for some reason  @1@  -->
+                <!--    -->
+                <!--  <Button  -->
+                <!--  Background="Transparent"  -->
+                <!--  BorderThickness="0"  -->
+                <!--  Click="NextChapterButton_Click"  -->
+                <!--  Content="&#xE76C;"  -->
+                <!--  FontFamily="Segoe MDL2 Assets"  -->
+                <!--  HorizontalAlignment="Right"  -->
+                <!--  Margin="0,0,0,0"  -->
+                <!--  ToolTipService.ToolTip="Next Chapter"  -->
+                <!--  VerticalAlignment="Center"  -->
+                <!--  x:Name="NextChapterButton" />  -->
+                <!-- </StackPanel> -->
 
                 <Button
                     BorderThickness="0"
                     Click="MaximizePlayerButton_OnClick"
                     HorizontalAlignment="Right"
                     RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.RightOf="ChapterControls"
+                    RelativePanel.RightOf="PlayPauseControls"
                     ToolTipService.ToolTip="Maximize Player"
                     VerticalAlignment="Center"
                     x:Name="MaximizeMinimizeButton">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen}" Key="Escape" />
+                    </Button.KeyboardAccelerators>
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="24"

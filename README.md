@@ -132,16 +132,16 @@ Project Link: [https://github.com/rstewa35/Audibly](https://github.com/rstewa35/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/rstewa35/Audibly.svg?style=for-the-badge
-[contributors-url]: https://github.com/rstewa35/Audibly/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/rstewa35/Audibly.svg?style=for-the-badge
-[forks-url]: https://github.com/rstewa35/Audibly/network/members
-[stars-shield]: https://img.shields.io/github/stars/rstewa35/Audibly.svg?style=for-the-badge
-[stars-url]: https://github.com/rstewa35/Audibly/stargazers
-[issues-shield]: https://img.shields.io/github/issues/rstewa35/Audibly.svg?style=for-the-badge
-[issues-url]: https://github.com/rstewa35/Audibly/issues
-[license-shield]: https://img.shields.io/github/license/rstewa35/Audibly.svg?style=for-the-badge
-[license-url]: https://github.com/rstewa35/Audibly/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/rstewa/Audibly.svg?style=for-the-badge
+[contributors-url]: https://github.com/rstewa/Audibly/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/rstewa/Audibly.svg?style=for-the-badge
+[forks-url]: https://github.com/rstewa/Audibly/network/members
+[stars-shield]: https://img.shields.io/github/stars/rstewa/Audibly.svg?style=for-the-badge
+[stars-url]: https://github.com/rstewa/Audibly/stargazers
+[issues-shield]: https://img.shields.io/github/issues/rstewa/Audibly.svg?style=for-the-badge
+[issues-url]: https://github.com/rstewa/Audibly/issues
+[license-shield]: https://img.shields.io/github/license/rstewa/Audibly.svg?style=for-the-badge
+[license-url]: https://github.com/rstewa/Audibly/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/stewart-ryan-p/
 [product-screenshot]: images/default_screenshot.png

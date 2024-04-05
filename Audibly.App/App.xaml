@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <Application
     x:Class="Audibly.App.App"
@@ -9,31 +9,25 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources>
                     <XamlControlsResources.MergedDictionaries>
-                        <!-- Other app resources here -->
+                        <!--  Other app resources here  -->
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Light">
-                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
-                                    <StaticResource x:Key="GalleryBackgroundBrush"
-                                                    ResourceKey="#121212" />
-                                    <StaticResource x:Key="GalleryBorderBrush"
-                                                    ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
+                                    <StaticResource ResourceKey="#121212" x:Key="GalleryBackgroundBrush" />
+                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="GalleryBorderBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
-                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
-                                    <SolidColorBrush x:Key="AudiblyBackgroundBrush" Color="#121212" />
-                                    <StaticResource x:Key="GalleryBackgroundBrush"
-                                                    ResourceKey="SolidBackgroundFillColorBaseBrush" />
-                                    <StaticResource x:Key="GalleryBorderBrush"
-                                                    ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
+                                    <!-- <SolidColorBrush x:Key="AudiblyBackgroundBrush" Color="#121212" /> -->
+                                    <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" />
+                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="GalleryBackgroundBrush" />
+                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="GalleryBorderBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
-                                    <SolidColorBrush x:Key="HomePageBackgroundBrush"
-                                                     Color="{ThemeResource SystemColorWindowColor}" />
-                                    <SolidColorBrush x:Key="GalleryBackgroundBrush"
-                                                     Color="{ThemeResource SystemColorWindowColor}" />
-                                    <SolidColorBrush x:Key="GalleryBorderBrush"
-                                                     Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="HomePageBackgroundBrush" />
+                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBackgroundBrush" />
+                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBorderBrush" />
                                 </ResourceDictionary>
                             </ResourceDictionary.ThemeDictionaries>
                         </ResourceDictionary>
@@ -47,9 +41,9 @@
                             <x:Double x:Key="LargeWindowSnapPoint">1008</x:Double>
 
                             <Style
-                                x:Key="PageTitleTextBlockStyle"
                                 BasedOn="{StaticResource TitleTextBlockStyle}"
-                                TargetType="TextBlock">
+                                TargetType="TextBlock"
+                                x:Key="PageTitleTextBlockStyle">
                                 <Setter Property="FontSize" Value="28" />
                                 <Setter Property="TextWrapping" Value="NoWrap" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />
@@ -61,7 +55,7 @@
                     </XamlControlsResources.MergedDictionaries>
                 </XamlControlsResources>
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+            <!--  Other app resources here  -->
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForeground">Black</SolidColorBrush>

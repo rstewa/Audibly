@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/4/2024
 
 using System;
 using System.Runtime.InteropServices;
@@ -50,6 +50,27 @@ public static class WindowExtensions
         presenter!.IsResizable = isResizable;
         presenter!.IsMaximizable = isMaximizable;
         presenter!.IsMinimizable = isMinimizable;
+    }
+    
+    public static void Maximize(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+        
+        presenter.Maximize();
+    }
+    
+    public static void MakeWindowFullScreen(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+        presenter!.SetBorderAndTitleBar(false, false);
     }
 
     #region PInvoke Stuff

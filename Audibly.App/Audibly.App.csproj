@@ -80,12 +80,12 @@
       </Page>
     </ItemGroup>
     <ItemGroup>
-        <Page Update="Views\MiniPlayerPage.xaml">
+        <Page Update="Views\LegacyPlayerPage.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
     </ItemGroup>
     <ItemGroup>
-        <Page Update="UserControls\Player.xaml">
+        <Page Update="UserControls\MiniPlayerControl.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
     </ItemGroup>

@@ -4,7 +4,7 @@
     d:DesignHeight="300"
     d:DesignWidth="300"
     mc:Ignorable="d"
-    x:Class="Audibly.App.UserControls.Player"
+    x:Class="Audibly.App.UserControls.MiniPlayerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Audibly.App.UserControls"
@@ -31,6 +31,7 @@
 
             <!--  Cover Image  -->
             <Border
+                BorderThickness="0"
                 Grid.Column="0"
                 Height="100"
                 Width="100">
@@ -205,20 +206,35 @@
                         x:Name="NextChapterButton" />
                 </StackPanel>
 
-                <Button
-                    BorderThickness="0"
-                    Click="OpenMiniPlayerButton_OnClick"
-                    HorizontalAlignment="Right"
+                <StackPanel
+                    Orientation="Horizontal"
                     RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.RightOf="ChapterControls"
-                    ToolTipService.ToolTip="Open in Mini-Player"
-                    VerticalAlignment="Center"
-                    x:Name="OpenMiniPlayerButton">
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="24"
-                        Glyph="&#xE8A7;" />
-                </Button>
+                    RelativePanel.RightOf="ChapterControls">
+                    <Button
+                        BorderThickness="0"
+                        Click="OpenMiniPlayerButton_OnClick"
+                        HorizontalAlignment="Right"
+                        ToolTipService.ToolTip="Open in Mini-Player"
+                        VerticalAlignment="Center"
+                        x:Name="OpenMiniPlayerButton">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xE8A7;" />
+                    </Button>
+                    <Button
+                        BorderThickness="0"
+                        Click="OpenFullScreenPlayerButton_OnClick"
+                        HorizontalAlignment="Right"
+                        ToolTipService.ToolTip="Open Full-Screen Player"
+                        VerticalAlignment="Center"
+                        x:Name="FullScreenPlayerButton">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xE740;" />
+                    </Button>
+                </StackPanel>
 
                 <!--  now playing bar  -->
                 <Grid

@@ -84,6 +84,15 @@
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
+                <!--  <muxc:NavigationViewItem  -->
+                <!--  Content="{x:Bind NowPlayingLabel}"  -->
+                <!--  Tag="NowPlayingPage"  -->
+                <!--  ToolTipService.ToolTip="{x:Bind NowPlayingLabel}"  -->
+                <!--  x:Name="NowPlayingMenuItem">  -->
+                <!--     <muxc:NavigationViewItem.Icon> -->
+                <!--         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" /> -->
+                <!--     </muxc:NavigationViewItem.Icon> -->
+                <!-- </muxc:NavigationViewItem> -->
             </muxc:NavigationView.MenuItems>
 
             <NavigationView.AutoSuggestBox>

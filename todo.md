@@ -6,6 +6,8 @@
 
 # TODO
 
+- [ ] if you click play on an audiobook that is already playing, the app crashes
+
 - [x] high memory usage even after deleting all audiobooks
   - [x] ~~is garbage collection slow or do we have a memory leak?~~
     - [x] ~~turns out ListView uses a fuck ton of memory~~

@@ -1,13 +1,67 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <Page
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Background="Transparent"
     mc:Ignorable="d"
     x:Class="Audibly.App.Views.PlayerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:userControls="using:Audibly.App.UserControls"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid />
+    <Grid>
+        <Grid>
+            <Border BorderBrush="Transparent" BorderThickness="1">
+                <Border.Background>
+                    <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                </Border.Background>
+            </Border>
+            <media:UIElementExtensions.VisualFactory>
+                <media:PipelineVisualFactory Source="{media:BackdropSource}">
+                    <media:BlurEffect Amount="50" />
+                </media:PipelineVisualFactory>
+            </media:UIElementExtensions.VisualFactory>
+        </Grid>
+        <!--  got this from RiseMediaPlayer: https://github.com/Rise-Software/Rise-Media-Player  -->
+        <Border
+            Grid.ColumnSpan="2"
+            Grid.RowSpan="3"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+            <Border.Background>
+                <AcrylicBrush
+                    FallbackColor="Transparent"
+                    TintColor="{Binding Color, Source={ThemeResource ApplicationPageBackgroundThemeBrush}}"
+                    TintOpacity="0.7" />
+            </Border.Background>
+        </Border>
+
+        <RelativePanel>
+            <!--  cover image  -->
+            <Border
+                BorderThickness="0"
+                Height="400"
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                RelativePanel.AlignVerticalCenterWithPanel="True"
+                Width="400">
+                <Border
+                    BorderBrush="Transparent"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <Border.Background>
+                        <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                    </Border.Background>
+                </Border>
+                <winUi:Effects.Shadow>
+                    <media:AttachedCardShadow CornerRadius="10" Offset="4, 4" />
+                </winUi:Effects.Shadow>
+            </Border>
+
+            <!--  player controls  -->
+            <userControls:MiniPlayerControl RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignHorizontalCenterWithPanel="True" />
+        </RelativePanel>
+    </Grid>
 </Page>

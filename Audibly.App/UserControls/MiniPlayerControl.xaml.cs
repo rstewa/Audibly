@@ -19,7 +19,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Audibly.App.UserControls;
 
-public sealed partial class Player : UserControl
+public sealed partial class MiniPlayerControl : UserControl
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -40,7 +40,7 @@ public sealed partial class Player : UserControl
             value > TimeSpan.Zero ? value : TimeSpan.Zero;
     }
 
-    public Player()
+    public MiniPlayerControl()
     {
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
@@ -254,7 +254,7 @@ public sealed partial class Player : UserControl
         // check if there is already an instance of the mini player open and if so, bring it to the front
         foreach (var window in WindowHelper.ActiveWindows)
         {
-            if (window.Content is not MiniPlayerPage) continue;
+            if (window.Content is not LegacyPlayerPage) continue;
             window.Activate();
             return;
         }
@@ -267,7 +267,7 @@ public sealed partial class Player : UserControl
         newWindow.CustomizeWindow(width, height, true, true, false, false, false);
 
         // newWindow.SetTitleBar(DefaultApp);
-        var rootPage = new MiniPlayerPage();
+        var rootPage = new LegacyPlayerPage();
         // rootPage.RequestedTheme = ThemeHelper.RootTheme;
         newWindow.Content = rootPage;
         newWindow.Activate();
@@ -276,6 +276,31 @@ public sealed partial class Player : UserControl
     private void Player_OnLoaded(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
+    }
+
+    private void OpenFullScreenPlayerButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        // check if there is already an instance of the mini player open and if so, bring it to the front
+        foreach (var window in WindowHelper.ActiveWindows)
+        {
+            if (window.Content is not PlayerPage) continue;
+            window.Activate();
+            return;
+        }
+
+        var newWindow = WindowHelper.CreateWindow();
+
+        const int width = 500;
+        const int height = 500;
+
+        newWindow.CustomizeWindow(width, height, true, true, true, true, true);
+        newWindow.Maximize();
+
+        // newWindow.SetTitleBar(DefaultApp);
+        var rootPage = new PlayerPage();
+        // rootPage.RequestedTheme = ThemeHelper.RootTheme;
+        newWindow.Content = rootPage;
+        newWindow.Activate();
     }
 }
 

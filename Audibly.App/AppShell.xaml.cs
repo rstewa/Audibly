@@ -108,6 +108,7 @@ public sealed partial class AppShell : Page
 
     public readonly string AudiobookListLabel = "Audiobooks";
     public readonly string LibraryLabel = "Library";
+    public readonly string NowPlayingLabel = "Now Playing";
 
     /// <summary>
     ///     Navigates to the page corresponding to the tapped item.
@@ -122,6 +123,8 @@ public sealed partial class AppShell : Page
         // }
         if (item == LibraryMenuItem)
             AppFrame.Navigate(typeof(LibraryCardPage));
+        // else if (item == NowPlayingMenuItem)
+        //     AppFrame.Navigate(typeof(PlayerPage));
         else if (item == NavView.SettingsItem) AppFrame.Navigate(typeof(SettingsPage));
     }
 
@@ -135,6 +138,7 @@ public sealed partial class AppShell : Page
         {
             // if (e.SourcePageType == typeof(LibraryPage)) NavView.SelectedItem = AudiobookListMenuItem;
             if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryMenuItem;
+            // else if (e.SourcePageType == typeof(PlayerPage)) NavView.SelectedItem = NowPlayingMenuItem;
             else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
         }
     }

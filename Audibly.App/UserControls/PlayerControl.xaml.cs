@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
+// Created: 4/5/2024
 // Updated: 4/5/2024
 
 using System;
@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
+using Constants = Audibly.App.Helpers.Constants;
 
 namespace Audibly.App.UserControls;
 
@@ -290,30 +291,37 @@ public sealed partial class PlayerControl : UserControl
         PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
     }
 
-    private void OpenFullScreenPlayerButton_OnClick(object sender, RoutedEventArgs e)
+    private void MaximizePlayerButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PlayerViewModel.FullScreenPlayer = true;
+        if (!PlayerViewModel.FullScreenPlayer)
+        {
+            PlayerViewModel.FullScreenPlayer = true;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
 
-        var newWindow = WindowHelper.CreateWindow();
+            var newWindow = WindowHelper.CreateWindow();
 
-        const int width = 500;
-        const int height = 500;
+            newWindow.Closed += (o, args) =>
+            {
+                PlayerViewModel.FullScreenPlayer = false;
+                WindowHelper.RestoreMainWindow();
+            };
 
-        newWindow.CustomizeWindow(width, height, true, true, true, true, true, true);
-        // newWindow.ExtendsContentIntoTitleBar = true;
-        newWindow.Maximize();
+            newWindow.CustomizeWindow(-1, -1, true, true, true, true, true, true);
+            newWindow.Maximize();
 
-        // newWindow.SetTitleBar(DefaultApp);
-        var rootPage = new PlayerPage();
-        // rootPage.RequestedTheme = ThemeHelper.RootTheme;
-        newWindow.Content = rootPage;
-        newWindow.Activate();
+            var rootPage = new PlayerPage();
+            newWindow.Content = rootPage;
+            newWindow.Activate();
 
-        WindowHelper.HideMainWindow();
-    }
-
-    private void MiniPlayerControl_OnLoaded(object sender, RoutedEventArgs e)
-    {
+            WindowHelper.HideMainWindow();
+        }
+        else
+        {
+            PlayerViewModel.FullScreenPlayer = false;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
+            WindowHelper.ActiveWindows.FirstOrDefault(w => w.Content is PlayerPage)?.Close();
+            WindowHelper.RestoreMainWindow();
+        }
     }
 }
 

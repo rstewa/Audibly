@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <UserControl
-    Loaded="MiniPlayerControl_OnLoaded"
     mc:Ignorable="d"
     x:Class="Audibly.App.UserControls.PlayerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -11,11 +10,25 @@
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
 
     <UserControl.Resources>
         <local:ProgressSliderValueConverter x:Key="ProgressSliderValueConverter" />
     </UserControl.Resources>
     <Grid>
+        <Grid.Resources>
+            <ResourceDictionary x:Key="ButtonResources">
+                <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
+            </ResourceDictionary>
+        </Grid.Resources>
         <MediaPlayerElement
             AreTransportControlsEnabled="False"
             Visibility="Collapsed"
@@ -94,26 +107,24 @@
                     <StackPanel.Resources>
                         <!--  ReSharper disable all Xaml.RedundantResource  -->
                         <ResourceDictionary>
-                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                            <!-- <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush> -->
+                            <!-- <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush> -->
+                            <!-- <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush> -->
+                            <!-- <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush> -->
+                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
+                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
+                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
+                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
 
-                            <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
+                            <!-- <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush> -->
+                            <!-- <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush> -->
+                            <!-- <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush> -->
+                            <!-- <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush> -->
 
-                            <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
-
-                            <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
-                            <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
-                            <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
-                            <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
-
+                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="RepeatButtonForeground" />
+                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" />
+                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" />
+                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="RepeatButtonForegroundDisabled" />
                         </ResourceDictionary>
                     </StackPanel.Resources>
 
@@ -205,35 +216,20 @@
                         x:Name="NextChapterButton" />
                 </StackPanel>
 
-                <StackPanel
-                    Orientation="Horizontal"
+                <Button
+                    BorderThickness="0"
+                    Click="MaximizePlayerButton_OnClick"
+                    HorizontalAlignment="Right"
                     RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.RightOf="ChapterControls">
-                    <Button
-                        BorderThickness="0"
-                        Click="OpenMiniPlayerButton_OnClick"
-                        HorizontalAlignment="Right"
-                        ToolTipService.ToolTip="Open in Mini-Player"
-                        VerticalAlignment="Center"
-                        x:Name="OpenMiniPlayerButton">
-                        <FontIcon
-                            FontFamily="Segoe MDL2 Assets"
-                            FontSize="24"
-                            Glyph="&#xE8A7;" />
-                    </Button>
-                    <Button
-                        BorderThickness="0"
-                        Click="OpenFullScreenPlayerButton_OnClick"
-                        HorizontalAlignment="Right"
-                        ToolTipService.ToolTip="Open Full-Screen Player"
-                        VerticalAlignment="Center"
-                        x:Name="FullScreenPlayerButton">
-                        <FontIcon
-                            FontFamily="Segoe MDL2 Assets"
-                            FontSize="24"
-                            Glyph="&#xE740;" />
-                    </Button>
-                </StackPanel>
+                    RelativePanel.RightOf="ChapterControls"
+                    ToolTipService.ToolTip="Maximize Player"
+                    VerticalAlignment="Center"
+                    x:Name="MaximizeMinimizeButton">
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="24"
+                        Glyph="{x:Bind PlayerViewModel.MaximizeMinimizeGlyph}" />
+                </Button>
 
                 <!--  now playing bar  -->
                 <Grid

@@ -33,6 +33,14 @@ public class WindowHelper
         return newWindow;
     }
 
+    public static void RestoreMainWindow()
+    {
+        var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);
+        if (mainWindow == null) return;
+        (mainWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
+        mainWindow.AppWindow.IsShownInSwitchers = true;
+    }
+    
     public static void HideMainWindow()
     {
         var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);

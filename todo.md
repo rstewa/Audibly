@@ -5,6 +5,8 @@
   - [ ] add player as a page in the navigation view
 
 # TODO
+- [ ] add setting for audiobook tile size
+- [ ] disable buttons while import is in progress (and maybe while loading)
 - [ ] create function in vim that allows you to yank and then comment selected text
 
 - [ ] if you click play on an audiobook that is already playing, the app crashes

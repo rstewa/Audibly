@@ -6,8 +6,11 @@ namespace Audibly.App.Helpers;
 
 public static class Constants
 {
-    public const string Volume0 = "\uE74F";
-    public const string Volume1 = "\uE993";
-    public const string Volume2 = "\uE994";
-    public const string Volume3 = "\uE995";
+    public const string VolumeGlyph0 = "\uE74F";
+    public const string VolumeGlyph1 = "\uE993";
+    public const string VolumeGlyph2 = "\uE994";
+    public const string VolumeGlyph3 = "\uE995";
+    
+    public const string MaximizeGlyph = "\uE740";
+    public const string MinimizeGlyph = "\uE73F";
 }

@@ -5,6 +5,7 @@
 using System.Linq;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
+using Audibly.App.Helpers;
 using Microsoft.UI.Dispatching;
 
 namespace Audibly.App.ViewModels;
@@ -98,11 +99,18 @@ public class PlayerViewModel : BindableBase
         }
     }
 
-    private bool _fullScreenPlayer;
+    private bool _fullScreenPlayer = false;
 
     public bool FullScreenPlayer
     {
         get => _fullScreenPlayer;
         set => Set(ref _fullScreenPlayer, value);
+    }
+
+    private string _maximizeMinimizeGlyph = Constants.MaximizeGlyph;
+    public string MaximizeMinimizeGlyph
+    {
+        get => _maximizeMinimizeGlyph;
+        set => Set(ref _maximizeMinimizeGlyph, value);
     }
 }

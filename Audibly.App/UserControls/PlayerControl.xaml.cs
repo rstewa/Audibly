@@ -3,6 +3,7 @@
 // Updated: 4/5/2024
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
@@ -44,134 +45,19 @@ public sealed partial class PlayerControl : UserControl
         DependencyProperty.Register(nameof(ShowCoverImage), typeof(bool), typeof(PlayerControl),
             new PropertyMetadata(true));
 
-    private TimeSpan _currentPosition
-    {
-        get => PlayerViewModel.MediaPlayer.PlaybackSession.Position;
-        set => PlayerViewModel.MediaPlayer.PlaybackSession.Position =
-            value > TimeSpan.Zero ? value : TimeSpan.Zero;
-    }
-
     public PlayerControl()
     {
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
-        InitializeAudioPlayer();
 
         // todo: load most recently played audiobook into the player
-    }
-
-    private void InitializeAudioPlayer()
-    {
-        PlayerViewModel.MediaPlayer.AutoPlay = false;
-        PlayerViewModel.MediaPlayer.AudioCategory = MediaPlayerAudioCategory.Media;
-        PlayerViewModel.MediaPlayer.AudioDeviceType = MediaPlayerAudioDeviceType.Multimedia;
-        PlayerViewModel.MediaPlayer.CommandManager.IsEnabled = true; // todo: what is this?
-        PlayerViewModel.MediaPlayer.MediaOpened += AudioPlayer_MediaOpened;
-        PlayerViewModel.MediaPlayer.MediaEnded += AudioPlayer_MediaEnded;
-        PlayerViewModel.MediaPlayer.MediaFailed += AudioPlayer_MediaFailed;
-        PlayerViewModel.MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
-        PlayerViewModel.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-    }
-
-    private bool _isDragging;
-
-    private async void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
-    {
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            PlayerViewModel.NowPlaying.CurrentChapter =
-                PlayerViewModel.NowPlaying.Chapters[PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0];
-            ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
-            PlayerViewModel.ChapterDurationMs = (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
-                                                      PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-            PlayerViewModel.ChapterPositionMs =
-                _currentPosition.TotalMilliseconds > PlayerViewModel.NowPlaying.CurrentChapter.StartTime
-                    ? (int)(_currentPosition.TotalMilliseconds - PlayerViewModel.NowPlaying.CurrentChapter.StartTime)
-                    : 0;
-            _currentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentTimeMs);
-        });
-
-        // todo: add toggle player controls function
-        // todo: set volume, playback speed
-    }
-
-    private void AudioPlayer_MediaEnded(MediaPlayer sender, object args)
-    {
-        NowPlayingBar.Value = 0;
-    }
-
-    private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
-    {
-        // TODO
-        throw new NotImplementedException();
-    }
-
-    private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
-    {
-        switch (sender.PlaybackState)
-        {
-            case MediaPlaybackState.Playing:
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if ((string)PlayPauseButton.Tag == "pause") return;
-                    PlayPauseButton.Tag = "pause";
-                    PlayPauseIcon.Symbol = Symbol.Pause;
-                });
-
-                break;
-
-            case MediaPlaybackState.Paused:
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if ((string)PlayPauseButton.Tag == "play") return;
-                    PlayPauseButton.Tag = "play";
-                    PlayPauseIcon.Symbol = Symbol.Play;
-                });
-
-                break;
-        }
-    }
-
-    private void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
-    {
-        _dispatcherQueue.EnqueueAsync(async () =>
-        {
-            if (!PlayerViewModel.NowPlaying.CurrentChapter.InRange(_currentPosition.TotalMilliseconds))
-            {
-                var tmp = PlayerViewModel.NowPlaying.Chapters.FirstOrDefault(c =>
-                    c.InRange(_currentPosition.TotalMilliseconds));
-                if (tmp != null)
-                {
-                    PlayerViewModel.NowPlaying.CurrentChapter = tmp;
-                    PlayerViewModel.NowPlaying.CurrentChapterIndex = PlayerViewModel.NowPlaying.Chapters.IndexOf(tmp);
-                    ChapterCombo.SelectedIndex = ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter);
-                    PlayerViewModel.ChapterDurationMs = (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
-                                                              PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-                }
-            }
-
-
-            PlayerViewModel.ChapterPositionMs = (int)(_currentPosition.TotalMilliseconds -
-                                                      PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-            PlayerViewModel.ChapterPositionText = PlayerViewModel.ChapterPositionMs.ToStr_ms();
-            PlayerViewModel.NowPlaying.CurrentTimeMs = (int)_currentPosition.TotalMilliseconds;
-
-            if (PlayerViewModel.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
-            {
-                var tmp = _currentPosition.TotalSeconds;
-                PlayerViewModel.NowPlaying.Progress = Math.Floor(tmp / PlayerViewModel.NowPlaying.Duration * 100);
-            }
-
-            // todo: find out what the performance impact of this is
-            await PlayerViewModel.NowPlaying.SaveAsync();
-        });
     }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if ((string)PlayPauseButton.Tag == "play")
+            if (PlayerViewModel.PlayPauseIcon == Symbol.Play)
                 PlayerViewModel.MediaPlayer.Play();
             else
                 PlayerViewModel.MediaPlayer.Pause();
@@ -185,23 +71,7 @@ public sealed partial class PlayerControl : UserControl
 
         if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter)) return;
 
-        _currentPosition = TimeSpan.FromMilliseconds(chapter.StartTime);
-
-        // var chapter = (ChapterInfo)ChapterCombo.SelectedItem;
-        // if (chapter == null)
-        // {
-        //     ChapterCombo.SelectedIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex ?? 0;
-        // }
-        // else
-        // {
-        //     // TODO: i feel like this is gross ...
-        //     PlayerViewModel.NowPlaying.CurrentChapterIndex = PlayerViewModel.NowPlaying.Chapters.IndexOf(chapter);
-        //     PlayerViewModel.NowPlaying.CurrentChapter = chapter;
-        //     // AudioPlayer.MediaPlayer.PlaybackSession.Position = TimeSpan.FromMilliseconds(chapter.StartTimeMs);
-        // }
-
-        // throw new NotImplementedException();
-        // todo
+        PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
@@ -214,8 +84,8 @@ public sealed partial class PlayerControl : UserControl
 
         PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
-        ChapterCombo.SelectedIndex = (int)newChapterIndex;
-        _currentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
+        PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
+        PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
@@ -229,8 +99,8 @@ public sealed partial class PlayerControl : UserControl
 
         PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
-        ChapterCombo.SelectedIndex = (int)newChapterIndex;
-        _currentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
+        PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
+        PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
 
     private void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
@@ -238,8 +108,8 @@ public sealed partial class PlayerControl : UserControl
         var slider = sender as Slider;
         // todo: not sure about this 2nd check here
         if (slider != null && slider.Value != 0)
-            _currentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime + slider.Value);
+            PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(slider.Value);
+                // TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime + slider.Value);
     }
 
     private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
@@ -247,17 +117,17 @@ public sealed partial class PlayerControl : UserControl
 
     private void SkipBackButton_OnClick(object sender, RoutedEventArgs e)
     {
-        _currentPosition = _currentPosition - _skipBackButtonAmount > TimeSpan.Zero
-            ? _currentPosition - _skipBackButtonAmount
+        PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition - _skipBackButtonAmount > TimeSpan.Zero
+            ? PlayerViewModel.CurrentPosition - _skipBackButtonAmount
             : TimeSpan.Zero;
     }
 
     private void SkipForwardButton_OnClick(object sender, RoutedEventArgs e)
     {
         // todo: might need to switch this to using the duration from the audiobook record
-        _currentPosition = _currentPosition + _skipForwardButtonAmount <=
+        PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition + _skipForwardButtonAmount <=
                            PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration
-            ? _currentPosition + _skipForwardButtonAmount
+            ? PlayerViewModel.CurrentPosition + _skipForwardButtonAmount
             : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
     }
 
@@ -288,7 +158,8 @@ public sealed partial class PlayerControl : UserControl
     // TODO
     private void Player_OnLoaded(object sender, RoutedEventArgs e)
     {
-        PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
+        if (PlayerViewModel.NowPlaying == null && ViewModel.Audiobooks.Any(a => a.IsNowPlaying))
+            PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
     }
 
     private void MaximizePlayerButton_OnClick(object sender, RoutedEventArgs e)
@@ -300,15 +171,26 @@ public sealed partial class PlayerControl : UserControl
 
             var playerWindow = WindowHelper.CreateWindow();
 
+            // win32WindowHelper = new Win32WindowHelper(playerWindow);
+            // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1050, y = 800 });
+
             playerWindow.Closed += (o, args) =>
             {
                 PlayerViewModel.IsPlayerFullScreen = false;
                 WindowHelper.RestoreMainWindow();
             };
 
+#if DEBUG
+            playerWindow.SizeChanged += (o, args) =>
+            {
+                Debug.WriteLine($"Player -> Width: {args.Size.Width}, Height: {args.Size.Height}");
+            };
+#endif
+
             playerWindow.CustomizeWindow(-1, -1, true, true, true, true, true, true);
-            // newWindow.Maximize();
-            playerWindow.MakeWindowFullScreen();
+            playerWindow.Maximize();
+            // todo
+            // playerWindow.MakeWindowFullScreen();
 
             var rootPage = new PlayerPage();
             playerWindow.Content = rootPage;

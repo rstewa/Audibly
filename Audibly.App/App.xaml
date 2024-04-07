@@ -13,21 +13,21 @@
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Light">
-                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
-                                    <StaticResource ResourceKey="#121212" x:Key="GalleryBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="GalleryBorderBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
+                                    <StaticResource x:Key="GalleryBackgroundBrush" ResourceKey="#121212" />
+                                    <StaticResource x:Key="GalleryBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
-                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
                                     <!-- <SolidColorBrush x:Key="AudiblyBackgroundBrush" Color="#121212" /> -->
-                                    <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="GalleryBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="GalleryBorderBrush" />
+                                    <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="LayerOnAcrylicFillColorDefaultBrush" />
+                                    <StaticResource x:Key="GalleryBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                                    <StaticResource x:Key="GalleryBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="HomePageBackgroundBrush" />
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBackgroundBrush" />
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBorderBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush x:Key="GalleryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush x:Key="GalleryBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
                                 </ResourceDictionary>
                             </ResourceDictionary.ThemeDictionaries>
                         </ResourceDictionary>
@@ -41,9 +41,9 @@
                             <x:Double x:Key="LargeWindowSnapPoint">1008</x:Double>
 
                             <Style
+                                x:Key="PageTitleTextBlockStyle"
                                 BasedOn="{StaticResource TitleTextBlockStyle}"
-                                TargetType="TextBlock"
-                                x:Key="PageTitleTextBlockStyle">
+                                TargetType="TextBlock">
                                 <Setter Property="FontSize" Value="28" />
                                 <Setter Property="TextWrapping" Value="NoWrap" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />

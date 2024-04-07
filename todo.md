@@ -1,6 +1,11 @@
 # IN PROGRESS
 
 # TODO
+- [ ] add keyboard accelerators
+
+- [ ] add setting to allow user to add a directory to automatically import audiobooks from
+  - [ ] need to research background processes in WinUI 3
+
 - [ ] add setting for audiobook tile size
 - [ ] disable buttons while import is in progress (and maybe while loading)
 - [ ] create function in vim that allows you to yank and then comment selected text
@@ -87,6 +92,11 @@
       * ~~listview loaded (card view unloaded) : \~700 mb (goes up from 500 mb when you make the window full screen)~~
   - [x] ~~need to try cleaning up library page maybe? (source: https://github.com/microsoft/WindowsAppSDK/issues/1895#issuecomment-991754095)~~
   - [x] turns out the audiobook cover images were insanely large. converted them to thumbnails and no longer have any memory problems
+
+
+# TODO but later
+
+- [ ] allow user to minimize to taskbar and then control media by clicking on icon in taskbar
 
 
 

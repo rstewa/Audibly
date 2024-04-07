@@ -72,8 +72,15 @@ public partial class App : Application
     {
         Window = WindowHelper.CreateWindow();
 
-        win32WindowHelper = new Win32WindowHelper(Window);
-        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 800, y = 800 });
+#if DEBUG
+        Window.SizeChanged += (o, args) =>
+        {
+            Debug.WriteLine($"Main Window -> Width: {args.Size.Width}, Height: {args.Size.Height}");
+        };
+#endif
+
+        // win32WindowHelper = new Win32WindowHelper(Window);
+        // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
 
         UseSqlite();
 

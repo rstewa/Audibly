@@ -8,6 +8,7 @@
     xmlns:local="using:Audibly.App.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:vm="using:Audibly.App.ViewModels"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
@@ -114,7 +115,7 @@
                     HorizontalContentAlignment="Center"
                     ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
                     RelativePanel.RightOf="Separator"
-                    SelectedIndex="0"
+                    SelectedIndex="{x:Bind PlayerViewModel.ChapterComboSelectedIndex, Mode=TwoWay}"
                     SelectionChanged="ChapterCombo_SelectionChanged"
                     ToolTipService.ToolTip="Chapter Selection"
                     VerticalAlignment="Center"
@@ -129,22 +130,11 @@
                     x:Name="PlayPauseControls">
 
                     <StackPanel.Resources>
-                        <!--  ReSharper disable all Xaml.RedundantResource  -->
                         <ResourceDictionary>
-                            <!-- <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush> -->
-                            <!-- <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush> -->
-                            <!-- <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush> -->
-                            <!-- <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush> -->
                             <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
                             <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
                             <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
                             <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
-
-                            <!-- <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush> -->
-                            <!-- <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush> -->
-                            <!-- <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush> -->
-                            <!-- <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush> -->
-
                             <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="RepeatButtonForeground" />
                             <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" />
                             <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" />
@@ -187,7 +177,7 @@
                         ToolTipService.ToolTip="Play/Pause"
                         x:Name="PlayPauseButton">
                         <Viewbox MaxHeight="32" MaxWidth="32">
-                            <SymbolIcon Symbol="Play" x:Name="PlayPauseIcon" />
+                            <SymbolIcon Symbol="{x:Bind PlayerViewModel.PlayPauseIcon, Mode=OneWay}" x:Name="PlayPauseIcon" />
                         </Viewbox>
                     </Button>
 
@@ -221,55 +211,6 @@
 
                 </StackPanel>
 
-                <!--  todo: add margin here  -->
-
-                <!--  chapter controls  -->
-                <!--  <StackPanel  -->
-                <!--  HorizontalAlignment="Center"  -->
-                <!--  Orientation="Horizontal"  -->
-                <!--  RelativePanel.AlignHorizontalCenterWithPanel="True"  -->
-                <!--  RelativePanel.RightOf="PlayPauseControls"  -->
-                <!--  Spacing="12"  -->
-                <!--  VerticalAlignment="Center"  -->
-                <!--  x:Name="ChapterControls">  -->
-                <!--    -->
-                <!--  <Button  -->
-                <!--  Background="Transparent"  -->
-                <!--  BorderThickness="0"  -->
-                <!--  Click="PreviousChapterButton_Click"  -->
-                <!--  Content="&#xE76B;"  -->
-                <!--  FontFamily="Segoe MDL2 Assets"  -->
-                <!--  HorizontalAlignment="Left"  -->
-                <!--  Margin="0,0,0,0"  -->
-                <!--  ToolTipService.ToolTip="Previous Chapter"  -->
-                <!--  VerticalAlignment="Center"  -->
-                <!--  x:Name="PreviousChapterButton" />  -->
-                <!--    -->
-                <!--  <ComboBox  -->
-                <!--  DisplayMemberPath="Title"  -->
-                <!--  HorizontalAlignment="Center"  -->
-                <!--  HorizontalContentAlignment="Center"  -->
-                <!--  ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"  -->
-                <!--  SelectedIndex="0"  -->
-                <!--  SelectionChanged="ChapterCombo_SelectionChanged"  -->
-                <!--  ToolTipService.ToolTip="Chapter Selection"  -->
-                <!--  VerticalAlignment="Center"  -->
-                <!--  x:Name="ChapterCombo" />  -->
-                <!--  ~1~  todo: this tooltip doesn't show for some reason  @1@  -->
-                <!--    -->
-                <!--  <Button  -->
-                <!--  Background="Transparent"  -->
-                <!--  BorderThickness="0"  -->
-                <!--  Click="NextChapterButton_Click"  -->
-                <!--  Content="&#xE76C;"  -->
-                <!--  FontFamily="Segoe MDL2 Assets"  -->
-                <!--  HorizontalAlignment="Right"  -->
-                <!--  Margin="0,0,0,0"  -->
-                <!--  ToolTipService.ToolTip="Next Chapter"  -->
-                <!--  VerticalAlignment="Center"  -->
-                <!--  x:Name="NextChapterButton" />  -->
-                <!-- </StackPanel> -->
-
                 <Button
                     BorderThickness="0"
                     Click="MaximizePlayerButton_OnClick"
@@ -280,7 +221,8 @@
                     VerticalAlignment="Center"
                     x:Name="MaximizeMinimizeButton">
                     <Button.KeyboardAccelerators>
-                        <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen}" Key="Escape" />
+                        <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.Not(PlayerViewModel.IsPlayerFullScreen), Mode=OneWay}" Key="F11" />
+                        <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen, Mode=OneWay}" Key="Escape" />
                     </Button.KeyboardAccelerators>
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"

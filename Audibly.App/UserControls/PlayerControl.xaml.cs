@@ -203,6 +203,11 @@ public sealed partial class PlayerControl : UserControl
             WindowHelper.RestoreMainWindow();
         }
     }
+
+    private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+    {
+        ;
+    }
 }
 
 public class ProgressSliderValueConverter : IValueConverter

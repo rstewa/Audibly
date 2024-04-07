@@ -36,7 +36,7 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _nowPlaying, value);
     }
 
-    private string _volumeLevelGlyph;
+    private string _volumeLevelGlyph = Constants.VolumeGlyph3;
 
     public string VolumeLevelGlyph
     {
@@ -44,7 +44,7 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _volumeLevelGlyph, value);
     }
 
-    private double _volumeLevel;
+    private double _volumeLevel = 1.0;
 
     public double VolumeLevel
     {

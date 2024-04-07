@@ -214,24 +214,84 @@
 
                 </StackPanel>
 
-                <Button
-                    BorderThickness="0"
-                    Click="MaximizePlayerButton_OnClick"
+                <StackPanel
                     HorizontalAlignment="Right"
+                    Orientation="Horizontal"
                     RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.RightOf="PlayPauseControls"
-                    ToolTipService.ToolTip="Maximize Player"
-                    VerticalAlignment="Center"
-                    x:Name="MaximizeMinimizeButton">
-                    <Button.KeyboardAccelerators>
-                        <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.Not(PlayerViewModel.IsPlayerFullScreen), Mode=OneWay}" Key="F11" />
-                        <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen, Mode=OneWay}" Key="Escape" />
-                    </Button.KeyboardAccelerators>
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="24"
-                        Glyph="{x:Bind PlayerViewModel.MaximizeMinimizeGlyph}" />
-                </Button>
+                    RelativePanel.RightOf="PlayPauseControls">
+                    <!--#region VolumeLevelButton-->
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Grid.Row="3"
+                        HorizontalAlignment="Right"
+                        Margin="0,5,0,0"
+                        ToolTipService.ToolTip="Volume Level"
+                        x:Name="VolumeLevelButton">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            Glyph="{x:Bind PlayerViewModel.VolumeLevelGlyph}"
+                            x:Name="AudioLevelButtonIcon" />
+                        <Button.Flyout>
+                            <Flyout>
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="MinWidth" Value="30" />
+                                        <Setter Property="MaxWidth" Value="30" />
+                                        <Setter Property="MinHeight" Value="125" />
+                                        <Setter Property="CornerRadius" Value="5" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Grid>
+                                    <Slider
+                                        AutomationProperties.Name="VolumeLevelSlider"
+                                        Foreground="#84e2c9"
+                                        LargeChange="25"
+                                        Margin="-14,0,0,0"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Orientation="Vertical"
+                                        SmallChange="1"
+                                        SnapsTo="StepValues"
+                                        StepFrequency="1"
+                                        ToolTipService.ToolTip="Volume Level"
+                                        Value="{x:Bind PlayerViewModel.VolumeLevel}"
+                                        ValueChanged="VolumeSlider_ValueChanged"
+                                        x:Name="VolumeLevelSlider">
+                                        <Slider.Resources>
+                                            <ResourceDictionary>
+                                                <!-- <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush> -->
+                                                <!-- <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#4ac694</SolidColorBrush> -->
+                                                <!-- <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#4ac694</SolidColorBrush> -->
+                                                <!-- <SolidColorBrush x:Key="SliderTrackValueFill">#84e2c9</SolidColorBrush> -->
+                                                <!-- <SolidColorBrush x:Key="SliderTrackValueFillPressed">#84e2c9</SolidColorBrush> -->
+                                                <!-- <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#84e2c9</SolidColorBrush> -->
+                                            </ResourceDictionary>
+                                        </Slider.Resources>
+                                    </Slider>
+                                </Grid>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    <!--#endregion VolumeLevelButton-->
+                    <Button
+                        BorderThickness="0"
+                        Click="MaximizePlayerButton_OnClick"
+                        HorizontalAlignment="Right"
+                        ToolTipService.ToolTip="Maximize Player"
+                        VerticalAlignment="Center"
+                        x:Name="MaximizeMinimizeButton">
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.Not(PlayerViewModel.IsPlayerFullScreen), Mode=OneWay}" Key="F11" />
+                            <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen, Mode=OneWay}" Key="Escape" />
+                        </Button.KeyboardAccelerators>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind PlayerViewModel.MaximizeMinimizeGlyph}" />
+                    </Button>
+                </StackPanel>
 
                 <!--  now playing bar  -->
                 <Grid

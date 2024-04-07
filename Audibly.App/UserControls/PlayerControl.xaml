@@ -131,14 +131,14 @@
 
                     <StackPanel.Resources>
                         <ResourceDictionary>
-                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
-                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
-                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
-                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
-                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="RepeatButtonForeground" />
-                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" />
-                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" />
-                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="RepeatButtonForegroundDisabled" />
+                            <!-- <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="RepeatButtonForeground" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" /> -->
+                            <!-- <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="RepeatButtonForegroundDisabled" /> -->
                         </ResourceDictionary>
                     </StackPanel.Resources>
 

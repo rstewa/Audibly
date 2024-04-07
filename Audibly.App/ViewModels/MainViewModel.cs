@@ -145,9 +145,6 @@ public class MainViewModel : BindableBase
 
         var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
 
-        // todo: fix this bug
-        // if (audiobooks == null) return;
-
         await dispatcherQueue.EnqueueAsync(() =>
         {
             ShowStartPanel = audiobooks.Count == 0;

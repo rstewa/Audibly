@@ -1,15 +1,16 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/6/2024
 
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using CommunityToolkit.WinUI;
 
 namespace Audibly.App.ViewModels;
 
@@ -107,7 +108,7 @@ public class PlayerViewModel : BindableBase
         }
     }
 
-    private bool _isPlayerFullScreen = false;
+    private bool _isPlayerFullScreen;
 
     public bool IsPlayerFullScreen
     {
@@ -116,14 +117,15 @@ public class PlayerViewModel : BindableBase
     }
 
     private string _maximizeMinimizeGlyph = Constants.MaximizeGlyph;
+
     public string MaximizeMinimizeGlyph
     {
         get => _maximizeMinimizeGlyph;
         set => Set(ref _maximizeMinimizeGlyph, value);
     }
-    
+
     private Symbol _playPauseIcon = Symbol.Play;
-    
+
     public Symbol PlayPauseIcon
     {
         get => _playPauseIcon;
@@ -131,12 +133,13 @@ public class PlayerViewModel : BindableBase
     }
 
     private int _chapterComboSelectedIndex;
+
     public int ChapterComboSelectedIndex
     {
         get => _chapterComboSelectedIndex;
         set => Set(ref _chapterComboSelectedIndex, value);
     }
-    
+
     public TimeSpan CurrentPosition
     {
         get => MediaPlayer.PlaybackSession.Position;
@@ -156,7 +159,7 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
     }
 
-    private async void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
+    private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
     {
         _ = _dispatcherQueue.TryEnqueue(() =>
         {
@@ -166,7 +169,7 @@ public class PlayerViewModel : BindableBase
             // ChapterCombo.SelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
 
             ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
-            
+
             ChapterPositionMs =
                 CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
                     ? (int)(CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime)
@@ -220,26 +223,27 @@ public class PlayerViewModel : BindableBase
         }
     }
 
-    private void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
+    private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
     {
-        _ = _dispatcherQueue.EnqueueAsync(async () =>
+        if (!NowPlaying.CurrentChapter.InRange(CurrentPosition.TotalMilliseconds))
         {
-            if (!NowPlaying.CurrentChapter.InRange(CurrentPosition.TotalMilliseconds))
-            {
-                var tmp = NowPlaying.Chapters.FirstOrDefault(c =>
-                    c.InRange(CurrentPosition.TotalMilliseconds));
-                if (tmp != null)
+            var tmp = NowPlaying.Chapters.FirstOrDefault(c =>
+                c.InRange(CurrentPosition.TotalMilliseconds));
+            if (tmp != null)
+                _ = _dispatcherQueue.EnqueueAsync(() =>
                 {
                     NowPlaying.CurrentChapter = tmp;
                     NowPlaying.CurrentChapterIndex = NowPlaying.Chapters.IndexOf(tmp);
                     ChapterComboSelectedIndex = NowPlaying.Chapters.IndexOf(NowPlaying.CurrentChapter);
                     ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
-                }
-            }
+                    return Task.CompletedTask;
+                });
+        }
 
-
+        _ = _dispatcherQueue.EnqueueAsync(() =>
+        {
             ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds -
-                                                      NowPlaying.CurrentChapter.StartTime);
+                                      NowPlaying.CurrentChapter.StartTime);
             ChapterPositionText = ChapterPositionMs.ToStr_ms();
             NowPlaying.CurrentTimeMs = (int)CurrentPosition.TotalMilliseconds;
 
@@ -249,8 +253,11 @@ public class PlayerViewModel : BindableBase
                 NowPlaying.Progress = Math.Floor(tmp / NowPlaying.Duration * 100);
             }
 
+            return Task.CompletedTask;
+
             // todo: find out what the performance impact of this is
-            await NowPlaying.SaveAsync();
         });
+        
+        await NowPlaying.SaveAsync();
     }
 }

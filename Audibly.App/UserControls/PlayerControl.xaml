@@ -188,6 +188,9 @@
                         Interval="100"
                         ToolTipService.ToolTip="Skip forward 30 seconds"
                         x:Name="SkipForwardButton">
+                        <RepeatButton.KeyboardAccelerators>
+                            <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Right" />
+                        </RepeatButton.KeyboardAccelerators>
                         <FontIcon
                             FontFamily="Segoe MDL2 Assets"
                             FontSize="24"

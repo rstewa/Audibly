@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/4/2024
+// Updated: 4/7/2024
 
 using System;
 using System.Collections.Generic;
@@ -167,6 +167,8 @@ public sealed partial class AppShell : Page
         AudiobookSearchBox.PlaceholderText = "Search audiobooks...";
     }
 
+    // TODO: there's a bug when backspacing search text, it doesn't reset the list
+    
     /// <summary>
     ///     Filters or resets the audiobook list based on the search text.
     /// </summary>
@@ -184,15 +186,24 @@ public sealed partial class AppShell : Page
         var parameters = text.Split(new[] { ' ' },
             StringSplitOptions.RemoveEmptyEntries);
 
-        return ViewModel.Audiobooks.Where(audiobook => parameters
-                .Any(parameter =>
+        var matches = ViewModel.Audiobooks
+            .Select(audiobook => new
+            {
+                Audiobook = audiobook,
+                Score = parameters.Count(parameter =>
                     audiobook.Author.Contains(parameter, StringComparison.OrdinalIgnoreCase) ||
-                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
-            .OrderByDescending(audiobook => parameters.Count(parameter =>
-                audiobook.Author.Contains(parameter, StringComparison.OrdinalIgnoreCase) ||
-                audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
+                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase))
+            })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .Select(x => x.Audiobook)
             .ToList();
-    }
+
+        var exactMatches = matches.Where(audiobook =>
+            audiobook.Author.Equals(text, StringComparison.OrdinalIgnoreCase) ||
+            audiobook.Title.Equals(text, StringComparison.OrdinalIgnoreCase)).ToList();
+        return exactMatches.Any() ? exactMatches : matches;
+    }    
 
     /// <summary>
     ///     Filters the audiobook list based on the search text.
@@ -228,8 +239,8 @@ public sealed partial class AppShell : Page
             }
             else
             {
-                // sender.ItemsSource = GetFilteredAudiobooks(sender.Text);
-                sender.ItemsSource = GetAudiobookTitles(sender.Text);
+                sender.ItemsSource = GetAudiobookTitles(sender.Text).Concat(GetAudiobookAuthors(sender.Text));
+                await FilterAudiobookList(sender.Text);
             }
         }
     }
@@ -238,11 +249,36 @@ public sealed partial class AppShell : Page
     {
         var parameters = text.Split(new[] { ' ' },
             StringSplitOptions.RemoveEmptyEntries);
-
-        return ViewModel.Audiobooks.Where(audiobook => parameters
-                .Any(parameter =>
-                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase)))
-            .Select(audiobook => audiobook.Title)
-            .AsList();
+    
+        return ViewModel.Audiobooks
+            .Select(audiobook => new
+            {
+                audiobook.Title,
+                Score = parameters.Count(parameter =>
+                    audiobook.Title.Contains(parameter, StringComparison.OrdinalIgnoreCase))
+            })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .Select(x => x.Title)
+            .ToList();
+    }
+    
+    private List<string> GetAudiobookAuthors(string text)
+    {
+        var parameters = text.Split(new[] { ' ' },
+            StringSplitOptions.RemoveEmptyEntries);
+    
+        return ViewModel.Audiobooks
+            .Select(audiobook => new
+            {
+                Author = audiobook.Author,
+                Score = parameters.Count(parameter =>
+                    audiobook.Author.Contains(parameter, StringComparison.OrdinalIgnoreCase))
+            })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .Select(x => x.Author)
+            .Distinct()
+            .ToList();
     }
 }

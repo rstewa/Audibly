@@ -129,7 +129,7 @@
 
                 <ItemsRepeater.Layout>
                     <UniformGridLayout
-                        ItemsJustification="SpaceBetween"
+                        ItemsJustification="Start"
                         MinColumnSpacing="28"
                         MinItemWidth="300" />
                 </ItemsRepeater.Layout>

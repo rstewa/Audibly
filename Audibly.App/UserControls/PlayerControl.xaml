@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <UserControl
     mc:Ignorable="d"
@@ -62,8 +62,7 @@
                     BorderThickness="1"
                     CornerRadius="10">
                     <Border.Background>
-                        <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay}"
-                                    Stretch="UniformToFill" />
+                        <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay}" Stretch="UniformToFill" />
                     </Border.Background>
                 </Border>
                 <winUi:Effects.Shadow>
@@ -131,30 +130,13 @@
                     VerticalAlignment="Center"
                     x:Name="ChapterCombo" />
 
-                <!--  play/pause buttons  -->
+                <!--#region play/pause buttons-->
                 <StackPanel
                     HorizontalAlignment="Center"
                     Orientation="Horizontal"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     VerticalAlignment="Center"
                     x:Name="PlayPauseControls">
-
-                    <!-- <StackPanel.Resources> -->
-                    <!--     <ResourceDictionary> -->
-                    <!--         <StaticResource ResourceKey="TextFillColorPrimaryBrush" x:Key="ButtonForeground" /> -->
-                    <!--         <StaticResource ResourceKey="TextFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" /> -->
-                    <!--  <StaticResource ResourceKey="TextFillColorSecondaryBrush"  -->
-                    <!--  x:Key="ButtonForegroundPointerOver" />  -->
-                    <!--         <StaticResource ResourceKey="TextFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" /> -->
-                    <!--         <StaticResource ResourceKey="TextFillColorPrimaryBrush" x:Key="RepeatButtonForeground" /> -->
-                    <!--  <StaticResource ResourceKey="TextFillColorTertiaryBrush"  -->
-                    <!--  x:Key="RepeatButtonForegroundPressed" />  -->
-                    <!--  <StaticResource ResourceKey="TextFillColorSecondaryBrush"  -->
-                    <!--  x:Key="RepeatButtonForegroundPointerOver" />  -->
-                    <!--  <StaticResource ResourceKey="TextFillColorDisabledBrush"  -->
-                    <!--  x:Key="RepeatButtonForegroundDisabled" />  -->
-                    <!--     </ResourceDictionary> -->
-                    <!-- </StackPanel.Resources> -->
 
                     <Button
                         Background="Transparent"
@@ -178,6 +160,9 @@
                         Interval="100"
                         ToolTipService.ToolTip="Skip backward 10 seconds"
                         x:Name="SkipBackButton">
+                        <RepeatButton.KeyboardAccelerators>
+                            <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Left" />
+                        </RepeatButton.KeyboardAccelerators>
                         <FontIcon
                             FontFamily="Segoe MDL2 Assets"
                             FontSize="24"
@@ -191,8 +176,7 @@
                         ToolTipService.ToolTip="Play/Pause"
                         x:Name="PlayPauseButton">
                         <Viewbox MaxHeight="32" MaxWidth="32">
-                            <SymbolIcon Symbol="{x:Bind PlayerViewModel.PlayPauseIcon, Mode=OneWay}"
-                                        x:Name="PlayPauseIcon" />
+                            <SymbolIcon Symbol="{x:Bind PlayerViewModel.PlayPauseIcon, Mode=OneWay}" x:Name="PlayPauseIcon" />
                         </Viewbox>
                     </Button>
 
@@ -204,9 +188,7 @@
                         ToolTipService.ToolTip="Skip forward 30 seconds"
                         x:Name="SkipForwardButton">
                         <RepeatButton.KeyboardAccelerators>
-                            <KeyboardAccelerator
-                                IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
-                                Key="Right" />
+                            <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Right" />
                         </RepeatButton.KeyboardAccelerators>
                         <FontIcon
                             FontFamily="Segoe MDL2 Assets"
@@ -230,6 +212,7 @@
                     </Button>
 
                 </StackPanel>
+                <!--#endregion play/pause buttons-->
 
                 <StackPanel
                     HorizontalAlignment="Right"
@@ -334,11 +317,8 @@
                         VerticalAlignment="Center"
                         x:Name="MaximizeMinimizeButton">
                         <Button.KeyboardAccelerators>
-                            <KeyboardAccelerator
-                                IsEnabled="{x:Bind vm:Converters.Not(PlayerViewModel.IsPlayerFullScreen), Mode=OneWay}"
-                                Key="F11" />
-                            <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen, Mode=OneWay}"
-                                                 Key="Escape" />
+                            <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.Not(PlayerViewModel.IsPlayerFullScreen), Mode=OneWay}" Key="F11" />
+                            <KeyboardAccelerator IsEnabled="{x:Bind PlayerViewModel.IsPlayerFullScreen, Mode=OneWay}" Key="Escape" />
                         </Button.KeyboardAccelerators>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind PlayerViewModel.MaximizeMinimizeGlyph}" />
                     </Button>

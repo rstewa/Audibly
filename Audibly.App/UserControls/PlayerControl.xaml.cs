@@ -210,7 +210,7 @@ public sealed partial class PlayerControl : UserControl
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         var slider = sender as Slider;
-        if (slider == null) return;
+        if (slider == null || !IsLoaded) return;
 
         PlayerViewModel.UpdateVolume(slider.Value);
     }

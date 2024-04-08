@@ -1,7 +1,6 @@
 ﻿<!--  ReSharper disable once Xaml.InvalidResourceType  -->
 <Page
     Background="{ThemeResource AudiblyBackgroundBrush}"
-    KeyDown="AppShell_KeyDown"
     TabNavigation="Cycle"
     mc:Ignorable="d"
     x:Class="Audibly.App.AppShell"

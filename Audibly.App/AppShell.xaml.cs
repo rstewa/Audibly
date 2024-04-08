@@ -62,50 +62,6 @@ public sealed partial class AppShell : Page
     /// </summary>
     public Frame AppFrame => frame;
 
-    /// <summary>
-    ///     Default keyboard focus movement for any unhandled keyboarding
-    /// </summary>
-    private void AppShell_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        var direction = FocusNavigationDirection.None;
-        switch (e.Key)
-        {
-            case VirtualKey.Left:
-            case VirtualKey.GamepadDPadLeft:
-            case VirtualKey.GamepadLeftThumbstickLeft:
-            case VirtualKey.NavigationLeft:
-                direction = FocusNavigationDirection.Left;
-                break;
-            case VirtualKey.Right:
-            case VirtualKey.GamepadDPadRight:
-            case VirtualKey.GamepadLeftThumbstickRight:
-            case VirtualKey.NavigationRight:
-                direction = FocusNavigationDirection.Right;
-                break;
-
-            case VirtualKey.Up:
-            case VirtualKey.GamepadDPadUp:
-            case VirtualKey.GamepadLeftThumbstickUp:
-            case VirtualKey.NavigationUp:
-                direction = FocusNavigationDirection.Up;
-                break;
-
-            case VirtualKey.Down:
-            case VirtualKey.GamepadDPadDown:
-            case VirtualKey.GamepadLeftThumbstickDown:
-            case VirtualKey.NavigationDown:
-                direction = FocusNavigationDirection.Down;
-                break;
-        }
-
-        if (direction != FocusNavigationDirection.None &&
-            FocusManager.FindNextFocusableElement(direction) is Control control)
-        {
-            control.Focus(FocusState.Keyboard);
-            e.Handled = true;
-        }
-    }
-
     public readonly string AudiobookListLabel = "Audiobooks";
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";

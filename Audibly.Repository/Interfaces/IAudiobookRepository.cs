@@ -27,7 +27,7 @@ public interface IAudiobookRepository
         ///     Adds a new audiobook if the audiobook does not exist, updates the
         ///     existing audiobook otherwise.
         /// </summary>
-        Task<Audiobook> UpsertAsync(Audiobook audiobook);
+        Task<Audiobook?> UpsertAsync(Audiobook audiobook);
 
         /// <summary>
         ///     Deletes a audiobook.

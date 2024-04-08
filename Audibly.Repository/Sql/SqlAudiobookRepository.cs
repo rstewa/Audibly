@@ -47,7 +47,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
             .ToListAsync();
     }
 
-    public async Task<Audiobook> UpsertAsync(Audiobook audiobook)
+    public async Task<Audiobook?> UpsertAsync(Audiobook audiobook)
     {
         var current = await db.Audiobooks
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
@@ -63,7 +63,14 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         else
             db.Audiobooks.Update(audiobook);
 
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
         return audiobook;
     }
 

@@ -1,8 +1,9 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/24/2024
+// Created: 3/29/2024
+// Updated: 4/7/2024
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -170,6 +171,7 @@ public class MainViewModel : BindableBase
         });
     }
 
+    // todo: fix the bug here and add a confirmation dialog
     public async void DeleteAudiobooksAsync()
     {
         await dispatcherQueue.EnqueueAsync(() => SelectedAudiobook = null);
@@ -226,7 +228,7 @@ public class MainViewModel : BindableBase
 
         await Task.Run(async () =>
         {
-            await _fileImporter.ImportFileAsync(file.Path, async (progress, total, text) =>
+            var result = await _fileImporter.ImportFileAsync(file.Path, async (progress, total, text) =>
             {
                 await dispatcherQueue.EnqueueAsync(() =>
                 {
@@ -235,15 +237,31 @@ public class MainViewModel : BindableBase
                 });
             });
 
+            if (!result)
+            {
+                await dispatcherQueue.EnqueueAsync(() =>
+                {
+                    IsImporting = false;
+                    EnqueueNotification(new Notification
+                    {
+                        Message = "Failed to import audiobook. Path: " + file.Path,
+                        Severity = InfoBarSeverity.Error
+                    });
+                });
+                return;
+            }
+
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
 
             await dispatcherQueue.EnqueueAsync(() =>
             {
-                NotificationText = "Audiobook imported successfully!";
-                NotificationSeverity = InfoBarSeverity.Success;
-                IsNotificationVisible = true;
+                EnqueueNotification(new Notification
+                {
+                    Message = "Audiobook imported successfully!",
+                    Severity = InfoBarSeverity.Success
+                });
             });
         });
     }
@@ -282,7 +300,7 @@ public class MainViewModel : BindableBase
         var totalBooks = 0;
         await Task.Run(async () =>
         {
-            await _fileImporter.ImportDirectoryAsync(folder.Path, async (progress, total, text) =>
+            await _fileImporter.ImportDirectoryAsync(folder.Path, async (progress, total, text, failedAudiobooks) =>
             {
                 await dispatcherQueue.EnqueueAsync(() =>
                 {
@@ -290,6 +308,17 @@ public class MainViewModel : BindableBase
                     ImportProgress = (int)((double)progress / total * 100);
                     IsImportingText = $"Importing {text}...";
                 });
+                
+                // todo: this might make a lot of notifications ...
+                if (failedAudiobooks.Count != 0)
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        NotificationText = $"Failed to import {failedAudiobooks.Count} audiobooks!";
+                        NotificationSeverity = InfoBarSeverity.Error;
+                        IsNotificationVisible = true;
+                    });
+                }
             });
 
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
@@ -298,9 +327,11 @@ public class MainViewModel : BindableBase
 
             await dispatcherQueue.EnqueueAsync(() =>
             {
-                NotificationText = $"{totalBooks} Audiobooks imported successfully!";
-                NotificationSeverity = InfoBarSeverity.Success;
-                IsNotificationVisible = true;
+                EnqueueNotification(new Notification
+                {
+                    Message = $"{totalBooks} Audiobooks imported successfully!",
+                    Severity = InfoBarSeverity.Success
+                });
             });
         });
     }
@@ -313,4 +344,39 @@ public class MainViewModel : BindableBase
         await dispatcherQueue.EnqueueAsync(async () =>
             await GetAudiobookListAsync());
     }
+
+    private readonly Queue<Notification> notifications = new();
+
+    public void EnqueueNotification(Notification notification)
+    {
+        notifications.Enqueue(notification);
+        if (!IsNotificationVisible) DequeueNotification();
+    }
+
+    private void DequeueNotification()
+    {
+        if (notifications.Any())
+        {
+            var notification = notifications.Dequeue();
+            NotificationText = notification.Message;
+            NotificationSeverity = notification.Severity;
+            IsNotificationVisible = true;
+        }
+        else
+        {
+            IsNotificationVisible = false;
+        }
+    }
+
+    // Call this method when the InfoBar is closed
+    public void OnNotificationClosed()
+    {
+        DequeueNotification();
+    }
+}
+
+public class Notification
+{
+    public string Message { get; set; }
+    public InfoBarSeverity Severity { get; set; }
 }

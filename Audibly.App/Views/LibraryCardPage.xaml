@@ -181,6 +181,29 @@
 
         </Grid>
 
+        <!--  notification bar  -->
+        <InfoBar
+            Closed="{x:Bind ViewModel.OnNotificationClosed}"
+            IsClosable="True"
+            IsIconVisible="True"
+            IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=TwoWay}"
+            Margin="0,0,-26,12"
+            Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}"
+            RelativePanel.Above="Player"
+            RelativePanel.AlignRightWithPanel="True"
+            Severity="{x:Bind ViewModel.NotificationSeverity, Mode=OneWay}"
+            x:Name="InfoBarNotification" />
+        <!--  <InfoBar  -->
+        <!--  IsClosable="True"  -->
+        <!--  IsIconVisible="True"  -->
+        <!--  IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=TwoWay}"  -->
+        <!--  Margin="0,0,-26,12"  -->
+        <!--  Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}"  -->
+        <!--  RelativePanel.Above="Player"  -->
+        <!--  RelativePanel.AlignRightWithPanel="True"  -->
+        <!--  Severity="{x:Bind ViewModel.NotificationSeverity, Mode=OneWay}"  -->
+        <!--  x:Name="InfoBarNotification" />  -->
+
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LibraryCardViewVisibility">
                 <!--  when no audiobooks have been imported yet  -->

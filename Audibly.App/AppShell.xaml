@@ -82,6 +82,10 @@
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" x:Name="infoBadge1" />
+                    </NavigationViewItem.InfoBadge>
+
                 </muxc:NavigationViewItem>
                 <!--  <muxc:NavigationViewItem  -->
                 <!--  Content="{x:Bind NowPlayingLabel}"  -->

@@ -84,6 +84,8 @@ public sealed partial class PlayerControl : UserControl
         PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
+        PlayerViewModel.ChapterDurationMs =
+            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime - PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
         PlayerViewModel.CurrentPosition =
             TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
@@ -100,6 +102,8 @@ public sealed partial class PlayerControl : UserControl
         PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
+        PlayerViewModel.ChapterDurationMs =
+            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime - PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
         PlayerViewModel.CurrentPosition =
             TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }

@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/7/2024
+// Updated: 4/8/2024
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -26,14 +27,16 @@ public class MainViewModel : BindableBase
     private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private readonly IImportFiles _fileImporter;
     public readonly IAppDataService AppDataService;
+    public readonly MessageService MessageService;
 
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
-    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService)
+    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService)
     {
         _fileImporter = fileImporter;
         AppDataService = appDataService;
+        MessageService = messageService;
         Task.Run(GetAudiobookListAsync);
     }
 
@@ -170,6 +173,29 @@ public class MainViewModel : BindableBase
             await GetAudiobookListAsync();
         });
     }
+
+    /// <summary>
+    ///     Deletes the selected audiobook from the database.
+    /// </summary>
+    public async Task DeleteAudiobookAsync() => await Task.Run(async () =>
+    {
+        if (SelectedAudiobook == null) return;
+
+        await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
+        await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
+
+        await GetAudiobookListAsync();
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            SelectedAudiobook = null;
+            EnqueueNotification(new Notification
+            {
+                Message = "Audiobook deleted successfully!",
+                Severity = InfoBarSeverity.Success
+            });
+        });
+    });
 
     // todo: fix the bug here and add a confirmation dialog
     public async void DeleteAudiobooksAsync()

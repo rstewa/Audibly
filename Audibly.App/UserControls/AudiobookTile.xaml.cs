@@ -98,15 +98,10 @@ public sealed partial class AudiobookTile : UserControl
         {
             if (PlayerViewModel.NowPlaying != null)
                 PlayerViewModel.NowPlaying.IsNowPlaying = false;
-
+            
             ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-
-            PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
-
-            if (PlayerViewModel.NowPlaying == null) return;
-
-            PlayerViewModel.NowPlaying.IsNowPlaying = true;
-            PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
+            if (ViewModel.SelectedAudiobook == null) return;
+            PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);
         });
     }
 }

@@ -1,12 +1,13 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/7/2024
+// Updated: 4/8/2024
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using CommunityToolkit.WinUI;
@@ -14,7 +15,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Sharpener.Extensions;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Audibly.App;
@@ -42,7 +42,7 @@ public sealed partial class AppShell : Page
         InitializeComponent();
 
         // Loaded += (sender, args) => { NavView.SelectedItem = AudiobookListMenuItem; };
-        Loaded += (sender, args) =>
+        Loaded += (_, _) =>
         {
             NavView.SelectedItem = LibraryMenuItem;
             var window = App.Window; // idk if this works or not
@@ -51,8 +51,61 @@ public sealed partial class AppShell : Page
             window.SetTitleBar(AppTitleBar);
         };
 
-        // Set up custom title bar.
-        // App.Window.ExtendsContentIntoTitleBar = true;
+        ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
+    }
+    
+    private async void ShowDeleteDialogAsync(string title, string content)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = content,
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            XamlRoot = XamlRoot
+        };
+
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            await ViewModel.DeleteAudiobookAsync();
+            await ViewModel.GetAudiobookListAsync();
+        };
+
+        await dialog.ShowAsync();
+    }
+    
+    private async void ShowOkDialogAsync(string title, string content)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = content,
+            CloseButtonText = "Ok",
+            XamlRoot = XamlRoot
+        };
+
+        await dialog.ShowAsync();
+    }
+    
+    private void OnShowDialogRequested(DialogType type, string title, string content)
+    {
+        switch (type)
+        {
+            case DialogType.Delete:
+                ShowDeleteDialogAsync(title, content);
+                break;
+            case DialogType.Error:
+                ShowOkDialogAsync(title, content);
+                break;
+            case DialogType.Info:
+                ShowOkDialogAsync(title, content);
+                break;
+            case DialogType.Success:
+                ShowOkDialogAsync(title, content);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
     }
 
     public string AppTitleText => "Audibly";
@@ -124,7 +177,7 @@ public sealed partial class AppShell : Page
     }
 
     // TODO: there's a bug when backspacing search text, it doesn't reset the list
-    
+
     /// <summary>
     ///     Filters or resets the audiobook list based on the search text.
     /// </summary>
@@ -159,7 +212,7 @@ public sealed partial class AppShell : Page
             audiobook.Author.Equals(text, StringComparison.OrdinalIgnoreCase) ||
             audiobook.Title.Equals(text, StringComparison.OrdinalIgnoreCase)).ToList();
         return exactMatches.Any() ? exactMatches : matches;
-    }    
+    }
 
     /// <summary>
     ///     Filters the audiobook list based on the search text.
@@ -205,7 +258,7 @@ public sealed partial class AppShell : Page
     {
         var parameters = text.Split(new[] { ' ' },
             StringSplitOptions.RemoveEmptyEntries);
-    
+
         return ViewModel.Audiobooks
             .Select(audiobook => new
             {
@@ -218,16 +271,16 @@ public sealed partial class AppShell : Page
             .Select(x => x.Title)
             .ToList();
     }
-    
+
     private List<string> GetAudiobookAuthors(string text)
     {
         var parameters = text.Split(new[] { ' ' },
             StringSplitOptions.RemoveEmptyEntries);
-    
+
         return ViewModel.Audiobooks
             .Select(audiobook => new
             {
-                Author = audiobook.Author,
+                audiobook.Author,
                 Score = parameters.Count(parameter =>
                     audiobook.Author.Contains(parameter, StringComparison.OrdinalIgnoreCase))
             })

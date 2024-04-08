@@ -174,7 +174,6 @@
             RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
-            Visibility="{x:Bind viewModels:Converters.CollapsedIfNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
             x:Name="Player">
 
             <userControls:PlayerControl />
@@ -217,17 +216,17 @@
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
-            <!-- <VisualStateGroup x:Name="PlayerVisibility"> -->
-            <!--  ~1~ when no audiobooks have been imported yet @1@  -->
-            <!--     <VisualState x:Name="PlayerState"> -->
-            <!--         <VisualState.StateTriggers> -->
-            <!--             <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind PlayerViewModel.NowPlaying, Mode=OneWay}" /> -->
-            <!--         </VisualState.StateTriggers> -->
-            <!--         <VisualState.Setters> -->
-            <!--             <Setter Target="Player.Visibility" Value="Visible" /> -->
-            <!--         </VisualState.Setters> -->
-            <!--     </VisualState> -->
-            <!-- </VisualStateGroup> -->
+            <VisualStateGroup x:Name="PlayerVisibility">
+                <!--  when no audiobooks have been imported yet  -->
+                <VisualState x:Name="PlayerStateCollapsed">
+                    <VisualState.StateTriggers>
+                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind PlayerViewModel.NowPlaying, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="Player.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </RelativePanel>
 </Page>

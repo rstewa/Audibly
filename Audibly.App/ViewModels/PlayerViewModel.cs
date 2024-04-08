@@ -1,10 +1,12 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/7/2024
+// Updated: 4/8/2024
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Media.Core;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
@@ -173,6 +175,21 @@ public class PlayerViewModel : BindableBase
         set => MediaPlayer.PlaybackSession.Position = value > TimeSpan.Zero ? value : TimeSpan.Zero;
     }
 
+    public void OpenAudiobook(AudiobookViewModel audiobook)
+    {
+        // verify that the file exists
+        if (!File.Exists(audiobook.FilePath))
+        {
+            App.ViewModel.MessageService.ShowDialog(DialogType.Delete, "Error",
+                "Can't play Audiobook. The file was deleted or moved.");
+            return;
+        }
+
+        NowPlaying = audiobook;
+        NowPlaying.IsNowPlaying = true;
+        MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.FilePath.AsUri());
+    }
+
     private void InitializeAudioPlayer()
     {
         MediaPlayer.AutoPlay = false;
@@ -193,7 +210,6 @@ public class PlayerViewModel : BindableBase
             NowPlaying.CurrentChapter = NowPlaying.Chapters[NowPlaying.CurrentChapterIndex ?? 0];
 
             ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
-            // ChapterCombo.SelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
 
             ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
 
@@ -211,16 +227,18 @@ public class PlayerViewModel : BindableBase
         ; // todo: implement
     }
 
-    private async void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+    private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
-        var dialog = new ContentDialog
-        {
-            Title = "Media Failed",
-            Content = "Media playback failed.",
-            CloseButtonText = "Ok"
-        };
+        _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
 
-        _ = await dialog.ShowAsync();
+        App.ViewModel.EnqueueNotification(new Notification
+        {
+            Message = "Failed to play Audiobook. Media failed to load.",
+            Severity = InfoBarSeverity.Error
+        });
+        // TODO: why doesn't this work
+        // App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
+        //     "Can't play Audiobook. The file was deleted or moved.");
     }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)

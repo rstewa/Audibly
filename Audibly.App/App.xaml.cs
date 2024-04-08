@@ -1,8 +1,7 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/5/2024
+// Updated: 4/8/2024
 
-using System;
 using System.Diagnostics;
 using Windows.Globalization;
 using Windows.Storage;
@@ -16,9 +15,7 @@ using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
 namespace Audibly.App;
@@ -38,7 +35,8 @@ public partial class App : Application
     /// <summary>
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
-    public static MainViewModel ViewModel { get; } = new(new M4BFileImportService(), new AppDataService());
+    public static MainViewModel ViewModel { get; } =
+        new(new M4BFileImportService(), new AppDataService(), new MessageService());
 
     /// <summary>
     ///     Gets the app-wide PlayerViewModel singleton instance.
@@ -59,7 +57,7 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-        this.UnhandledException += OnUnhandledException; 
+        UnhandledException += OnUnhandledException;
 
         // Get theme choice from LocalSettings.
         var value = ApplicationData.Current.LocalSettings.Values["themeSetting"];
@@ -73,6 +71,7 @@ public partial class App : Application
     {
         // todo: log exception
     }
+
     /// <summary>
     ///     Invoked when the application is launched.
     /// </summary>
@@ -82,7 +81,7 @@ public partial class App : Application
         Window = WindowHelper.CreateWindow();
 
 #if DEBUG
-        Window.SizeChanged += (o, args) =>
+        Window.SizeChanged += (_, args) =>
         {
             Debug.WriteLine($"Main Window -> Width: {args.Size.Width}, Height: {args.Size.Height}");
         };

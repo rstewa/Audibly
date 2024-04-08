@@ -33,7 +33,7 @@ public class AppDataService : IAppDataService
 
     public async Task DeleteCoverImageAsync(string path)
     {
-        var folder = await StorageFolder.GetFolderFromPathAsync(path);
+        var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path));
         await folder.DeleteAsync();
     }
 

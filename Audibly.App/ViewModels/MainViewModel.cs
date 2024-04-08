@@ -188,11 +188,10 @@ public class MainViewModel : BindableBase
 
             await GetAudiobookListAsync();
 
-            await dispatcherQueue.EnqueueAsync(() =>
+            EnqueueNotification(new Notification
             {
-                NotificationText = $"{count} Audiobooks deleted successfully!";
-                NotificationSeverity = InfoBarSeverity.Success;
-                IsNotificationVisible = true;
+                Message = $"{count} Audiobooks deleted successfully!",
+                Severity = InfoBarSeverity.Success
             });
         });
     }
@@ -239,14 +238,11 @@ public class MainViewModel : BindableBase
 
             if (!result)
             {
-                await dispatcherQueue.EnqueueAsync(() =>
+                await dispatcherQueue.EnqueueAsync(() => { IsImporting = false; });
+                EnqueueNotification(new Notification
                 {
-                    IsImporting = false;
-                    EnqueueNotification(new Notification
-                    {
-                        Message = "Failed to import audiobook. Path: " + file.Path,
-                        Severity = InfoBarSeverity.Error
-                    });
+                    Message = "Failed to import audiobook. Path: " + file.Path,
+                    Severity = InfoBarSeverity.Error
                 });
                 return;
             }
@@ -255,13 +251,10 @@ public class MainViewModel : BindableBase
 
             await GetAudiobookListAsync();
 
-            await dispatcherQueue.EnqueueAsync(() =>
+            EnqueueNotification(new Notification
             {
-                EnqueueNotification(new Notification
-                {
-                    Message = "Audiobook imported successfully!",
-                    Severity = InfoBarSeverity.Success
-                });
+                Message = "Audiobook imported successfully!",
+                Severity = InfoBarSeverity.Success
             });
         });
     }
@@ -308,30 +301,24 @@ public class MainViewModel : BindableBase
                     ImportProgress = (int)((double)progress / total * 100);
                     IsImportingText = $"Importing {text}...";
                 });
-                
+
                 // todo: this might make a lot of notifications ...
                 if (failedAudiobooks.Count != 0)
-                {
-                    await dispatcherQueue.EnqueueAsync(() =>
+                    EnqueueNotification(new Notification
                     {
-                        NotificationText = $"Failed to import {failedAudiobooks.Count} audiobooks!";
-                        NotificationSeverity = InfoBarSeverity.Error;
-                        IsNotificationVisible = true;
+                        Message = $"Failed to import {failedAudiobooks.Count} audiobooks!",
+                        Severity = InfoBarSeverity.Error
                     });
-                }
             });
 
             await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
 
-            await dispatcherQueue.EnqueueAsync(() =>
+            EnqueueNotification(new Notification
             {
-                EnqueueNotification(new Notification
-                {
-                    Message = $"{totalBooks} Audiobooks imported successfully!",
-                    Severity = InfoBarSeverity.Success
-                });
+                Message = $"{totalBooks} Audiobooks imported successfully!",
+                Severity = InfoBarSeverity.Success
             });
         });
     }
@@ -356,16 +343,15 @@ public class MainViewModel : BindableBase
     private void DequeueNotification()
     {
         if (notifications.Any())
-        {
-            var notification = notifications.Dequeue();
-            NotificationText = notification.Message;
-            NotificationSeverity = notification.Severity;
-            IsNotificationVisible = true;
-        }
+            dispatcherQueue.TryEnqueue(() =>
+            {
+                var notification = notifications.Dequeue();
+                NotificationText = notification.Message;
+                NotificationSeverity = notification.Severity;
+                IsNotificationVisible = true;
+            });
         else
-        {
-            IsNotificationVisible = false;
-        }
+            dispatcherQueue.TryEnqueue(() => IsNotificationVisible = false);
     }
 
     // Call this method when the InfoBar is closed

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/6/2024
+// Updated: 4/7/2024
 
 using System;
 using System.Linq;
@@ -44,12 +44,39 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _volumeLevelGlyph, value);
     }
 
-    private double _volumeLevel = 1.0;
+    private double _volumeLevel = 100;
 
     public double VolumeLevel
     {
         get => _volumeLevel;
         set => Set(ref _volumeLevel, value);
+    }
+
+    public void UpdateVolume(double volume)
+    {
+        VolumeLevel = volume;
+        MediaPlayer.Volume = volume / 100;
+        VolumeLevelGlyph = volume switch
+        {
+            > 66 => Constants.VolumeGlyph3,
+            > 33 => Constants.VolumeGlyph2,
+            > 0 => Constants.VolumeGlyph1,
+            _ => Constants.VolumeGlyph0
+        };
+    }
+
+    private double _playbackSpeed = 1.0;
+
+    public double PlaybackSpeed
+    {
+        get => _playbackSpeed;
+        set => Set(ref _playbackSpeed, value);
+    }
+
+    public void UpdatePlaybackSpeed(double speed)
+    {
+        PlaybackSpeed = speed;
+        MediaPlayer.PlaybackRate = speed;
     }
 
     private string _chapterDurationText = "0:00:00";
@@ -177,9 +204,6 @@ public class PlayerViewModel : BindableBase
 
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
         });
-
-        // todo: add toggle player controls function
-        // todo: set volume, playback speed
     }
 
     private void AudioPlayer_MediaEnded(MediaPlayer sender, object args)
@@ -254,10 +278,8 @@ public class PlayerViewModel : BindableBase
             }
 
             return Task.CompletedTask;
-
-            // todo: find out what the performance impact of this is
         });
-        
+
         await NowPlaying.SaveAsync();
     }
 }

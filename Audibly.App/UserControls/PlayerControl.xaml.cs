@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 4/5/2024
-// Updated: 4/6/2024
+// Updated: 4/7/2024
 
 using System;
 using System.Diagnostics;
@@ -34,6 +34,8 @@ public sealed partial class PlayerControl : UserControl
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
+    public bool IsLoaded { get; private set; }
+
     public bool ShowCoverImage
     {
         get => (bool)GetValue(ShowCoverImageProperty);
@@ -49,6 +51,7 @@ public sealed partial class PlayerControl : UserControl
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
 
+        Loaded += (_, _) => IsLoaded = true;
         // todo: load most recently played audiobook into the player
     }
 
@@ -206,7 +209,18 @@ public sealed partial class PlayerControl : UserControl
 
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        ;
+        var slider = sender as Slider;
+        if (slider == null) return;
+
+        PlayerViewModel.UpdateVolume(slider.Value);
+    }
+
+    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+    {
+        var slider = sender as Slider;
+        if (slider == null || !IsLoaded) return;
+
+        PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
     }
 }
 

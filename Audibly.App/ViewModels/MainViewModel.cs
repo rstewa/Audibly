@@ -181,6 +181,8 @@ public class MainViewModel : BindableBase
     {
         if (SelectedAudiobook == null) return;
 
+        if (SelectedAudiobook != App.PlayerViewModel.NowPlaying) dispatcherQueue.TryEnqueue(() => App.PlayerViewModel.NowPlaying = null);
+        
         await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
         await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
 

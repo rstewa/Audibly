@@ -227,6 +227,7 @@ public class PlayerViewModel : BindableBase
         ; // todo: implement
     }
 
+    // todo: check https://xamlbrewer.wordpress.com/2022/03/09/a-dialog-service-for-winui-3/
     private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);

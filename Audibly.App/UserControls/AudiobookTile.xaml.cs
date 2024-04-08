@@ -2,6 +2,7 @@
 // Created: 3/29/2024
 // Updated: 4/2/2024
 
+using System.Diagnostics;
 using System.Linq;
 using Windows.Media.Core;
 using Audibly.App.Extensions;
@@ -71,6 +72,15 @@ public sealed partial class AudiobookTile : UserControl
         audiobookTile.ProgressGrid.Visibility = (double)e.NewValue < 1 ? Visibility.Collapsed : Visibility.Visible;
         // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
     }
+    
+    public string FilePath
+    {
+        get => (string)GetValue(FilePathProperty);
+        set => SetValue(FilePathProperty, value);
+    }
+    
+    public static readonly DependencyProperty FilePathProperty =
+        DependencyProperty.Register(nameof(FilePath), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
 
     public AudiobookTile()
     {
@@ -103,5 +113,24 @@ public sealed partial class AudiobookTile : UserControl
             if (ViewModel.SelectedAudiobook == null) return;
             PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);
         });
+    }
+
+    private void InfoButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        // todo
+    }
+
+    private void ShowInFileExplorer_OnClick(object sender, RoutedEventArgs e)
+    {
+        Process p = new();
+        p.StartInfo.FileName = "explorer.exe";
+        p.StartInfo.Arguments = $"/select, \"{FilePath}\"";
+        p.Start();
+    }
+
+    private async void DeleteAudiobook_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
+        await ViewModel.DeleteAudiobookAsync();
     }
 }

@@ -9,7 +9,7 @@
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
     <Button
         Background="Transparent"
         BorderBrush="Transparent"
@@ -44,6 +44,12 @@
                 Grid.Row="0"
                 Visibility="Collapsed"
                 x:Name="BlackOverlayGrid">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                </Grid.Resources>
                 <Grid
                     Background="Black"
                     CornerRadius="15"
@@ -58,12 +64,6 @@
                     x:Name="PlayPauseButton">
                     <Button.Resources>
                         <ResourceDictionary>
-                            <!--  ReSharper disable all Xaml.RedundantResource  -->
-                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-
                             <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
                             <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
                             <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
@@ -73,6 +73,42 @@
                     <Viewbox MaxHeight="70" MaxWidth="70">
                         <FontIcon Glyph="&#xF5B0;" />
                     </Viewbox>
+                </Button>
+                <Button
+                    BorderThickness="0"
+                    Click="InfoButton_OnClick"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,0,0"
+                    Tag="play"
+                    ToolTipService.ToolTip="More Actions"
+                    VerticalAlignment="Top"
+                    x:Name="InfoButton">
+                    <Button.Resources>
+                        <ResourceDictionary>
+                            <StaticResource ResourceKey="TextFillColorPrimaryBrush" x:Key="ButtonForeground" />
+                            <StaticResource ResourceKey="TextFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
+                            <StaticResource ResourceKey="TextFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
+                            <StaticResource ResourceKey="TextFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
+                        </ResourceDictionary>
+                    </Button.Resources>
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Click="ShowInFileExplorer_OnClick" Text="Show in File Explorer">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xEC50;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem
+                                Click="DeleteAudiobook_OnClick"
+                                Icon="Delete"
+                                Text="Delete" />
+                            <!-- <MenuFlyoutSeparator /> -->
+                        </MenuFlyout>
+                    </Button.Flyout>
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="24"
+                        Glyph="&#xE712;" />
                 </Button>
             </Grid>
 

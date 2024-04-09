@@ -81,10 +81,11 @@
                 RelativePanel.LeftOf="AudiobookSearchBox"
                 RelativePanel.RightOf="PageTitle"
                 x:Name="MainCommandBar">
-                <AppBarButton
-                    Icon="Filter"
-                    Label="Filter"
-                    ToolTipService.ToolTip="Filter Audiobooks" />
+                <!--  todo: may implement this in the future  -->
+                <!--  <AppBarButton  -->
+                <!--  Icon="Filter"  -->
+                <!--  Label="Filter"  -->
+                <!--  ToolTipService.ToolTip="Filter Audiobooks" />  -->
                 <AppBarButton
                     Click="{x:Bind ViewModel.Refresh}"
                     Icon="Refresh"

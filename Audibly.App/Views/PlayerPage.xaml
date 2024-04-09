@@ -14,7 +14,7 @@
 
     <Grid>
         <Grid>
-            <Border BorderBrush="Transparent" BorderThickness="1">
+            <Border BorderBrush="Transparent" BorderThickness="0">
                 <Border.Background>
                     <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
                 </Border.Background>

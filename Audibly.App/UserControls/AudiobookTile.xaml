@@ -44,7 +44,7 @@
             <Border BorderThickness="0" Grid.Row="0">
                 <Border
                     BorderBrush="Transparent"
-                    BorderThickness="1"
+                    BorderThickness="0"
                     CornerRadius="15">
                     <ContentPresenter
                         Content="{x:Bind Source, Mode=OneWay}"

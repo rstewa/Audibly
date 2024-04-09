@@ -1,9 +1,11 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/8/2024
+// Updated: 4/9/2024
 
+using System;
 using System.Diagnostics;
 using System.Linq;
+using Windows.ApplicationModel.Core;
 using Windows.Globalization;
 using Windows.Storage;
 using Audibly.App.Extensions;
@@ -16,8 +18,9 @@ using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
-using Sharpener.Extensions;
+using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
 namespace Audibly.App;
@@ -64,6 +67,10 @@ public partial class App : Application
         // Get theme choice from LocalSettings.
         var value = ApplicationData.Current.LocalSettings.Values["themeSetting"];
 
+        if (value == null)
+            ApplicationData.Current.LocalSettings.Values["themeSetting"] =
+                Current.RequestedTheme == ApplicationTheme.Light ? "Light" : "Dark";
+
         if (value != null)
             // Apply theme choice.
             Current.RequestedTheme = value.ToString() == "Light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
@@ -94,10 +101,10 @@ public partial class App : Application
         // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
 
         UseSqlite();
-        
+
         // set now playing audiobook
         await ViewModel.GetAudiobookListAsync();
-        var nowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);        
+        var nowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
 
         if (nowPlaying != null)
         {
@@ -142,5 +149,35 @@ public partial class App : Application
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>().UseSqlite(
             "Data Source=" + dbPath);
         Repository = new SqlAudiblyRepository(dbOptions);
+    }
+
+    public static void RestartApp()
+    {
+        var restartError = AppInstance.Restart("themeChanged");
+
+        switch (restartError)
+        {
+            case AppRestartFailureReason.RestartPending:
+                ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Another restart is currently pending.",
+                    Severity = InfoBarSeverity.Error
+                });
+                break;
+            case AppRestartFailureReason.InvalidUser:
+                ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Restart failed: Invalid user.",
+                    Severity = InfoBarSeverity.Error
+                }); 
+                break;
+            case AppRestartFailureReason.Other:
+                ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Restart failed: Unknown error.",
+                    Severity = InfoBarSeverity.Error
+                });
+                break;
+        }
     }
 }

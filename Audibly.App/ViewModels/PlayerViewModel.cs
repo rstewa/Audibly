@@ -244,6 +244,8 @@ public class PlayerViewModel : BindableBase
 
                 break;
         }
+
+        Task.Run(NowPlaying.SaveAsync);
     }
 
     private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)

@@ -7,5 +7,6 @@ namespace Audibly.App.Helpers;
 public enum DialogType
 {
     Error,
-    Info
+    Info,
+    Restart
 }

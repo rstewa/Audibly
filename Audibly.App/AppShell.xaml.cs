@@ -93,6 +93,29 @@ public sealed partial class AppShell : Page
             await dialog.ShowAsync();
         });
     }
+    
+    private async void ShowRestartDialogAsync(string title, string content)
+    {
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                PrimaryButtonText = "Restart",
+                DefaultButton = ContentDialogButton.Primary,
+                CloseButtonText = "Not Now",
+                XamlRoot = XamlRoot
+            };
+            
+            dialog.PrimaryButtonClick += (_, _) =>
+            {
+                App.RestartApp();
+            };
+
+            await dialog.ShowAsync();
+        });
+    }
 
     private void OnShowDialogRequested(DialogType type, string title, string content)
     {
@@ -104,6 +127,9 @@ public sealed partial class AppShell : Page
             case DialogType.Info:
                 ShowOkDialogAsync(title, content);
                 break;
+            case DialogType.Restart:
+                ShowRestartDialogAsync(title, content);
+                break; 
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }

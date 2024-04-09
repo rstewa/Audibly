@@ -37,7 +37,7 @@ public class MainViewModel : BindableBase
         _fileImporter = fileImporter;
         AppDataService = appDataService;
         MessageService = messageService;
-        Task.Run(GetAudiobookListAsync);
+        // Task.Run(GetAudiobookListAsync);
     }
 
     /// <summary>

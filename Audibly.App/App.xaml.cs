@@ -3,6 +3,7 @@
 // Updated: 4/8/2024
 
 using System.Diagnostics;
+using System.Linq;
 using Windows.Globalization;
 using Windows.Storage;
 using Audibly.App.Extensions;
@@ -16,6 +17,7 @@ using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
+using Sharpener.Extensions;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
 namespace Audibly.App;
@@ -76,7 +78,7 @@ public partial class App : Application
     ///     Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         Window = WindowHelper.CreateWindow();
 
@@ -91,6 +93,16 @@ public partial class App : Application
         // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
 
         UseSqlite();
+        
+        // set now playing audiobook
+        var audiobooks = (await Repository.Audiobooks.GetAsync()).AsList();
+        var nowPlaying = audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+
+        if (nowPlaying != null)
+        {
+            var nowPlayingViewModel = new AudiobookViewModel(nowPlaying);
+            PlayerViewModel.NowPlaying = nowPlayingViewModel;
+        }
 
         var shell = Window.Content as AppShell ?? new AppShell();
         shell.Language = ApplicationLanguages.Languages[0];

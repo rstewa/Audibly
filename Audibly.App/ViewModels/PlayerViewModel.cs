@@ -97,22 +97,6 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _chapterPositionText, value);
     }
 
-    public void Update(double curMs)
-    {
-        if (!NowPlaying.CurrentChapter.InRange(curMs))
-        {
-            var tmp = NowPlaying.Chapters.FirstOrDefault(c => c.InRange(curMs));
-            if (tmp != null) NowPlaying.CurrentChapter = tmp;
-        }
-
-        ChapterPositionMs = curMs > NowPlaying.CurrentChapter.StartTime
-            ? (int)(curMs - NowPlaying.CurrentChapter.StartTime)
-            : 0;
-        // ChapterPositionText = ChapterPositionMs.ToStr_ms();
-        ChapterPositionText = "11:11:11";
-        // CurPosInBook = curMs.ToStr_ms();
-    }
-
     private long _chapterPositionMs;
 
     public int ChapterPositionMs
@@ -187,6 +171,7 @@ public class PlayerViewModel : BindableBase
 
         NowPlaying = audiobook;
         NowPlaying.IsNowPlaying = true;
+        NowPlaying.DateLastPlayed = DateTime.Now;
         MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.FilePath.AsUri());
     }
 
@@ -205,6 +190,7 @@ public class PlayerViewModel : BindableBase
 
     private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
     {
+        if (NowPlaying == null) return;
         _ = _dispatcherQueue.TryEnqueue(() =>
         {
             NowPlaying.CurrentChapter = NowPlaying.Chapters[NowPlaying.CurrentChapterIndex ?? 0];
@@ -262,6 +248,7 @@ public class PlayerViewModel : BindableBase
 
     private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
     {
+        if (NowPlaying == null) return;
         if (!NowPlaying.CurrentChapter.InRange(CurrentPosition.TotalMilliseconds))
         {
             var tmp = NowPlaying.Chapters.FirstOrDefault(c =>

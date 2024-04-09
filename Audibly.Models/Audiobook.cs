@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 2/23/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/8/2024
 
 namespace Audibly.Models;
 
@@ -11,15 +11,12 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
 {
     public string Author { get; set; }
     public string Composer { get; set; }
+    public DateTime? DateLastPlayed { get; set; }
     public string Description { get; set; }
     public long Duration { get; set; }
     public int CurrentTimeMs { get; set; }
-
     public string CoverImagePath { get; set; }
-
     public string ThumbnailPath { get; set; }
-
-    // public string CurrentPositionInBook { get; set; }
     public string FilePath { get; set; }
     public bool IsNowPlaying { get; set; }
     public double PlaybackSpeed { get; set; }
@@ -27,9 +24,6 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public DateTime? ReleaseDate { get; set; }
     public string Title { get; set; }
     public double Volume { get; set; }
-    // public string VolumeLevelGlyph { get; set; }
-
-    // public ChapterInfo? CurrentChapter { get; set; }
     public int? CurrentChapterIndex { get; set; }
 
     public List<ChapterInfo> Chapters { get; init; } = [];

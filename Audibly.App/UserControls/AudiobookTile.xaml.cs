@@ -9,6 +9,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 
 namespace Audibly.App.UserControls;
@@ -86,11 +87,6 @@ public sealed partial class AudiobookTile : UserControl
         InitializeComponent();
     }
 
-    private void Audiobook_OnClick(object sender, RoutedEventArgs e)
-    {
-        App.ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-    }
-
     private void AudiobookTile_OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         BlackOverlayGrid.Visibility = Visibility.Visible;
@@ -131,5 +127,21 @@ public sealed partial class AudiobookTile : UserControl
     {
         ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
         await ViewModel.DeleteAudiobookAsync();
+    }
+
+    // TODO
+    private void OnElementClicked(object sender, RoutedEventArgs e)
+    {
+        ;
+    }
+
+    private void ButtonTile_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e is not RightTappedRoutedEventArgs) return;
+        var myOption = new FlyoutShowOptions
+        {
+            ShowMode = FlyoutShowMode.Transient
+        };
+        CommandBarFlyout.ShowAt(ButtonTile, myOption);
     }
 }

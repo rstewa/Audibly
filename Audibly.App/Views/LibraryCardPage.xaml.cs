@@ -30,6 +30,7 @@ public sealed partial class LibraryCardPage : Page
 
 #if DEBUG
         DeleteButton.Visibility = Visibility.Visible;
+        TestButton.Visibility = Visibility.Visible;
 #endif
     }
 

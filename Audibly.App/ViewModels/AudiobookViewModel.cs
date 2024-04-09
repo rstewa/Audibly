@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/8/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -19,7 +19,7 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Initializes a new instance of the CustomerViewModel class that wraps a Customer object.
     /// </summary>
-    public AudiobookViewModel(Audiobook model = null)
+    public AudiobookViewModel(Audiobook? model = null)
     {
         Model = model ?? new Audiobook();
 
@@ -65,6 +65,23 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.Author)
             {
                 Model.Author = value;
+                IsModified = true;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Gets or sets the date the audiobook was last played.
+    /// </summary>
+    public DateTime? DateLastPlayed
+    {
+        get => Model.DateLastPlayed;
+        set
+        {
+            if (value != Model.DateLastPlayed)
+            {
+                Model.DateLastPlayed = value;
                 IsModified = true;
                 OnPropertyChanged();
             }
@@ -162,23 +179,6 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
-
-    /// <summary>
-    /// Gets or sets the current position in the book.
-    /// </summary>
-    // public string CurrentPositionInBook
-    // {
-    //     get => Model.CurrentPositionInBook;
-    //     set
-    //     {
-    //         if (value != Model.CurrentPositionInBook)
-    //         {
-    //             Model.CurrentPositionInBook = value;
-    //             IsModified = true;
-    //             OnPropertyChanged();
-    //         }
-    //     }
-    // }
 
     /// <summary>
     ///     Gets or sets the file path of the audiobook.

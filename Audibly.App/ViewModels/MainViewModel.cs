@@ -177,32 +177,46 @@ public class MainViewModel : BindableBase
     /// <summary>
     ///     Deletes the selected audiobook from the database.
     /// </summary>
-    public async Task DeleteAudiobookAsync() => await Task.Run(async () =>
+    public async Task DeleteAudiobookAsync()
     {
-        if (SelectedAudiobook == null) return;
-
-        if (SelectedAudiobook != App.PlayerViewModel.NowPlaying) dispatcherQueue.TryEnqueue(() => App.PlayerViewModel.NowPlaying = null);
-        
-        await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
-        await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
-
-        await GetAudiobookListAsync();
-
-        await dispatcherQueue.EnqueueAsync(() =>
+        await Task.Run(async () =>
         {
-            SelectedAudiobook = null;
-            EnqueueNotification(new Notification
+            if (SelectedAudiobook == null) return;
+
+            if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
+                dispatcherQueue.TryEnqueue(() =>
+                {
+                    App.PlayerViewModel.MediaPlayer.Pause();
+                    App.PlayerViewModel.NowPlaying = null;
+                });
+
+            await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
+            await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
+
+            await GetAudiobookListAsync();
+
+            await dispatcherQueue.EnqueueAsync(() =>
             {
-                Message = "Audiobook deleted successfully!",
-                Severity = InfoBarSeverity.Success
+                SelectedAudiobook = null;
+                EnqueueNotification(new Notification
+                {
+                    Message = "Audiobook deleted successfully!",
+                    Severity = InfoBarSeverity.Success
+                });
             });
         });
-    });
+    }
 
     // todo: fix the bug here and add a confirmation dialog
     public async void DeleteAudiobooksAsync()
     {
-        await dispatcherQueue.EnqueueAsync(() => SelectedAudiobook = null);
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            App.PlayerViewModel.MediaPlayer.Pause();
+            App.PlayerViewModel.NowPlaying = null;
+            SelectedAudiobook = null;
+            IsLoading = true;
+        });
 
         await Task.Run(async () =>
         {

@@ -1,11 +1,9 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/2/2024
+// Updated: 4/8/2024
 
 using System.Diagnostics;
 using System.Linq;
-using Windows.Media.Core;
-using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -72,15 +70,16 @@ public sealed partial class AudiobookTile : UserControl
         audiobookTile.ProgressGrid.Visibility = (double)e.NewValue < 1 ? Visibility.Collapsed : Visibility.Visible;
         // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
     }
-    
+
     public string FilePath
     {
         get => (string)GetValue(FilePathProperty);
         set => SetValue(FilePathProperty, value);
     }
-    
+
     public static readonly DependencyProperty FilePathProperty =
-        DependencyProperty.Register(nameof(FilePath), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(FilePath), typeof(string), typeof(AudiobookTile),
+            new PropertyMetadata(null));
 
     public AudiobookTile()
     {
@@ -108,7 +107,7 @@ public sealed partial class AudiobookTile : UserControl
         {
             if (PlayerViewModel.NowPlaying != null)
                 PlayerViewModel.NowPlaying.IsNowPlaying = false;
-            
+
             ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
             if (ViewModel.SelectedAudiobook == null) return;
             PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);

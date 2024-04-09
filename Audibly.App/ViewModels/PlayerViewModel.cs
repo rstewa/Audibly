@@ -180,7 +180,7 @@ public class PlayerViewModel : BindableBase
         // verify that the file exists
         if (!File.Exists(audiobook.FilePath))
         {
-            App.ViewModel.MessageService.ShowDialog(DialogType.Delete, "Error",
+            App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
                 "Can't play Audiobook. The file was deleted or moved.");
             return;
         }
@@ -232,14 +232,8 @@ public class PlayerViewModel : BindableBase
     {
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
 
-        App.ViewModel.EnqueueNotification(new Notification
-        {
-            Message = "Failed to play Audiobook. Media failed to load.",
-            Severity = InfoBarSeverity.Error
-        });
-        // TODO: why doesn't this work
-        // App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
-        //     "Can't play Audiobook. The file was deleted or moved.");
+        App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
+            "An error occurred while trying to play the selected audiobook. Please verify that the file is not corrupted and try again.");
     }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)

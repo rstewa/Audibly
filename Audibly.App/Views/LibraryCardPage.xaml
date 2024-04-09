@@ -111,6 +111,13 @@
                     ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
                     Visibility="Collapsed"
                     x:Name="DeleteButton" />
+                <AppBarSeparator />
+                <AppBarButton
+                    Click="{x:Bind TestButton_OnClick}"
+                    Label="Test"
+                    ToolTipService.ToolTip="Test">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                </AppBarButton>
             </CommandBar>
         </StackPanel>
 

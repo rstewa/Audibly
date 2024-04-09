@@ -53,54 +53,55 @@ public sealed partial class AppShell : Page
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
     }
-    
+
     private async void ShowDeleteDialogAsync(string title, string content)
     {
-        var dialog = new ContentDialog
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            Title = title,
-            Content = content,
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
-            XamlRoot = XamlRoot
-        };
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                PrimaryButtonText = "Remove from Library",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = XamlRoot
+            };
 
-        dialog.PrimaryButtonClick += async (_, _) =>
-        {
-            await ViewModel.DeleteAudiobookAsync();
-            await ViewModel.GetAudiobookListAsync();
-        };
+            dialog.PrimaryButtonClick += async (_, _) =>
+            {
+                await ViewModel.DeleteAudiobookAsync();
+                await ViewModel.GetAudiobookListAsync();
+            };
 
-        await dialog.ShowAsync();
+            await dialog.ShowAsync();
+        });
     }
-    
+
     private async void ShowOkDialogAsync(string title, string content)
     {
-        var dialog = new ContentDialog
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            Title = title,
-            Content = content,
-            CloseButtonText = "Ok",
-            XamlRoot = XamlRoot
-        };
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "Ok",
+                XamlRoot = XamlRoot
+            };
 
-        await dialog.ShowAsync();
+            await dialog.ShowAsync();
+        });
     }
-    
+
     private void OnShowDialogRequested(DialogType type, string title, string content)
     {
         switch (type)
         {
-            case DialogType.Delete:
+            case DialogType.Error:
                 ShowDeleteDialogAsync(title, content);
                 break;
-            case DialogType.Error:
-                ShowOkDialogAsync(title, content);
-                break;
             case DialogType.Info:
-                ShowOkDialogAsync(title, content);
-                break;
-            case DialogType.Success:
                 ShowOkDialogAsync(title, content);
                 break;
             default:

@@ -1,7 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/7/2024
+// Updated: 4/8/2024
 
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -30,5 +31,11 @@ public sealed partial class LibraryCardPage : Page
 #if DEBUG
         DeleteButton.Visibility = Visibility.Visible;
 #endif
+    }
+
+    public void TestButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.MessageService.ShowDialog(DialogType.Error, "Error Playing Audiobook",
+            "An error occurred while trying to play the selected audiobook. Please verify that the file is not corrupted and try again.");
     }
 }

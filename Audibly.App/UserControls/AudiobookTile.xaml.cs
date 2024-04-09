@@ -101,10 +101,18 @@ public sealed partial class AudiobookTile : UserControl
     {
         await _dispatcherQueue.EnqueueAsync(() =>
         {
+            var audiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
+            if (audiobook == null) 
+                return;
+            
+            if (PlayerViewModel.NowPlaying != null && PlayerViewModel.NowPlaying == audiobook) 
+                return;
+            
             if (PlayerViewModel.NowPlaying != null)
                 PlayerViewModel.NowPlaying.IsNowPlaying = false;
 
-            ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
+            // todo: not sure setting selected audiobook is necessary
+            ViewModel.SelectedAudiobook = audiobook;
             if (ViewModel.SelectedAudiobook == null) return;
             PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);
         });

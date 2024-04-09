@@ -89,19 +89,20 @@ public partial class App : Application
         };
 #endif
 
+        // todo: leaving this out for now bc i don't trust it not to throw an exception randomly
         // win32WindowHelper = new Win32WindowHelper(Window);
         // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
 
         UseSqlite();
         
         // set now playing audiobook
-        var audiobooks = (await Repository.Audiobooks.GetAsync()).AsList();
-        var nowPlaying = audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+        await ViewModel.GetAudiobookListAsync();
+        var nowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);        
 
         if (nowPlaying != null)
         {
-            var nowPlayingViewModel = new AudiobookViewModel(nowPlaying);
-            PlayerViewModel.NowPlaying = nowPlayingViewModel;
+            PlayerViewModel.NowPlaying = nowPlaying;
+            PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 
         var shell = Window.Content as AppShell ?? new AppShell();

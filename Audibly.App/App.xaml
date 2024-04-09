@@ -14,16 +14,15 @@
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Light">
                                     <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
-                                    <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="#121212" x:Key="GalleryBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="GalleryBorderBrush" />
+                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
+                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
                                     <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
-                                    <!-- <SolidColorBrush x:Key="AudiblyBackgroundBrush" Color="#121212" /> -->
-                                    <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="GalleryBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="GalleryBorderBrush" />
+                                    <!-- <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" /> -->
+                                    <!-- <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" /> -->
+                                    <StaticResource ResourceKey="AcrylicBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
+                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
                                     <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="HomePageBackgroundBrush" />

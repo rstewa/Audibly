@@ -22,6 +22,7 @@ namespace Audibly.App.UserControls;
 
 public sealed partial class PlayerControl : UserControl
 {
+    private static Win32WindowHelper win32WindowHelper;
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
@@ -175,8 +176,8 @@ public sealed partial class PlayerControl : UserControl
 
             var playerWindow = WindowHelper.CreateWindow();
 
-            // win32WindowHelper = new Win32WindowHelper(playerWindow);
-            // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1050, y = 800 });
+            win32WindowHelper = new Win32WindowHelper(playerWindow);
+            win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1050, y = 800 });
 
             playerWindow.Closed += (o, args) =>
             {

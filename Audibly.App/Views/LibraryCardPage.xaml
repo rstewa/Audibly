@@ -105,7 +105,7 @@
                     ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
                 </AppBarButton>
-                <AppBarButton
+                <!--<AppBarButton
                     Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
                     Icon="Delete"
                     Label="Delete"
@@ -119,7 +119,7 @@
                     Visibility="Collapsed"
                     x:Name="TestButton">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
-                </AppBarButton>
+                </AppBarButton>-->
             </CommandBar>
         </StackPanel>
 

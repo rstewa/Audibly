@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Windows.ApplicationModel.Core;
 using Windows.Globalization;
 using Windows.Storage;
@@ -63,17 +64,6 @@ public partial class App : Application
     {
         InitializeComponent();
         UnhandledException += OnUnhandledException;
-
-        // Get theme choice from LocalSettings.
-        var value = ApplicationData.Current.LocalSettings.Values["themeSetting"];
-
-        if (value == null)
-            ApplicationData.Current.LocalSettings.Values["themeSetting"] =
-                Current.RequestedTheme == ApplicationTheme.Light ? "Light" : "Dark";
-
-        if (value != null)
-            // Apply theme choice.
-            Current.RequestedTheme = value.ToString() == "Light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
     }
 
     private async void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -89,16 +79,8 @@ public partial class App : Application
     {
         Window = WindowHelper.CreateWindow();
 
-#if DEBUG
-        Window.SizeChanged += (_, args) =>
-        {
-            Debug.WriteLine($"Main Window -> Width: {args.Size.Width}, Height: {args.Size.Height}");
-        };
-#endif
-
-        // todo: leaving this out for now bc i don't trust it not to throw an exception randomly
-        // win32WindowHelper = new Win32WindowHelper(Window);
-        // win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
+        win32WindowHelper = new Win32WindowHelper(Window);
+        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
 
         UseSqlite();
 
@@ -124,9 +106,11 @@ public partial class App : Application
 
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 
-        Window.Activate();
+        ThemeHelper.Initialize();
 
         MainRoot = shell.Content as FrameworkElement;
+
+        Window.Activate();
     }
 
     /// <summary>
@@ -169,7 +153,7 @@ public partial class App : Application
                 {
                     Message = "Restart failed: Invalid user.",
                     Severity = InfoBarSeverity.Error
-                }); 
+                });
                 break;
             case AppRestartFailureReason.Other:
                 ViewModel.EnqueueNotification(new Notification
@@ -179,5 +163,12 @@ public partial class App : Application
                 });
                 break;
         }
+    }
+
+    public static TEnum GetEnum<TEnum>(string text) where TEnum : struct
+    {
+        if (!typeof(TEnum).GetTypeInfo().IsEnum)
+            throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
+        return (TEnum)Enum.Parse(typeof(TEnum), text);
     }
 }

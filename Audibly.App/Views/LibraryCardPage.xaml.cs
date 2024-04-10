@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/8/2024
+// Updated: 4/9/2024
 
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -28,10 +28,10 @@ public sealed partial class LibraryCardPage : Page
     {
         InitializeComponent();
 
-#if DEBUG
-        DeleteButton.Visibility = Visibility.Visible;
-        TestButton.Visibility = Visibility.Visible;
-#endif
+// #if DEBUG
+        // DeleteButton.Visibility = Visibility.Visible;
+        // TestButton.Visibility = Visibility.Visible;
+// #endif
     }
 
     public void TestButton_OnClick(object sender, RoutedEventArgs e)

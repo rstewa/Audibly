@@ -20,8 +20,7 @@
                                 <ResourceDictionary x:Key="Dark">
                                     <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
                                     <!-- <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" /> -->
-                                    <!-- <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" /> -->
-                                    <StaticResource ResourceKey="AcrylicBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
+                                    <StaticResource ResourceKey="LayerOnAcrylicFillColorDefaultBrush" x:Key="AudiblyBackgroundBrush" />
                                     <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">

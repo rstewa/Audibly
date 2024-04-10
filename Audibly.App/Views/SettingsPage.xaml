@@ -57,6 +57,7 @@
                         x:Name="themeMode">
                         <ComboBoxItem Content="Light" Tag="Light" />
                         <ComboBoxItem Content="Dark" Tag="Dark" />
+                        <ComboBoxItem Content="Use system setting" Tag="Default" />
                     </ComboBox>
                 </toolkit:SettingsCard>
 

@@ -4,10 +4,10 @@
 
 using System;
 using System.Reflection;
-using Windows.Storage;
 using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -35,42 +35,37 @@ public sealed partial class SettingsPage : Page
         Loaded += OnSettingsPageLoaded;
     }
 
-    private bool _isStartup = true;
-
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
-        var currentTheme = ApplicationData.Current.LocalSettings.Values["themeSetting"];
-        themeMode.SelectedIndex = currentTheme switch
+        var currentTheme = ThemeHelper.RootTheme;
+        switch (currentTheme)
         {
-            "Light" => 0,
-            "Dark" => 1,
-            _ => themeMode.SelectedIndex
-        };
+            case ElementTheme.Light:
+                themeMode.SelectedIndex = 0;
+                break;
+            case ElementTheme.Dark:
+                themeMode.SelectedIndex = 1;
+                break;
+            case ElementTheme.Default:
+                themeMode.SelectedIndex = 2;
+                break;
+        }
     }
 
     private void themeMode_SelectionChanged(object sender, RoutedEventArgs e)
     {
-        // TODO
-        // if (selectedTheme != null && selectedTheme.Equals("Light")) ViewModel.ThemeService.SetTheme(Theme.Light);
-        // else if (selectedTheme != null && selectedTheme.Equals("Dark")) ViewModel.ThemeService.SetTheme(Theme.Dark);
-        if (_isStartup)
-        {
-            _isStartup = false;
-            return;
-        }
-
         var selectedTheme = ((ComboBoxItem)themeMode.SelectedItem)?.Tag?.ToString();
-        if (selectedTheme == null)
-            return;
-
-        ApplicationData.Current.LocalSettings.Values["themeSetting"] = selectedTheme;
-        
-        var currentTheme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "Light" : "Dark";
-        if (selectedTheme.Equals(currentTheme)) return;
-
-        // notify user that theme change will take effect after app restart
-        ViewModel.MessageService.ShowDialog(DialogType.Restart, "Theme Change",
-            "Theme change will take effect after app restart.");
+        var window = WindowHelper.GetWindowForElement(this);
+        if (selectedTheme != null)
+        {
+            ThemeHelper.RootTheme = App.GetEnum<ElementTheme>(selectedTheme);
+            if (selectedTheme == "Dark")
+                TitleBarHelper.SetCaptionButtonColors(window, Colors.White);
+            else if (selectedTheme == "Light")
+                TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
+            else
+                _ = TitleBarHelper.ApplySystemThemeToCaptionButtons(window) == Colors.White ? "Dark" : "Light";
+        }
     }
 
     private async void bugRequestCard_Click(object sender, RoutedEventArgs e)

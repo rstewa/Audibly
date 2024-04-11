@@ -11,7 +11,7 @@
 
 
 > [!IMPORTANT]
-> Audibly v2 is under construction. Hope to have it finished sometime in April 2024.
+> Audibly v2 is under construction. Hope to have it finished sometime in April 2024!
 
 ## Audibly v2 Sample Screenshots
 

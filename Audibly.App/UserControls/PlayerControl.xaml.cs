@@ -185,13 +185,6 @@ public sealed partial class PlayerControl : UserControl
                 WindowHelper.RestoreMainWindow();
             };
 
-#if DEBUG
-            playerWindow.SizeChanged += (o, args) =>
-            {
-                Debug.WriteLine($"Player -> Width: {args.Size.Width}, Height: {args.Size.Height}");
-            };
-#endif
-
             playerWindow.CustomizeWindow(-1, -1, true, true, true, true, true, true);
             playerWindow.Maximize();
             // todo

@@ -9,15 +9,15 @@
 
     <Identity
             Name="38488StewartRyan.24898061B3F0E"
-            Publisher="CN=rstewa"
-            Version="2.0.2.0"/>
+            Publisher="CN=680AB335-56C7-4E87-81DE-D27B78AC46A3"
+            Version="0.0.1.0"/>
 
-    <mp:PhoneIdentity PhoneProductId="3df91fe9-82a1-4b44-afa3-f8ce4e3441d5"
+    <mp:PhoneIdentity PhoneProductId="78b49ce6-cb47-4c5d-b2c0-fe0edcdf8729"
                       PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
     <Properties>
         <DisplayName>Audibly — Audiobook Player</DisplayName>
-        <PublisherDisplayName>rstewa</PublisherDisplayName>
+        <PublisherDisplayName>rstewa35</PublisherDisplayName>
         <Logo>Assets\StoreLogo.png</Logo>
     </Properties>
 

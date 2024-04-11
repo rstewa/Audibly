@@ -46,7 +46,7 @@
                 Width="300">
                 <Border
                     BorderBrush="Transparent"
-                    BorderThickness="1"
+                    BorderThickness="0"
                     CornerRadius="10">
                     <Border.Background>
                         <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />

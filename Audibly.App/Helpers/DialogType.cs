@@ -8,5 +8,6 @@ public enum DialogType
 {
     Error,
     Info,
-    Restart
+    Restart,
+    Changelog
 }

@@ -17,6 +17,4 @@ public class MessageService
     {
         ShowDialogRequested?.Invoke(type, title, content);
     }
-    
-    
 }

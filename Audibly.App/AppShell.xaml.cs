@@ -10,6 +10,7 @@ using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
+using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -117,6 +118,18 @@ public sealed partial class AppShell : Page
         });
     }
 
+    private async void ShowChangelogDialog(string changelogText)
+    {
+        var dialogContent = new ChangelogDialogContent(changelogText);
+        var contentDialog = new ContentDialog
+        {
+            Content = dialogContent,
+            CloseButtonText = "Close",
+            XamlRoot = XamlRoot
+        };
+        await contentDialog.ShowAsync();
+    }
+    
     private void OnShowDialogRequested(DialogType type, string title, string content)
     {
         switch (type)
@@ -130,6 +143,9 @@ public sealed partial class AppShell : Page
             case DialogType.Restart:
                 ShowRestartDialogAsync(title, content);
                 break; 
+            case DialogType.Changelog:
+                ShowChangelogDialog(content);
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }

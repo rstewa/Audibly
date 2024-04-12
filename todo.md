@@ -1,3 +1,7 @@
+# BUGS
+
+- [ ] BUG: when headphones disconnect, the app crashes
+
 # IN PROGRESS
 
 # TODO

@@ -105,6 +105,19 @@
             <Generator>MSBuild:Compile</Generator>
         </Page>
     </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Update="Changelog.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Changelog.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Changelog.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Changelog.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
 
     <!-- 
       Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

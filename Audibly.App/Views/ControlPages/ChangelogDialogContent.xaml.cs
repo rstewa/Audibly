@@ -11,10 +11,13 @@ namespace Audibly.App.Views.ControlPages;
 /// </summary>
 public sealed partial class ChangelogDialogContent : Page
 {
+    public string Title { get; set; }
+
     public string ChangelogText { get; set; }
     
-    public ChangelogDialogContent(string changelogText)
+    public ChangelogDialogContent(string title, string changelogText)
     {
+        Title = title;
         ChangelogText = changelogText;
         InitializeComponent();
     }

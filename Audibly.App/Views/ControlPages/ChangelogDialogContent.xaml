@@ -11,9 +11,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <StackPanel>
+        <TextBlock 
+            Text="{x:Bind Title}"
+            Style="{StaticResource TitleTextBlockStyle}"
+            Margin="10"/>
         <TextBlock
-            FontSize="24"
-            FontWeight="Bold"
+            Style="{StaticResource SubtitleTextBlockStyle}"
             Margin="10"
             Text="Changelog" />
         <ScrollView

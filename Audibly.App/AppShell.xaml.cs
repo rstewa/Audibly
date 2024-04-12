@@ -118,13 +118,14 @@ public sealed partial class AppShell : Page
         });
     }
 
-    private async void ShowChangelogDialog(string changelogText)
+    private async void ShowChangelogDialog(string title, string changelogText)
     {
-        var dialogContent = new ChangelogDialogContent(changelogText);
+        var dialogContent = new ChangelogDialogContent(title, changelogText);
         var contentDialog = new ContentDialog
         {
             Content = dialogContent,
             CloseButtonText = "Close",
+            DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };
         await contentDialog.ShowAsync();
@@ -144,7 +145,7 @@ public sealed partial class AppShell : Page
                 ShowRestartDialogAsync(title, content);
                 break; 
             case DialogType.Changelog:
-                ShowChangelogDialog(content);
+                ShowChangelogDialog(title, content);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);

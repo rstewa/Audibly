@@ -171,4 +171,13 @@ public partial class App : Application
             throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
         return (TEnum)Enum.Parse(typeof(TEnum), text);
     }
+
+    public static string Version
+    {
+        get
+        {
+            var version = Assembly.GetEntryAssembly().GetName().Version;
+            return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
+        }
+    }
 }

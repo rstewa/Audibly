@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -43,16 +44,30 @@ public sealed partial class AppShell : Page
         InitializeComponent();
 
         // Loaded += (sender, args) => { NavView.SelectedItem = AudiobookListMenuItem; };
-        Loaded += (_, _) =>
-        {
-            NavView.SelectedItem = LibraryMenuItem;
-            var window = App.Window; // idk if this works or not
-            window.Title = AppTitleText;
-            window.ExtendsContentIntoTitleBar = true;
-            window.SetTitleBar(AppTitleBar);
-        };
-
+        // Loaded += (_, _) =>
+        // {
+        //     NavView.SelectedItem = LibraryMenuItem;
+        //     var window = App.Window; // idk if this works or not
+        //     window.Title = AppTitleText;
+        //     window.ExtendsContentIntoTitleBar = true;
+        //     window.SetTitleBar(AppTitleBar);
+        // };
+        
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
+    }
+
+    private void AppShell_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        // NOTE: for debugging
+        // ApplicationData.Current.LocalSettings.Values.Remove("HasCompletedOnboarding");
+        
+        // Check to see if this is the first time the app is being launched
+        var hasCompletedOnboarding = ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
+        if (hasCompletedOnboarding.Value == null)
+        {
+            ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
+            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!", "We're glad you're here. Let's get started by adding your first audiobook.");
+        }
     }
 
     private async void ShowDeleteDialogAsync(string title, string content)
@@ -88,7 +103,8 @@ public sealed partial class AppShell : Page
                 Title = title,
                 Content = content,
                 CloseButtonText = "Ok",
-                XamlRoot = XamlRoot
+                XamlRoot = XamlRoot,
+                DefaultButton = ContentDialogButton.Close
             };
 
             await dialog.ShowAsync();

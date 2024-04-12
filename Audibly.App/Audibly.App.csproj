@@ -26,6 +26,7 @@
     </PropertyGroup>
     <ItemGroup>
       <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
+      <None Remove="Views\ControlPages\OnBoardingDialogContent.xaml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -117,6 +118,11 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Changelog.resx</DependentUpon>
       </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Views\ControlPages\OnBoardingDialogContent.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
 
     <!-- 

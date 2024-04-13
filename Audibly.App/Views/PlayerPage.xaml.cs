@@ -33,5 +33,9 @@ public sealed partial class PlayerPage : Page
     public PlayerPage()
     {
         InitializeComponent();
+        
+        // Set the title bar for the current view
+        App.Window.SetTitleBar(NowPlayingPageTitleBar);
+        App.Window.ExtendsContentIntoTitleBar = true;
     }
 }

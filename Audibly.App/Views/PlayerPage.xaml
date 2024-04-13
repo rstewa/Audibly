@@ -13,59 +13,81 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid>
-        <Grid>
-            <Border BorderBrush="Transparent" BorderThickness="0">
-                <Border.Background>
-                    <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
-                </Border.Background>
-            </Border>
-            <media:UIElementExtensions.VisualFactory>
-                <media:PipelineVisualFactory Source="{media:BackdropSource}">
-                    <media:BlurEffect Amount="50" />
-                </media:PipelineVisualFactory>
-            </media:UIElementExtensions.VisualFactory>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Background="Transparent" x:Name="NowPlayingPageTitleBar">
+            <!--  back button  -->
+            <!-- <Button Canvas.ZIndex="1" Height="32"> -->
+            <!--     <Button.Content> -->
+            <!--         <SymbolIcon Symbol="Back" /> -->
+            <!--     </Button.Content> -->
+            <!-- </Button> -->
         </Grid>
 
-        <!--  got this from RiseMediaPlayer: https://github.com/Rise-Software/Rise-Media-Player  -->
-        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Border.Background>
-                <AcrylicBrush
-                    FallbackColor="Transparent"
-                    TintColor="{Binding Color, Source={ThemeResource ApplicationPageBackgroundThemeBrush}}"
-                    TintOpacity="0.7" />
-            </Border.Background>
-        </Border>
-
-        <RelativePanel HorizontalAlignment="Stretch">
-            <!--  cover image  -->
-            <Border
-                BorderThickness="0"
-                Height="300"
-                RelativePanel.AlignHorizontalCenterWithPanel="True"
-                RelativePanel.AlignVerticalCenterWithPanel="True"
-                Width="300">
-                <Border
-                    BorderBrush="Transparent"
-                    BorderThickness="0"
-                    CornerRadius="10">
+        <Grid Canvas.ZIndex="0" Grid.RowSpan="2">
+            <!--  backdrop  -->
+            <Grid>
+                <Border BorderBrush="Transparent" BorderThickness="0">
                     <Border.Background>
                         <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
                     </Border.Background>
                 </Border>
-                <winUi:Effects.Shadow>
-                    <media:AttachedCardShadow CornerRadius="10" Offset="4, 4" />
-                </winUi:Effects.Shadow>
+                <media:UIElementExtensions.VisualFactory>
+                    <media:PipelineVisualFactory Source="{media:BackdropSource}">
+                        <media:BlurEffect Amount="50" />
+                    </media:PipelineVisualFactory>
+                </media:UIElementExtensions.VisualFactory>
+            </Grid>
+
+            <!--  got this from RiseMediaPlayer: https://github.com/Rise-Software/Rise-Media-Player  -->
+            <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Border.Background>
+                    <AcrylicBrush
+                        FallbackColor="Transparent"
+                        TintColor="{Binding Color, Source={ThemeResource ApplicationPageBackgroundThemeBrush}}"
+                        TintOpacity="0.7" />
+                </Border.Background>
             </Border>
 
-            <!--  player controls  -->
-            <userControls:PlayerControl
-                HorizontalAlignment="Stretch"
-                Margin="0,20,20,20"
-                RelativePanel.AlignBottomWithPanel="True"
-                RelativePanel.AlignHorizontalCenterWithPanel="True"
-                RelativePanel.AlignLeftWithPanel="True"
-                RelativePanel.AlignRightWithPanel="True"
-                ShowCoverImage="False" />
-        </RelativePanel>
+            <RelativePanel HorizontalAlignment="Stretch">
+                <Button RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignTopWithPanel="True">
+                    <Button.Content>
+                        <SymbolIcon Symbol="Back" />
+                    </Button.Content>
+                </Button>
+                <!--  cover image  -->
+                <Border
+                    BorderThickness="0"
+                    Height="300"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.AlignVerticalCenterWithPanel="True"
+                    Width="300">
+                    <Border
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="10">
+                        <Border.Background>
+                            <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                        </Border.Background>
+                    </Border>
+                    <winUi:Effects.Shadow>
+                        <media:AttachedCardShadow CornerRadius="10" Offset="4, 4" />
+                    </winUi:Effects.Shadow>
+                </Border>
+
+                <!--  player controls  -->
+                <userControls:PlayerControl
+                    HorizontalAlignment="Stretch"
+                    Margin="0,20,20,20"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    ShowCoverImage="False" />
+            </RelativePanel>
+        </Grid>
     </Grid>
 </Page>

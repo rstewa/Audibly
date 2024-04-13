@@ -49,11 +49,12 @@
             Grid.Column="1"
             Grid.Row="0"
             Grid.RowSpan="2"
-            IsBackEnabled="{x:Bind AppFrame.CanGoBack, Mode=OneWay}"
+            IsBackEnabled="{x:Bind AppAppShellFrame.CanGoBack, Mode=OneWay}"
             IsSettingsVisible="True"
             IsTitleBarAutoPaddingEnabled="True"
             ItemInvoked="NavigationView_ItemInvoked"
             PaneDisplayMode="Left"
+            Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}"
             x:Name="NavView">
             <NavigationView.Resources>
                 <!--  ReSharper disable all Xaml.RedundantResource  -->
@@ -79,24 +80,23 @@
                     Content="{x:Bind LibraryLabel}"
                     Tag="LibraryPage"
                     ToolTipService.ToolTip="{x:Bind LibraryLabel}"
-                    x:Name="LibraryMenuItem">
+                    x:Name="LibraryCardMenuItem">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
                     <NavigationViewItem.InfoBadge>
                         <InfoBadge Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" x:Name="infoBadge1" />
                     </NavigationViewItem.InfoBadge>
-
                 </muxc:NavigationViewItem>
-                <!--  <muxc:NavigationViewItem  -->
-                <!--  Content="{x:Bind NowPlayingLabel}"  -->
-                <!--  Tag="NowPlayingPage"  -->
-                <!--  ToolTipService.ToolTip="{x:Bind NowPlayingLabel}"  -->
-                <!--  x:Name="NowPlayingMenuItem">  -->
-                <!--     <muxc:NavigationViewItem.Icon> -->
-                <!--         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" /> -->
-                <!--     </muxc:NavigationViewItem.Icon> -->
-                <!-- </muxc:NavigationViewItem> -->
+                <muxc:NavigationViewItem
+                    Content="{x:Bind NowPlayingLabel}"
+                    Tag="NowPlayingPage"
+                    ToolTipService.ToolTip="{x:Bind NowPlayingLabel}"
+                    x:Name="NowPlayingMenuItem">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
 
             <NavigationView.AutoSuggestBox>
@@ -124,7 +124,7 @@
             <Frame
                 Margin="12,0,0,0"
                 Navigating="OnNavigatingToPage"
-                x:Name="frame">
+                x:Name="AppShellFrame">
                 <Frame.ContentTransitions>
                     <TransitionCollection>
                         <NavigationThemeTransition>

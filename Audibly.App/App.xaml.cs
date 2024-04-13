@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
@@ -55,6 +56,8 @@ public partial class App : Application
     public static IAudiblyRepository Repository { get; private set; }
 
     public static FrameworkElement MainRoot { get; private set; }
+    
+    public static Frame? RootFrame { get; private set; }
 
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
@@ -94,23 +97,40 @@ public partial class App : Application
             PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 
-        var shell = Window.Content as AppShell ?? new AppShell();
-        shell.Language = ApplicationLanguages.Languages[0];
-        Window.Content = shell;
+        // var shell = Window.Content as AppShell ?? new AppShell();
+        // shell.Language = ApplicationLanguages.Languages[0];
+        // Window.Content = shell;
+        //
+        // if (shell.AppFrame.Content == null)
+        //     // When the navigation stack isn't restored, navigate to the first page
+        //     // suppressing the initial entrance animation.
+        //     shell.AppFrame.Navigate(typeof(LibraryCardPage), null,
+        //         new SuppressNavigationTransitionInfo());
 
-        if (shell.AppFrame.Content == null)
-            // When the navigation stack isn't restored, navigate to the first page
-            // suppressing the initial entrance animation.
-            shell.AppFrame.Navigate(typeof(LibraryCardPage), null,
-                new SuppressNavigationTransitionInfo());
-
+        RootFrame = Window.Content as Frame;
+        
+        if (RootFrame == null)
+        {
+            RootFrame = new Frame();
+            RootFrame.NavigationFailed += OnNavigationFailed;
+            Window.Content = RootFrame;
+        }
+        
+        if (RootFrame.Content == null)
+        {
+            RootFrame.Navigate(typeof(AppShell), args.Arguments);
+        }
+        
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 
         ThemeHelper.Initialize();
-
-        MainRoot = shell.Content as FrameworkElement;
-
+        
         Window.Activate();
+    }
+
+    private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>

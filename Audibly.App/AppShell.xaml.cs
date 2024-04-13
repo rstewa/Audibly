@@ -44,8 +44,10 @@ public sealed partial class AppShell : Page
     public AppShell()
     {
         InitializeComponent();
+        // set the title bar
+        AppShellFrame.Navigate(typeof(LibraryCardPage));
 
-        Loaded += (_, _) => { NavView.SelectedItem = LibraryMenuItem; };
+        Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
@@ -205,7 +207,7 @@ public sealed partial class AppShell : Page
     /// <summary>
     ///     Gets the navigation frame instance.
     /// </summary>
-    public Frame AppFrame => frame;
+    public Frame AppAppShellFrame => AppShellFrame;
 
     public readonly string AudiobookListLabel = "Audiobooks";
     public readonly string LibraryLabel = "Library";
@@ -219,17 +221,29 @@ public sealed partial class AppShell : Page
         if (args.InvokedItemContainer is not NavigationViewItem item) return;
         
         // check if the item is already the current page
-        if (item == (NavigationViewItem)NavView.SelectedItem) return;
+        // if (item == (NavigationViewItem)NavView.SelectedItem) return;
 
         // if (item == AudiobookListMenuItem)
         // {
         //     AppFrame.Navigate(typeof(LibraryPage));
         // }
-        if (item == LibraryMenuItem)
-            AppFrame.Navigate(typeof(LibraryCardPage));
-        // else if (item == NowPlayingMenuItem)
-        //     AppFrame.Navigate(typeof(PlayerPage));
-        else if (item == NavView.SettingsItem) AppFrame.Navigate(typeof(SettingsPage));
+        if (item == LibraryCardMenuItem)
+        {
+            AppAppShellFrame.Navigate(typeof(LibraryCardPage));
+            ViewModel.IsNavigationViewVisible = true;
+        }
+        else if (item == NowPlayingMenuItem)
+        {
+            // AppFrame.Navigate(typeof(PlayerPage));
+            // ViewModel.IsNavigationViewVisible = false;
+            // this.Frame.Navigate(typeof(PlayerPage));
+            App.RootFrame.Navigate(typeof(PlayerPage));
+        }
+        else if (item == NavView.SettingsItem)
+        {
+            AppAppShellFrame.Navigate(typeof(SettingsPage));
+            ViewModel.IsNavigationViewVisible = true;
+        }
     }
 
     /// <summary>
@@ -241,8 +255,8 @@ public sealed partial class AppShell : Page
         if (e.NavigationMode == NavigationMode.Back)
         {
             // if (e.SourcePageType == typeof(LibraryPage)) NavView.SelectedItem = AudiobookListMenuItem;
-            if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryMenuItem;
-            // else if (e.SourcePageType == typeof(PlayerPage)) NavView.SelectedItem = NowPlayingMenuItem;
+            if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryCardMenuItem;
+            else if (e.SourcePageType == typeof(PlayerPage)) NavView.SelectedItem = NowPlayingMenuItem;
             else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
         }
     }
@@ -260,7 +274,7 @@ public sealed partial class AppShell : Page
     /// </summary>
     private void NavigationView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
     {
-        if (AppFrame.CanGoBack) AppFrame.GoBack();
+        if (AppAppShellFrame.CanGoBack) AppAppShellFrame.GoBack();
     }
 
     private void AudiobookSearchBox_Loaded(object sender, RoutedEventArgs e)

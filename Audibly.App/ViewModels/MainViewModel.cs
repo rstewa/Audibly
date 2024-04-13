@@ -90,6 +90,13 @@ public class MainViewModel : BindableBase
         get => _isImporting;
         set => Set(ref _isImporting, value);
     }
+    
+    private bool _isNavigationViewVisible = true;
+    public bool IsNavigationViewVisible
+    {
+        get => _isNavigationViewVisible;
+        set => Set(ref _isNavigationViewVisible, value);
+    }
 
     private int _importProgress;
 
@@ -121,6 +128,7 @@ public class MainViewModel : BindableBase
         set => Set(ref _notificationText, value);
     }
 
+    // todo: don't need this anymore
     private bool _isNotificationVisible;
 
     public bool IsNotificationVisible
@@ -257,30 +265,44 @@ public class MainViewModel : BindableBase
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
         MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
             "Please wait while the audiobooks are imported...");
 
         await Task.Run(async () =>
         {
-            await FileImporter.ImportFileAsync(file.Path, _cancellationTokenSource.Token,
-                async (progress, total, title, didFail) =>
-                {
-                    await dispatcherQueue.EnqueueAsync(() =>
+            try
+            {
+                await FileImporter.ImportFileAsync(file.Path, _cancellationTokenSource.Token,
+                    async (progress, total, title, didFail) =>
                     {
-                        ImportProgress = (int)((double)progress / total * 100);
-                        ImportText = $" {title}";
-                    });
-
-                    if (didFail)
-                    {
-                        importFailed = true;
-                        EnqueueNotification(new Notification
+                        await dispatcherQueue.EnqueueAsync(() =>
                         {
-                            Message = "Failed to import audiobook. Path: " + file.Path,
-                            Severity = InfoBarSeverity.Error
+                            ImportProgress = (int)((double)progress / total * 100);
+                            ImportText = $" {title}";
                         });
-                    }
+
+                        if (didFail)
+                        {
+                            importFailed = true;
+                            EnqueueNotification(new Notification
+                            {
+                                Message = "Failed to import audiobook. Path: " + file.Path,
+                                Severity = InfoBarSeverity.Error
+                            });
+                        }
+                    });
+            }
+            catch (OperationCanceledException)
+            {
+                EnqueueNotification(new Notification
+                {
+                    Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
                 });
+            }
 
             await dispatcherQueue.EnqueueAsync(() =>
             {
@@ -318,6 +340,7 @@ public class MainViewModel : BindableBase
         else
             return;
 
+        // todo: idk if i want the loading progress bar to be show or not
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();

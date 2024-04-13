@@ -5,6 +5,7 @@
 using Windows.UI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Helpers;
 
@@ -15,7 +16,8 @@ internal class TitleBarHelper
     public static Color ApplySystemThemeToCaptionButtons(Window window)
     {
         // var frame = (Application.Current as Audibly.App.App).GetRootFrame() as FrameworkElement;
-        var frame = App.MainRoot;
+        // var frame = App.MainRoot;
+        var frame = App.RootFrame;
         Color color;
         if (frame.ActualTheme == ElementTheme.Dark)
             color = Colors.White;

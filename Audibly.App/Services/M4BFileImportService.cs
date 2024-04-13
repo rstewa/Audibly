@@ -27,6 +27,7 @@ public class M4BFileImportService : IImportFiles
         _mapper = new MapperConfiguration(cfg => { cfg.CreateMap<ATL.ChapterInfo, ChapterInfo>(); }).CreateMapper();
     }
 
+    // TODO: need a better way of checking if a file is one we have already imported
     public async Task ImportDirectoryAsync(string path, CancellationToken cancellationToken,
         Func<int, int, string, bool, Task> progressCallback)
     {

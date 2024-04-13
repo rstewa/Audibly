@@ -1,9 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/12/2024
+// Updated: 4/13/2024
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -395,32 +394,29 @@ public class MainViewModel : BindableBase
     }
 
     // TODO: need to move these methods to a separate class
-    
+
     // TODO: add type and duration to the Notification class
-        // ViewModel.EnqueueNotification(new Notification
-        // {
-        //     Message = "This is a test notification",
-        //     Type = NotificationType.Info,
-        //     Duration = TimeSpan.FromSeconds(5)
-        // });
-    
+    // ViewModel.EnqueueNotification(new Notification
+    // {
+    //     Message = "This is a test notification",
+    //     Type = NotificationType.Info,
+    //     Duration = TimeSpan.FromSeconds(5)
+    // });
+
     public ObservableCollection<Notification> Notifications { get; } = [];
 
     public void EnqueueNotification(Notification notification)
     {
-        // dispatcherQueue.TryEnqueue(() =>
-        dispatcherQueue.EnqueueAsync(() =>
-        {
-            Notifications.Add(notification);
-        });
+        dispatcherQueue.TryEnqueue(() => { Notifications.Add(notification); });
     }
 
     // Call this method when the InfoBar is closed
     public void OnNotificationClosed(Notification notification)
     {
-        dispatcherQueue.EnqueueAsync(() =>
+        dispatcherQueue.TryEnqueue(() =>
         {
             Notifications.Remove(notification);
+            if (Notifications.Count == 0) Notifications.Clear();
         });
     }
 }

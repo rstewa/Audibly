@@ -165,18 +165,6 @@
             </ItemsRepeater>
         </ScrollViewer>
 
-        <!--  progress bar for when importing audiobooks  -->
-        <!--<userControls:ProgressBarCard
-            Canvas.ZIndex="10"
-            IsIndeterminate="False"
-            Margin="25,0,50,0"
-            Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
-            RelativePanel.AlignHorizontalCenterWithPanel="True"
-            RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.AlignVerticalCenterWithPanel="True"
-            Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />-->
-
         <!--  progress bar for when library view is loading  -->
         <userControls:ProgressBarCard
             Canvas.ZIndex="10"
@@ -207,60 +195,29 @@
 
         </Grid>
 
-        <ListView
-            ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}"
+        <ScrollViewer
             Margin="0,0,-26,12"
-            RelativePanel.Above="Player"
+            RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.AlignRightWithPanel="True">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="ListViewItem">
-                                <Grid x:Name="ContentBorder">
-                                    <ContentPresenter Content="{TemplateBinding Content}" />
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Target="ContentBorder.Background" Value="Transparent" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                </Grid>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewModels:Notification">
-                    <Grid>
-                        <InfoBar
-                            Closed="InfoBar_OnClosed"
-                            HorizontalAlignment="Right"
-                            IsClosable="True"
-                            IsIconVisible="True"
-                            IsOpen="True"
-                            Message="{x:Bind Message}"
-                            Severity="{x:Bind Severity}" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-            <!-- <ListView.ItemTemplate> -->
-            <!--     <DataTemplate x:DataType="viewModels:Notification"> -->
-            <!--  <InfoBar  -->
-            <!--  Closed="InfoBar_OnClosed"  -->
-            <!--  IsClosable="True"  -->
-            <!--  IsIconVisible="True"  -->
-            <!--  IsOpen="True"  -->
-            <!--  Message="{x:Bind Message}"  -->
-            <!--  Severity="{x:Bind Severity}" />  -->
-            <!--     </DataTemplate> -->
-            <!-- </ListView.ItemTemplate> -->
-        </ListView>
+            <StackPanel>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:Notification">
+                            <Grid>
+                                <InfoBar
+                                    Closed="InfoBar_OnClosed"
+                                    HorizontalAlignment="Right"
+                                    IsClosable="True"
+                                    IsIconVisible="True"
+                                    IsOpen="True"
+                                    Message="{x:Bind Message}"
+                                    Severity="{x:Bind Severity}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LibraryCardViewVisibility">

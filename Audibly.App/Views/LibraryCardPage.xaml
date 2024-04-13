@@ -2,6 +2,7 @@
 
 <Page
     Background="Transparent"
+    KeyboardAcceleratorPlacementMode="Hidden"
     mc:Ignorable="d"
     x:Class="Audibly.App.Views.LibraryCardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -25,6 +26,12 @@
             </userControls:AudiobookTile>
         </DataTemplate>
     </Page.Resources>
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Invoked="SecretMenuKeyboardAccelerator_OnInvoked"
+            Key="F12"
+            Modifiers="Control,Shift" />
+    </Page.KeyboardAccelerators>
 
     <RelativePanel Padding="36,36,36,0" x:Name="LayoutRoot">
         <!--  start panel (shown when no audiobooks have been imported yet)  -->
@@ -105,6 +112,8 @@
                     ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
                 </AppBarButton>
+
+                <AppBarSeparator Visibility="Collapsed" x:Name="SecretMenuSeparator" />
                 <AppBarButton
                     Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
                     Icon="Delete"
@@ -113,12 +122,20 @@
                     Visibility="Collapsed"
                     x:Name="DeleteButton" />
                 <AppBarButton
-                    Click="{x:Bind TestButton_OnClick}"
-                    Label="Test"
-                    ToolTipService.ToolTip="Test"
+                    Click="{x:Bind TestContentDialogButton_OnClick}"
+                    Label="Test Content Dialog"
+                    ToolTipService.ToolTip="Test Content Dialog"
                     Visibility="Collapsed"
-                    x:Name="TestButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                    x:Name="TestContentDialogButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FF;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind TestNotificationButton_OnClick}"
+                    Label="Test Notification"
+                    ToolTipService.ToolTip="Test Notification"
+                    Visibility="Collapsed"
+                    x:Name="TestNotificationButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7E7;" />
                 </AppBarButton>
             </CommandBar>
         </StackPanel>
@@ -190,18 +207,60 @@
 
         </Grid>
 
-        <!--  notification bar  -->
-        <InfoBar
-            Closed="{x:Bind ViewModel.OnNotificationClosed}"
-            IsClosable="True"
-            IsIconVisible="True"
-            IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=TwoWay}"
+        <ListView
+            ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}"
             Margin="0,0,-26,12"
-            Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}"
             RelativePanel.Above="Player"
-            RelativePanel.AlignRightWithPanel="True"
-            Severity="{x:Bind ViewModel.NotificationSeverity, Mode=OneWay}"
-            x:Name="InfoBarNotification" />
+            RelativePanel.AlignRightWithPanel="True">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <Grid x:Name="ContentBorder">
+                                    <ContentPresenter Content="{TemplateBinding Content}" />
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <VisualState.Setters>
+                                                    <Setter Target="ContentBorder.Background" Value="Transparent" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:Notification">
+                    <Grid>
+                        <InfoBar
+                            Closed="InfoBar_OnClosed"
+                            HorizontalAlignment="Right"
+                            IsClosable="True"
+                            IsIconVisible="True"
+                            IsOpen="True"
+                            Message="{x:Bind Message}"
+                            Severity="{x:Bind Severity}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <!-- <ListView.ItemTemplate> -->
+            <!--     <DataTemplate x:DataType="viewModels:Notification"> -->
+            <!--  <InfoBar  -->
+            <!--  Closed="InfoBar_OnClosed"  -->
+            <!--  IsClosable="True"  -->
+            <!--  IsIconVisible="True"  -->
+            <!--  IsOpen="True"  -->
+            <!--  Message="{x:Bind Message}"  -->
+            <!--  Severity="{x:Bind Severity}" />  -->
+            <!--     </DataTemplate> -->
+            <!-- </ListView.ItemTemplate> -->
+        </ListView>
 
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LibraryCardViewVisibility">

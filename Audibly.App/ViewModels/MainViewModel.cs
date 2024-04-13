@@ -394,32 +394,34 @@ public class MainViewModel : BindableBase
             await GetAudiobookListAsync());
     }
 
-    private readonly Queue<Notification> notifications = new();
+    // TODO: need to move these methods to a separate class
+    
+    // TODO: add type and duration to the Notification class
+        // ViewModel.EnqueueNotification(new Notification
+        // {
+        //     Message = "This is a test notification",
+        //     Type = NotificationType.Info,
+        //     Duration = TimeSpan.FromSeconds(5)
+        // });
+    
+    public ObservableCollection<Notification> Notifications { get; } = [];
 
     public void EnqueueNotification(Notification notification)
     {
-        notifications.Enqueue(notification);
-        if (!IsNotificationVisible) DequeueNotification();
-    }
-
-    private void DequeueNotification()
-    {
-        if (notifications.Any())
-            dispatcherQueue.TryEnqueue(() =>
-            {
-                var notification = notifications.Dequeue();
-                NotificationText = notification.Message;
-                NotificationSeverity = notification.Severity;
-                IsNotificationVisible = true;
-            });
-        else
-            dispatcherQueue.TryEnqueue(() => IsNotificationVisible = false);
+        // dispatcherQueue.TryEnqueue(() =>
+        dispatcherQueue.EnqueueAsync(() =>
+        {
+            Notifications.Add(notification);
+        });
     }
 
     // Call this method when the InfoBar is closed
-    public void OnNotificationClosed()
+    public void OnNotificationClosed(Notification notification)
     {
-        DequeueNotification();
+        dispatcherQueue.EnqueueAsync(() =>
+        {
+            Notifications.Remove(notification);
+        });
     }
 }
 

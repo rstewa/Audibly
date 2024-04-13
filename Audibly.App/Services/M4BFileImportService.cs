@@ -1,18 +1,16 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/7/2024
+// Updated: 4/12/2024
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage;
 using ATL;
 using Audibly.App.Services.Interfaces;
 using Audibly.Models;
 using AutoMapper;
-using Microsoft.UI.Xaml.Controls;
 using Sharpener.Extensions;
 using ChapterInfo = Audibly.Models.ChapterInfo;
 
@@ -20,6 +18,8 @@ namespace Audibly.App.Services;
 
 public class M4BFileImportService : IImportFiles
 {
+    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
+
     private static IMapper _mapper;
 
     public M4BFileImportService()
@@ -27,60 +27,66 @@ public class M4BFileImportService : IImportFiles
         _mapper = new MapperConfiguration(cfg => { cfg.CreateMap<ATL.ChapterInfo, ChapterInfo>(); }).CreateMapper();
     }
 
-    private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
-
-    public async Task ImportDirectoryAsync(string path, Func<int, int, string, List<string>, Task> progressCallback)
+    public async Task ImportDirectoryAsync(string path, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback)
     {
+        var didFail = false;
         var files = Directory.GetFiles(path, "*.m4b", SearchOption.AllDirectories);
         var numberOfFiles = files.Length;
         var filesList = files.AsList();
-        var failedAudiobooks = new List<string>();
 
         foreach (var file in files)
         {
+            // Check if cancellation was requested
+            cancellationToken.ThrowIfCancellationRequested();
+
             var audiobook = await CreateAudiobook(file);
 
-            if (audiobook == null)
+            if (audiobook == null) didFail = true;
+
+            if (audiobook != null)
             {
-                failedAudiobooks.Add(file);
-                continue;
+                // insert the audiobook into the database
+                var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
+                if (result == null) didFail = true;
             }
 
-            // insert the audiobook into the database
-            var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
-
-            if (result == null)
-            {
-                failedAudiobooks.Add(audiobook.Title);
-                continue;
-            }
-
-            // TODO: insert the chapters into the database
+            var title = audiobook?.Title ?? Path.GetFileNameWithoutExtension(file);
 
             // report progress
-            await progressCallback(filesList.IndexOf(file), numberOfFiles, audiobook.Title, failedAudiobooks);
+            await progressCallback(filesList.IndexOf(file), numberOfFiles, title, didFail);
+
+            didFail = false;
         }
+
+        ImportCompleted?.Invoke();
     }
-    
-    public async Task<bool> ImportFileAsync(string path, Func<int, int, string, Task> progressCallback)
+
+    public async Task ImportFileAsync(string path, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback)
     {
+        // Check if cancellation was requested
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var didFail = false;
         var audiobook = await CreateAudiobook(path);
-        
-        if (audiobook == null)
-        {
-            return false;
-        }
+
+        if (audiobook == null) didFail = true;
 
         // insert the audiobook into the database
-        await App.Repository.Audiobooks.UpsertAsync(audiobook);
+        if (audiobook != null)
+        {
+            var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
+            if (result == null) didFail = true;
+        }
 
-        // TODO: insert the chapters into the database
+        var title = audiobook?.Title ?? Path.GetFileNameWithoutExtension(path);
 
         // report progress
         // NOTE: keeping this bc this function will be used in the future to import 1-to-many files
-        await progressCallback(1, 1, audiobook.Title);
-        
-        return true;
+        await progressCallback(1, 1, title, didFail);
+
+        ImportCompleted?.Invoke();
     }
 
     private static async Task<Audiobook?> CreateAudiobook(string path)

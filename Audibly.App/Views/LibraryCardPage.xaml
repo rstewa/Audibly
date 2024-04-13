@@ -149,7 +149,7 @@
         </ScrollViewer>
 
         <!--  progress bar for when importing audiobooks  -->
-        <userControls:ProgressBarCard
+        <!--<userControls:ProgressBarCard
             Canvas.ZIndex="10"
             IsIndeterminate="False"
             Margin="25,0,50,0"
@@ -158,7 +158,7 @@
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
             RelativePanel.AlignVerticalCenterWithPanel="True"
-            Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />
+            Visibility="{x:Bind ViewModel.IsImporting, Mode=OneWay}" />-->
 
         <!--  progress bar for when library view is loading  -->
         <userControls:ProgressBarCard

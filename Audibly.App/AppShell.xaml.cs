@@ -1,10 +1,11 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/8/2024
+// Updated: 4/12/2024
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
@@ -13,6 +14,7 @@ using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -43,31 +45,63 @@ public sealed partial class AppShell : Page
     {
         InitializeComponent();
 
-        // Loaded += (sender, args) => { NavView.SelectedItem = AudiobookListMenuItem; };
-        // Loaded += (_, _) =>
-        // {
-        //     NavView.SelectedItem = LibraryMenuItem;
-        //     var window = App.Window; // idk if this works or not
-        //     window.Title = AppTitleText;
-        //     window.ExtendsContentIntoTitleBar = true;
-        //     window.SetTitleBar(AppTitleBar);
-        // };
-        
+        Loaded += (_, _) => { NavView.SelectedItem = LibraryMenuItem; };
+
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
+        App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
     }
 
     private void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
         // NOTE: for debugging
         // ApplicationData.Current.LocalSettings.Values.Remove("HasCompletedOnboarding");
-        
+
         // Check to see if this is the first time the app is being launched
-        var hasCompletedOnboarding = ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
+        var hasCompletedOnboarding =
+            ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
         if (hasCompletedOnboarding.Value == null)
         {
             ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
-            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!", "We're glad you're here. Let's get started by adding your first audiobook.");
+            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
+                "We're glad you're here. Let's get started by adding your first audiobook.");
         }
+    }
+
+    private ContentDialog? _importDialog;
+
+    private async void ShowImportDialogAsync(string title)
+    {
+        var importDialog = new ImportDialogContent();
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            _importDialog = new ContentDialog
+            {
+                Title = title,
+                Content = importDialog,
+                DefaultButton = ContentDialogButton.Close,
+                CloseButtonText = "Cancel",
+                XamlRoot = XamlRoot
+            };
+
+            _importDialog.CloseButtonClick += (_, _) =>
+            {
+                ViewModel.MessageService.CancelDialog();
+                ViewModel.IsLoading = false;
+                ViewModel.Refresh(); 
+            };
+
+            await _importDialog.ShowAsync();
+        });
+    }
+
+    private async void HideImportDialog()
+    {
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            if (_importDialog == null) return;
+            _importDialog.Hide();
+            _importDialog = null;
+        });
     }
 
     private async void ShowDeleteDialogAsync(string title, string content)
@@ -110,7 +144,7 @@ public sealed partial class AppShell : Page
             await dialog.ShowAsync();
         });
     }
-    
+
     private async void ShowRestartDialogAsync(string title, string content)
     {
         await _dispatcherQueue.EnqueueAsync(async () =>
@@ -124,11 +158,8 @@ public sealed partial class AppShell : Page
                 CloseButtonText = "Not Now",
                 XamlRoot = XamlRoot
             };
-            
-            dialog.PrimaryButtonClick += (_, _) =>
-            {
-                App.RestartApp();
-            };
+
+            dialog.PrimaryButtonClick += (_, _) => { App.RestartApp(); };
 
             await dialog.ShowAsync();
         });
@@ -146,7 +177,7 @@ public sealed partial class AppShell : Page
         };
         await contentDialog.ShowAsync();
     }
-    
+
     private void OnShowDialogRequested(DialogType type, string title, string content)
     {
         switch (type)
@@ -159,16 +190,17 @@ public sealed partial class AppShell : Page
                 break;
             case DialogType.Restart:
                 ShowRestartDialogAsync(title, content);
-                break; 
+                break;
             case DialogType.Changelog:
                 ShowChangelogDialog(title, content);
+                break;
+            case DialogType.Import:
+                ShowImportDialogAsync(title);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
     }
-
-    public string AppTitleText => "Audibly";
 
     /// <summary>
     ///     Gets the navigation frame instance.
@@ -185,6 +217,9 @@ public sealed partial class AppShell : Page
     private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if (args.InvokedItemContainer is not NavigationViewItem item) return;
+        
+        // check if the item is already the current page
+        if (item == (NavigationViewItem)NavView.SelectedItem) return;
 
         // if (item == AudiobookListMenuItem)
         // {

@@ -9,5 +9,6 @@ public enum DialogType
     Error,
     Info,
     Restart,
-    Changelog
+    Changelog,
+    Import
 }

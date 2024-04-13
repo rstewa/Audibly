@@ -1,14 +1,17 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/8/2024
+// Updated: 4/12/2024
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Audibly.App.Extensions;
+using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
 using CommunityToolkit.WinUI;
@@ -25,7 +28,7 @@ namespace Audibly.App.ViewModels;
 public class MainViewModel : BindableBase
 {
     private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    private readonly IImportFiles _fileImporter;
+    public readonly IImportFiles FileImporter;
     public readonly IAppDataService AppDataService;
     public readonly MessageService MessageService;
 
@@ -34,7 +37,7 @@ public class MainViewModel : BindableBase
     /// </summary>
     public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService)
     {
-        _fileImporter = fileImporter;
+        FileImporter = fileImporter;
         AppDataService = appDataService;
         MessageService = messageService;
         // Task.Run(GetAudiobookListAsync);
@@ -100,15 +103,15 @@ public class MainViewModel : BindableBase
         set => Set(ref _importProgress, value);
     }
 
-    private string _isImportingText;
+    private string _importText;
 
     /// <summary>
     ///     Gets or sets the text to display while importing audiobooks.
     /// </summary>
-    public string IsImportingText
+    public string ImportText
     {
-        get => _isImportingText;
-        set => Set(ref _isImportingText, value);
+        get => _importText;
+        set => Set(ref _importText, value);
     }
 
     private string _notificationText;
@@ -240,129 +243,146 @@ public class MainViewModel : BindableBase
 
     public async void ImportAudiobookAsync()
     {
-        // Create a folder picker
+        var importFailed = false;
         var openPicker = new FileOpenPicker();
-
-        // See the sample code below for how to make the window accessible from the App class.
         var window = App.Window;
-
-        // Retrieve the window handle (HWND) of the current WinUI 3 window.
         var hWnd = WindowNative.GetWindowHandle(window);
-
-        // Initialize the folder picker with the window handle (HWND).
         InitializeWithWindow.Initialize(openPicker, hWnd);
-
-        // Set options for your folder picker
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
-        // todo: maybe remove this; trying it out
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
 
-        // Open the picker for the user to pick a folder
         var file = await openPicker.PickSingleFileAsync();
-
         if (file == null) return;
 
-        // todo: switch the result
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
-        await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
+        _cancellationTokenSource = new CancellationTokenSource();
+        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+            "Please wait while the audiobooks are imported...");
 
         await Task.Run(async () =>
         {
-            var result = await _fileImporter.ImportFileAsync(file.Path, async (progress, total, text) =>
-            {
-                await dispatcherQueue.EnqueueAsync(() =>
+            await FileImporter.ImportFileAsync(file.Path, _cancellationTokenSource.Token,
+                async (progress, total, title, didFail) =>
                 {
-                    ImportProgress = (int)((double)progress / total * 100);
-                    IsImportingText = $"Importing {text}...";
+                    await dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ImportProgress = (int)((double)progress / total * 100);
+                        ImportText = $" {title}";
+                    });
+
+                    if (didFail)
+                    {
+                        importFailed = true;
+                        EnqueueNotification(new Notification
+                        {
+                            Message = "Failed to import audiobook. Path: " + file.Path,
+                            Severity = InfoBarSeverity.Error
+                        });
+                    }
                 });
+
+            await dispatcherQueue.EnqueueAsync(() =>
+            {
+                IsLoading = false;
+                ImportText = string.Empty;
+                ImportProgress = 0;
             });
-
-            if (!result)
-            {
-                await dispatcherQueue.EnqueueAsync(() => { IsImporting = false; });
-                EnqueueNotification(new Notification
-                {
-                    Message = "Failed to import audiobook. Path: " + file.Path,
-                    Severity = InfoBarSeverity.Error
-                });
-                return;
-            }
-
-            await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
 
             await GetAudiobookListAsync();
 
-            EnqueueNotification(new Notification
-            {
-                Message = "Audiobook imported successfully!",
-                Severity = InfoBarSeverity.Success
-            });
+            if (!importFailed)
+                EnqueueNotification(new Notification
+                {
+                    Message = "Audiobook imported successfully!",
+                    Severity = InfoBarSeverity.Success
+                });
         });
     }
 
+    private CancellationTokenSource _cancellationTokenSource;
+
     public async void ImportAudiobooksAsync()
     {
-        // Create a folder picker
         var openPicker = new FolderPicker();
-
-        // See the sample code below for how to make the window accessible from the App class.
         var window = App.Window;
-
-        // Retrieve the window handle (HWND) of the current WinUI 3 window.
         var hWnd = WindowNative.GetWindowHandle(window);
-
-        // Initialize the folder picker with the window handle (HWND).
         InitializeWithWindow.Initialize(openPicker, hWnd);
-
-        // Set options for your folder picker
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
-        // todo: maybe remove this; trying it out
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add("*");
 
-        // Open the picker for the user to pick a folder
         var folder = await openPicker.PickSingleFolderAsync();
         if (folder != null)
             StorageApplicationPermissions.FutureAccessList.AddOrReplace("PickedFolderToken", folder);
         else
             return;
 
-        // todo: switch the result
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
-        await dispatcherQueue.EnqueueAsync(() => IsImporting = true);
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+            "Please wait while the audiobooks are imported...");
 
         var totalBooks = 0;
+        var failedBooks = 0;
+
         await Task.Run(async () =>
         {
-            await _fileImporter.ImportDirectoryAsync(folder.Path, async (progress, total, text, failedAudiobooks) =>
+            try
             {
-                await dispatcherQueue.EnqueueAsync(() =>
-                {
-                    totalBooks = total;
-                    ImportProgress = (int)((double)progress / total * 100);
-                    IsImportingText = $"Importing {text}...";
-                });
-
-                // todo: this might make a lot of notifications ...
-                if (failedAudiobooks.Count != 0)
-                    EnqueueNotification(new Notification
+                await FileImporter.ImportDirectoryAsync(folder.Path, token,
+                    async (progress, total, title, didFail) =>
                     {
-                        Message = $"Failed to import {failedAudiobooks.Count} audiobooks!",
-                        Severity = InfoBarSeverity.Error
-                    });
-            });
+                        await dispatcherQueue.EnqueueAsync(() =>
+                        {
+                            totalBooks++;
+                            ImportProgress = ((double)progress / total * 100).ToInt();
+                            ImportText = $" {title}";
+                        });
 
-            await dispatcherQueue.EnqueueAsync(() => IsImporting = false);
+                        if (didFail)
+                        {
+                            totalBooks--;
+                            failedBooks++;
+                            EnqueueNotification(new Notification
+                                { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
+                        }
+                    });
+            }
+            catch (OperationCanceledException)
+            {
+                EnqueueNotification(new Notification
+                {
+                    Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
+                });
+            }
+
+            await dispatcherQueue.EnqueueAsync(() =>
+            {
+                ImportText = string.Empty;
+                ImportProgress = 0;
+                IsLoading = false;
+            });
 
             await GetAudiobookListAsync();
 
+            if (failedBooks > 0)
+                EnqueueNotification(new Notification
+                {
+                    Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+                });
+
             EnqueueNotification(new Notification
             {
-                Message = $"{totalBooks} Audiobooks imported successfully!",
-                Severity = InfoBarSeverity.Success
+                Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
             });
-        });
+        }, token);
     }
 
     /// <summary>

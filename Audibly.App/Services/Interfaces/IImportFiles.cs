@@ -1,16 +1,22 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 3/29/2024
+// Updated: 4/12/2024
 
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Audibly.App.Services.Interfaces;
 
 public interface IImportFiles
 {
-    Task ImportDirectoryAsync(string path, Func<int, int, string, List<string>, Task> progressCallback);
+    public delegate void ImportCompletedHandler();
 
-    Task<bool> ImportFileAsync(string path, Func<int, int, string, Task> progressCallback);
+    public event ImportCompletedHandler ImportCompleted;
+
+    Task ImportDirectoryAsync(string path, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback);
+
+    Task ImportFileAsync(string path, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback);
 }

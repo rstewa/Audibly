@@ -30,15 +30,17 @@ public class MainViewModel : BindableBase
     public readonly IImportFiles FileImporter;
     public readonly IAppDataService AppDataService;
     public readonly MessageService MessageService;
+    public readonly IloggingService LoggingService;
 
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
-    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService)
+    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService, IloggingService loggingService)
     {
         FileImporter = fileImporter;
         AppDataService = appDataService;
         MessageService = messageService;
+        LoggingService = loggingService;
         // Task.Run(GetAudiobookListAsync);
     }
 

@@ -40,7 +40,7 @@ public partial class App : Application
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
     public static MainViewModel ViewModel { get; } =
-        new(new M4BFileImportService(), new AppDataService(), new MessageService());
+        new(new M4BFileImportService(), new AppDataService(), new MessageService(), new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
 
     /// <summary>
     ///     Gets the app-wide PlayerViewModel singleton instance.
@@ -67,10 +67,10 @@ public partial class App : Application
         UnhandledException += OnUnhandledException;
     }
 
-    private async void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
-        // todo: log exception
-        // todo: see if you can restart the app here
+        ViewModel.LoggingService.Log(e.Exception.Message);
+        RestartApp();
     }
 
     /// <summary>

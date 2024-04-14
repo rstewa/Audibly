@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/9/2024
+// Updated: 4/13/2024
 
 using System;
 using Audibly.App.Helpers;
@@ -49,7 +49,7 @@ public sealed partial class LibraryCardPage : Page
         // randomly select InfoBarSeverity
         var random = new Random();
         var severity = random.Next(0, 4);
-        
+
         ViewModel.EnqueueNotification(new Notification
         {
             Message = "This is a test notification",
@@ -64,11 +64,25 @@ public sealed partial class LibraryCardPage : Page
         });
     }
 
-    private void SecretMenuKeyboardAccelerator_OnInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    public void ThrowExceptionButton_OnClick(object sender, RoutedEventArgs e)
     {
-        SecretMenuSeparator.Visibility = Visibility.Visible;
-        DeleteButton.Visibility = Visibility.Visible;
-        TestContentDialogButton.Visibility = Visibility.Visible;
-        TestNotificationButton.Visibility = Visibility.Visible;
+        throw new Exception("This is a test exception");
+    }
+
+    public void RestartAppButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        App.RestartApp();
+    }
+
+    public void HideNowPlayingBarButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.MediaPlayer.Pause();
+        PlayerViewModel.NowPlaying = null;
+    }
+
+    private void DebugMenuKeyboardAccelerator_OnInvoked(KeyboardAccelerator sender,
+        KeyboardAcceleratorInvokedEventArgs args)
+    {
+        ViewModel.ShowDebugMenu = !ViewModel.ShowDebugMenu;
     }
 }

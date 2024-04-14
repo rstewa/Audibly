@@ -26,9 +26,10 @@
             </userControls:AudiobookTile>
         </DataTemplate>
     </Page.Resources>
+
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator
-            Invoked="SecretMenuKeyboardAccelerator_OnInvoked"
+            Invoked="DebugMenuKeyboardAccelerator_OnInvoked"
             Key="F12"
             Modifiers="Control,Shift" />
     </Page.KeyboardAccelerators>
@@ -113,19 +114,20 @@
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
                 </AppBarButton>
 
-                <AppBarSeparator Visibility="Collapsed" x:Name="SecretMenuSeparator" />
+                <!--  debug menu  -->
+                <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
                 <AppBarButton
                     Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
                     Icon="Delete"
                     Label="Delete"
                     ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
-                    Visibility="Collapsed"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
                     x:Name="DeleteButton" />
                 <AppBarButton
                     Click="{x:Bind TestContentDialogButton_OnClick}"
                     Label="Test Content Dialog"
                     ToolTipService.ToolTip="Test Content Dialog"
-                    Visibility="Collapsed"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
                     x:Name="TestContentDialogButton">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FF;" />
                 </AppBarButton>
@@ -133,9 +135,33 @@
                     Click="{x:Bind TestNotificationButton_OnClick}"
                     Label="Test Notification"
                     ToolTipService.ToolTip="Test Notification"
-                    Visibility="Collapsed"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
                     x:Name="TestNotificationButton">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7E7;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind ThrowExceptionButton_OnClick}"
+                    Label="Throw Exception"
+                    ToolTipService.ToolTip="Throw Exception"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="ThrowExceptionButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind RestartAppButton_OnClick}"
+                    Label="Restart App"
+                    ToolTipService.ToolTip="Restart App"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="RestartAppButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF83E;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind HideNowPlayingBarButton_OnClick}"
+                    Label="Hide Now Playing Bar"
+                    ToolTipService.ToolTip="Hide Now Playing Bar"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="HideNowPlayingBarButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71A;" />
                 </AppBarButton>
             </CommandBar>
         </StackPanel>
@@ -195,9 +221,11 @@
 
         </Grid>
 
+        <!--  notifications  -->
         <ScrollViewer
+            Canvas.ZIndex="2"
             Margin="0,0,-26,12"
-            RelativePanel.AlignBottomWithPanel="True"
+            RelativePanel.Above="Player"
             RelativePanel.AlignRightWithPanel="True">
             <StackPanel>
                 <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}">

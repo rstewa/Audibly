@@ -71,6 +71,14 @@ public class MainViewModel : BindableBase
         private set => Set(ref _showStartPanel, value);
     }
 
+    private bool _showDebugMenu = false;
+    
+    public bool ShowDebugMenu
+    {
+        get => _showDebugMenu;
+        set => Set(ref _showDebugMenu, value);
+    }
+
     private bool _isLoading;
 
     /// <summary>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Page
+    Background="Transparent"
+    KeyboardAcceleratorPlacementMode="Hidden"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.LibraryCardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControls="using:Audibly.App.UserControls"
+    xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Page.Resources>
+        <DataTemplate x:DataType="viewModels:AudiobookViewModel" x:Key="AudiobookTemplate">
+            <userControls:AudiobookTile
+                Author="{x:Bind Author}"
+                FilePath="{x:Bind FilePath, Mode=OneWay}"
+                Progress="{x:Bind Progress, Mode=OneWay}"
+                Title="{x:Bind Title, Mode=OneWay}">
+                <userControls:AudiobookTile.Source>
+                    <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
+                </userControls:AudiobookTile.Source>
+            </userControls:AudiobookTile>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator
+            Invoked="DebugMenuKeyboardAccelerator_OnInvoked"
+            Key="F12"
+            Modifiers="Control,Shift" />
+    </Page.KeyboardAccelerators>
+
+    <RelativePanel Padding="36,36,36,0" x:Name="LayoutRoot">
+        <!--  start panel (shown when no audiobooks have been imported yet)  -->
+        <StackPanel
+            Orientation="Vertical"
+            RelativePanel.AlignHorizontalCenterWithPanel="True"
+            RelativePanel.AlignVerticalCenterWithPanel="True"
+            Visibility="{x:Bind ViewModel.ShowStartPanel, Mode=OneWay}"
+            x:Name="StartPanel">
+
+            <TextBlock
+                FontSize="36"
+                Margin="0,0,0,16"
+                Opacity="0.8"
+                Style="{StaticResource TitleTextBlockStyle}"
+                Text="Audibly"
+                TextAlignment="Left" />
+
+            <TextBlock
+                FontSize="24"
+                Margin="0,0,0,8"
+                Opacity="0.6"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="Start"
+                TextAlignment="Left" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobookAsync}"
+                Icon="&#xE8E5;"
+                Text="Open Audiobook (.m4b)" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                Icon="&#xED25;"
+                Text="Import Audiobooks from a directory (recursively)" />
+
+        </StackPanel>
+
+        <!--  title and command bar  -->
+        <StackPanel
+            HorizontalAlignment="Left"
+            Orientation="Vertical"
+            x:Name="TitleAndCommandBarPanel">
+            <TextBlock
+                Margin="20,8,6,0"
+                Style="{StaticResource PageTitleTextBlockStyle}"
+                Text="Audiobooks"
+                x:Name="PageTitle" />
+            <CommandBar
+                Background="Transparent"
+                DefaultLabelPosition="Right"
+                HorizontalAlignment="Left"
+                Margin="4,0,0,0"
+                RelativePanel.LeftOf="AudiobookSearchBox"
+                RelativePanel.RightOf="PageTitle"
+                x:Name="MainCommandBar">
+                <!--  todo: may implement this in the future  -->
+                <!--  <AppBarButton  -->
+                <!--  Icon="Filter"  -->
+                <!--  Label="Filter"  -->
+                <!--  ToolTipService.ToolTip="Filter Audiobooks" />  -->
+                <AppBarButton
+                    Click="{x:Bind ViewModel.Refresh}"
+                    Icon="Refresh"
+                    Label="Refresh"
+                    ToolTipService.ToolTip="Refresh audiobooks" />
+                <AppBarSeparator />
+                <AppBarButton
+                    Click="{x:Bind ViewModel.ImportAudiobookAsync}"
+                    Icon="Add"
+                    Label="Open"
+                    ToolTipService.ToolTip="Open audiobook">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                    Label="Import"
+                    ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
+                </AppBarButton>
+
+                <!--  debug menu  -->
+                <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
+                <AppBarButton
+                    Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
+                    Icon="Delete"
+                    Label="Delete All"
+                    ToolTipService.ToolTip="Delete all audiobooks"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="DeleteButton" />
+                <AppBarButton
+                    Click="{x:Bind TestContentDialogButton_OnClick}"
+                    Label="Test Content Dialog"
+                    ToolTipService.ToolTip="Test Content Dialog"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="TestContentDialogButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FF;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind TestNotificationButton_OnClick}"
+                    Label="Test Notification"
+                    ToolTipService.ToolTip="Test Notification"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="TestNotificationButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7E7;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind ThrowExceptionButton_OnClick}"
+                    Label="Throw Exception"
+                    ToolTipService.ToolTip="Throw Exception"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="ThrowExceptionButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind RestartAppButton_OnClick}"
+                    Label="Restart App"
+                    ToolTipService.ToolTip="Restart App"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="RestartAppButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF83E;" />
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind HideNowPlayingBarButton_OnClick}"
+                    Label="Hide Now Playing Bar"
+                    ToolTipService.ToolTip="Hide Now Playing Bar"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="HideNowPlayingBarButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71A;" />
+                </AppBarButton>
+            </CommandBar>
+        </StackPanel>
+
+        <!--  library card view  -->
+        <ScrollViewer
+            IsVerticalScrollChainingEnabled="False"
+            Padding="0,8,0,8"
+            RelativePanel.AlignBottomWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.Below="TitleAndCommandBarPanel"
+            x:Name="LibraryCardScrollView">
+            <ItemsRepeater
+                ItemTemplate="{StaticResource AudiobookTemplate}"
+                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
+                x:Name="LibraryCardView">
+
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsJustification="Start"
+                        ItemsStretch="Uniform"
+                        MinColumnSpacing="28"
+                        MinItemWidth="300" />
+                </ItemsRepeater.Layout>
+
+            </ItemsRepeater>
+        </ScrollViewer>
+
+        <!--  progress bar for when library view is loading  -->
+        <userControls:ProgressBarCard
+            Canvas.ZIndex="10"
+            IsIndeterminate="True"
+            Margin="25,0,50,0"
+            RelativePanel.AlignHorizontalCenterWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.AlignVerticalCenterWithPanel="True"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+
+        <!--  player  -->
+        <Grid
+            Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            Canvas.ZIndex="2"
+            CornerRadius="8"
+            Margin="-36,0,-26,12"
+            MaxHeight="250"
+            Padding="12"
+            RelativePanel.AlignBottomWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            x:Name="Player">
+
+            <userControls:PlayerControl />
+
+        </Grid>
+
+        <!--  notifications  -->
+        <ScrollViewer
+            Canvas.ZIndex="2"
+            Margin="0,0,-26,12"
+            RelativePanel.Above="Player"
+            RelativePanel.AlignRightWithPanel="True">
+            <StackPanel>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:Notification">
+                            <Grid>
+                                <InfoBar
+                                    Closed="InfoBar_OnClosed"
+                                    HorizontalAlignment="Right"
+                                    IsClosable="True"
+                                    IsIconVisible="True"
+                                    IsOpen="True"
+                                    Message="{x:Bind Message}"
+                                    Severity="{x:Bind Severity}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LibraryCardViewVisibility">
+                <!--  when no audiobooks have been imported yet  -->
+                <VisualState x:Name="NoAudiobooksState">
+                    <VisualState.StateTriggers>
+                        <winUi:IsEqualStateTrigger To="true" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind ViewModel.Audiobooks, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="LibraryCardScrollView.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="PlayerVisibility">
+                <!--  when no audiobooks have been imported yet  -->
+                <VisualState x:Name="PlayerStateCollapsed">
+                    <VisualState.StateTriggers>
+                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind PlayerViewModel.NowPlaying, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="Player.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </RelativePanel>
+</Page>

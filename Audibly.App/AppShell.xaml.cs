@@ -1,11 +1,10 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/12/2024
+// Updated: 4/13/2024
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
@@ -14,7 +13,6 @@ using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -35,6 +33,11 @@ public sealed partial class AppShell : Page
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
+
+    /// <summary>
+    ///     Gets the app-wide PlayerViewModel instance.
+    /// </summary>
+    public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
     /// <summary>
     ///     Initializes a new instance of the AppShell, sets the static 'Current' reference,
@@ -89,7 +92,7 @@ public sealed partial class AppShell : Page
             {
                 ViewModel.MessageService.CancelDialog();
                 ViewModel.IsLoading = false;
-                ViewModel.Refresh(); 
+                ViewModel.Refresh();
             };
 
             await _importDialog.ShowAsync();
@@ -219,7 +222,7 @@ public sealed partial class AppShell : Page
     private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if (args.InvokedItemContainer is not NavigationViewItem item) return;
-        
+
         // check if the item is already the current page
         // if (item == (NavigationViewItem)NavView.SelectedItem) return;
 
@@ -229,20 +232,19 @@ public sealed partial class AppShell : Page
         // }
         if (item == LibraryCardMenuItem)
         {
+            if (AppAppShellFrame.Content is LibraryCardPage) return;
             AppAppShellFrame.Navigate(typeof(LibraryCardPage));
-            ViewModel.IsNavigationViewVisible = true;
         }
         else if (item == NowPlayingMenuItem)
         {
-            // AppFrame.Navigate(typeof(PlayerPage));
-            // ViewModel.IsNavigationViewVisible = false;
-            // this.Frame.Navigate(typeof(PlayerPage));
-            App.RootFrame.Navigate(typeof(PlayerPage));
+            App.RootFrame?.Navigate(typeof(PlayerPage));
+            PlayerViewModel.IsPlayerFullScreen = true;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
         }
-        else if (item == NavView.SettingsItem)
+        else if (item == (NavigationViewItem)NavView.SettingsItem)
         {
+            if (AppAppShellFrame.Content is SettingsPage) return;
             AppAppShellFrame.Navigate(typeof(SettingsPage));
-            ViewModel.IsNavigationViewVisible = true;
         }
     }
 

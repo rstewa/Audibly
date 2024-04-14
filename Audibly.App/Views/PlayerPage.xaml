@@ -11,23 +11,34 @@
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="48" />
+            <!--  TitleBar  -->
             <RowDefinition Height="*" />
+            <!--  NavView  -->
         </Grid.RowDefinitions>
 
-        <Grid Background="Transparent" x:Name="NowPlayingPageTitleBar">
-            <!--  back button  -->
-            <!-- <Button Canvas.ZIndex="1" Height="32"> -->
-            <!--     <Button.Content> -->
-            <!--         <SymbolIcon Symbol="Back" /> -->
-            <!--     </Button.Content> -->
-            <!-- </Button> -->
-        </Grid>
+        <Border
+            AutomationProperties.AutomationId="NowPlayingAppTitleBar"
+            Canvas.ZIndex="1"
+            Grid.Column="1"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
+            IsHitTestVisible="True"
+            Margin="48,0,0,0"
+            VerticalAlignment="Stretch"
+            x:Name="NowPlayingAppTitleBar" />
 
-        <Grid Canvas.ZIndex="0" Grid.RowSpan="2">
+        <Grid
+            Canvas.ZIndex="0"
+            Grid.Column="1"
+            Grid.RowSpan="2">
             <!--  backdrop  -->
             <Grid>
                 <Border BorderBrush="Transparent" BorderThickness="0">
@@ -53,12 +64,14 @@
             </Border>
 
             <RelativePanel HorizontalAlignment="Stretch">
-                <Button RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignTopWithPanel="True">
-                    <Button.Content>
-                        <SymbolIcon Symbol="Back" />
-                    </Button.Content>
-                </Button>
-                <!--  cover image  -->
+                <Button
+                    Click="BackButton_OnClick"
+                    IsEnabled="{x:Bind Frame.CanGoBack, Mode=OneWay}"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    Style="{StaticResource NavigationBackButtonNormalStyle}"
+                    ToolTipService.ToolTip="Back"
+                    x:Name="BackButton" />
                 <Border
                     BorderThickness="0"
                     Height="300"
@@ -89,5 +102,28 @@
                     ShowCoverImage="False" />
             </RelativePanel>
         </Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="TitleBarStates">
+                <VisualState x:Name="Default" />
+                <VisualState x:Name="Compact">
+                    <VisualState.Setters>
+                        <Setter Target="NowPlayingAppTitleBar.Margin" Value="96,0,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Top">
+                    <VisualState.Setters>
+                        <Setter Target="NowPlayingAppTitleBar.Margin" Value="16,0,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="WindowActivationStates">
+                <VisualState x:Name="Activated" />
+                <VisualState x:Name="Deactivated">
+                    <VisualState.Setters>
+                        <Setter Target="NowPlayingAppTitleBar.Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

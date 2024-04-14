@@ -1,8 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 4/3/2024
-// Updated: 4/4/2024
+// Updated: 4/13/2024
 
-using Windows.UI.ViewManagement;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -33,9 +33,19 @@ public sealed partial class PlayerPage : Page
     public PlayerPage()
     {
         InitializeComponent();
-        
+
         // Set the title bar for the current view
-        App.Window.SetTitleBar(NowPlayingPageTitleBar);
         App.Window.ExtendsContentIntoTitleBar = true;
+        App.Window.SetTitleBar(NowPlayingAppTitleBar);
+    }
+
+    private void BackButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (Frame.CanGoBack)
+        {
+            Frame.GoBack();
+            PlayerViewModel.IsPlayerFullScreen = false;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
+        }
     }
 }

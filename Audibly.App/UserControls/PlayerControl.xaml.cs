@@ -1,9 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 4/5/2024
-// Updated: 4/7/2024
+// Updated: 4/13/2024
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
@@ -86,7 +85,8 @@ public sealed partial class PlayerControl : UserControl
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
         PlayerViewModel.ChapterDurationMs =
-            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime - PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
+            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
+                  PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
         PlayerViewModel.CurrentPosition =
             TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
@@ -104,7 +104,8 @@ public sealed partial class PlayerControl : UserControl
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
         PlayerViewModel.ChapterDurationMs =
-            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime - PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
+            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
+                  PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
         PlayerViewModel.CurrentPosition =
             TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
     }
@@ -174,34 +175,18 @@ public sealed partial class PlayerControl : UserControl
             PlayerViewModel.IsPlayerFullScreen = true;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
 
-            var playerWindow = WindowHelper.CreateWindow();
+            if (App.RootFrame?.Content is not PlayerPage)
+                App.RootFrame?.Navigate(typeof(PlayerPage));
 
-            win32WindowHelper = new Win32WindowHelper(playerWindow);
-            win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1050, y = 800 });
-
-            playerWindow.Closed += (o, args) =>
-            {
-                PlayerViewModel.IsPlayerFullScreen = false;
-                WindowHelper.RestoreMainWindow();
-            };
-
-            playerWindow.CustomizeWindow(-1, -1, true, true, true, true, true, true);
-            playerWindow.Maximize();
-            // todo
-            // playerWindow.MakeWindowFullScreen();
-
-            var rootPage = new PlayerPage();
-            playerWindow.Content = rootPage;
-            playerWindow.Activate();
-
-            WindowHelper.HideMainWindow();
+            // App.Window.MakeWindowFullScreen();
         }
         else
         {
             PlayerViewModel.IsPlayerFullScreen = false;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
-            WindowHelper.ActiveWindows.FirstOrDefault(w => w.Content is PlayerPage)?.Close();
-            WindowHelper.RestoreMainWindow();
+            if (App.RootFrame?.Content is PlayerPage)
+                App.RootFrame?.Navigate(typeof(AppShell));
+            // App.Window.RestoreWindow();
         }
     }
 

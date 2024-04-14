@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/4/2024
+// Updated: 4/13/2024
 
 using System;
 using System.Runtime.InteropServices;
@@ -16,7 +16,8 @@ namespace Audibly.App.Extensions;
 public static class WindowExtensions
 {
     public static void CustomizeWindow(this Window window, int width, int height, bool centerWindow,
-        bool extendsContentIntoTitleBar, bool isResizable, bool isMinimizable, bool isMaximizable, bool getSizeFromDisplay = false)
+        bool extendsContentIntoTitleBar, bool isResizable, bool isMinimizable, bool isMaximizable,
+        bool getSizeFromDisplay = false)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -42,7 +43,7 @@ public static class WindowExtensions
                 height = (displayArea.WorkArea.Height * 0.75).ToInt();
             }
         }
-        
+
         if (centerWindow)
         {
             var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
@@ -61,7 +62,7 @@ public static class WindowExtensions
         presenter!.IsMaximizable = isMaximizable;
         presenter!.IsMinimizable = isMinimizable;
     }
-    
+
     public static void CenterWindow(this Window window)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
@@ -77,17 +78,17 @@ public static class WindowExtensions
             appWindow.Move(new PointInt32(x, y));
         }
     }
-    
+
     public static void Maximize(this Window window)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
         var presenter = appWindow.Presenter as OverlappedPresenter;
-        
+
         presenter.Maximize();
     }
-    
+
     public static void MakeWindowFullScreen(this Window window)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
@@ -97,6 +98,17 @@ public static class WindowExtensions
 
         appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
         presenter!.SetBorderAndTitleBar(false, false);
+    }
+
+    public static void RestoreWindow(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
+        presenter!.SetBorderAndTitleBar(true, true);
     }
 
     #region PInvoke Stuff

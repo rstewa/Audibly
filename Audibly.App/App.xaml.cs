@@ -1,26 +1,23 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/9/2024
+// Updated: 4/13/2024
 
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Windows.ApplicationModel.Core;
-using Windows.Globalization;
 using Windows.Storage;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
-using Audibly.App.Views;
 using Audibly.Repository;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
@@ -55,8 +52,9 @@ public partial class App : Application
     /// </summary>
     public static IAudiblyRepository Repository { get; private set; }
 
-    public static FrameworkElement MainRoot { get; private set; }
-    
+    /// <summary>
+    ///     Gets the root frame of the app. This contains the nav view and the player page
+    /// </summary>
     public static Frame? RootFrame { get; private set; }
 
     /// <summary>
@@ -72,6 +70,7 @@ public partial class App : Application
     private async void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // todo: log exception
+        // todo: see if you can restart the app here
     }
 
     /// <summary>
@@ -97,34 +96,21 @@ public partial class App : Application
             PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 
-        // var shell = Window.Content as AppShell ?? new AppShell();
-        // shell.Language = ApplicationLanguages.Languages[0];
-        // Window.Content = shell;
-        //
-        // if (shell.AppFrame.Content == null)
-        //     // When the navigation stack isn't restored, navigate to the first page
-        //     // suppressing the initial entrance animation.
-        //     shell.AppFrame.Navigate(typeof(LibraryCardPage), null,
-        //         new SuppressNavigationTransitionInfo());
-
         RootFrame = Window.Content as Frame;
-        
+
         if (RootFrame == null)
         {
             RootFrame = new Frame();
             RootFrame.NavigationFailed += OnNavigationFailed;
             Window.Content = RootFrame;
         }
-        
-        if (RootFrame.Content == null)
-        {
-            RootFrame.Navigate(typeof(AppShell), args.Arguments);
-        }
-        
+
+        if (RootFrame.Content == null) RootFrame.Navigate(typeof(AppShell), args.Arguments);
+
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 
         ThemeHelper.Initialize();
-        
+
         Window.Activate();
     }
 
@@ -196,8 +182,10 @@ public partial class App : Application
     {
         get
         {
-            var version = Assembly.GetEntryAssembly().GetName().Version;
-            return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
+            var version = Assembly.GetEntryAssembly()?.GetName().Version;
+            return version != null
+                ? $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+                : string.Empty;
         }
     }
 }

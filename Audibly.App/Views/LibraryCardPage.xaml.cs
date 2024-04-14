@@ -77,6 +77,8 @@ public sealed partial class LibraryCardPage : Page
     public void HideNowPlayingBarButton_OnClick(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.MediaPlayer.Pause();
+        if (PlayerViewModel.NowPlaying != null) 
+            PlayerViewModel.NowPlaying.IsNowPlaying = false;
         PlayerViewModel.NowPlaying = null;
     }
 

@@ -119,8 +119,8 @@
                 <AppBarButton
                     Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
                     Icon="Delete"
-                    Label="Delete"
-                    ToolTipService.ToolTip="DEBUG: Delete all audiobooks"
+                    Label="Delete All"
+                    ToolTipService.ToolTip="Delete all audiobooks"
                     Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
                     x:Name="DeleteButton" />
                 <AppBarButton

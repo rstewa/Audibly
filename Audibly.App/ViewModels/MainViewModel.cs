@@ -207,6 +207,7 @@ public class MainViewModel : BindableBase
                 dispatcherQueue.TryEnqueue(() =>
                 {
                     App.PlayerViewModel.MediaPlayer.Pause();
+                    App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
                     App.PlayerViewModel.NowPlaying = null;
                 });
 

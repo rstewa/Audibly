@@ -261,17 +261,26 @@ public class MainViewModel : BindableBase
 
     public async void ImportAudiobookAsync()
     {
+        await ImportAudiobookWithPathAsync("");
+    }
+    
+    public async Task<bool> ImportAudiobookWithPathAsync(string path)
+    {
         var importFailed = false;
-        var openPicker = new FileOpenPicker();
-        var window = App.Window;
-        var hWnd = WindowNative.GetWindowHandle(window);
-        InitializeWithWindow.Initialize(openPicker, hWnd);
-        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
-        openPicker.ViewMode = PickerViewMode.Thumbnail;
-        openPicker.FileTypeFilter.Add(".m4b");
+        if (string.IsNullOrEmpty(path))
+        {
+            var openPicker = new FileOpenPicker();
+            var window = App.Window;
+            var hWnd = WindowNative.GetWindowHandle(window);
+            InitializeWithWindow.Initialize(openPicker, hWnd);
+            openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+            openPicker.ViewMode = PickerViewMode.Thumbnail;
+            openPicker.FileTypeFilter.Add(".m4b");
 
-        var file = await openPicker.PickSingleFileAsync();
-        if (file == null) return;
+            var file = await openPicker.PickSingleFileAsync();
+            if (file == null) return false;
+            path = file.Path;
+        }
 
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
@@ -287,7 +296,7 @@ public class MainViewModel : BindableBase
         {
             try
             {
-                await FileImporter.ImportFileAsync(file.Path, _cancellationTokenSource.Token,
+                await FileImporter.ImportFileAsync(path, _cancellationTokenSource.Token,
                     async (progress, total, title, didFail) =>
                     {
                         await dispatcherQueue.EnqueueAsync(() =>
@@ -301,7 +310,7 @@ public class MainViewModel : BindableBase
                             importFailed = true;
                             EnqueueNotification(new Notification
                             {
-                                Message = "Failed to import audiobook. Path: " + file.Path,
+                                Message = "Failed to import audiobook. Path: " + path,
                                 Severity = InfoBarSeverity.Error
                             });
                         }
@@ -331,6 +340,8 @@ public class MainViewModel : BindableBase
                     Severity = InfoBarSeverity.Success
                 });
         });
+        
+        return !importFailed;
     }
 
     private CancellationTokenSource _cancellationTokenSource;

@@ -92,7 +92,6 @@ public partial class App : Application
 
         if (nowPlaying != null)
         {
-            PlayerViewModel.NowPlaying = nowPlaying;
             PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 

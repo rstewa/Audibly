@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/29/2024
-// Updated: 4/13/2024
+// Updated: 4/14/2024
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
+using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
@@ -17,7 +18,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Shapes;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using Path = System.IO.Path;
 
 namespace Audibly.App;
 
@@ -56,7 +59,7 @@ public sealed partial class AppShell : Page
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
     }
 
-    private void AppShell_OnLoaded(object sender, RoutedEventArgs e)
+    private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
         // NOTE: for debugging
         // ApplicationData.Current.LocalSettings.Values.Remove("HasCompletedOnboarding");
@@ -64,15 +67,67 @@ public sealed partial class AppShell : Page
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
             ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
-        if (hasCompletedOnboarding.Value == null)
+        if (hasCompletedOnboarding.Value != null) return;
+        
+        ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
+
+        // check if user had v1 and was listening to an audiobook
+        var currentAudiobookPath = ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"]?.ToString();
+        if (currentAudiobookPath != null)
         {
-            ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
+            var result = await ShowYesNoDialogAsync("Welcome Back!",
+                "We've detected that you were listening to an audiobook in a previous version of Audibly. Would you like to continue listening?");
+            if (!result) return;
+                
+            // get that audiobooks current position
+            var name = Path.GetFileNameWithoutExtension(currentAudiobookPath);
+            var currentPosition = ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
+                    
+            // import the audiobook
+            var importSuccess = await ViewModel.ImportAudiobookWithPathAsync(currentAudiobookPath);
+            if (!importSuccess) return;
+                
+            // set the current position
+            var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == currentAudiobookPath);
+            if (audiobook == null) return;
+                
+            ViewModel.SelectedAudiobook = audiobook;
+            if (currentPosition != null) 
+                audiobook.CurrentTimeMs = (int)currentPosition;
+            PlayerViewModel.OpenAudiobook(audiobook);
+        }
+        else
+        {
             ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
                 "We're glad you're here. Let's get started by adding your first audiobook.");
         }
     }
 
     private ContentDialog? _importDialog;
+
+    private async Task<bool> ShowYesNoDialogAsync(string title, string content)
+    {
+        var result = false;
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = XamlRoot
+            };
+
+            dialog.PrimaryButtonClick += async (_, _) => { result = true; };
+
+            dialog.CloseButtonClick += (_, _) => { result = false; };
+
+            await dialog.ShowAsync();
+        });
+        return result;
+    }
 
     private async void ShowImportDialogAsync(string title)
     {

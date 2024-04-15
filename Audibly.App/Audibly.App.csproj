@@ -22,7 +22,6 @@
         <AppxBundle>Always</AppxBundle>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
         <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
-        <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
     <ItemGroup>
       <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />

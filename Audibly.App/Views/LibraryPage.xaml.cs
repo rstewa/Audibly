@@ -181,14 +181,4 @@ public sealed partial class LibraryPage : Page
             PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
         });
     }
-
-    // TODO: find out if there is a better way to do this
-    private async void LibraryPage_OnLoaded(object sender, RoutedEventArgs e)
-    {
-        // await ViewModel.GetAudiobookListAsync();
-        // await _dispatcherQueue.EnqueueAsync(() =>
-        // {
-        //     PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
-        // });
-    }
 }

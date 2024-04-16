@@ -3,6 +3,8 @@
 // Updated: 4/13/2024
 
 using System;
+using System.Diagnostics;
+using Windows.Storage;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
@@ -80,6 +82,15 @@ public sealed partial class LibraryCardPage : Page
         if (PlayerViewModel.NowPlaying != null) 
             PlayerViewModel.NowPlaying.IsNowPlaying = false;
         PlayerViewModel.NowPlaying = null;
+    }
+    
+    public void OpenAppStateFolderButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var filePath = ApplicationData.Current.LocalFolder.Path;
+        Process p = new();
+        p.StartInfo.FileName = "explorer.exe";
+        p.StartInfo.Arguments = $"/select, \"{filePath}\"";
+        p.Start();
     }
 
     private void DebugMenuKeyboardAccelerator_OnInvoked(KeyboardAccelerator sender,

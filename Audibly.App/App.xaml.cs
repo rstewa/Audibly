@@ -6,6 +6,8 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Audibly.App.Extensions;
@@ -16,6 +18,7 @@ using Audibly.Repository;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -70,7 +73,7 @@ public partial class App : Application
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         ViewModel.LoggingService.Log(e.Exception.Message);
-        RestartApp();
+        // RestartApp();
     }
 
     /// <summary>
@@ -109,13 +112,21 @@ public partial class App : Application
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 
         ThemeHelper.Initialize();
+        
+        // serialize the eventargs to a string
+        // var argsString = JsonSerializer.Serialize(eventargs, options: new JsonSerializerOptions()
+        // {
+        //     WriteIndented = true,
+        //     Converters = { new JsonStringEnumConverter() }
+        // });
+        // ViewModel.LoggingService.Log($"App activated with args: {argsString}");
 
         Window.Activate();
     }
 
     private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
     {
-        throw new NotImplementedException();
+        ViewModel.LoggingService.Log(e.Exception.Message);
     }
 
     /// <summary>

@@ -15,4 +15,10 @@ public class LoggingService(string logFilePath) : IloggingService
         var logMessage = $"{DateTime.Now}: {message}";
         File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
     }
+    
+    public void LogError(Exception e)
+    {
+        var logMessage = $"ERROR: {DateTime.Now}: {e.Message}";
+        File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
+    }
 }

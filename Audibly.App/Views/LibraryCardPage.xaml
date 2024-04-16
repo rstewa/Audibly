@@ -163,6 +163,14 @@
                     x:Name="HideNowPlayingBarButton">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71A;" />
                 </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind OpenAppStateFolderButton_OnClick}"
+                    Label="Open App State Folder"
+                    ToolTipService.ToolTip="Open App State Folder"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="OpenAppStateFolderButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED25;" />
+                </AppBarButton>
             </CommandBar>
         </StackPanel>
 

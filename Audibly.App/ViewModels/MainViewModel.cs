@@ -326,12 +326,9 @@ public class MainViewModel : BindableBase
 
             await dispatcherQueue.EnqueueAsync(() =>
             {
-                IsLoading = false;
                 ImportText = string.Empty;
                 ImportProgress = 0;
             });
-
-            await GetAudiobookListAsync();
 
             if (!importFailed)
                 EnqueueNotification(new Notification
@@ -340,6 +337,8 @@ public class MainViewModel : BindableBase
                     Severity = InfoBarSeverity.Success
                 });
         });
+
+        await GetAudiobookListAsync();
         
         return !importFailed;
     }
@@ -362,7 +361,7 @@ public class MainViewModel : BindableBase
         else
             return;
 
-        // todo: idk if i want the loading progress bar to be show or not
+        // todo: idk if i want the loading progress bar to be shown or not
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
@@ -411,10 +410,7 @@ public class MainViewModel : BindableBase
             {
                 ImportText = string.Empty;
                 ImportProgress = 0;
-                IsLoading = false;
             });
-
-            await GetAudiobookListAsync();
 
             if (failedBooks > 0)
                 EnqueueNotification(new Notification
@@ -427,6 +423,8 @@ public class MainViewModel : BindableBase
                 Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
             });
         }, token);
+        
+        await GetAudiobookListAsync();
     }
 
     /// <summary>

@@ -117,7 +117,8 @@ public sealed partial class AppShell : Page
                 PrimaryButtonText = "Yes",
                 CloseButtonText = "No",
                 DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = XamlRoot
+                XamlRoot = XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
             };
 
             dialog.PrimaryButtonClick += async (_, _) => { result = true; };
@@ -140,7 +141,8 @@ public sealed partial class AppShell : Page
                 Content = importDialog,
                 DefaultButton = ContentDialogButton.Close,
                 CloseButtonText = "Cancel",
-                XamlRoot = XamlRoot
+                XamlRoot = XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
             };
 
             _importDialog.CloseButtonClick += (_, _) =>
@@ -175,7 +177,8 @@ public sealed partial class AppShell : Page
                 PrimaryButtonText = "Remove from Library",
                 CloseButtonText = "Cancel",
                 DefaultButton = ContentDialogButton.Close,
-                XamlRoot = XamlRoot
+                XamlRoot = XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
             };
 
             dialog.PrimaryButtonClick += async (_, _) =>
@@ -198,7 +201,8 @@ public sealed partial class AppShell : Page
                 Content = content,
                 CloseButtonText = "Ok",
                 XamlRoot = XamlRoot,
-                DefaultButton = ContentDialogButton.Close
+                DefaultButton = ContentDialogButton.Close,
+                RequestedTheme = ThemeHelper.ActualTheme
             };
 
             await dialog.ShowAsync();
@@ -216,7 +220,8 @@ public sealed partial class AppShell : Page
                 PrimaryButtonText = "Restart",
                 DefaultButton = ContentDialogButton.Primary,
                 CloseButtonText = "Not Now",
-                XamlRoot = XamlRoot
+                XamlRoot = XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
             };
 
             dialog.PrimaryButtonClick += (_, _) => { App.RestartApp(); };
@@ -233,7 +238,8 @@ public sealed partial class AppShell : Page
             Content = dialogContent,
             CloseButtonText = "Close",
             DefaultButton = ContentDialogButton.Close,
-            XamlRoot = XamlRoot
+            XamlRoot = XamlRoot,
+            RequestedTheme = ThemeHelper.ActualTheme
         };
         await contentDialog.ShowAsync();
     }

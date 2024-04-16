@@ -62,11 +62,6 @@ public static class ThemeHelper
             var savedTheme = ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey]?.ToString();
 
             if (savedTheme != null) RootTheme = App.GetEnum<ElementTheme>(savedTheme);
-            // else
-            // {
-            //     ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey] = ElementTheme.Dark.ToString();
-            //     RootTheme = ElementTheme.Dark;
-            // }
         }
     }
 

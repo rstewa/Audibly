@@ -34,8 +34,6 @@ public sealed partial class PlayerControl : UserControl
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
-    // public bool IsLoaded { get; private set; }
-
     public bool ShowCoverImage
     {
         get => (bool)GetValue(ShowCoverImageProperty);
@@ -50,9 +48,6 @@ public sealed partial class PlayerControl : UserControl
     {
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
-
-        // Loaded += (_, _) => IsLoaded = true;
-        // todo: load most recently played audiobook into the player
     }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)

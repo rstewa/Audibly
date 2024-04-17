@@ -13,23 +13,23 @@
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Light">
-                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
-                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
+                                    <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                                    <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
-                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
                                     <!-- <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" /> -->
                                     <!-- <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="LayerOnAcrylicFillColorDefaultBrush" /> -->
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
-                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
+                                    <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                                    <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="HomePageBackgroundBrush" />
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBackgroundBrush" />
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBorderBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush x:Key="GalleryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush x:Key="GalleryBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
                                 </ResourceDictionary>
                             </ResourceDictionary.ThemeDictionaries>
                         </ResourceDictionary>
@@ -43,9 +43,9 @@
                             <x:Double x:Key="LargeWindowSnapPoint">1008</x:Double>
 
                             <Style
+                                x:Key="PageTitleTextBlockStyle"
                                 BasedOn="{StaticResource TitleTextBlockStyle}"
-                                TargetType="TextBlock"
-                                x:Key="PageTitleTextBlockStyle">
+                                TargetType="TextBlock">
                                 <Setter Property="FontSize" Value="28" />
                                 <Setter Property="TextWrapping" Value="NoWrap" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />

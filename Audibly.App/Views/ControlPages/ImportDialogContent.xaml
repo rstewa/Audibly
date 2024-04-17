@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <Page
-    mc:Ignorable="d"
     x:Class="Audibly.App.Views.ControlPages.ImportDialogContent"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    mc:Ignorable="d">
 
     <StackPanel>
         <Grid Margin="0,10,0,0" RowSpacing="10">
@@ -15,7 +15,7 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <RichTextBlock TextWrapping="WrapWholeWords" Width="400">
+            <RichTextBlock Width="400" TextWrapping="WrapWholeWords">
                 <Paragraph>
                     Importing<Run FontStyle="Italic" Text="{x:Bind ViewModel.ImportText, Mode=OneWay}" />
                     ...</Paragraph>
@@ -23,13 +23,13 @@
 
             <ProgressBar
                 Grid.Row="1"
-                HorizontalAlignment="Stretch"
-                IsIndeterminate="False"
+                Width="400"
                 Margin="0"
-                Maximum="100"
-                Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
-                Width="400" />
+                IsIndeterminate="False"
+                Maximum="100"
+                Value="{x:Bind ViewModel.ImportProgress, Mode=OneWay}" />
         </Grid>
     </StackPanel>
 </Page>

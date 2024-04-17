@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <UserControl
     x:Class="Audibly.App.UserControls.CustomHyperlinkButton"
@@ -8,13 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <HyperlinkButton HorizontalAlignment="Left"
-                     Background="Transparent"
-                     BorderBrush="Transparent"
-                     Margin="-4, 0, 0, 0"
-                     Click="ButtonBase_OnClick">
+    <HyperlinkButton
+        Margin="-4,0,0,0"
+        HorizontalAlignment="Left"
+        Background="Transparent"
+        BorderBrush="Transparent"
+        Click="ButtonBase_OnClick">
         <HyperlinkButton.Resources>
-            <!-- ReSharper disable all Xaml.RedundantResource -->
+            <!--  ReSharper disable all Xaml.RedundantResource  -->
             <SolidColorBrush x:Key="HyperlinkButtonBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="HyperlinkButtonBackgroundPointerOver">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="HyperlinkButtonBackgroundPressed">Transparent</SolidColorBrush>
@@ -22,15 +23,15 @@
         </HyperlinkButton.Resources>
         <StackPanel Orientation="Horizontal">
             <FontIcon
+                Margin="0,0,12,0"
                 FontFamily="Segoe MDL2 Assets"
                 FontSize="18"
-                Glyph="{x:Bind Icon, Mode=OneWay}"
-                Margin="0, 0, 12, 0" />
+                Glyph="{x:Bind Icon, Mode=OneWay}" />
             <TextBlock
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind Text, Mode=OneWay}"
                 FontSize="18"
-                FontWeight="SemiLight" />
+                FontWeight="SemiLight"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind Text, Mode=OneWay}" />
         </StackPanel>
     </HyperlinkButton>
 </UserControl>

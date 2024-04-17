@@ -1,12 +1,12 @@
 ﻿<UserControl
     x:Class="Audibly.App.UserControls.CollapsibleSearchBox"
-    x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    x:Name="Root"
     d:DesignHeight="32"
     d:DesignWidth="240"
     mc:Ignorable="d">
@@ -19,27 +19,26 @@
             Padding="6"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
-            Checked="SearchButton_Checked"
-            Visibility="Collapsed"
             muxc:AnimatedIcon.State="Normal"
+            Checked="SearchButton_Checked"
             PointerEntered="ToggleButton_PointerEntered"
-            PointerExited="ToggleButton_PointerExited">
+            PointerExited="ToggleButton_PointerExited"
+            Visibility="Collapsed">
             <Grid>
                 <FontIcon
                     x:Name="FilteredIcon"
                     FontSize="16"
+                    Foreground="{ThemeResource SystemAccentColor}"
                     Glyph="&#xE16E;"
-                    Visibility="Collapsed"
-                    Foreground="{ThemeResource SystemAccentColor}" />
-                <muxc:AnimatedIcon
-                    x:Name="DefaultIcon">
+                    Visibility="Collapsed" />
+                <muxc:AnimatedIcon x:Name="DefaultIcon">
                     <animatedvisuals:AnimatedFindVisualSource />
-                    <!-- FallbackIconSource uses FontIconSource because the FontSize needs to be
-                         set to a size that fits into the same space allowed for the animated icon. -->
+                    <!--
+                        FallbackIconSource uses FontIconSource because the FontSize needs to be
+                        set to a size that fits into the same space allowed for the animated icon.
+                    -->
                     <muxc:AnimatedIcon.FallbackIconSource>
-                        <muxc:FontIconSource
-                            FontSize="16"
-                            Glyph="&#xE11A;" />
+                        <muxc:FontIconSource FontSize="16" Glyph="&#xE11A;" />
                     </muxc:AnimatedIcon.FallbackIconSource>
                 </muxc:AnimatedIcon>
             </Grid>
@@ -49,15 +48,13 @@
             x:Name="SearchBox"
             LostFocus="SearchBox_LostFocus"
             PlaceholderText="Search..."
-            Visibility="Visible"
-            TextChanged="SearchBox_TextChanged">
+            TextChanged="SearchBox_TextChanged"
+            Visibility="Visible">
             <AutoSuggestBox.QueryIcon>
                 <muxc:AnimatedIcon>
                     <animatedvisuals:AnimatedFindVisualSource />
                     <muxc:AnimatedIcon.FallbackIconSource>
-                        <muxc:FontIconSource
-                            FontSize="16"
-                            Glyph="&#xE11A;" />
+                        <muxc:FontIconSource FontSize="16" Glyph="&#xE11A;" />
                     </muxc:AnimatedIcon.FallbackIconSource>
                 </muxc:AnimatedIcon>
             </AutoSuggestBox.QueryIcon>

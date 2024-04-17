@@ -16,6 +16,7 @@
                                     <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
                                     <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
                                     <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
+                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
                                     <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
@@ -23,6 +24,7 @@
                                     <!-- <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="LayerOnAcrylicFillColorDefaultBrush" /> -->
                                     <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
                                     <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
+                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
                                     <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="HomePageBackgroundBrush" />

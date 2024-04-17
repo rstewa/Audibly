@@ -253,7 +253,6 @@
 
             <!--#endregion-->
 
-            <!--  todo: figure out what you wanna do with this button; might remove it  -->
             <!--#region OpenAudioBookButton-->
             <Button
                 Background="Transparent"

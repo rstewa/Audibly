@@ -56,10 +56,6 @@
             <!--  got this from RiseMediaPlayer: https://github.com/Rise-Software/Rise-Media-Player  -->
             <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Border.Background>
-                    <!--<AcrylicBrush
-                        FallbackColor="Transparent"
-                        TintColor="{Binding Color, Source={ThemeResource ApplicationPageBackgroundThemeBrush}}"
-                        TintOpacity="0.7" />--
                     <AcrylicBrush
                         FallbackColor="Transparent"
                         TintColor="{Binding Color, Source={ThemeResource OverlayBackgroundBrush}}"

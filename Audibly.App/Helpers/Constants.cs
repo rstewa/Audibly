@@ -13,4 +13,7 @@ public static class Constants
     
     public const string MaximizeGlyph = "\uE740";
     public const string MinimizeGlyph = "\uE73F";
+    
+    public const string MaximizeTooltip = "Maximize";
+    public const string MinimizeTooltip = "Minimize";
 }

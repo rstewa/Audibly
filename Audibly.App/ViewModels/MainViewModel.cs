@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/13/2024
+// Created: 4/15/2024
+// Updated: 4/17/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -35,13 +35,14 @@ public class MainViewModel : BindableBase
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
-    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService, IloggingService loggingService)
+    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService,
+        IloggingService loggingService)
     {
         FileImporter = fileImporter;
         AppDataService = appDataService;
         MessageService = messageService;
         LoggingService = loggingService;
-        // Task.Run(GetAudiobookListAsync);
+        Task.Run(GetAudiobookListAsync);
     }
 
     /// <summary>
@@ -71,8 +72,8 @@ public class MainViewModel : BindableBase
         private set => Set(ref _showStartPanel, value);
     }
 
-    private bool _showDebugMenu = false;
-    
+    private bool _showDebugMenu;
+
     public bool ShowDebugMenu
     {
         get => _showDebugMenu;
@@ -100,8 +101,9 @@ public class MainViewModel : BindableBase
         get => _isImporting;
         set => Set(ref _isImporting, value);
     }
-    
+
     private bool _isNavigationViewVisible = true;
+
     public bool IsNavigationViewVisible
     {
         get => _isNavigationViewVisible;
@@ -199,31 +201,28 @@ public class MainViewModel : BindableBase
     /// </summary>
     public async Task DeleteAudiobookAsync()
     {
-        await Task.Run(async () =>
-        {
-            if (SelectedAudiobook == null) return;
+        if (SelectedAudiobook == null) return;
 
-            if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
-                dispatcherQueue.TryEnqueue(() =>
-                {
-                    App.PlayerViewModel.MediaPlayer.Pause();
-                    App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
-                    App.PlayerViewModel.NowPlaying = null;
-                });
-
-            await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
-            await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
-
-            await GetAudiobookListAsync();
-
-            await dispatcherQueue.EnqueueAsync(() =>
+        if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
+            dispatcherQueue.TryEnqueue(() =>
             {
-                SelectedAudiobook = null;
-                EnqueueNotification(new Notification
-                {
-                    Message = "Audiobook deleted successfully!",
-                    Severity = InfoBarSeverity.Success
-                });
+                App.PlayerViewModel.MediaPlayer.Pause();
+                App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
+                App.PlayerViewModel.NowPlaying = null;
+            });
+
+        await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
+        await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
+
+        await GetAudiobookListAsync();
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            SelectedAudiobook = null;
+            EnqueueNotification(new Notification
+            {
+                Message = "Audiobook deleted successfully!",
+                Severity = InfoBarSeverity.Success
             });
         });
     }
@@ -239,48 +238,36 @@ public class MainViewModel : BindableBase
             IsLoading = true;
         });
 
-        await Task.Run(async () =>
+        var count = 0;
+        foreach (var audiobook in Audiobooks)
         {
-            var count = 0;
-            foreach (var audiobook in Audiobooks)
-            {
-                await App.Repository.Audiobooks.DeleteAsync(audiobook.Id);
-                await App.ViewModel.AppDataService.DeleteCoverImageAsync(audiobook.CoverImagePath);
-                count++;
-            }
+            await App.Repository.Audiobooks.DeleteAsync(audiobook.Id);
+            await App.ViewModel.AppDataService.DeleteCoverImageAsync(audiobook.CoverImagePath);
+            count++;
+        }
 
-            await GetAudiobookListAsync();
+        await GetAudiobookListAsync();
 
-            EnqueueNotification(new Notification
-            {
-                Message = $"{count} Audiobooks deleted successfully!",
-                Severity = InfoBarSeverity.Success
-            });
+        EnqueueNotification(new Notification
+        {
+            Message = $"{count} Audiobooks deleted successfully!",
+            Severity = InfoBarSeverity.Success
         });
     }
 
     public async void ImportAudiobookAsync()
     {
-        await ImportAudiobookWithPathAsync("");
-    }
-    
-    public async Task<bool> ImportAudiobookWithPathAsync(string path)
-    {
         var importFailed = false;
-        if (string.IsNullOrEmpty(path))
-        {
-            var openPicker = new FileOpenPicker();
-            var window = App.Window;
-            var hWnd = WindowNative.GetWindowHandle(window);
-            InitializeWithWindow.Initialize(openPicker, hWnd);
-            openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
-            openPicker.ViewMode = PickerViewMode.Thumbnail;
-            openPicker.FileTypeFilter.Add(".m4b");
+        var openPicker = new FileOpenPicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add(".m4b");
 
-            var file = await openPicker.PickSingleFileAsync();
-            if (file == null) return false;
-            path = file.Path;
-        }
+        var file = await openPicker.PickSingleFileAsync();
+        if (file == null) return;
 
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
@@ -292,54 +279,133 @@ public class MainViewModel : BindableBase
         MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
             "Please wait while the audiobooks are imported...");
 
-        await Task.Run(async () =>
+        try
         {
-            try
-            {
-                await FileImporter.ImportFileAsync(path, _cancellationTokenSource.Token,
-                    async (progress, total, title, didFail) =>
+            await FileImporter.ImportFileAsync(file.Path, token,
+                async (progress, total, title, didFail) =>
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
                     {
-                        await dispatcherQueue.EnqueueAsync(() =>
-                        {
-                            ImportProgress = (int)((double)progress / total * 100);
-                            ImportText = $" {title}";
-                        });
-
-                        if (didFail)
-                        {
-                            importFailed = true;
-                            EnqueueNotification(new Notification
-                            {
-                                Message = "Failed to import audiobook. Path: " + path,
-                                Severity = InfoBarSeverity.Error
-                            });
-                        }
+                        ImportProgress = (int)((double)progress / total * 100);
+                        ImportText = $" {title}";
                     });
-            }
-            catch (OperationCanceledException)
-            {
-                EnqueueNotification(new Notification
-                {
-                    Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
-                });
-            }
 
-            await dispatcherQueue.EnqueueAsync(() =>
+                    if (didFail)
+                    {
+                        importFailed = true;
+                        EnqueueNotification(new Notification
+                        {
+                            Message = "Failed to import audiobook. Path: " + file.Path,
+                            Severity = InfoBarSeverity.Error
+                        });
+                    }
+                });
+        }
+        catch (OperationCanceledException)
+        {
+            EnqueueNotification(new Notification
             {
-                ImportText = string.Empty;
-                ImportProgress = 0;
+                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
             });
+        }
+        catch (Exception e)
+        {
+            importFailed = true;
+            EnqueueNotification(new Notification
+            {
+                Message = "Failed to import audiobook. Path: " + file.Path,
+                Severity = InfoBarSeverity.Error
+            });
+            LoggingService.Log(e.Message);
+        }
 
-            if (!importFailed)
-                EnqueueNotification(new Notification
-                {
-                    Message = "Audiobook imported successfully!",
-                    Severity = InfoBarSeverity.Success
-                });
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            ImportText = string.Empty;
+            ImportProgress = 0;
+            return Task.CompletedTask;
         });
 
+        if (!importFailed)
+            EnqueueNotification(new Notification
+            {
+                Message = "Audiobook imported successfully!",
+                Severity = InfoBarSeverity.Success
+            });
+
         await GetAudiobookListAsync();
-        
+    }
+
+    public async Task<bool> ImportAudiobookTest(string path)
+    {
+        var importFailed = false;
+
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+            "Please wait while the audiobooks are imported...");
+
+        try
+        {
+            await FileImporter.ImportFileAsync(path, token,
+                async (progress, total, title, didFail) =>
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ImportProgress = (int)((double)progress / total * 100);
+                        ImportText = $" {title}";
+                    });
+
+                    if (didFail)
+                    {
+                        importFailed = true;
+                        EnqueueNotification(new Notification
+                        {
+                            Message = "Failed to import audiobook. Path: " + path,
+                            Severity = InfoBarSeverity.Error
+                        });
+                    }
+                });
+        }
+        catch (OperationCanceledException)
+        {
+            EnqueueNotification(new Notification
+            {
+                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
+            });
+        }
+        catch (Exception e)
+        {
+            importFailed = true;
+            EnqueueNotification(new Notification
+            {
+                Message = "Failed to import audiobook. Path: " + path,
+                Severity = InfoBarSeverity.Error
+            });
+            LoggingService.Log(e.Message);
+        }
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            ImportText = string.Empty;
+            ImportProgress = 0;
+            return Task.CompletedTask;
+        });
+
+        if (!importFailed)
+            EnqueueNotification(new Notification
+            {
+                Message = "Audiobook imported successfully!",
+                Severity = InfoBarSeverity.Success
+            });
+
+        await GetAudiobookListAsync();
+
         return !importFailed;
     }
 
@@ -375,55 +441,52 @@ public class MainViewModel : BindableBase
         var totalBooks = 0;
         var failedBooks = 0;
 
-        await Task.Run(async () =>
+        try
         {
-            try
-            {
-                await FileImporter.ImportDirectoryAsync(folder.Path, token,
-                    async (progress, total, title, didFail) =>
+            await FileImporter.ImportDirectoryAsync(folder.Path, token,
+                async (progress, total, title, didFail) =>
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
                     {
-                        await dispatcherQueue.EnqueueAsync(() =>
-                        {
-                            totalBooks++;
-                            ImportProgress = ((double)progress / total * 100).ToInt();
-                            ImportText = $" {title}";
-                        });
-
-                        if (didFail)
-                        {
-                            totalBooks--;
-                            failedBooks++;
-                            EnqueueNotification(new Notification
-                                { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
-                        }
+                        totalBooks++;
+                        ImportProgress = ((double)progress / total * 100).ToInt();
+                        ImportText = $" {title}";
                     });
-            }
-            catch (OperationCanceledException)
-            {
-                EnqueueNotification(new Notification
-                {
-                    Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
+
+                    if (didFail)
+                    {
+                        totalBooks--;
+                        failedBooks++;
+                        EnqueueNotification(new Notification
+                            { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
+                    }
                 });
-            }
-
-            await dispatcherQueue.EnqueueAsync(() =>
-            {
-                ImportText = string.Empty;
-                ImportProgress = 0;
-            });
-
-            if (failedBooks > 0)
-                EnqueueNotification(new Notification
-                {
-                    Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
-                });
-
+        }
+        catch (OperationCanceledException)
+        {
             EnqueueNotification(new Notification
             {
-                Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
+                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
             });
-        }, token);
-        
+        }
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            ImportText = string.Empty;
+            ImportProgress = 0;
+        });
+
+        if (failedBooks > 0)
+            EnqueueNotification(new Notification
+            {
+                Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+            });
+
+        EnqueueNotification(new Notification
+        {
+            Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
+        });
+
         await GetAudiobookListAsync();
     }
 
@@ -450,13 +513,13 @@ public class MainViewModel : BindableBase
 
     public void EnqueueNotification(Notification notification)
     {
-        dispatcherQueue.TryEnqueue(() => { Notifications.Add(notification); });
+        dispatcherQueue.EnqueueAsync(() => { Notifications.Add(notification); });
     }
 
     // Call this method when the InfoBar is closed
     public void OnNotificationClosed(Notification notification)
     {
-        dispatcherQueue.TryEnqueue(() =>
+        dispatcherQueue.EnqueueAsync(() =>
         {
             Notifications.Remove(notification);
             if (Notifications.Count == 0) Notifications.Clear();

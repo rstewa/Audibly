@@ -169,6 +169,7 @@ public sealed partial class PlayerControl : UserControl
         {
             PlayerViewModel.IsPlayerFullScreen = true;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
+            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
 
             if (App.RootFrame?.Content is not PlayerPage)
                 App.RootFrame?.Navigate(typeof(PlayerPage));
@@ -179,6 +180,7 @@ public sealed partial class PlayerControl : UserControl
         {
             PlayerViewModel.IsPlayerFullScreen = false;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
+            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MaximizeTooltip;
             if (App.RootFrame?.Content is PlayerPage)
                 App.RootFrame?.Navigate(typeof(AppShell));
             // App.Window.RestoreWindow();

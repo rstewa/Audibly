@@ -136,6 +136,14 @@ public class PlayerViewModel : BindableBase
         get => _maximizeMinimizeGlyph;
         set => Set(ref _maximizeMinimizeGlyph, value);
     }
+    
+    private string _maximizeMinimizeTooltip = Constants.MaximizeTooltip;
+    
+    public string MaximizeMinimizeTooltip
+    {
+        get => _maximizeMinimizeTooltip;
+        set => Set(ref _maximizeMinimizeTooltip, value);
+    }
 
     private Symbol _playPauseIcon = Symbol.Play;
 

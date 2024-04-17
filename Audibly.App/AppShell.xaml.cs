@@ -57,13 +57,17 @@ public sealed partial class AppShell : Page
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
+        
+        // todo: add a listener for when the app is suspended to save the current audiobook
+        
+        // todo: remove the following
+        // ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"] = @"C:\Users\rstewa\Desktop\John Grisham - A Time for Mercy꞉ A Jake Brigance Novel.m4b";
+        // ApplicationData.Current.LocalSettings.Values["John Grisham - A Time for Mercy꞉ A Jake Brigance Novel:CurrentPosition"] = 123456; 
+        // ApplicationData.Current.LocalSettings.Values.Remove("HasCompletedOnboarding");
     }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
-        // NOTE: for debugging
-        // ApplicationData.Current.LocalSettings.Values.Remove("HasCompletedOnboarding");
-
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
             ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
@@ -84,7 +88,7 @@ public sealed partial class AppShell : Page
             var currentPosition = ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
                     
             // import the audiobook
-            var importSuccess = await ViewModel.ImportAudiobookWithPathAsync(currentAudiobookPath);
+            var importSuccess = await ViewModel.ImportAudiobookTest(currentAudiobookPath);
             if (!importSuccess) return;
                 
             // set the current position
@@ -156,13 +160,14 @@ public sealed partial class AppShell : Page
         });
     }
 
-    private async void HideImportDialog()
+    private void HideImportDialog()
     {
-        await _dispatcherQueue.EnqueueAsync(() =>
+        if (_importDialog == null) return;
+
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            if (_importDialog == null) return;
             _importDialog.Hide();
-            _importDialog = null;
+            // _importDialog = null;
         });
     }
 

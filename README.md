@@ -51,7 +51,7 @@
 </div>
 
 > [!IMPORTANT]  
-> Audibly v2 is not in the Microsoft Store yet
+> Audibly v2 is **NOW** in the Microsoft Store!
 
 <!-- link to store page -->
 <a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">

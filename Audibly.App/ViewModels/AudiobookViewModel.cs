@@ -267,7 +267,7 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    private string _volumeGlyph;
+    private string _volumeGlyph = Constants.VolumeIcon3;
 
     public string VolumeGlyph
     {

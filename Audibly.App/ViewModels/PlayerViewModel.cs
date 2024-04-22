@@ -221,7 +221,6 @@ public class PlayerViewModel : BindableBase
         ; // todo: implement
     }
 
-    // todo: check https://xamlbrewer.wordpress.com/2022/03/09/a-dialog-service-for-winui-3/
     private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
@@ -291,5 +290,58 @@ public class PlayerViewModel : BindableBase
         });
 
         await NowPlaying.SaveAsync();
+    }
+    
+    public void PreviousChapter()
+    {
+        var newChapterIndex = NowPlaying?.CurrentChapterIndex - 1 >= 0
+            ? NowPlaying.CurrentChapterIndex - 1
+            : NowPlaying.CurrentChapterIndex;
+
+        if (newChapterIndex == null) return;
+
+        NowPlaying.CurrentChapter = NowPlaying.Chapters[(int)newChapterIndex];
+        NowPlaying.CurrentChapterIndex = newChapterIndex;
+        ChapterComboSelectedIndex = (int)newChapterIndex;
+        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentChapter.StartTime);
+    }
+    
+    public void NextChapter()
+    {
+        var newChapterIndex = NowPlaying?.CurrentChapterIndex + 1 < NowPlaying.Chapters.Count
+            ? NowPlaying.CurrentChapterIndex + 1
+            : NowPlaying.CurrentChapterIndex;
+
+        if (newChapterIndex == null) return;
+
+        NowPlaying.CurrentChapter = NowPlaying.Chapters[(int)newChapterIndex];
+        NowPlaying.CurrentChapterIndex = newChapterIndex;
+        ChapterComboSelectedIndex = (int)newChapterIndex;
+        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentChapter.StartTime);
+    }
+    
+    private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan _skipForwardButtonAmount = TimeSpan.FromSeconds(30);
+    
+    public void SkipBackward()
+    {
+        CurrentPosition = CurrentPosition - _skipBackButtonAmount > TimeSpan.Zero
+            ? CurrentPosition - _skipBackButtonAmount
+            : TimeSpan.Zero;
+    }
+    
+    public void SkipForward()
+    {
+        CurrentPosition = CurrentPosition + _skipForwardButtonAmount <=
+                          MediaPlayer.PlaybackSession.NaturalDuration
+            ? CurrentPosition + _skipForwardButtonAmount
+            : MediaPlayer.PlaybackSession.NaturalDuration;
+    }
+    
+    public void UpdatePositionFromSliderValue(double value)
+    {
+        CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying?.CurrentChapter.StartTime + value ?? 0);
     }
 }

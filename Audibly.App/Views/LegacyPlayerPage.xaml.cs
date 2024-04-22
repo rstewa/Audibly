@@ -4,6 +4,7 @@
 
 using System;
 using Audibly.App.ViewModels;
+using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -39,38 +40,46 @@ public sealed partial class LegacyPlayerPage : Page
 
     private void CompactViewButton_Click(object sender, RoutedEventArgs e)
     {
+        // TODO
         throw new NotImplementedException();
     }
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
-    }
-
-    private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        // todo
-        ;
+        PlayerViewModel.PreviousChapter();
     }
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        PlayerViewModel.NextChapter();
+    }
+    
+    private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var container = sender as ComboBox;
+        if (container == null || container.SelectedItem is not ChapterInfo chapter) return;
+
+        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying?.CurrentChapter)) return;
+
+        PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
 
-    private void SkipBack10Button_Click(object sender, RoutedEventArgs e)
+    private void SkipBackButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        PlayerViewModel.SkipBackward();
+    }
+
+    private void SkipForwardButton_Click(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.SkipForward();
     }
 
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
-    }
-
-    private void SkipForward30Button_Click(object sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
+        if (PlayerViewModel.PlayPauseIcon == Symbol.Play)
+            PlayerViewModel.MediaPlayer.Play();
+        else
+            PlayerViewModel.MediaPlayer.Pause();
     }
 
     private void OpenAudiobook_Click(object sender, RoutedEventArgs e)
@@ -80,20 +89,17 @@ public sealed partial class LegacyPlayerPage : Page
 
     private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            PlayerViewModel.NowPlaying.PlaybackSpeed = e.NewValue;
-            PlayerViewModel.MediaPlayer.PlaybackRate = e.NewValue;
-        });
+        var slider = sender as Slider;
+        if (slider == null || !IsLoaded) return;
+
+        PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
     }
 
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        DispatcherQueue.EnqueueAsync(async () =>
-        {
-            PlayerViewModel.NowPlaying.Volume = e.NewValue;
-            PlayerViewModel.MediaPlayer.Volume = e.NewValue / 100;
-            await PlayerViewModel.NowPlaying.SaveAsync();
-        });
+        var slider = sender as Slider;
+        if (slider == null || !IsLoaded) return;
+
+        PlayerViewModel.UpdateVolume(slider.Value);
     }
 }

@@ -63,73 +63,36 @@ public sealed partial class PlayerControl : UserControl
         var container = sender as ComboBox;
         if (container == null || container.SelectedItem is not ChapterInfo chapter) return;
 
-        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter)) return;
+        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying?.CurrentChapter)) return;
 
         PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(chapter.StartTime);
     }
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        var newChapterIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex - 1 >= 0
-            ? PlayerViewModel.NowPlaying.CurrentChapterIndex - 1
-            : PlayerViewModel.NowPlaying.CurrentChapterIndex;
-
-        if (newChapterIndex == null) return;
-
-        PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
-        PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
-        PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
-        PlayerViewModel.ChapterDurationMs =
-            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
-                  PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-        PlayerViewModel.CurrentPosition =
-            TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
+        PlayerViewModel.PreviousChapter();
     }
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        var newChapterIndex =
-            PlayerViewModel.NowPlaying.CurrentChapterIndex + 1 < PlayerViewModel.NowPlaying.Chapters.Count
-                ? PlayerViewModel.NowPlaying.CurrentChapterIndex + 1
-                : PlayerViewModel.NowPlaying.CurrentChapterIndex;
-
-        if (newChapterIndex == null) return;
-
-        PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
-        PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
-        PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
-        PlayerViewModel.ChapterDurationMs =
-            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
-                  PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-        PlayerViewModel.CurrentPosition =
-            TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
+        PlayerViewModel.NextChapter();
     }
 
     private void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
         var slider = sender as Slider;
         if (slider != null && slider.Value != 0)
-            PlayerViewModel.CurrentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime + slider.Value);
+            PlayerViewModel.UpdatePositionFromSliderValue(slider.Value);
     }
-
-    private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan _skipForwardButtonAmount = TimeSpan.FromSeconds(30);
 
     private void SkipBackButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition - _skipBackButtonAmount > TimeSpan.Zero
-            ? PlayerViewModel.CurrentPosition - _skipBackButtonAmount
-            : TimeSpan.Zero;
+        PlayerViewModel.SkipBackward();
     }
 
     private void SkipForwardButton_OnClick(object sender, RoutedEventArgs e)
     {
-        // todo: might need to switch this to using the duration from the audiobook record
-        PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition + _skipForwardButtonAmount <=
-                                          PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration
-            ? PlayerViewModel.CurrentPosition + _skipForwardButtonAmount
-            : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
+        PlayerViewModel.SkipForward();
     }
 
     private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
@@ -154,13 +117,6 @@ public sealed partial class PlayerControl : UserControl
         // rootPage.RequestedTheme = ThemeHelper.RootTheme;
         newWindow.Content = rootPage;
         newWindow.Activate();
-    }
-
-    // TODO
-    private void Player_OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (PlayerViewModel.NowPlaying == null && ViewModel.Audiobooks.Any(a => a.IsNowPlaying))
-            PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
     }
 
     private void MaximizePlayerButton_OnClick(object sender, RoutedEventArgs e)

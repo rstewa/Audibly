@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <Page
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d"
     x:Class="Audibly.App.Views.LegacyPlayerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
     <Grid Background="#121212">
         <Grid>
@@ -35,37 +35,40 @@
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
             <MediaPlayerElement
-                x:Name="AudioPlayerElement"
-                Width="0"
-                Height="0"
                 AreTransportControlsEnabled="False"
-                AutoPlay="False" />
+                AutoPlay="False"
+                Height="0"
+                Width="0"
+                x:Name="AudioPlayerElement" />
 
             <!--#region Book Cover Image-->
             <Border
-                Grid.Row="0"
-                Width="280"
-                Height="280"
-                Margin="0,0,0,0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
                 BorderBrush="transparent"
                 BorderThickness="1"
-                CornerRadius="10">
+                CornerRadius="10"
+                Grid.Row="0"
+                Height="280"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,0"
+                VerticalAlignment="Center"
+                Width="280">
                 <Border.Background>
                     <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath}" Stretch="UniformToFill" />
                 </Border.Background>
                 <Button
-                    x:Name="CompactViewButton"
-                    Margin="0,5,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
                     Background="Transparent"
                     BorderThickness="0"
                     Click="CompactViewButton_Click"
-                    ToolTipService.ToolTip="Compact View">
+                    HorizontalAlignment="Left"
+                    Margin="0,5,0,0"
+                    ToolTipService.ToolTip="Compact View"
+                    VerticalAlignment="Top"
+                    x:Name="CompactViewButton">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73F;" />
                 </Button>
 
@@ -74,10 +77,10 @@
 
             <!--#region Chapter Grid-->
             <Grid
-                x:Name="ChapterGrid"
                 Grid.Row="1"
+                Margin="0,0,0,0"
                 Width="300"
-                Margin="0,0,0,0">
+                x:Name="ChapterGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="225" />
@@ -85,57 +88,57 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
-                    x:Name="PreviousChapterButton"
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
                     Click="PreviousChapterButton_Click"
                     Content="&#xE76B;"
                     FontFamily="Segoe MDL2 Assets"
-                    ToolTipService.ToolTip="Previous Chapter" />
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,0"
+                    ToolTipService.ToolTip="Previous Chapter"
+                    VerticalAlignment="Center"
+                    x:Name="PreviousChapterButton" />
 
                 <ComboBox
-                    x:Name="ChapterCombo"
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    HorizontalContentAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
                     DisplayMemberPath="Title"
+                    Grid.Column="1"
+                    Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
                     ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
                     SelectedItem="{x:Bind PlayerViewModel.NowPlaying.CurrentChapter, Mode=TwoWay}"
-                    SelectionChanged="ChapterCombo_SelectionChanged" />
+                    SelectionChanged="ChapterCombo_SelectionChanged"
+                    VerticalAlignment="Center"
+                    x:Name="ChapterCombo" />
 
                 <Button
-                    x:Name="NextChapterButton"
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
                     Click="NextChapterButton_Click"
                     Content="&#xE76C;"
                     FontFamily="Segoe MDL2 Assets"
-                    ToolTipService.ToolTip="Next Chapter" />
+                    Grid.Column="2"
+                    Grid.Row="0"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,0,0"
+                    ToolTipService.ToolTip="Next Chapter"
+                    VerticalAlignment="Center"
+                    x:Name="NextChapterButton" />
             </Grid>
             <!--#endregion-->
 
             <!--#region Current Time & Progress-->
             <Grid
-                x:Name="ProgressGrid"
                 Grid.Row="2"
-                Width="280"
                 Height="50"
                 Margin="0,-15,0,0"
-                VerticalAlignment="Bottom">
+                VerticalAlignment="Bottom"
+                Width="280"
+                x:Name="ProgressGrid">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -144,245 +147,235 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
-                    x:Name="CurrentTimeTextBlock"
-                    Grid.Column="0"
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
                     Foreground="#9d9d9d"
+                    Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,0"
                     Opacity="1.0"
                     Text="{x:Bind PlayerViewModel.ChapterPositionText, Mode=OneWay}"
-                    TextAlignment="Left" />
+                    TextAlignment="Left"
+                    VerticalAlignment="Center"
+                    x:Name="CurrentTimeTextBlock" />
 
                 <!--  todo: make this a slider  -->
                 <ProgressBar
-                    x:Name="ChapterProgressProgressBar"
-                    Grid.Column="1"
-                    Width="175"
-                    Margin="0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
                     Foreground="#84e2c9"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    Margin="0"
                     Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
-                    Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}" />
+                    Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}"
+                    VerticalAlignment="Center"
+                    Width="175"
+                    x:Name="ChapterProgressProgressBar" />
 
                 <TextBlock
-                    x:Name="CurrentChapterDurationTextBlock"
-                    Grid.Column="2"
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
                     Foreground="#9d9d9d"
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,0,0"
                     Opacity="1.0"
                     Text="{x:Bind PlayerViewModel.ChapterDurationText, Mode=OneWay}"
-                    TextAlignment="Right" />
+                    TextAlignment="Right"
+                    VerticalAlignment="Center"
+                    x:Name="CurrentChapterDurationTextBlock" />
             </Grid>
             <!--#endregion-->
 
-            <!--#region Audio Playback Controls-->
+            <RelativePanel Grid.Row="3">
+                <!--  Play/Pause & Skip Buttons  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Margin="0,5,0,0"
+                    Orientation="Horizontal"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.AlignVerticalCenterWithPanel="True">
 
-            <StackPanel
-                Grid.Row="3"
-                Margin="0,5,0,0"
-                HorizontalAlignment="Center"
-                Orientation="Horizontal">
+                    <StackPanel.Resources>
+                        <ResourceDictionary>
+                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
 
-                <StackPanel.Resources>
-                    <ResourceDictionary>
-                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
 
-                        <SolidColorBrush x:Key="ButtonForeground">#4ac694</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonForegroundPressed">#80D7B4</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonForegroundDisabled">#163B2C</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
 
-                        <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
+                            <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
 
-                        <SolidColorBrush x:Key="RepeatButtonForeground">#4ac694</SolidColorBrush>
-                        <SolidColorBrush x:Key="RepeatButtonForegroundPressed">#80D7B4</SolidColorBrush>
-                        <SolidColorBrush x:Key="RepeatButtonForegroundPointerOver">#B6E8D4</SolidColorBrush>
-                        <SolidColorBrush x:Key="RepeatButtonForegroundDisabled">#163B2C</SolidColorBrush>
+                        </ResourceDictionary>
+                    </StackPanel.Resources>
 
-                    </ResourceDictionary>
-                </StackPanel.Resources>
+                    <RepeatButton
+                        BorderThickness="0"
+                        Click="SkipBackButton_Click"
+                        Delay="500"
+                        Interval="100"
+                        ToolTipService.ToolTip="Skip backward 10 seconds"
+                        x:Name="SkipBack10Button">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xED3C;" />
+                    </RepeatButton>
 
-                <RepeatButton
-                    x:Name="SkipBack10Button"
-                    BorderThickness="0"
-                    Click="SkipBack10Button_Click"
-                    Delay="500"
-                    Interval="100"
-                    ToolTipService.ToolTip="Skip backward 10 seconds">
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="24"
-                        Glyph="&#xED3C;" />
-                </RepeatButton>
+                    <Button
+                        BorderThickness="0"
+                        Click="PlayPauseButton_Click"
+                        Tag="play"
+                        ToolTipService.ToolTip="Play/Pause"
+                        x:Name="PlayPauseButton">
+                        <Viewbox MaxHeight="24" MaxWidth="24">
+                            <SymbolIcon Symbol="Play" x:Name="PlayPauseIcon" />
+                        </Viewbox>
+                    </Button>
 
-                <Button
-                    x:Name="PlayPauseButton"
-                    BorderThickness="0"
-                    Click="PlayPauseButton_Click"
-                    Tag="play"
-                    ToolTipService.ToolTip="Play/Pause">
-                    <Viewbox MaxWidth="24" MaxHeight="24">
-                        <SymbolIcon x:Name="PlayPauseIcon" Symbol="Play" />
-                    </Viewbox>
-                </Button>
+                    <RepeatButton
+                        BorderThickness="0"
+                        Click="SkipForwardButton_Click"
+                        Delay="500"
+                        Interval="100"
+                        ToolTipService.ToolTip="Skip forward 30 seconds"
+                        x:Name="SkipForward30Button">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="24"
+                            Glyph="&#xED3D;" />
+                    </RepeatButton>
 
-                <RepeatButton
-                    x:Name="SkipForward30Button"
-                    BorderThickness="0"
-                    Click="SkipForward30Button_Click"
-                    Delay="500"
-                    Interval="100"
-                    ToolTipService.ToolTip="Skip forward 30 seconds">
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="24"
-                        Glyph="&#xED3D;" />
-                </RepeatButton>
+                </StackPanel>
+                <!--#endregion-->
 
-            </StackPanel>
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    RelativePanel.AlignRightWithPanel="True">
+                    <!--#region VolumeLevelButton-->
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalAlignment="Right"
+                        Margin="0,5,0,0"
+                        ToolTipService.ToolTip="Volume Level"
+                        x:Name="VolumeLevelButton">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            Glyph="{x:Bind PlayerViewModel.VolumeLevelGlyph, Mode=OneWay}"
+                            x:Name="AudioLevelButtonIcon" />
+                        <Button.Flyout>
+                            <Flyout>
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="MinWidth" Value="30" />
+                                        <Setter Property="MaxWidth" Value="30" />
+                                        <Setter Property="MinHeight" Value="125" />
+                                        <Setter Property="CornerRadius" Value="5" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Grid>
+                                    <Slider
+                                        AutomationProperties.Name="VolumeLevelSlider"
+                                        Foreground="#84e2c9"
+                                        LargeChange="25"
+                                        Margin="-14,0,0,0"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Orientation="Vertical"
+                                        SmallChange="1"
+                                        SnapsTo="StepValues"
+                                        StepFrequency="1"
+                                        ToolTipService.ToolTip="Volume Level"
+                                        Value="{x:Bind PlayerViewModel.VolumeLevel, Mode=TwoWay}"
+                                        ValueChanged="VolumeSlider_ValueChanged"
+                                        x:Name="VolumeLevelSlider">
+                                        <Slider.Resources>
+                                            <ResourceDictionary>
+                                                <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#4ac694</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#4ac694</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFill">#84e2c9</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPressed">#84e2c9</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#84e2c9</SolidColorBrush>
+                                            </ResourceDictionary>
+                                        </Slider.Resources>
+                                    </Slider>
+                                </Grid>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    <!--#endregion VolumeLevelButton-->
 
-            <!--#endregion-->
+                    <!--#region PlaybackSpeedButton-->
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalAlignment="Right"
+                        Margin="0,5,35,0"
+                        ToolTipService.ToolTip="Playback Speed"
+                        x:Name="PlaybackSpeedButton">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEC57;" />
+                        <!--  Glyph="{x:Bind AudiobookViewModel.Audiobook.PlaybackGlyph}" />  -->
+                        <Button.Flyout>
+                            <Flyout>
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="MinWidth" Value="30" />
+                                        <Setter Property="MaxWidth" Value="30" />
+                                        <Setter Property="MinHeight" Value="125" />
+                                        <Setter Property="CornerRadius" Value="5" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Grid>
+                                    <Slider
+                                        AutomationProperties.Name="PlaybackSpeedSlider"
+                                        Foreground="#84e2c9"
+                                        Margin="-14,0,0,0"
+                                        Maximum="1.5"
+                                        Minimum="0.5"
+                                        Orientation="Vertical"
+                                        SnapsTo="StepValues"
+                                        StepFrequency="0.1"
+                                        ToolTipService.ToolTip="Playback Speed"
+                                        Value="{x:Bind PlayerViewModel.NowPlaying.PlaybackSpeed, Mode=TwoWay}"
+                                        ValueChanged="PlaybackSpeedSlider_ValueChanged"
+                                        x:Name="PlaybackSpeedSlider">
+                                        <Slider.Resources>
+                                            <ResourceDictionary>
+                                                <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#4ac694</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#4ac694</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFill">#84e2c9</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPressed">#84e2c9</SolidColorBrush>
+                                                <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#84e2c9</SolidColorBrush>
+                                            </ResourceDictionary>
+                                        </Slider.Resources>
+                                    </Slider>
+                                </Grid>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                    <!--#endregion PlaybackSpeedButton-->
+                </StackPanel>
 
-            <!--#region OpenAudioBookButton-->
-            <Button
-                x:Name="OpenAudiobookButton"
-                Grid.Row="3"
-                Margin="2,5,0,0"
-                HorizontalAlignment="Left"
-                Background="Transparent"
-                BorderThickness="0"
-                Click="OpenAudiobook_Click"
-                ToolTipService.ToolTip="Open Audiobook">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
-            </Button>
-            <!--#endregion OpenAudioBookButton-->
-
-            <!--#region PlaybackSpeedButton-->
-            <Button
-                x:Name="PlaybackSpeedButton"
-                Grid.Row="3"
-                Margin="0,5,35,0"
-                HorizontalAlignment="Right"
-                Background="Transparent"
-                BorderThickness="0"
-                ToolTipService.ToolTip="Playback Speed">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEC57;" />
-                <!--  Glyph="{x:Bind AudiobookViewModel.Audiobook.PlaybackGlyph}" />  -->
-                <Button.Flyout>
-                    <Flyout>
-                        <Flyout.FlyoutPresenterStyle>
-                            <Style TargetType="FlyoutPresenter">
-                                <Setter Property="MinWidth" Value="30" />
-                                <Setter Property="MaxWidth" Value="30" />
-                                <Setter Property="MinHeight" Value="125" />
-                                <Setter Property="CornerRadius" Value="5" />
-                                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-                            </Style>
-                        </Flyout.FlyoutPresenterStyle>
-                        <Grid>
-                            <Slider
-                                x:Name="PlaybackSpeedSlider"
-                                Margin="-14,0,0,0"
-                                AutomationProperties.Name="PlaybackSpeedSlider"
-                                Foreground="#84e2c9"
-                                Maximum="1.5"
-                                Minimum="0.5"
-                                Orientation="Vertical"
-                                SnapsTo="StepValues"
-                                StepFrequency="0.1"
-                                ToolTipService.ToolTip="Playback Speed"
-                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                Value="{x:Bind PlayerViewModel.NowPlaying.PlaybackSpeed, Mode=TwoWay}">
-                                <Slider.Resources>
-                                    <ResourceDictionary>
-                                        <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#4ac694</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#4ac694</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderTrackValueFill">#84e2c9</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderTrackValueFillPressed">#84e2c9</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#84e2c9</SolidColorBrush>
-                                    </ResourceDictionary>
-                                </Slider.Resources>
-                            </Slider>
-                        </Grid>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-            <!--#endregion PlaybackSpeedButton-->
-
-            <!--#region VolumeLevelButton-->
-            <Button
-                x:Name="VolumeLevelButton"
-                Grid.Row="3"
-                Margin="0,5,0,0"
-                HorizontalAlignment="Right"
-                Background="Transparent"
-                BorderThickness="0"
-                ToolTipService.ToolTip="Volume Level">
-                <FontIcon
-                    x:Name="AudioLevelButtonIcon"
-                    FontFamily="Segoe MDL2 Assets"
-                    Glyph="{x:Bind PlayerViewModel.NowPlaying.VolumeGlyph, Mode=OneWay}" />
-                <Button.Flyout>
-                    <Flyout>
-                        <Flyout.FlyoutPresenterStyle>
-                            <Style TargetType="FlyoutPresenter">
-                                <Setter Property="MinWidth" Value="30" />
-                                <Setter Property="MaxWidth" Value="30" />
-                                <Setter Property="MinHeight" Value="125" />
-                                <Setter Property="CornerRadius" Value="5" />
-                                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-                            </Style>
-                        </Flyout.FlyoutPresenterStyle>
-                        <Grid>
-                            <Slider
-                                x:Name="VolumeLevelSlider"
-                                Margin="-14,0,0,0"
-                                AutomationProperties.Name="VolumeLevelSlider"
-                                Foreground="#84e2c9"
-                                LargeChange="25"
-                                Maximum="100"
-                                Minimum="0"
-                                Orientation="Vertical"
-                                SmallChange="1"
-                                SnapsTo="StepValues"
-                                StepFrequency="1"
-                                ToolTipService.ToolTip="Volume Level"
-                                ValueChanged="VolumeSlider_ValueChanged"
-                                Value="{x:Bind PlayerViewModel.VolumeLevel, Mode=TwoWay}">
-                                <Slider.Resources>
-                                    <ResourceDictionary>
-                                        <SolidColorBrush x:Key="SliderThumbBackground">#4ac694</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver">#4ac694</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderThumbBackgroundPressed">#4ac694</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderTrackValueFill">#84e2c9</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderTrackValueFillPressed">#84e2c9</SolidColorBrush>
-                                        <SolidColorBrush x:Key="SliderTrackValueFillPointerOver">#84e2c9</SolidColorBrush>
-                                    </ResourceDictionary>
-                                </Slider.Resources>
-                            </Slider>
-                        </Grid>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-            <!--#endregion VolumeLevelButton-->
-
+            </RelativePanel>
         </Grid>
     </Grid>
 </Page>

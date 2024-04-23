@@ -143,9 +143,9 @@ public sealed partial class AudiobookTile : UserControl
         ;
     }
 
-    private void ButtonTile_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+    private void ButtonTile_OnRightTapped(object sender, RightTappedRoutedEventArgs? e)
     {
-        if (e is not RightTappedRoutedEventArgs) return;
+        if (e is null) return;
         var myOption = new FlyoutShowOptions
         {
             ShowMode = FlyoutShowMode.Transient

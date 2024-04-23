@@ -4,8 +4,10 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Storage;
+using ATL;
 using Audibly.App.Services.Interfaces;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -35,6 +37,14 @@ public class AppDataService : IAppDataService
     {
         var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path));
         await folder.DeleteAsync();
+    }
+
+    public async Task WriteMetadataAsync(string path, Track track)
+    {
+        var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
+            CreationCollisionOption.OpenIfExists);
+        var json = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true });
+        await FileIO.WriteTextAsync(await bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting), json);
     }
 
     // from: https://stackoverflow.com/questions/26486671/how-to-resize-an-image-maintaining-the-aspect-ratio-in-c-sharp

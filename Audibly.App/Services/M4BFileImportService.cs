@@ -5,8 +5,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using ATL;
 using Audibly.App.Services.Interfaces;
 using Audibly.Models;
@@ -103,7 +105,6 @@ public class M4BFileImportService : IImportFiles
         }
 
         // TESTING: NEED TO REMOVE
-
         // var fileName = @$"C:\Users\rstewa\source\repos\mine\Audibly\logs\{track.Title}_metadata.json";
         // _ = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true })
         //     .WriteToFile(fileName);
@@ -130,6 +131,10 @@ public class M4BFileImportService : IImportFiles
         var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
 
         var dir = $"{Path.GetFileNameWithoutExtension(path)} [{track.Artist}]";
+        
+        // write the metadata to a json file
+        await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
+        
         (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
             await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
 

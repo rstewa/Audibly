@@ -101,15 +101,10 @@ public class M4BFileImportService : IImportFiles
         }
         catch (Exception e)
         {
+            // log the error
+            App.ViewModel.LoggingService.LogError(e);
             return null;
         }
-
-        // TESTING: NEED TO REMOVE
-        // var fileName = @$"C:\Users\rstewa\source\repos\mine\Audibly\logs\{track.Title}_metadata.json";
-        // _ = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true })
-        //     .WriteToFile(fileName);
-
-        // END TESTING
 
         var audiobook = new Audiobook
         {
@@ -145,6 +140,12 @@ public class M4BFileImportService : IImportFiles
             var tmp = _mapper.Map<ChapterInfo>(ch);
             tmp.Index = chapterIndex++;
             audiobook.Chapters.Add(tmp);
+        }
+        
+        if (audiobook.Chapters.Count == 0)
+        {
+            App.ViewModel.LoggingService.Log($"No chapters found in the file: {path}");
+            return null;
         }
 
         return audiobook;

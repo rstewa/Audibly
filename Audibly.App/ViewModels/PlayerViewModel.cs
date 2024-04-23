@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/8/2024
+// Created: 4/15/2024
+// Updated: 4/22/2024
 
 using System;
 using System.IO;
@@ -136,9 +136,9 @@ public class PlayerViewModel : BindableBase
         get => _maximizeMinimizeGlyph;
         set => Set(ref _maximizeMinimizeGlyph, value);
     }
-    
+
     private string _maximizeMinimizeTooltip = Constants.MaximizeTooltip;
-    
+
     public string MaximizeMinimizeTooltip
     {
         get => _maximizeMinimizeTooltip;
@@ -201,6 +201,25 @@ public class PlayerViewModel : BindableBase
         if (NowPlaying == null) return;
         _ = _dispatcherQueue.TryEnqueue(() =>
         {
+            if (NowPlaying.Chapters.Count == 0)
+            {
+                // NowPlaying.Chapters.Clear();
+                // todo: try to read the chapters in again
+                
+                NowPlaying = null;
+
+                App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
+                    "An error occurred while trying to open the selected audiobook. The chapters could not be loaded.");
+                
+                // App.ViewModel.EnqueueNotification(new Notification
+                // {
+                //     Message = "An error occurred while trying to open the selected audiobook. The chapters could not be loaded.",
+                //     Severity = InfoBarSeverity.Error
+                // });
+                
+                return;
+            }
+
             NowPlaying.CurrentChapter = NowPlaying.Chapters[NowPlaying.CurrentChapterIndex ?? 0];
 
             ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/14/2024
+// Created: 4/15/2024
+// Updated: 4/22/2024
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Path = System.IO.Path;
 
@@ -57,9 +56,9 @@ public sealed partial class AppShell : Page
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
-        
+
         // todo: add a listener for when the app is suspended to save the current audiobook
-        
+
         // todo: remove the following
         // ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"] = @"C:\Users\rstewa\Desktop\John Grisham - A Time for Mercy꞉ A Jake Brigance Novel.m4b";
         // ApplicationData.Current.LocalSettings.Values["John Grisham - A Time for Mercy꞉ A Jake Brigance Novel:CurrentPosition"] = 123456; 
@@ -71,40 +70,44 @@ public sealed partial class AppShell : Page
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
             ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
-        if (hasCompletedOnboarding.Value != null) return;
-        
-        ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
+        if (hasCompletedOnboarding.Value == null)
+        {
+            ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
 
-        // check if user had v1 and was listening to an audiobook
-        var currentAudiobookPath = ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"]?.ToString();
-        if (currentAudiobookPath != null)
-        {
-            var result = await ShowYesNoDialogAsync("Welcome Back!",
-                "We've detected that you were listening to an audiobook in a previous version of Audibly. Would you like to continue listening?");
-            if (!result) return;
-                
-            // get that audiobooks current position
-            var name = Path.GetFileNameWithoutExtension(currentAudiobookPath);
-            var currentPosition = ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
-                    
-            // import the audiobook
-            var importSuccess = await ViewModel.ImportAudiobookTest(currentAudiobookPath);
-            if (!importSuccess) return;
-                
-            // set the current position
-            var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == currentAudiobookPath);
-            if (audiobook == null) return;
-                
-            ViewModel.SelectedAudiobook = audiobook;
-            if (currentPosition != null) 
-                audiobook.CurrentTimeMs = (int)currentPosition;
-            PlayerViewModel.OpenAudiobook(audiobook);
+            // check if user had v1 and was listening to an audiobook
+            var currentAudiobookPath = ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"]?.ToString();
+            if (currentAudiobookPath != null)
+            {
+                var result = await ShowYesNoDialogAsync("Welcome Back!",
+                    "We've detected that you were listening to an audiobook in a previous version of Audibly. Would you like to continue listening?");
+                if (!result) return;
+
+                // get that audiobooks current position
+                var name = Path.GetFileNameWithoutExtension(currentAudiobookPath);
+                var currentPosition =
+                    ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
+
+                // import the audiobook
+                var importSuccess = await ViewModel.ImportAudiobookTest(currentAudiobookPath);
+                if (!importSuccess) return;
+
+                // set the current position
+                var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == currentAudiobookPath);
+                if (audiobook == null) return;
+
+                ViewModel.SelectedAudiobook = audiobook;
+                if (currentPosition != null)
+                    audiobook.CurrentTimeMs = (int)currentPosition;
+                PlayerViewModel.OpenAudiobook(audiobook);
+            }
+            else
+            {
+                ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
+                    "We're glad you're here. Let's get started by adding your first audiobook.");
+            }
         }
-        else
-        {
-            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
-                "We're glad you're here. Let's get started by adding your first audiobook.");
-        }
+
+        await ProcessDialogQueue();
     }
 
     private ContentDialog? _importDialog;
@@ -134,30 +137,26 @@ public sealed partial class AppShell : Page
         return result;
     }
 
-    private async void ShowImportDialogAsync(string title)
+    private ContentDialog CreateImportDialog(string title)
     {
         var importDialog = new ImportDialogContent();
-        await _dispatcherQueue.EnqueueAsync(async () =>
+        var dialog = new ContentDialog
         {
-            _importDialog = new ContentDialog
-            {
-                Title = title,
-                Content = importDialog,
-                DefaultButton = ContentDialogButton.Close,
-                CloseButtonText = "Cancel",
-                XamlRoot = XamlRoot,
-                RequestedTheme = ThemeHelper.ActualTheme
-            };
+            Title = title,
+            Content = importDialog,
+            DefaultButton = ContentDialogButton.Close,
+            CloseButtonText = "Cancel",
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
 
-            _importDialog.CloseButtonClick += (_, _) =>
-            {
-                ViewModel.MessageService.CancelDialog();
-                ViewModel.IsLoading = false;
-                ViewModel.Refresh();
-            };
+        dialog.CloseButtonClick += (_, _) =>
+        {
+            ViewModel.MessageService.CancelDialog();
+            ViewModel.IsLoading = false;
+            ViewModel.Refresh();
+        };
 
-            await _importDialog.ShowAsync();
-        });
+        return dialog;
     }
 
     private void HideImportDialog()
@@ -171,108 +170,113 @@ public sealed partial class AppShell : Page
         });
     }
 
-    private async void ShowDeleteDialogAsync(string title, string content)
+    private ContentDialog CreateDeleteDialog(string title, string content)
     {
-        await _dispatcherQueue.EnqueueAsync(async () =>
+        var dialog = new ContentDialog
         {
-            var dialog = new ContentDialog
-            {
-                Title = title,
-                Content = content,
-                PrimaryButtonText = "Remove from Library",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = XamlRoot,
-                RequestedTheme = ThemeHelper.ActualTheme
-            };
+            Title = title,
+            Content = content,
+            PrimaryButtonText = "Remove from Library",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
 
-            dialog.PrimaryButtonClick += async (_, _) =>
-            {
-                await ViewModel.DeleteAudiobookAsync();
-                await ViewModel.GetAudiobookListAsync();
-            };
+        dialog.PrimaryButtonClick += async (_, _) =>
+        {
+            await ViewModel.DeleteAudiobookAsync();
+            await ViewModel.GetAudiobookListAsync();
+        };
 
-            await dialog.ShowAsync();
-        });
+        return dialog;
     }
 
-    private async void ShowOkDialogAsync(string title, string content)
+    private ContentDialog CreateOkDialog(string title, string content)
     {
-        await _dispatcherQueue.EnqueueAsync(async () =>
+        var dialog = new ContentDialog
         {
-            var dialog = new ContentDialog
-            {
-                Title = title,
-                Content = content,
-                CloseButtonText = "Ok",
-                XamlRoot = XamlRoot,
-                DefaultButton = ContentDialogButton.Close,
-                RequestedTheme = ThemeHelper.ActualTheme
-            };
+            Title = title,
+            Content = content,
+            CloseButtonText = "Ok",
+            DefaultButton = ContentDialogButton.Close,
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
 
-            await dialog.ShowAsync();
-        });
+        return dialog;
     }
 
-    private async void ShowRestartDialogAsync(string title, string content)
+    private ContentDialog CreateRestartDialog(string title, string content)
     {
-        await _dispatcherQueue.EnqueueAsync(async () =>
+        var dialog = new ContentDialog
         {
-            var dialog = new ContentDialog
-            {
-                Title = title,
-                Content = content,
-                PrimaryButtonText = "Restart",
-                DefaultButton = ContentDialogButton.Primary,
-                CloseButtonText = "Not Now",
-                XamlRoot = XamlRoot,
-                RequestedTheme = ThemeHelper.ActualTheme
-            };
+            Title = title,
+            Content = content,
+            PrimaryButtonText = "Restart",
+            DefaultButton = ContentDialogButton.Primary,
+            CloseButtonText = "Not Now",
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
 
-            dialog.PrimaryButtonClick += (_, _) => { App.RestartApp(); };
+        dialog.PrimaryButtonClick += (_, _) => { App.RestartApp(); };
 
-            await dialog.ShowAsync();
-        });
+        return dialog;
     }
 
-    private async void ShowChangelogDialog(string title, string changelogText)
+    private ContentDialog CreateChangelogDialog(string title, string changelogText)
     {
         var dialogContent = new ChangelogDialogContent(title, changelogText);
-        var contentDialog = new ContentDialog
+        var dialog = new ContentDialog
         {
             Content = dialogContent,
             CloseButtonText = "Close",
             DefaultButton = ContentDialogButton.Close,
-            XamlRoot = XamlRoot,
             RequestedTheme = ThemeHelper.ActualTheme
         };
-        await contentDialog.ShowAsync();
+
+        return dialog;
     }
 
-    private void OnShowDialogRequested(DialogType type, string title, string content)
+    private readonly Queue<ContentDialog> _dialogQueue = new();
+
+    private async void OnShowDialogRequested(DialogType type, string title, string content)
     {
-        switch (type)
+        var dialog = type switch
         {
-            case DialogType.Error:
-                ShowDeleteDialogAsync(title, content);
-                break;
-            case DialogType.Info:
-                ShowOkDialogAsync(title, content);
-                break;
-            case DialogType.Restart:
-                ShowRestartDialogAsync(title, content);
-                break;
-            case DialogType.Changelog:
-                ShowChangelogDialog(title, content);
-                break;
-            case DialogType.Import:
-                ShowImportDialogAsync(title);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(type), type, null);
-        }
+            DialogType.Error => CreateDeleteDialog(title, content),
+            DialogType.Info => CreateOkDialog(title, content),
+            DialogType.Restart => CreateRestartDialog(title, content),
+            DialogType.Changelog => CreateChangelogDialog(title, content),
+            DialogType.Import => CreateImportDialog(title),
+            _ => null
+        };
+
+        if (dialog == null) return;
+
+        _dialogQueue.Enqueue(dialog);
+        await ProcessDialogQueue();
     }
 
+    private bool _isProcessingDialogQueue = false;
+    
+    private async Task ProcessDialogQueue()
+    {
+        if (_isProcessingDialogQueue)
+        {
+            return;
+        }
+
+        _isProcessingDialogQueue = true;
+
+        while (XamlRoot != null && _dialogQueue.Count > 0)
+        {
+            var dialog = _dialogQueue.Dequeue();
+            dialog.XamlRoot = XamlRoot;
+            await dialog.ShowAsync();
+        }
+
+        _isProcessingDialogQueue = false;
+    }
+    
     /// <summary>
     ///     Gets the navigation frame instance.
     /// </summary>

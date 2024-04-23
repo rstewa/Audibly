@@ -325,7 +325,7 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    public ObservableCollection<ChapterInfo> Chapters { get; set; } = new();
+    public ObservableCollection<ChapterInfo> Chapters { get; set; } = [];
 
     /// <summary>
     ///     Gets or sets a value that indicates whether the underlying model has been modified.

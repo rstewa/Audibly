@@ -95,6 +95,7 @@ public partial class App : Application
 
         if (nowPlaying != null)
         {
+            ViewModel.SelectedAudiobook = nowPlaying;
             PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 

@@ -140,7 +140,7 @@ public sealed partial class AppShell : Page
     private ContentDialog CreateImportDialog(string title)
     {
         var importDialog = new ImportDialogContent();
-        var dialog = new ContentDialog
+        _importDialog = new ContentDialog
         {
             Title = title,
             Content = importDialog,
@@ -149,14 +149,14 @@ public sealed partial class AppShell : Page
             RequestedTheme = ThemeHelper.ActualTheme
         };
 
-        dialog.CloseButtonClick += (_, _) =>
+        _importDialog.CloseButtonClick += (_, _) =>
         {
             ViewModel.MessageService.CancelDialog();
             ViewModel.IsLoading = false;
             ViewModel.Refresh();
         };
 
-        return dialog;
+        return _importDialog;
     }
 
     private void HideImportDialog()

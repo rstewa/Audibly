@@ -203,19 +203,10 @@ public class PlayerViewModel : BindableBase
         {
             if (NowPlaying.Chapters.Count == 0)
             {
-                // NowPlaying.Chapters.Clear();
-                // todo: try to read the chapters in again
-                
                 NowPlaying = null;
 
                 App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
                     "An error occurred while trying to open the selected audiobook. The chapters could not be loaded.");
-                
-                // App.ViewModel.EnqueueNotification(new Notification
-                // {
-                //     Message = "An error occurred while trying to open the selected audiobook. The chapters could not be loaded.",
-                //     Severity = InfoBarSeverity.Error
-                // });
                 
                 return;
             }

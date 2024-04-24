@@ -1,15 +1,14 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/13/2024
+// Created: 4/15/2024
+// Updated: 4/24/2024
 
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage;
 using ATL;
+using Audibly.App.Extensions;
 using Audibly.App.Services.Interfaces;
 using Audibly.Models;
 using AutoMapper;
@@ -126,10 +125,10 @@ public class M4BFileImportService : IImportFiles
         var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
 
         var dir = $"{Path.GetFileNameWithoutExtension(path)} [{track.Artist}]";
-        
+
         // write the metadata to a json file
         await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
-        
+
         (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
             await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
 
@@ -141,12 +140,19 @@ public class M4BFileImportService : IImportFiles
             tmp.Index = chapterIndex++;
             audiobook.Chapters.Add(tmp);
         }
-        
+
         if (audiobook.Chapters.Count == 0)
-        {
-            App.ViewModel.LoggingService.Log($"No chapters found in the file: {path}");
-            return null;
-        }
+            // create a single chapter for the entire book
+            audiobook.Chapters.Add(new ChapterInfo
+            {
+                StartTime = 0,
+                EndTime = Convert.ToUInt32(audiobook.Duration.ToMs()),
+                StartOffset = 0,
+                EndOffset = 0,
+                UseOffset = false,
+                Title = audiobook.Title,
+                Index = 0
+            });
 
         return audiobook;
     }

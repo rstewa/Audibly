@@ -89,7 +89,7 @@ public sealed partial class LibraryCardPage : Page
         var filePath = ApplicationData.Current.LocalFolder.Path;
         Process p = new();
         p.StartInfo.FileName = "explorer.exe";
-        p.StartInfo.Arguments = $"/select, \"{filePath}\"";
+        p.StartInfo.Arguments = $"/open, \"{filePath}\"";
         p.Start();
     }
 

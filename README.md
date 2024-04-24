@@ -101,14 +101,18 @@ This is a desktop audiobook player for Windows 10/11. It currently only supports
 
 ## Screenshots
 
+<p align="middle">
+  <img src="images/v2/super-hero-art.png" />
+</p> 
+
 ### Home/Library
 <p align="middle">
-  <img src="images/v2/LibraryCardPage.PNG" />
+  <img src="images/v2/home-library-page.png" />
 </p> 
 
 ### Player
 <p align="middle">
-  <img src="images/v2/NowPlayingPage.PNG" />
+  <img src="images/v2/now-playing-page.png" />
 </p> 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

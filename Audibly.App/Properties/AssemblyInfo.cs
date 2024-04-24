@@ -26,4 +26,6 @@ using System.Runtime.InteropServices;
 // Note: package version and assembly version must be kept in sync
 [assembly: AssemblyVersion("2.0.8.0")]
 [assembly: AssemblyFileVersion("2.0.8.0")]
+[assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows10.0.19041.0")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows10.0.17763.0")]
 [assembly: ComVisible(false)]

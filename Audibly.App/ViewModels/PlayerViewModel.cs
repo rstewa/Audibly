@@ -206,7 +206,7 @@ public class PlayerViewModel : BindableBase
                 NowPlaying = null;
 
                 App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
-                    "An error occurred while trying to open the selected audiobook. The chapters could not be loaded.");
+                    "An error occurred while trying to open the selected audiobook. The chapters could not be loaded. Please try importing the audiobook again.");
                 
                 return;
             }

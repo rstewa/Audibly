@@ -146,7 +146,7 @@ public class M4BFileImportService : IImportFiles
             audiobook.Chapters.Add(new ChapterInfo
             {
                 StartTime = 0,
-                EndTime = Convert.ToUInt32(audiobook.Duration.ToMs()),
+                EndTime = Convert.ToUInt32(audiobook.Duration * 1000),
                 StartOffset = 0,
                 EndOffset = 0,
                 UseOffset = false,

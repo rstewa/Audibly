@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.8] - 04-24-2024
+
+### Fixed
+
+- Better fix for the chapter bug from 2.0.7
+  - When there is no chapter metadata, the app will now default to a single chapter with the title of the audiobook.
+
 ## [2.0.7] - 04-24-2024
 
 ### Fixed

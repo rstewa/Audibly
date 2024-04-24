@@ -6,7 +6,8 @@
         <RootNamespace>Audibly.App</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <Platforms>x86;x64;ARM64</Platforms>
-        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
         <PublishProfile>win-$(Platform).pubxml</PublishProfile>
         <UseRidGraph>true</UseRidGraph>
         <UseWinUI>true</UseWinUI>

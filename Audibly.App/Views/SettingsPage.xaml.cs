@@ -24,7 +24,10 @@ public sealed partial class SettingsPage : Page
     {
         get
         {
-            var version = Assembly.GetEntryAssembly().GetName().Version;
+            var assembly = Assembly.GetEntryAssembly();
+            if (assembly == null) return string.Empty;
+            var version = assembly.GetName().Version;
+            if (version == null) return string.Empty;
             return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
         }
     }

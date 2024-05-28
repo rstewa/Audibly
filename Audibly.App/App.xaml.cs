@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
+using Windows.ApplicationModel.Activation;
 
 namespace Audibly.App;
 
@@ -80,7 +81,7 @@ public partial class App : Application
     ///     Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override async void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         Window = WindowHelper.CreateWindow();
 
@@ -114,13 +115,38 @@ public partial class App : Application
 
         ThemeHelper.Initialize();
         
-        // serialize the eventargs to a string
-        // var argsString = JsonSerializer.Serialize(eventargs, options: new JsonSerializerOptions()
-        // {
-        //     WriteIndented = true,
-        //     Converters = { new JsonStringEnumConverter() }
-        // });
-        // ViewModel.LoggingService.Log($"App activated with args: {argsString}");
+        // handle file activation
+        var appActivationArguments = AppInstance.GetCurrent().GetActivatedEventArgs();
+        if (appActivationArguments.Kind is ExtendedActivationKind.File && 
+            appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs && 
+            fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
+        {
+            ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
+
+            var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+            var importSuccess = audiobook == null ? await ViewModel.ImportAudiobookTest(storageFile.Path) : true;
+
+            if (importSuccess)
+            {
+                ViewModel.LoggingService.Log($"Imported audiobook: {storageFile.Path}");
+            }
+            else
+            {
+                ViewModel.LoggingService.Log($"Failed to import audiobook: {storageFile.Path}");
+                ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Failed to import audiobook.",
+                    Severity = InfoBarSeverity.Error
+                });
+            }
+
+            // set the current position
+            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+            if (audiobook == null) return; // todo: handle if this isn't found
+
+            ViewModel.SelectedAudiobook = audiobook;
+            PlayerViewModel.OpenAudiobook(audiobook);
+        }
 
         Window.Activate();
     }

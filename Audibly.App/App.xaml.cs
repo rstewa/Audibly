@@ -24,6 +24,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Windows.ApplicationModel.Activation;
 
 namespace Audibly.App;
@@ -33,6 +34,7 @@ namespace Audibly.App;
 /// </summary>
 public partial class App : Application
 {
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private static Win32WindowHelper win32WindowHelper;
 
     /// <summary>
@@ -83,6 +85,24 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        // If this is the first instance launched, then register it as the "main" instance.
+        // If this isn't the first instance launched, then "main" will already be registered,
+        // so retrieve it.
+        var mainInstance = AppInstance.FindOrRegisterForKey("main");
+        mainInstance.Activated += OnAppInstanceActivated;
+
+        // If the instance that's executing the OnLaunched handler right now
+        // isn't the "main" instance.
+        if (!mainInstance.IsCurrent)
+        {
+            // Redirect the activation (and args) to the "main" instance, and exit.
+            var activatedEventArgs =
+                AppInstance.GetCurrent().GetActivatedEventArgs();
+            await mainInstance.RedirectActivationToAsync(activatedEventArgs);
+            Process.GetCurrentProcess().Kill();
+            return;
+        }
+        
         Window = WindowHelper.CreateWindow();
 
         win32WindowHelper = new Win32WindowHelper(Window);
@@ -114,8 +134,9 @@ public partial class App : Application
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 
         ThemeHelper.Initialize();
-        
+
         // handle file activation
+        // got this from Andrew KeepCoding's answer here: https://stackoverflow.com/questions/76650127/how-to-handle-activation-through-files-in-winui-3-packaged
         var appActivationArguments = AppInstance.GetCurrent().GetActivatedEventArgs();
         if (appActivationArguments.Kind is ExtendedActivationKind.File && 
             appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs && 
@@ -124,7 +145,7 @@ public partial class App : Application
             ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
 
             var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
-            var importSuccess = audiobook == null ? await ViewModel.ImportAudiobookTest(storageFile.Path) : true;
+            var importSuccess = audiobook != null || await ViewModel.ImportAudiobookTest(storageFile.Path);
 
             if (importSuccess)
             {
@@ -146,9 +167,64 @@ public partial class App : Application
 
             ViewModel.SelectedAudiobook = audiobook;
             PlayerViewModel.OpenAudiobook(audiobook);
+
+            // notify the user that the audiobook was successfully opened
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "Audiobook opened successfully.",
+                Severity = InfoBarSeverity.Success
+            });
         }
 
         Window.Activate();
+    }
+
+    private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)
+    {
+        var mainInstance = AppInstance.FindOrRegisterForKey("main");
+        var test = mainInstance.IsCurrent;
+
+        if (e.Kind is ExtendedActivationKind.File && e.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
+            fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
+        {
+            ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
+
+            var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+            var importSuccess = audiobook != null || await ViewModel.ImportAudiobookTest(storageFile.Path, false);
+
+            if (importSuccess)
+            {
+                ViewModel.LoggingService.Log($"Imported audiobook: {storageFile.Path}");
+            }
+            else
+            {
+                ViewModel.LoggingService.Log($"Failed to import audiobook: {storageFile.Path}");
+                ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Failed to import audiobook.",
+                    Severity = InfoBarSeverity.Error
+                });
+            }
+
+            // set the current position
+            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+            if (audiobook == null) return; // todo: handle if this isn't found
+
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                ViewModel.SelectedAudiobook = audiobook;
+                PlayerViewModel.OpenAudiobook(audiobook);
+            });
+            // ViewModel.SelectedAudiobook = audiobook;
+            // PlayerViewModel.OpenAudiobook(audiobook);
+
+            // notify the user that the audiobook was successfully opened
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "Audiobook opened successfully.",
+                Severity = InfoBarSeverity.Success
+            });
+        }
     }
 
     private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)

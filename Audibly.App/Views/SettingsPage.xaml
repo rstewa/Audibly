@@ -68,7 +68,7 @@
                 <toolkit:SettingsExpander
                     Description="© 2024. All rights reserved."
                     Header="Audibly"
-                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/Square44x44Logo.scale-200.png}">
+                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.scale-400.png}">
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"

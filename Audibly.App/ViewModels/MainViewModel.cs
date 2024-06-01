@@ -336,7 +336,7 @@ public class MainViewModel : BindableBase
         await GetAudiobookListAsync();
     }
 
-    public async Task<bool> ImportAudiobookTest(string path)
+    public async Task<bool> ImportAudiobookTest(string path, bool showImportDialog = true)
     {
         var importFailed = false;
 
@@ -345,10 +345,13 @@ public class MainViewModel : BindableBase
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+        if (showImportDialog)
+        {
+            MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
 
-        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
-            "Please wait while the audiobooks are imported...");
+            MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+                "Please wait while the audiobooks are imported...");
+        }
 
         try
         {

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 4/15/2024
-// Updated: 4/22/2024
+// Updated: 6/1/2024
 
 using System;
 using System.IO;
@@ -167,8 +167,18 @@ public class PlayerViewModel : BindableBase
         set => MediaPlayer.PlaybackSession.Position = value > TimeSpan.Zero ? value : TimeSpan.Zero;
     }
 
-    public void OpenAudiobook(AudiobookViewModel audiobook)
+    public async void OpenAudiobook(AudiobookViewModel audiobook)
     {
+        if (NowPlaying != null && NowPlaying == audiobook)
+            return;
+
+        if (NowPlaying != null)
+            NowPlaying.IsNowPlaying = false;
+
+        // todo: not sure setting selected audiobook is necessary
+        App.ViewModel.SelectedAudiobook = audiobook;
+        if (App.ViewModel.SelectedAudiobook == null) return;
+
         // verify that the file exists
         if (!File.Exists(audiobook.FilePath))
         {
@@ -180,6 +190,7 @@ public class PlayerViewModel : BindableBase
         NowPlaying = audiobook;
         NowPlaying.IsNowPlaying = true;
         NowPlaying.DateLastPlayed = DateTime.Now;
+        await NowPlaying.SaveAsync();
         MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.FilePath.AsUri());
     }
 
@@ -207,7 +218,7 @@ public class PlayerViewModel : BindableBase
 
                 App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
                     "An error occurred while trying to open the selected audiobook. The chapters could not be loaded. Please try importing the audiobook again.");
-                
+
                 return;
             }
 

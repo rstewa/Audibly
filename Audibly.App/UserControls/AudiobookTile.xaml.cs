@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/8/2024
+// Created: 4/15/2024
+// Updated: 6/1/2024
 
 using System.Diagnostics;
 using System.Linq;
@@ -99,22 +99,13 @@ public sealed partial class AudiobookTile : UserControl
 
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
-        await _dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var audiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-            if (audiobook == null) 
+            if (audiobook == null)
                 return;
-            
-            if (PlayerViewModel.NowPlaying != null && PlayerViewModel.NowPlaying == audiobook) 
-                return;
-            
-            if (PlayerViewModel.NowPlaying != null)
-                PlayerViewModel.NowPlaying.IsNowPlaying = false;
 
-            // todo: not sure setting selected audiobook is necessary
-            ViewModel.SelectedAudiobook = audiobook;
-            if (ViewModel.SelectedAudiobook == null) return;
-            PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);
+            PlayerViewModel.OpenAudiobook(audiobook);
         });
     }
 

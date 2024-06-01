@@ -1,15 +1,16 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/13/2024
+// Created: 4/15/2024
+// Updated: 6/1/2024
 
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
@@ -18,14 +19,14 @@ using Audibly.Repository;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
+using WinRT.Interop;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
-using Windows.ApplicationModel.Activation;
+using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
 
 namespace Audibly.App;
 
@@ -46,7 +47,8 @@ public partial class App : Application
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
     public static MainViewModel ViewModel { get; } =
-        new(new M4BFileImportService(), new AppDataService(), new MessageService(), new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
+        new(new M4BFileImportService(), new AppDataService(), new MessageService(),
+            new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
 
     /// <summary>
     ///     Gets the app-wide PlayerViewModel singleton instance.
@@ -83,7 +85,7 @@ public partial class App : Application
     ///     Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         // If this is the first instance launched, then register it as the "main" instance.
         // If this isn't the first instance launched, then "main" will already be registered,
@@ -102,7 +104,7 @@ public partial class App : Application
             Process.GetCurrentProcess().Kill();
             return;
         }
-        
+
         Window = WindowHelper.CreateWindow();
 
         win32WindowHelper = new Win32WindowHelper(Window);
@@ -116,7 +118,7 @@ public partial class App : Application
 
         if (nowPlaying != null)
         {
-            ViewModel.SelectedAudiobook = nowPlaying;
+            ViewModel.SelectedAudiobook = nowPlaying; // todo: this is probably not necessary
             PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 
@@ -138,45 +140,31 @@ public partial class App : Application
         // handle file activation
         // got this from Andrew KeepCoding's answer here: https://stackoverflow.com/questions/76650127/how-to-handle-activation-through-files-in-winui-3-packaged
         var appActivationArguments = AppInstance.GetCurrent().GetActivatedEventArgs();
-        if (appActivationArguments.Kind is ExtendedActivationKind.File && 
-            appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs && 
+        if (appActivationArguments.Kind is ExtendedActivationKind.File &&
+            appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
-        {
-            ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
-
-            var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
-            var importSuccess = audiobook != null || await ViewModel.ImportAudiobookTest(storageFile.Path);
-
-            if (importSuccess)
-            {
-                ViewModel.LoggingService.Log($"Imported audiobook: {storageFile.Path}");
-            }
-            else
-            {
-                ViewModel.LoggingService.Log($"Failed to import audiobook: {storageFile.Path}");
-                ViewModel.EnqueueNotification(new Notification
-                {
-                    Message = "Failed to import audiobook.",
-                    Severity = InfoBarSeverity.Error
-                });
-            }
-
-            // set the current position
-            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
-            if (audiobook == null) return; // todo: handle if this isn't found
-
-            ViewModel.SelectedAudiobook = audiobook;
-            PlayerViewModel.OpenAudiobook(audiobook);
-
-            // notify the user that the audiobook was successfully opened
-            ViewModel.EnqueueNotification(new Notification
-            {
-                Message = "Audiobook opened successfully.",
-                Severity = InfoBarSeverity.Success
-            });
-        }
+            _dispatcherQueue.TryEnqueue(() => HandleFileActivation(storageFile));
 
         Window.Activate();
+    }
+
+    private async void HandleFileActivation(IStorageFile storageFile)
+    {
+        ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
+
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+
+        // set the current position
+        if (audiobook == null)
+        {
+            await ViewModel.ImportAudiobookTest(storageFile.Path, false);
+            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+        }
+
+        if (audiobook == null) return; // todo: handle if this isn't found
+
+        // ViewModel.SelectedAudiobook = audiobook;
+        PlayerViewModel.OpenAudiobook(audiobook);
     }
 
     private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)
@@ -187,43 +175,16 @@ public partial class App : Application
         if (e.Kind is ExtendedActivationKind.File && e.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
         {
-            ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
+            _dispatcherQueue.TryEnqueue(() => HandleFileActivation(storageFile));
 
-            var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
-            var importSuccess = audiobook != null || await ViewModel.ImportAudiobookTest(storageFile.Path, false);
+            // Bring the window to the foreground... first get the window handle...
+            var hwnd = (HWND)WindowNative.GetWindowHandle(Window);
 
-            if (importSuccess)
-            {
-                ViewModel.LoggingService.Log($"Imported audiobook: {storageFile.Path}");
-            }
-            else
-            {
-                ViewModel.LoggingService.Log($"Failed to import audiobook: {storageFile.Path}");
-                ViewModel.EnqueueNotification(new Notification
-                {
-                    Message = "Failed to import audiobook.",
-                    Severity = InfoBarSeverity.Error
-                });
-            }
+            // Restore window if minimized... requires Microsoft.Windows.CsWin32 NuGet package and a NativeMethods.txt file with ShowWindow method
+            Windows.Win32.PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
 
-            // set the current position
-            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
-            if (audiobook == null) return; // todo: handle if this isn't found
-
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                ViewModel.SelectedAudiobook = audiobook;
-                PlayerViewModel.OpenAudiobook(audiobook);
-            });
-            // ViewModel.SelectedAudiobook = audiobook;
-            // PlayerViewModel.OpenAudiobook(audiobook);
-
-            // notify the user that the audiobook was successfully opened
-            ViewModel.EnqueueNotification(new Notification
-            {
-                Message = "Audiobook opened successfully.",
-                Severity = InfoBarSeverity.Success
-            });
+            // And call SetForegroundWindow... requires Microsoft.Windows.CsWin32 NuGet package and a NativeMethods.txt file with SetForegroundWindow method
+            Windows.Win32.PInvoke.SetForegroundWindow(hwnd);
         }
     }
 

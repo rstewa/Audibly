@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 4/15/2024
-// Updated: 4/24/2024
+// Updated: 6/1/2024
 
 using System;
 using System.IO;
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ATL;
-using Audibly.App.Extensions;
 using Audibly.App.Services.Interfaces;
 using Audibly.Models;
 using AutoMapper;
@@ -120,6 +119,9 @@ public class M4BFileImportService : IImportFiles
             CurrentChapterIndex = 0,
             Chapters = []
         };
+
+        // TODO: check if the audiobook already exists in the database
+
 
         // save the cover image somewhere
         var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;

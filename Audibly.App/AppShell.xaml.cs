@@ -1,10 +1,11 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 4/15/2024
-// Updated: 4/22/2024
+// Updated: 6/1/2024
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
@@ -105,6 +106,14 @@ public sealed partial class AppShell : Page
                 ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
                     "We're glad you're here. Let's get started by adding your first audiobook.");
             }
+        }
+
+        // check for current version key
+        var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
+        if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
+        {
+            ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
+            ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
         }
 
         await ProcessDialogQueue();
@@ -222,9 +231,9 @@ public sealed partial class AppShell : Page
         return dialog;
     }
 
-    private ContentDialog CreateChangelogDialog(string title, string changelogText)
+    private ContentDialog CreateChangelogDialog(string changelogText)
     {
-        var dialogContent = new ChangelogDialogContent(title, changelogText);
+        var dialogContent = new ChangelogDialogContent(changelogText);
         var dialog = new ContentDialog
         {
             Content = dialogContent,
@@ -245,7 +254,7 @@ public sealed partial class AppShell : Page
             DialogType.Error => CreateDeleteDialog(title, content),
             DialogType.Info => CreateOkDialog(title, content),
             DialogType.Restart => CreateRestartDialog(title, content),
-            DialogType.Changelog => CreateChangelogDialog(title, content),
+            DialogType.Changelog => CreateChangelogDialog(content),
             DialogType.Import => CreateImportDialog(title),
             _ => null
         };
@@ -256,14 +265,11 @@ public sealed partial class AppShell : Page
         await ProcessDialogQueue();
     }
 
-    private bool _isProcessingDialogQueue = false;
-    
+    private bool _isProcessingDialogQueue;
+
     private async Task ProcessDialogQueue()
     {
-        if (_isProcessingDialogQueue)
-        {
-            return;
-        }
+        if (_isProcessingDialogQueue) return;
 
         _isProcessingDialogQueue = true;
 
@@ -276,7 +282,7 @@ public sealed partial class AppShell : Page
 
         _isProcessingDialogQueue = false;
     }
-    
+
     /// <summary>
     ///     Gets the navigation frame instance.
     /// </summary>

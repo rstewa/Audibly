@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/13/2024
+// Created: 4/15/2024
+// Updated: 6/1/2024
 
 using System;
 using System.Diagnostics;
@@ -35,8 +35,7 @@ public sealed partial class LibraryCardPage : Page
 
     private void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
-        var text = Changelog.Text;
-        ViewModel.MessageService.ShowDialog(DialogType.Changelog, $"Welcome to Audibly v{App.Version}", text);
+        ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
     }
 
     private void InfoBar_OnClosed(InfoBar sender, InfoBarClosedEventArgs args)
@@ -79,11 +78,11 @@ public sealed partial class LibraryCardPage : Page
     public void HideNowPlayingBarButton_OnClick(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.MediaPlayer.Pause();
-        if (PlayerViewModel.NowPlaying != null) 
+        if (PlayerViewModel.NowPlaying != null)
             PlayerViewModel.NowPlaying.IsNowPlaying = false;
         PlayerViewModel.NowPlaying = null;
     }
-    
+
     public void OpenAppStateFolderButton_OnClick(object sender, RoutedEventArgs e)
     {
         var filePath = ApplicationData.Current.LocalFolder.Path;

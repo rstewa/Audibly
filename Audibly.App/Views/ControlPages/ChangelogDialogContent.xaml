@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<!--  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  -->
 <Page
+    Background="Transparent"
+    mc:Ignorable="d"
     x:Class="Audibly.App.Views.ControlPages.ChangelogDialogContent"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="Transparent"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <StackPanel>
         <TextBlock
-            Margin="10"
+            Margin="0,0,0,12"
             Style="{StaticResource TitleTextBlockStyle}"
             Text="{x:Bind Title}" />
-        <TextBlock
-            Margin="10"
-            Style="{StaticResource SubtitleTextBlockStyle}"
-            Text="Changelog" />
-        <ScrollView
-            Width="500"
-            Height="300"
-            HorizontalScrollBarVisibility="Auto">
-            <Border
-                Margin="10"
-                Padding="10"
-                Background="{ThemeResource ControlOnImageFillColorTertiaryBrush}"
-                CornerRadius="10">
+
+        <TextBlock Margin="0,0,0,8" Text="{x:Bind Subtitle}" />
+        <Border
+            Background="{ThemeResource ControlOnImageFillColorTertiaryBrush}"
+            CornerRadius="10"
+            Margin="0,0,0,8"
+            Padding="10">
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Auto"
+                Margin="0,0,0,8"
+                VerticalScrollBarVisibility="Auto">
                 <TextBlock
                     FontFamily="Consolas"
                     Foreground="White"
                     Text="{x:Bind ChangelogText, Mode=OneWay}" />
-            </Border>
-        </ScrollView>
+            </ScrollViewer>
+        </Border>
+        <TextBlock>
+            <Hyperlink NavigateUri="https://github.com/rstewa/Audibly/blob/main/CHANGELOG.md">Link to CHANGELOG</Hyperlink>
+        </TextBlock>
     </StackPanel>
 </Page>

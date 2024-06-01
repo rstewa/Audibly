@@ -61,27 +61,16 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to # Changelog
+        ///   Looks up a localized string similar to - Added file activation support
+        ///  - Users can now open audiobooks (.m4b) from the file explorer
+        ///  - Users can also set Audibly as the default app for opening audiobooks (.m4b)
         ///
-        ///All notable changes to this project will be documented in this file.
+        ///- Fixed a bug where:
+        ///  - The app would crash when deleting the now playing audiobook from the library
         ///
-        ///The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-        ///and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-        ///
-        ///## [2.0.0] - 04-11-2024
-        ///
-        ///### Changed
-        ///
-        ///- Complete redesign of the UI
-        ///- Complete refactor of the code base
-        ///- Added a library view
-        ///
-        ///
-        ///## [1.0.0] - 08-31-2023
-        ///
-        ///### Added
-        ///
-        ///- 1st version for Microsoft App Store.
+        ///- Added Changelog dialog for new versions
+        ///  - Users will now see a dialog with the changelog when they update the app
+        ///.
         /// </summary>
         internal static string Text {
             get {

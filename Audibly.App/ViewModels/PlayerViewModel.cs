@@ -274,6 +274,7 @@ public class PlayerViewModel : BindableBase
                 break;
         }
 
+        if (NowPlaying == null) return;
         Task.Run(NowPlaying.SaveAsync);
     }
 
@@ -297,6 +298,7 @@ public class PlayerViewModel : BindableBase
 
         _ = _dispatcherQueue.EnqueueAsync(() =>
         {
+            if (NowPlaying == null) return Task.CompletedTask;
             ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds -
                                       NowPlaying.CurrentChapter.StartTime);
             ChapterPositionText = ChapterPositionMs.ToStr_ms();

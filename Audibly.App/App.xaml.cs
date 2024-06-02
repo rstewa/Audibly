@@ -18,6 +18,7 @@ using Audibly.App.ViewModels;
 using Audibly.Repository;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
+using CommunityToolkit.WinUI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -143,7 +144,9 @@ public partial class App : Application
         if (appActivationArguments.Kind is ExtendedActivationKind.File &&
             appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
-            _dispatcherQueue.TryEnqueue(() => HandleFileActivation(storageFile));
+        {
+            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivation(storageFile));
+        }
 
         Window.Activate();
     }
@@ -170,12 +173,11 @@ public partial class App : Application
     private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)
     {
         var mainInstance = AppInstance.FindOrRegisterForKey("main");
-        var test = mainInstance.IsCurrent;
 
         if (e.Kind is ExtendedActivationKind.File && e.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
         {
-            _dispatcherQueue.TryEnqueue(() => HandleFileActivation(storageFile));
+            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivation(storageFile));
 
             // Bring the window to the foreground... first get the window handle...
             var hwnd = (HWND)WindowNative.GetWindowHandle(Window);

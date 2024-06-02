@@ -172,6 +172,8 @@ public class PlayerViewModel : BindableBase
         if (NowPlaying != null && NowPlaying == audiobook)
             return;
 
+        MediaPlayer.Pause();
+        
         if (NowPlaying != null)
             NowPlaying.IsNowPlaying = false;
 

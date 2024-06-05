@@ -10,7 +10,7 @@
     <Identity
             Name="38488StewartRyan.24898061B3F0E"
             Publisher="CN=680AB335-56C7-4E87-81DE-D27B78AC46A3"
-            Version="2.0.8.0"/>
+            Version="2.0.9.0"/>
 
     <mp:PhoneIdentity PhoneProductId="a4e10036-a97d-4e2e-8144-0a20e6bcb775"
                       PhonePublisherId="00000000-0000-0000-0000-000000000000"/>

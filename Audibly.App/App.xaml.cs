@@ -183,7 +183,7 @@ public partial class App : Application
             var hwnd = (HWND)WindowNative.GetWindowHandle(Window);
 
             // Restore window if minimized... requires Microsoft.Windows.CsWin32 NuGet package and a NativeMethods.txt file with ShowWindow method
-            Windows.Win32.PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+            Windows.Win32.PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
 
             // And call SetForegroundWindow... requires Microsoft.Windows.CsWin32 NuGet package and a NativeMethods.txt file with SetForegroundWindow method
             Windows.Win32.PInvoke.SetForegroundWindow(hwnd);

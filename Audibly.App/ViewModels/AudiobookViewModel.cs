@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/8/2024
+// Created: 4/15/2024
+// Updated: 6/7/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -168,7 +168,7 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public string ThumbnailPath
     {
-        get => Model.ThumbnailPath;
+        get => Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
         set
         {
             if (value != Model.ThumbnailPath)

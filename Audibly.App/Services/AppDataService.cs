@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/31/2024
-// Updated: 4/13/2024
+// Created: 4/15/2024
+// Updated: 6/7/2024
 
 using System;
 using System.IO;
@@ -28,7 +28,8 @@ public class AppDataService : IAppDataService
 
         // create 400x400 thumbnail
         var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
-        await ShrinkAndSaveAsync(coverImage.Path, thumbnailPath, 400, 400);
+        var result = await ShrinkAndSaveAsync(coverImage.Path, thumbnailPath, 400, 400);
+        if (!result) thumbnailPath = string.Empty; // return empty string if thumbnail creation failed
 
         return new Tuple<string, string>(coverImage.Path, thumbnailPath);
     }
@@ -44,23 +45,31 @@ public class AppDataService : IAppDataService
         var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
             CreationCollisionOption.OpenIfExists);
         var json = JsonSerializer.Serialize(track, new JsonSerializerOptions { WriteIndented = true });
-        await FileIO.WriteTextAsync(await bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting), json);
+        await FileIO.WriteTextAsync(
+            await bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting), json);
     }
 
     // from: https://stackoverflow.com/questions/26486671/how-to-resize-an-image-maintaining-the-aspect-ratio-in-c-sharp
-    private async Task ShrinkAndSaveAsync(string path, string savePath, int maxHeight, int maxWidth)
+    private async Task<bool> ShrinkAndSaveAsync(string path, string savePath, int maxHeight, int maxWidth)
     {
-        using var image = await Image.LoadAsync(path);
+        try
+        {
+            using var image = await Image.LoadAsync(path);
+            if (ResizeNeeded(image.Height, image.Width, maxHeight, maxWidth, out var newHeight, out var newWidth))
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Size = new Size(newWidth, newHeight)
+                }));
 
-        // check if resize is needed
-        if (ResizeNeeded(image.Height, image.Width, maxHeight, maxWidth, out var newHeight, out var newWidth))
-            // swap this part out if not using ImageSharp
-            image.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Size = new Size(newWidth, newHeight)
-            }));
+            await image.SaveAsync(savePath);
 
-        await image.SaveAsync(savePath);
+            return true;
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e);
+            return false;
+        }
     }
 
     private bool ResizeNeeded(int height, int width, int maxHeight, int maxWidth, out int newHeight, out int newWidth)

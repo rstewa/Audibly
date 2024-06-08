@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added link to Libation
+
+### Fixed
+
+- Added try/catch to thumbnail generation
+
 ## [2.0.9] - 06-04-2024
 
 ### Added
@@ -12,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added file activation support
   - Users can now open audiobooks (.m4b) from the file explorer
   - Users can also set Audibly as the default app for opening audiobooks (.m4b)
+
+- Added Donation button
 
 - Added Changelog dialog for new versions
   - Users will now see a dialog with the changelog when they update the app

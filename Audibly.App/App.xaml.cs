@@ -109,7 +109,7 @@ public partial class App : Application
         Window = WindowHelper.CreateWindow();
 
         win32WindowHelper = new Win32WindowHelper(Window);
-        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1500, y = 800 });
+        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1600, y = 800 });
 
         UseSqlite();
 

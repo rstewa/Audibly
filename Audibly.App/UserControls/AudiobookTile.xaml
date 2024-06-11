@@ -33,7 +33,6 @@
         PointerEntered="AudiobookTile_OnPointerEntered"
         PointerExited="AudiobookTile_OnPointerExited"
         RightTapped="ButtonTile_OnRightTapped"
-        VerticalAlignment="Top"
         x:Name="ButtonTile">
         <Grid RowSpacing="16" VerticalAlignment="Stretch">
 
@@ -102,10 +101,12 @@
                     <TextBlock
                         FontSize="18"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        MaxWidth="275"
                         Style="{StaticResource BodyTextBlockStyle}"
                         Text="{x:Bind Title, Mode=OneWay}"
-                        TextLineBounds="TrimToBaseline"
                         TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}"
                         x:Name="TitleText" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

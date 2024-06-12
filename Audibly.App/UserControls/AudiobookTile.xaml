@@ -23,6 +23,10 @@
             <AppBarButton Click="ShowInFileExplorer_OnClick" ToolTipService.ToolTip="Show in File Explorer">
                 <FontIcon Glyph="&#xEC50;" />
             </AppBarButton>
+            <!--  open audiobook in app state folder  -->
+            <AppBarButton Click="OpenInAppFolder_OnClick" ToolTipService.ToolTip="Open in App Folder">
+                <FontIcon Glyph="&#xE8E5;" />
+            </AppBarButton>
         </CommandBarFlyout>
     </UserControl.Resources>
     <Button

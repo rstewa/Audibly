@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using Windows.Storage;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -96,5 +97,17 @@ public sealed partial class LibraryCardPage : Page
         KeyboardAcceleratorInvokedEventArgs args)
     {
         ViewModel.ShowDebugMenu = !ViewModel.ShowDebugMenu;
+    }
+
+    private void OpenCurrentAudiobooksAppStateFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        var selectedAudiobook = PlayerViewModel.NowPlaying;
+        if (selectedAudiobook == null) return;
+        var dir = Path.GetDirectoryName(selectedAudiobook.CoverImagePath);
+        if (dir == null) return;
+        Process p = new();
+        p.StartInfo.FileName = "explorer.exe";
+        p.StartInfo.Arguments = $"/open, \"{dir}\"";
+        p.Start();
     }
 }

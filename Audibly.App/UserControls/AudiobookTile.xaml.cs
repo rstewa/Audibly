@@ -3,6 +3,7 @@
 // Updated: 6/1/2024
 
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
@@ -142,5 +143,17 @@ public sealed partial class AudiobookTile : UserControl
             ShowMode = FlyoutShowMode.Transient
         };
         CommandBarFlyout.ShowAt(ButtonTile, myOption);
+    }
+
+    private void OpenInAppFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        var selectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
+        if (selectedAudiobook == null) return;
+        var dir = Path.GetDirectoryName(selectedAudiobook.CoverImagePath);
+        if (dir == null) return;
+        Process p = new();
+        p.StartInfo.FileName = "explorer.exe";
+        p.StartInfo.Arguments = $"/open, \"{dir}\"";
+        p.Start();
     }
 }

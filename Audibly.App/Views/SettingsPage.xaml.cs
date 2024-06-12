@@ -75,4 +75,9 @@ public sealed partial class SettingsPage : Page
     {
         await Launcher.LaunchUriAsync(new Uri("https://github.com/rmcrackan/Libation"));
     }
+
+    private async void openAudibleCard_Click(object sender, RoutedEventArgs e)
+    {
+        await Launcher.LaunchUriAsync(new Uri("https://openaudible.org/"));
+    }
 }

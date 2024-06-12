@@ -1,4 +1,2 @@
 ShowWindow
 SetForegroundWindow
-Shell32.*
-Shell.*

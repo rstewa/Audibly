@@ -188,6 +188,7 @@ Project Link: [https://github.com/rstewa/Audibly](https://github.com/rstewa/Audi
 
 * [Rise Media Player](https://github.com/Rise-Software/Rise-Media-Player) for inspiration
 * [Libation](https://github.com/rmcrackan/Libation) for the FolderIcon code
+* [OpenAudible](https://openaudible.org/) for helping me find and fix a bug in my import code
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

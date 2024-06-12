@@ -32,9 +32,10 @@ public class AppDataService : IAppDataService
         var result = await ShrinkAndSaveAsync(coverImage.Path, thumbnailPath, 400, 400);
         if (!result) thumbnailPath = string.Empty; // return empty string if thumbnail creation failed
 
+        // leaving this commented out for now because it increases the import time an absurd amount
         // create .ico file
-        var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
-        FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
+        // var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
+        // FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
 
         return new Tuple<string, string>(coverImage.Path, thumbnailPath);
     }

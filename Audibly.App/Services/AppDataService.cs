@@ -41,6 +41,9 @@ public class AppDataService : IAppDataService
 
     public async Task DeleteCoverImageAsync(string path)
     {
+        var dir = Path.GetDirectoryName(path);
+        FolderIcon.ResetFolderAttributes(dir);
+        FolderIcon.DeleteIcon(dir);
         var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path));
         await folder.DeleteAsync();
     }

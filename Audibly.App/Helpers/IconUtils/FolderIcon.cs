@@ -35,6 +35,11 @@ namespace Audibly.App.Helpers.IconUtils
 				}
 			}
 		}
+		
+		public static void ResetFolderAttributes(string dir)
+		{
+			File.SetAttributes(dir, File.GetAttributes(dir) & ~FileAttributes.System & ~FileAttributes.ReadOnly);
+		}
 
 		// https://github.com/dimuththarindu/FIC-Folder-Icon-Changer/blob/master/project/FIC/Classes/IconCustomizer.cs
 

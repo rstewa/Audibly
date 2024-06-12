@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 4/15/2024
-// Updated: 6/1/2024
+// Updated: 6/11/2024
 
 using System;
 using System.IO;
@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATL;
 using Audibly.App.Services.Interfaces;
+using Audibly.App.ViewModels;
 using Audibly.Models;
 using AutoMapper;
+using Microsoft.UI.Xaml.Controls;
 using Sharpener.Extensions;
 using ChapterInfo = Audibly.Models.ChapterInfo;
 
@@ -96,6 +98,73 @@ public class M4BFileImportService : IImportFiles
         try
         {
             track = new Track(path);
+
+            var existingAudioBook = await App.Repository.Audiobooks.GetAsync(track.Title, track.Artist, track.Composer);
+            if (existingAudioBook != null)
+            {
+                // log the error
+                App.ViewModel.LoggingService.LogError(new Exception("Audiobook already exists in the database"));
+                App.ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Audiobook is already in the library.",
+                    Severity = InfoBarSeverity.Warning
+                });
+                return null;
+            }
+
+            var audiobook = new Audiobook
+            {
+                Title = track.Title,
+                Composer = track.Composer,
+                Author = track.Artist,
+                Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
+                FilePath = path,
+                Duration = track.Duration,
+                CurrentTimeMs = 0,
+                PlaybackSpeed = 1.0,
+                ReleaseDate = track.Date,
+                Volume = 1.0,
+                CurrentChapterIndex = 0,
+                Chapters = []
+            };
+
+            // TODO: check if the audiobook already exists in the database
+
+            // save the cover image somewhere
+            var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
+
+            // note: for now using a GUID to prevent the path from being too long and causing the import to fail
+            var dir = Guid.NewGuid().ToString();
+
+            // write the metadata to a json file
+            await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
+
+            (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
+                await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
+
+            // read in the chapters
+            var chapterIndex = 0;
+            foreach (var ch in track.Chapters)
+            {
+                var tmp = _mapper.Map<ChapterInfo>(ch);
+                tmp.Index = chapterIndex++;
+                audiobook.Chapters.Add(tmp);
+            }
+
+            if (audiobook.Chapters.Count == 0)
+                // create a single chapter for the entire book
+                audiobook.Chapters.Add(new ChapterInfo
+                {
+                    StartTime = 0,
+                    EndTime = Convert.ToUInt32(audiobook.Duration * 1000),
+                    StartOffset = 0,
+                    EndOffset = 0,
+                    UseOffset = false,
+                    Title = audiobook.Title,
+                    Index = 0
+                });
+
+            return audiobook;
         }
         catch (Exception e)
         {
@@ -103,59 +172,5 @@ public class M4BFileImportService : IImportFiles
             App.ViewModel.LoggingService.LogError(e);
             return null;
         }
-
-        var audiobook = new Audiobook
-        {
-            Title = track.Title,
-            Composer = track.Composer,
-            Author = track.Artist,
-            Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
-            FilePath = path,
-            Duration = track.Duration,
-            CurrentTimeMs = 0,
-            PlaybackSpeed = 1.0,
-            ReleaseDate = track.Date,
-            Volume = 1.0,
-            CurrentChapterIndex = 0,
-            Chapters = []
-        };
-
-        // TODO: check if the audiobook already exists in the database
-
-
-        // save the cover image somewhere
-        var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
-
-        var dir = $"{Path.GetFileNameWithoutExtension(path)} [{track.Artist}]";
-
-        // write the metadata to a json file
-        await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
-
-        (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
-            await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
-
-        // read in the chapters
-        var chapterIndex = 0;
-        foreach (var ch in track.Chapters)
-        {
-            var tmp = _mapper.Map<ChapterInfo>(ch);
-            tmp.Index = chapterIndex++;
-            audiobook.Chapters.Add(tmp);
-        }
-
-        if (audiobook.Chapters.Count == 0)
-            // create a single chapter for the entire book
-            audiobook.Chapters.Add(new ChapterInfo
-            {
-                StartTime = 0,
-                EndTime = Convert.ToUInt32(audiobook.Duration * 1000),
-                StartOffset = 0,
-                EndOffset = 0,
-                UseOffset = false,
-                Title = audiobook.Title,
-                Index = 0
-            });
-
-        return audiobook;
     }
 }

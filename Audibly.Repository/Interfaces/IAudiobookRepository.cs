@@ -19,9 +19,18 @@ public interface IAudiobookRepository
         Task<IEnumerable<Audiobook>> GetAsync(string search);
 
         /// <summary>
+        ///     Returns the audiobook with the given title and author.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="author"></param>
+        /// <param name="composer"></param>
+        /// <returns></returns>
+        Task<Audiobook?> GetAsync(string title, string author, string composer);
+        
+        /// <summary>
         ///     Returns the audiobook with the given id.
         /// </summary>
-        Task<Audiobook> GetAsync(Guid id);
+        Task<Audiobook?> GetAsync(Guid id);
 
         /// <summary>
         ///     Adds a new audiobook if the audiobook does not exist, updates the

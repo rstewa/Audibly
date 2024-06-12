@@ -19,8 +19,18 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
             .ToListAsync();
     }
 
-    // TODO: fix this bug
-    public async Task<Audiobook> GetAsync(Guid id)
+    public Task<Audiobook?> GetAsync(string title, string author, string composer)
+    {
+        return db.Audiobooks
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(audiobook =>
+                audiobook.Title == title &&
+                audiobook.Author == author &&
+                audiobook.Composer == composer);
+    }
+
+    public async Task<Audiobook?> GetAsync(Guid id)
     {
         return await db.Audiobooks
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))

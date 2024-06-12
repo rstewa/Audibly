@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -444,6 +445,8 @@ public class MainViewModel : BindableBase
         var totalBooks = 0;
         var failedBooks = 0;
 
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
         try
         {
             await FileImporter.ImportDirectoryAsync(folder.Path, token,
@@ -491,6 +494,9 @@ public class MainViewModel : BindableBase
         });
 
         await GetAudiobookListAsync();
+        
+        stopwatch.Stop();
+        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
 
     /// <summary>

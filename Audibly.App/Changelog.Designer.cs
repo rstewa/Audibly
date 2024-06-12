@@ -65,12 +65,16 @@ namespace Audibly.App {
         ///  - Users can now open audiobooks (.m4b) from the file explorer
         ///  - Users can also set Audibly as the default app for opening audiobooks (.m4b)
         ///
+        ///- Added Changelog dialog for new versions
+        ///  - Users will now see a dialog with the changelog when they update the app
+        ///
+        ///- Added links to Libation &amp; OpenAudible in Settings page
+        ///
         ///- Fixed a bug where:
         ///  - The app would crash when deleting the now playing audiobook from the library
         ///
-        ///- Added Changelog dialog for new versions
-        ///  - Users will now see a dialog with the changelog when they update the app
-        ///.
+        ///- Fixed a bug where:
+        ///  - The import would  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

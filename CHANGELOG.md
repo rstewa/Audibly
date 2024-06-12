@@ -5,15 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.10] - 06-12-2024
 
 ### Added
 
 - Added link to Libation
+- Added link to OpenAudible
 
 ### Fixed
 
 - Added try/catch to thumbnail generation
+- Fixed a bug where:
+  - The import would fail if an audiobook had a long title (this prevented the metadata directory from being created)
+- Fixed a bug where:
+  - The title would cover the play buttons on the now playing bar if it was too long
 
 ## [2.0.9] - 06-04-2024
 

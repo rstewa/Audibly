@@ -187,6 +187,7 @@ Project Link: [https://github.com/rstewa/Audibly](https://github.com/rstewa/Audi
 ## Acknowledgments
 
 * [Rise Media Player](https://github.com/Rise-Software/Rise-Media-Player) for inspiration
+* [Libation](https://github.com/rmcrackan/Libation) for the FolderIcon code
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

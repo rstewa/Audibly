@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 4/15/2024
-// Updated: 6/7/2024
+// Updated: 6/11/2024
 
 using System;
 using System.IO;
@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
+using Audibly.App.Helpers.IconUtils;
 using Audibly.App.Services.Interfaces;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -23,13 +24,17 @@ public class AppDataService : IAppDataService
         var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
             CreationCollisionOption.OpenIfExists);
         var coverImage =
-            await bookAppdataDir.CreateFileAsync("CoverImage.jpeg", CreationCollisionOption.ReplaceExisting);
+            await bookAppdataDir.CreateFileAsync("CoverImage.png", CreationCollisionOption.ReplaceExisting);
         await FileIO.WriteBytesAsync(coverImage, imageBytes);
 
         // create 400x400 thumbnail
         var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
         var result = await ShrinkAndSaveAsync(coverImage.Path, thumbnailPath, 400, 400);
         if (!result) thumbnailPath = string.Empty; // return empty string if thumbnail creation failed
+
+        // create .ico file
+        var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
+        FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
 
         return new Tuple<string, string>(coverImage.Path, thumbnailPath);
     }

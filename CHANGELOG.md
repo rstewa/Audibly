@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Updated the volume and playback speed settings to be saved even after restarting the app
 - Added contact card on Settings Page 
 
 ## [2.0.10] - 06-12-2024

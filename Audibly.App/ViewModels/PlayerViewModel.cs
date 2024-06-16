@@ -3,6 +3,7 @@
 // Updated: 6/1/2024
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _volumeLevelGlyph, value);
     }
 
-    private double _volumeLevel = 100;
+    private double _volumeLevel;
 
     public double VolumeLevel
     {
@@ -65,6 +66,9 @@ public class PlayerViewModel : BindableBase
             > 0 => Constants.VolumeGlyph1,
             _ => Constants.VolumeGlyph0
         };
+        
+        // save volume level to settings
+        UserSettings.Volume = volume.ToString(CultureInfo.InvariantCulture);
     }
 
     private double _playbackSpeed = 1.0;
@@ -79,6 +83,9 @@ public class PlayerViewModel : BindableBase
     {
         PlaybackSpeed = speed;
         MediaPlayer.PlaybackRate = speed;
+        
+        // save playback speed to settings
+        UserSettings.PlaybackSpeed = speed.ToString(CultureInfo.InvariantCulture);
     }
 
     private string _chapterDurationText = "0:00:00";
@@ -207,6 +214,10 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.MediaFailed += AudioPlayer_MediaFailed;
         MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+        
+        // set volume level from settings
+        UpdateVolume(UserSettings.Volume.AsDouble());
+        UpdatePlaybackSpeed(UserSettings.PlaybackSpeed.AsDouble());
     }
 
     private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)

@@ -12,4 +12,10 @@ public static class StringExtensions
     {
         return new Uri(str);
     }
+    
+    // conver to double
+    public static double AsDouble(this string str)
+    {
+        return double.Parse(str);
+    }
 }

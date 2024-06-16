@@ -4,6 +4,8 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -79,5 +81,20 @@ public sealed partial class SettingsPage : Page
     private async void openAudibleCard_Click(object sender, RoutedEventArgs e)
     {
         await Launcher.LaunchUriAsync(new Uri("https://openaudible.org/"));
+    }
+
+    private void contactCard_Click(object sender, RoutedEventArgs e)
+    {
+        // copy email to clipboard
+        const string email = "help@audibly.info";
+        var dataPackage = new DataPackage();
+        dataPackage.SetText(email);
+        Clipboard.SetContent(dataPackage);
+
+        // change icon to checkmark
+        DispatcherQueue.TryEnqueue(() => CopyIcon.Glyph = "\uE8FB");
+        
+        // wait 1 second and change back to copy icon
+        Task.Delay(1000).ContinueWith(_ => DispatcherQueue.TryEnqueue(() => CopyIcon.Glyph = "\uE8C8"));
     }
 }

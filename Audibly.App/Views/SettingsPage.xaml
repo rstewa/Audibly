@@ -93,6 +93,34 @@
                     HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/PayPal_Monogram_Full_Color_RGB.png}"
                     IsClickEnabled="True" />
 
+                <!--  Contact  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Contact" />
+
+                <toolkit:SettingsCard
+                    Click="contactCard_Click"
+                    Description="If you have any questions, feedback or suggestions, please feel free to reach out."
+                    Header="Contact"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE715;}"
+                    IsClickEnabled="False">
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="12"
+                        VerticalAlignment="Center">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="help@audibly.info"
+                            VerticalAlignment="Center" />
+                        <Button Click="contactCard_Click" x:Name="CopyEmailButton">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="16"
+                                Glyph="&#xE8C8;"
+                                x:Name="CopyIcon" />
+                        </Button>
+                    </StackPanel>
+                </toolkit:SettingsCard>
+
                 <!--  About  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="About" />
                 <toolkit:SettingsExpander

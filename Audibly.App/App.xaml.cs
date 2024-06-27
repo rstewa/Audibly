@@ -24,10 +24,12 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
+using Sentry;
 using WinRT.Interop;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
+using Microsoft.Extensions.Configuration;
 
 namespace Audibly.App;
 
@@ -72,6 +74,25 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        // get dns from app.config
+
+        SentrySdk.Init(options =>
+        {
+            // Tells which project in Sentry to send events to:
+            options.Dsn = Helpers.Sentry.Dsn;
+            
+            options.AutoSessionTracking = true;
+
+            // Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing.
+            // We recommend adjusting this value in production.
+            options.TracesSampleRate = 1.0;
+
+            // Enable Global Mode since this is a client app.
+            options.IsGlobalModeEnabled = true;
+
+            // TODO:Any other Sentry options you need go here.
+        });        
+        
         InitializeComponent();
         UnhandledException += OnUnhandledException;
     }

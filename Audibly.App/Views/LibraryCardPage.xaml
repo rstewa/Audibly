@@ -163,6 +163,15 @@
                     x:Name="ThrowExceptionButton">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
                 </AppBarButton>
+                <!--  test sentry logging  -->
+                <AppBarButton
+                    Click="{x:Bind TestSentryLoggingButton_OnClick}"
+                    Label="Test Sentry Logging"
+                    ToolTipService.ToolTip="Test Sentry Logging"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="TestSentryLoggingButton">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                </AppBarButton>
                 <AppBarButton
                     Click="{x:Bind RestartAppButton_OnClick}"
                     Label="Restart App"

@@ -118,23 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>- Added file activation support
-  - Users can now open audiobooks (.m4b) from the file explorer
-  - Users can also set Audibly as the default app for opening audiobooks (.m4b)
+    <value>## [2.0.11]
 
-- Added Changelog dialog for new versions
-  - Users will now see a dialog with the changelog when they update the app
+### Changed
 
-- Added links to Libation &amp; OpenAudible in Settings page
+- Updated Privacy Policy (because of the addition of Sentry.io for error tracking).
+  - You can view the updated Privacy Policy [here](https://audibly.app/privacy-policy)
+- Updated the volume and playback speed settings to be saved even after restarting the app
 
-- Fixed a bug where:
-  - The app would crash when deleting the now playing audiobook from the library
+### Added
 
-- Fixed a bug where:
-  - The import would fail if an audiobook had a long title (this prevented the metadata directory from being created)
-
-- Fixed a bug where:
-  - The title would cover the play buttons on the now playing bar if it was too long
+- Sentry.io for error tracking
+- Added contact card on Settings Page
 </value>
   </data>
 </root>

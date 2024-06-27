@@ -11,6 +11,7 @@ using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Sentry;
 
 namespace Audibly.App.Views;
 
@@ -109,5 +110,15 @@ public sealed partial class LibraryCardPage : Page
         p.StartInfo.FileName = "explorer.exe";
         p.StartInfo.Arguments = $"/open, \"{dir}\"";
         p.Start();
+    }
+
+    private void TestSentryLoggingButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        SentrySdk.CaptureMessage("Something went wrong");
+        ViewModel.EnqueueNotification(new Notification
+        {
+            Message = "Sentry message sent",
+            Severity = InfoBarSeverity.Success
+        });
     }
 }

@@ -66,7 +66,7 @@ namespace Audibly.App {
         ///### Changed
         ///
         ///- Updated Privacy Policy (because of the addition of Sentry.io for error tracking).
-        ///  - You can view the updated Privacy Policy [here](https://audibly.app/privacy-policy)
+        ///  - You can view the updated Privacy Policy [here](https://github.com/rstewa/Audibly/blob/main/PrivacyPolicy.md)
         ///- Updated the volume and playback speed settings to be saved even after restarting the app
         ///
         ///### Added

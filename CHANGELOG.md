@@ -5,12 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.12]
+
+### Fixed
+
+- Fixed link to Privacy Policy in CHANGELOG
+
 ## [2.0.11]
 
 ### Changed
 
 - Updated Privacy Policy (because of the addition of Sentry.io for error tracking).
-  - You can view the updated Privacy Policy [here](https://audibly.app/privacy-policy)
+  - You can view the updated Privacy Policy [here](https://github.com/rstewa/Audibly/blob/main/PrivacyPolicy.md)
 - Updated the volume and playback speed settings to be saved even after restarting the app
 
 ### Added

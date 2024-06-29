@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
@@ -59,11 +58,6 @@ public sealed partial class AppShell : Page
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
 
         // todo: add a listener for when the app is suspended to save the current audiobook
-
-        // todo: remove the following
-        // ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"] = @"C:\Users\rstewa\Desktop\John Grisham - A Time for Mercy꞉ A Jake Brigance Novel.m4b";
-        // ApplicationData.Current.LocalSettings.Values["John Grisham - A Time for Mercy꞉ A Jake Brigance Novel:CurrentPosition"] = 123456; 
-        // ApplicationData.Current.LocalSettings.Values.Remove("HasCompletedOnboarding");
     }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
@@ -137,7 +131,7 @@ public sealed partial class AppShell : Page
                 RequestedTheme = ThemeHelper.ActualTheme
             };
 
-            dialog.PrimaryButtonClick += async (_, _) => { result = true; };
+            dialog.PrimaryButtonClick += (_, _) => { result = true; };
 
             dialog.CloseButtonClick += (_, _) => { result = false; };
 
@@ -325,7 +319,7 @@ public sealed partial class AppShell : Page
     }
 
     /// <summary>
-    ///     Ensures the nav menu reflects reality when navigation is triggered outside of
+    ///     Ensures the nav menu reflects reality when navigation is triggered outside
     ///     the nav menu buttons.
     /// </summary>
     private void OnNavigatingToPage(object sender, NavigatingCancelEventArgs e)

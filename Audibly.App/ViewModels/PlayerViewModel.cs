@@ -68,7 +68,7 @@ public class PlayerViewModel : BindableBase
         };
         
         // save volume level to settings
-        UserSettings.Volume = volume.ToString(CultureInfo.InvariantCulture);
+        UserSettings.Volume = volume;
     }
 
     private double _playbackSpeed = 1.0;
@@ -85,7 +85,7 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.PlaybackRate = speed;
         
         // save playback speed to settings
-        UserSettings.PlaybackSpeed = speed.ToString(CultureInfo.InvariantCulture);
+        UserSettings.PlaybackSpeed = speed;
     }
 
     private string _chapterDurationText = "0:00:00";
@@ -216,8 +216,8 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
         
         // set volume level from settings
-        UpdateVolume(UserSettings.Volume.AsDouble());
-        UpdatePlaybackSpeed(UserSettings.PlaybackSpeed.AsDouble());
+        UpdateVolume(UserSettings.Volume);
+        UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
     }
 
     private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)

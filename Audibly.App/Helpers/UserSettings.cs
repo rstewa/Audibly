@@ -8,22 +8,29 @@ namespace Audibly.App.Helpers;
 
 public static class UserSettings
 {
-    public static string Volume
+    public static double Volume
     {
         get
         {
-            var volume = ApplicationData.Current.LocalSettings.Values["Volume"] as string;
-            return string.IsNullOrEmpty(volume) ? "100" : volume;
+            var volume = ApplicationData.Current.LocalSettings.Values["Volume"];
+            if (volume != null) return (double)volume;
+            
+            ApplicationData.Current.LocalSettings.Values["Volume"] = 100;
+            return 100;
+
         }
         set => ApplicationData.Current.LocalSettings.Values["Volume"] = value;
     }
     
-    public static string PlaybackSpeed
+    public static double PlaybackSpeed
     {
         get
         {
-            var playbackSpeed = ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"] as string;
-            return string.IsNullOrEmpty(playbackSpeed) ? "1" : playbackSpeed;
+            var playbackSpeed = ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"];
+            if (playbackSpeed != null) return (double)playbackSpeed;
+            
+            ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"] = 1;
+            return 1;
         }
         set => ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"] = value;
     }

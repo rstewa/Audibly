@@ -67,8 +67,7 @@ namespace Audibly.App {
         ///
         ///### Changed
         ///
-        ///- Update to WASDK 1.5.4
-        ///- Updated all other dependencies
+        ///- Updated some dependencies
         ///.
         /// </summary>
         internal static string Text {

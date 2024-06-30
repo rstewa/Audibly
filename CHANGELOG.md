@@ -14,8 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Update to WASDK 1.5.4
-- Updated all other dependencies
+- Updated some dependencies
 
 ## [2.0.12] - 06-27-24
 

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.14] - 07-01-24
+
+### Fixed
+
+- Hotfix for 2.0.13:
+  - The app would crash when trying to parse saved user settings (volume & playback speed) from local storage
+
 ## [2.0.13] - 06-29-24
 
 ### Fixed

@@ -120,12 +120,7 @@
   <data name="Text" xml:space="preserve">
     <value>### Fixed
 
-- Hotfix for 2.0.12:
-  - The app would crash when trying to parse saved user settings (volume &amp; playback speed) from local storage
-
-### Changed
-
-- Updated some dependencies
-</value>
+- Hotfix for 2.0.13:
+  - The app would crash when trying to parse saved user settings (volume &amp; playback speed) from local storage</value>
   </data>
 </root>

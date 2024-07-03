@@ -19,6 +19,26 @@ public class AppDataService : IAppDataService
 {
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
 
+    public async Task<Tuple<string, string>> WriteCoverImageAsync(string path, string newCoverImagePath)
+    {
+        var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
+            CreationCollisionOption.OpenIfExists);
+        var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
+        File.Copy(newCoverImagePath, coverImagePath, true);
+
+        // create 400x400 thumbnail
+        var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
+        var result = await ShrinkAndSaveAsync(coverImagePath, thumbnailPath, 400, 400);
+        if (!result) thumbnailPath = string.Empty; // return empty string if thumbnail creation failed
+
+        // leaving this commented out for now because it increases the import time an absurd amount
+        // create .ico file
+        // var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
+        // FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
+
+        return new Tuple<string, string>(coverImagePath, thumbnailPath);
+    }
+    
     public async Task<Tuple<string, string>> WriteCoverImageAsync(string path, byte[]? imageBytes)
     {
         var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,

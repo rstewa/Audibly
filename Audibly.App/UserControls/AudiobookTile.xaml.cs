@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Audibly.App.ViewModels;
+using Audibly.App.Views;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -28,6 +29,15 @@ public sealed partial class AudiobookTile : UserControl
     public MainViewModel ViewModel => App.ViewModel;
 
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+    public Frame PageFrame
+    {
+        get { return (Frame)GetValue(PageFrameProperty); }
+        set { SetValue(PageFrameProperty, value); }
+    }
+
+    public static readonly DependencyProperty PageFrameProperty = 
+        DependencyProperty.Register("PageFrame", typeof(Frame), typeof(AudiobookTile), new PropertyMetadata(null));
 
     public string Title
     {
@@ -155,5 +165,12 @@ public sealed partial class AudiobookTile : UserControl
         p.StartInfo.FileName = "explorer.exe";
         p.StartInfo.Arguments = $"/open, \"{dir}\"";
         p.Start();
+    }
+
+    private void EditMetadata_OnClick(object sender, RoutedEventArgs e)
+    {
+        var selectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
+        // open new edit metadata page
+        PageFrame.Navigate(typeof(EditMetadataPage), selectedAudiobook);
     }
 }

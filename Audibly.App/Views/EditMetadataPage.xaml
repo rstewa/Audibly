@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Page
+    Background="Transparent"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.EditMetadataPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Audibly.App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
+
+    <RelativePanel x:Name="TrackPropertiesContainer">
+        <ScrollView RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignTopWithPanel="True">
+            <StackPanel Orientation="Vertical">
+                <!--  cover image  -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,12,0"
+                        Text="CoverImage: "
+                        VerticalAlignment="Center" />
+                    <Button
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        CornerRadius="8"
+                        Padding="16"
+                        PointerEntered="CoverImageTile_OnPointerEntered"
+                        PointerExited="CoverImageTile_OnPointerExited"
+                        x:Name="ButtonTile">
+                        <Grid>
+                            <Border
+                                BorderThickness="0"
+                                Height="200"
+                                HorizontalAlignment="Left"
+                                Width="200"
+                                x:Name="CoverImage">
+                                <Border
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
+                                    CornerRadius="15">
+                                    <Image
+                                        HorizontalAlignment="Center"
+                                        Source="{x:Bind ViewModel.CoverImagePath, Mode=OneWay}"
+                                        Stretch="Uniform"
+                                        VerticalAlignment="Top" />
+                                </Border>
+                                <winUi:Effects.Shadow>
+                                    <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
+                                </winUi:Effects.Shadow>
+                            </Border>
+                            <Grid
+                                Grid.Row="0"
+                                Visibility="Collapsed"
+                                x:Name="BlackOverlayGrid">
+                                <Grid.Resources>
+                                    <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                                    <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                                </Grid.Resources>
+                                <Grid
+                                    Background="Black"
+                                    CornerRadius="15"
+                                    Opacity="0.55" />
+                                <Button
+                                    BorderThickness="0"
+                                    Click="EditCoverImageButton_Click"
+                                    HorizontalAlignment="Center"
+                                    Tag="play"
+                                    ToolTipService.ToolTip="Play"
+                                    VerticalAlignment="Center"
+                                    x:Name="PlayPauseButton">
+                                    <Button.Resources>
+                                        <ResourceDictionary>
+                                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
+                                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
+                                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
+                                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
+                                        </ResourceDictionary>
+                                    </Button.Resources>
+                                    <Viewbox MaxHeight="70" MaxWidth="70">
+                                        <FontIcon Glyph="&#xE70F;" />
+                                    </Viewbox>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+
+                <!--  listview for track properties  -->
+                <ListView
+                    Margin="-12,0,0,0"
+                    SelectionMode="None"
+                    x:Name="TrackPropertiesListView">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:TrackProperty">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" />
+                                <TextBox Text="{x:Bind Value, Mode=TwoWay}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </ScrollView>
+    </RelativePanel>
+</Page>

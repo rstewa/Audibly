@@ -10,6 +10,7 @@ namespace Audibly.App.Services.Interfaces;
 
 public interface IAppDataService
 {
+    Task<Tuple<string, string>> WriteCoverImageAsync(string path, string newCoverImagePath);
     Task<Tuple<string, string>> WriteCoverImageAsync(string path, byte[]? imageBytes);
 
     Task DeleteCoverImageAsync(string path);

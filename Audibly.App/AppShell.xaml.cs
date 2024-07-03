@@ -50,9 +50,13 @@ public sealed partial class AppShell : Page
     {
         InitializeComponent();
         // set the title bar
-        AppShellFrame.Navigate(typeof(LibraryCardPage));
+        // AppShellFrame.Navigate(typeof(LibraryCardPage));
 
-        Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
+        Loaded += (_, _) => 
+        { 
+            AppShellFrame.Navigate(typeof(LibraryCardPage));
+            NavView.SelectedItem = LibraryCardMenuItem; 
+        };
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;

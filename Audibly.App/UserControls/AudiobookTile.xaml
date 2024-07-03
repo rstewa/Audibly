@@ -27,6 +27,10 @@
             <AppBarButton Click="OpenInAppFolder_OnClick" ToolTipService.ToolTip="Open in App Folder">
                 <FontIcon Glyph="&#xE8E5;" />
             </AppBarButton>
+            <!--  edit metadata  -->
+            <AppBarButton Click="EditMetadata_OnClick" ToolTipService.ToolTip="Edit Metadata">
+                <FontIcon Glyph="&#xE104;" />
+            </AppBarButton>
         </CommandBarFlyout>
     </UserControl.Resources>
     <Button

@@ -203,7 +203,8 @@
             <ItemsRepeater
                 ItemTemplate="{StaticResource AudiobookTemplate}"
                 ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
-                x:Name="LibraryCardView">
+                x:Name="LibraryCardView"
+                ElementPrepared="LibraryCardView_ElementPrepared">
 
                 <ItemsRepeater.Layout>
                     <UniformGridLayout

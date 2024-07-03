@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Sentry;
+using Audibly.App.UserControls;
 
 namespace Audibly.App.Views;
 
@@ -29,6 +30,8 @@ public sealed partial class LibraryCardPage : Page
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    public Frame PageFrame => Frame;
 
     public LibraryCardPage()
     {
@@ -121,4 +124,14 @@ public sealed partial class LibraryCardPage : Page
             Severity = InfoBarSeverity.Success
         });
     }
+
+    private void LibraryCardView_ElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
+    {
+        if (args.Element is AudiobookTile audiobookTile)
+        {
+            // Assuming your AudiobookTile UserControl has a property named PageFrame
+            audiobookTile.PageFrame = this.Frame;
+        }
+    }
+
 }

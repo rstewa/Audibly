@@ -335,6 +335,11 @@ public class MainViewModel : BindableBase
             });
 
         await GetAudiobookListAsync();
+        
+        // select the imported audiobook
+        var audiobook = Audiobooks.FirstOrDefault(a => a.FilePath == file.Path);
+        if (audiobook != null)
+            App.PlayerViewModel.OpenAudiobook(audiobook);
     }
 
     public async Task<bool> ImportAudiobookTest(string path, bool showImportDialog = true)

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Created: 04/15/2024
+// Updated: 07/09/2024
 
 using System;
 using System.Collections.Generic;
@@ -49,7 +49,12 @@ public sealed partial class AppShell : Page
     public AppShell()
     {
         InitializeComponent();
+
         // set the title bar
+        var window = WindowHelper.GetMainWindow();
+        if (window != null)
+            window.SetTitleBar(AppTitleBar);
+
         AppShellFrame.Navigate(typeof(LibraryCardPage));
 
         Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };

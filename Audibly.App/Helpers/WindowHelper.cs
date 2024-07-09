@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 04/15/2024
+// Updated: 07/09/2024
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Windows.Storage;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 
 namespace Audibly.App.Helpers;
@@ -33,6 +33,11 @@ public class WindowHelper
         return newWindow;
     }
 
+    public static Window? GetMainWindow()
+    {
+        return ActiveWindows.FirstOrDefault(w => w.Content is Frame);
+    }
+
     public static void RestoreMainWindow()
     {
         var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);
@@ -40,7 +45,7 @@ public class WindowHelper
         (mainWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
         mainWindow.AppWindow.IsShownInSwitchers = true;
     }
-    
+
     public static void HideMainWindow()
     {
         var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);

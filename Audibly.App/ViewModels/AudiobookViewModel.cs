@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/7/2024
+// Created: 04/15/2024
+// Updated: 07/04/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -346,6 +346,17 @@ public class AudiobookViewModel : BindableBase
         set => Set(ref _isNewAudiobook, value);
     }
 
+    private bool _isInEdit;
+
+    /// <summary>
+    ///     Gets or sets a value that indicates whether the customer data is being edited.
+    /// </summary>
+    public bool IsInEdit
+    {
+        get => _isInEdit;
+        set => Set(ref _isInEdit, value);
+    }
+
     /// <summary>
     ///     Saves audiobook data that has been edited.
     /// </summary>
@@ -359,5 +370,58 @@ public class AudiobookViewModel : BindableBase
         }
 
         await App.Repository.Audiobooks.UpsertAsync(Model);
+    }
+
+    /// <summary>
+    ///     Cancels any in progress edits.
+    /// </summary>
+    public async Task CancelEditsAsync()
+    {
+        await RevertChangesAsync();
+    }
+
+    /// <summary>
+    ///     Discards any edits that have been made, restoring the original values.
+    /// </summary>
+    public async Task RevertChangesAsync()
+    {
+        IsInEdit = false;
+        if (IsModified)
+        {
+            await RefreshAudiobookAsync();
+            IsModified = false;
+        }
+    }
+
+    /// <summary>
+    ///     Enables edit mode.
+    /// </summary>
+    public void StartEdit()
+    {
+        IsInEdit = true;
+    }
+
+    /// <summary>
+    ///     Refreshes the audiobook data from the database.
+    /// </summary>
+    public async Task RefreshAudiobookAsync()
+    {
+        Model = await App.Repository.Audiobooks.GetAsync(Model.Id);
+    }
+
+    /// <summary>
+    ///     Called when a bound DataGrid control cancels the edits that have been made to a customer.
+    /// </summary>
+    public async void CancelEdit()
+    {
+        await CancelEditsAsync();
+    }
+
+    /// <summary>
+    ///     Called when a bound DataGrid control commits the edits that have been made to a customer.
+    /// </summary>
+    public async void EndEdit()
+    {
+        await SaveAsync();
     }
 }

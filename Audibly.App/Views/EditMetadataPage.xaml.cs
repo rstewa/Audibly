@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Windows.Storage.Pickers;
@@ -44,6 +45,7 @@ public sealed partial class EditMetadataPage : Page
         // Iterate over each property
         foreach (var property in properties)
         {
+            
             if (property.Name == "EmbeddedPictures")
             {
                 // var embeddedPictures = property.GetValue(Track) as List<PictureInfo>;
@@ -55,11 +57,12 @@ public sealed partial class EditMetadataPage : Page
                 Name = $"{property.Name}:",
                 Value = property.GetValue(Track)?.ToString() ?? "N/A"
             };
-
+            
             trackProperties.Add(trackProperty);
         }
 
         TrackPropertiesListView.ItemsSource = trackProperties;
+        TrackPropertiesListView.IsEnabled = false;
 
         base.OnNavigatedTo(e);
     }
@@ -124,6 +127,27 @@ public sealed partial class EditMetadataPage : Page
     private void CoverImageTile_OnPointerExited(object sender, PointerRoutedEventArgs e)
     {
         BlackOverlayGrid.Visibility = Visibility.Collapsed;
+    }
+
+    private void EditButton_Click(object sender, RoutedEventArgs e)
+    {
+        TrackPropertiesListView.IsEnabled = true;
+        EditButton.Visibility = Visibility.Collapsed;
+        SaveButton.Visibility = Visibility.Visible;
+        CancelButton.Visibility = Visibility.Visible;
+    }
+
+    private void SaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        
+    }
+
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        TrackPropertiesListView.IsEnabled = false;
+        EditButton.Visibility = Visibility.Visible;
+        SaveButton.Visibility = Visibility.Collapsed;
+        CancelButton.Visibility = Visibility.Collapsed;
     }
 }
 

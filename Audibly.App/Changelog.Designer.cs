@@ -61,10 +61,21 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ### Fixed
+        ///   Looks up a localized string similar to ## [2.0.15] - 07-21-24
         ///
-        ///- Hotfix for 2.0.13:
-        ///  - The app would crash when trying to parse saved user settings (volume &amp; playback speed) from local storage.
+        ///### Changed
+        ///
+        ///- Now opens audiobook after file import (based on suggestion from @OpenAudible)
+        ///
+        ///### Fixed
+        ///
+        ///- Fixed a bug (#51) where:
+        ///  - The back button would sometimes lose focus when hovering over it
+        ///
+        ///- Fixed a bug (#52) where:
+        ///  - The app would try to display more than one content dialog causing it to crash
+        ///  - Added a mutex lock to ProcessDialogQueue to hopefully fix this issue
+        ///.
         /// </summary>
         internal static string Text {
             get {

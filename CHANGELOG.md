@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed a bug (#51) where:
   - The back button would sometimes lose focus when hovering over it
+- Fixed a bug (#52) where:
+  - The app would try to display more than one content dialog causing it to crash
+  - Added a mutex lock to ProcessDialogQueue to hopefully fix this issue
 
 ## [2.0.14] - 07-01-24
 

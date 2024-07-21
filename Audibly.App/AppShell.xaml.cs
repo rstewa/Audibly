@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
@@ -264,24 +265,26 @@ public sealed partial class AppShell : Page
         await ProcessDialogQueue();
     }
 
-    private bool _isProcessingDialogQueue;
+    private readonly SemaphoreSlim _dialogQueueLock = new(1, 1);
 
     private async Task ProcessDialogQueue()
     {
-        if (_isProcessingDialogQueue) return;
-
-        _isProcessingDialogQueue = true;
-
-        while (XamlRoot != null && _dialogQueue.Count > 0)
+        await _dialogQueueLock.WaitAsync();
+        try
         {
-            var dialog = _dialogQueue.Dequeue();
-            dialog.XamlRoot = XamlRoot;
-            await dialog.ShowAsync();
+            while (XamlRoot != null && _dialogQueue.Count > 0)
+            {
+                var dialog = _dialogQueue.Dequeue();
+                dialog.XamlRoot = XamlRoot;
+                await dialog.ShowAsync();
+            }
         }
-
-        _isProcessingDialogQueue = false;
+        finally
+        {
+            _dialogQueueLock.Release();
+        }
     }
-
+    
     /// <summary>
     ///     Gets the navigation frame instance.
     /// </summary>

@@ -108,10 +108,28 @@
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
                 </AppBarButton>
                 <AppBarButton
-                    Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                    Icon="Download"
                     Label="Import"
-                    ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
+                    ToolTipService.ToolTip="Import audiobooks">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuFlyoutItem
+                                Click="{x:Bind ViewModel.ImportAudiobookAsync}"
+                                Icon="OpenFile"
+                                Text="Import single audiobook (.M4B)" />
+                            <MenuFlyoutItem
+                                Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                                Icon="Folder"
+                                Text="Import audiobooks from a directory (recursively). Single-file audiobooks only (.M4B)" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookMultipleFilesAsync}" Text="Import audiobook with 1-to-many files (.M4B)">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE838;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
                 </AppBarButton>
 
                 <!--  debug menu  -->

@@ -503,7 +503,90 @@ public class MainViewModel : BindableBase
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
+    
+    public async void ImportAudiobookMultipleFilesAsync()
+    {
+        var openPicker = new FileOpenPicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add(".m4b");
 
+        var files = await openPicker.PickMultipleFilesAsync();
+        if (files == null) return;
+
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+            "Please wait while the audiobooks are imported...");
+
+        var totalBooks = 0;
+        var failedBooks = 0;
+
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+        try
+        {
+            foreach (var file in files)
+            {
+                await FileImporter.ImportFileAsync(file.Path, token,
+                    async (progress, total, title, didFail) =>
+                    {
+                        await dispatcherQueue.EnqueueAsync(() =>
+                        {
+                            totalBooks++;
+                            ImportProgress = ((double)progress / total * 100).ToInt();
+                            ImportText = $" {title}";
+                        });
+
+                        if (didFail)
+                        {
+                            totalBooks--;
+                            failedBooks++;
+                            EnqueueNotification(new Notification
+                                { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
+                        }
+                    });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            EnqueueNotification(new Notification
+            {
+                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
+            });
+        }
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            ImportText = string.Empty;
+            ImportProgress = 0;
+        });
+
+        if (failedBooks > 0)
+            EnqueueNotification(new Notification
+            {
+                Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+            });
+
+        EnqueueNotification(new Notification
+        {
+            Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
+        });
+
+        await GetAudiobookListAsync();
+        
+        stopwatch.Stop();
+        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed } seconds.");
+    }
+    
     /// <summary>
     ///     Resets the audiobook list.
     /// </summary>

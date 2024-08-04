@@ -290,6 +290,7 @@ public sealed partial class AppShell : Page
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
 
+    public readonly string HomeLabel = "Home";
     public readonly string AudiobookListLabel = "Audiobooks";
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
@@ -304,11 +305,12 @@ public sealed partial class AppShell : Page
         // check if the item is already the current page
         // if (item == (NavigationViewItem)NavView.SelectedItem) return;
 
-        // if (item == AudiobookListMenuItem)
-        // {
-        //     AppFrame.Navigate(typeof(LibraryPage));
-        // }
-        if (item == LibraryCardMenuItem)
+        if (item == HomeMenuItem)
+        {
+            if (AppAppShellFrame.Content is HomePage) return;
+            AppAppShellFrame.Navigate(typeof(HomePage));
+        }
+        else if (item == LibraryCardMenuItem)
         {
             if (AppAppShellFrame.Content is LibraryCardPage) return;
             AppAppShellFrame.Navigate(typeof(LibraryCardPage));
@@ -334,8 +336,8 @@ public sealed partial class AppShell : Page
     {
         if (e.NavigationMode == NavigationMode.Back)
         {
-            // if (e.SourcePageType == typeof(LibraryPage)) NavView.SelectedItem = AudiobookListMenuItem;
-            if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryCardMenuItem;
+            if (e.SourcePageType == typeof(HomePage)) NavView.SelectedItem = HomeMenuItem;
+            else if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryCardMenuItem;
             else if (e.SourcePageType == typeof(PlayerPage)) NavView.SelectedItem = NowPlayingMenuItem;
             else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
         }

@@ -77,6 +77,16 @@
                 <!--         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" /> -->
                 <!--     </muxc:NavigationViewItem.Icon> -->
                 <!-- </muxc:NavigationViewItem> -->
+                <!--  home page  -->
+                <muxc:NavigationViewItem
+                    Content="{x:Bind HomeLabel}"
+                    Tag="HomePage"
+                    ToolTipService.ToolTip="{x:Bind HomeLabel}"
+                    x:Name="HomeMenuItem">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE80F;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem
                     Content="{x:Bind LibraryLabel}"
                     Tag="LibraryPage"

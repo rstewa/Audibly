@@ -3,6 +3,7 @@
 // Updated: 4/17/2024
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -14,8 +15,11 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
+using Audibly.App.Views.ControlPages;
+using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Sharpener.Extensions;
 using WinRT.Interop;
@@ -504,7 +508,9 @@ public class MainViewModel : BindableBase
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
     
-    public async void ImportAudiobookMultipleFilesAsync()
+    public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
+    
+    public async void ImportAudiobookMultipleFilesAsync(object sender, RoutedEventArgs e)
     {
         var openPicker = new FileOpenPicker();
         var window = App.Window;
@@ -517,8 +523,35 @@ public class MainViewModel : BindableBase
         var files = await openPicker.PickMultipleFilesAsync();
         if (files == null) return;
 
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        // show selected files and have user put them in order
+        // var selectedFiles = files.Select(file => file.Path).ToList();
 
+        // SelectedFiles = files.Select(file => new SelectedFile
+        // {
+        //     FileName = file.Name,
+        //     FilePath = file.Path
+        // }).ToList();
+        
+        // add the selected files to the observable collection
+        foreach (var file in files)
+        {
+            SelectedFiles.Add(new SelectedFile
+            {
+                FileName = file.Name,
+                FilePath = file.Path
+            });
+        }
+        
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        
+        // get framework element from sender
+        var element = sender as FrameworkElement;
+        if (element == null) return;
+        
+        await element.ShowSelectFilesDialogAsync();
+        
+        var test = SelectedFiles;
+        
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 3/21/2024
-// Updated: 3/22/2024
+// Updated: 08/13/2024
 
 using Audibly.Models;
 using Audibly.Repository.Interfaces;
@@ -13,6 +13,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     public async Task<IEnumerable<Audiobook>> GetAsync()
     {
         return await db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .OrderBy(audiobook => audiobook.Title)
             .AsNoTracking()
@@ -22,6 +23,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     public Task<Audiobook?> GetAsync(string title, string author, string composer)
     {
         return db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook =>
@@ -33,6 +35,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     public async Task<Audiobook?> GetAsync(Guid id)
     {
         return await db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook => audiobook.Id == id);
@@ -42,6 +45,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     {
         var parameters = search.Split(' ');
         return await db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .Where(audiobook =>
                 parameters.Any(parameter =>
@@ -60,6 +64,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     public async Task<Audiobook?> UpsertAsync(Audiobook audiobook)
     {
         var current = await db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Title == audiobook.Title && a.Author == audiobook.Author);
@@ -81,12 +86,14 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         {
             return null;
         }
+
         return audiobook;
     }
 
     public async Task DeleteAsync(Guid audiobookId)
     {
         var audiobook = await db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == audiobookId);

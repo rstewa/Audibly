@@ -14,11 +14,13 @@ using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using Audibly.App.Views.ControlPages;
+using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Path = System.IO.Path;
 
@@ -244,7 +246,7 @@ public sealed partial class AppShell : Page
 
         return dialog;
     }
-
+    
     private readonly Queue<ContentDialog> _dialogQueue = new();
 
     private async void OnShowDialogRequested(DialogType type, string title, string content)

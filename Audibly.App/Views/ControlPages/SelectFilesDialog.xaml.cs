@@ -1,9 +1,7 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 08/14/2024
-// Updated: 08/21/2024
+// Updated: 09/06/2024
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Audibly.App.ViewModels;
 using Audibly.Models;
@@ -21,27 +19,10 @@ public sealed partial class SelectFilesDialog : Page
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
-    
+
     public SelectFilesDialog()
     {
         InitializeComponent();
-    }
-
-    public List<SelectedFile> SelectedFiles { get; set; }
-
-    private void CancelButton_Click(object sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
-    private void OkButton_Click(object sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
-    private void SelectedFilesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        throw new NotImplementedException();
     }
 
     private void SelectedFilesListView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
@@ -49,9 +30,12 @@ public sealed partial class SelectFilesDialog : Page
         // update the SelectedFiles observable collection
         var selectedFiles = SelectedFilesListView.Items.Cast<SelectedFile>().ToList();
         ViewModel.SelectedFiles.Clear();
-        foreach (var selectedFile in selectedFiles)
-        {
-            ViewModel.SelectedFiles.Add(selectedFile);
-        }
+        foreach (var selectedFile in selectedFiles) ViewModel.SelectedFiles.Add(selectedFile);
+    }
+
+    private void DeleteFileButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var selectedFile = (SelectedFile)((Button)sender).DataContext;
+        ViewModel.SelectedFiles.Remove(selectedFile);
     }
 }

@@ -28,6 +28,7 @@
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
         <None Remove="Views\ControlPages\OnBoardingDialogContent.xaml" />
         <None Remove="Views\ControlPages\SelectedFilesDialog.xaml" />
+        <None Remove="Views\ResizableContentDialog.xaml" />
     </ItemGroup>
 
     <ItemGroup>

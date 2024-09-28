@@ -295,7 +295,7 @@
                                     <Slider
                                         AutomationProperties.Name="PlaybackSpeedSlider"
                                         Margin="-14,0,0,0"
-                                        Maximum="1.5"
+                                        Maximum="2.0"
                                         Minimum="0.5"
                                         Orientation="Vertical"
                                         SmallChange="0.05"

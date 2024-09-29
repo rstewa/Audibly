@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a powershell script that packages the .msix files into a .msixbundle file
 
+### Changed
+
+- Changed playback speed maximum to 2.0x
+
+### Fixed
+
+- Fixed a bug (#57) where:
+  - The icons would turn black on hover when the app was in dark mode but the system was in light mode
+
 ## [2.0.15] - 07-21-24
 
 ### Changed

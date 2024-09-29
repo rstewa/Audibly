@@ -28,15 +28,6 @@
                 <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
                 <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
-
-                <StaticResource ResourceKey="TextFillColorPrimaryBrush" x:Key="ButtonForeground" />
-                <StaticResource ResourceKey="TextFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
-                <StaticResource ResourceKey="TextFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
-                <StaticResource ResourceKey="TextFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
-                <StaticResource ResourceKey="TextFillColorPrimaryBrush" x:Key="RepeatButtonForeground" />
-                <StaticResource ResourceKey="TextFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" />
-                <StaticResource ResourceKey="TextFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" />
-                <StaticResource ResourceKey="TextFillColorDisabledBrush" x:Key="RepeatButtonForegroundDisabled" />
             </ResourceDictionary>
         </Grid.Resources>
         <MediaPlayerElement

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/11/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using System;
 using System.IO;
@@ -94,10 +94,9 @@ public class M4BFileImportService : IImportFiles
 
     private static async Task<Audiobook?> CreateAudiobook(string path)
     {
-        Track track;
         try
         {
-            track = new Track(path);
+            var track = new Track(path);
 
             var existingAudioBook = await App.Repository.Audiobooks.GetAsync(track.Title, track.Artist, track.Composer);
             if (existingAudioBook != null)
@@ -112,20 +111,30 @@ public class M4BFileImportService : IImportFiles
                 return null;
             }
 
+            var sourceFile = new SourceFile
+            {
+                FilePath = path,
+                Duration = track.Duration,
+                CurrentTimeMs = 0,
+                CurrentChapterIndex = 0,
+                Chapters = []
+            };
+
             var audiobook = new Audiobook
             {
+                CurrentSourceFileIndex = 0,
                 Title = track.Title,
                 Composer = track.Composer,
                 Author = track.Artist,
                 Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
                 FilePath = path,
-                Duration = track.Duration,
-                CurrentTimeMs = 0,
                 PlaybackSpeed = 1.0,
                 ReleaseDate = track.Date,
                 Volume = 1.0,
-                CurrentChapterIndex = 0,
-                Chapters = []
+                SourcePaths =
+                [
+                    sourceFile
+                ]
             };
 
             // TODO: check if the audiobook already exists in the database
@@ -137,10 +146,13 @@ public class M4BFileImportService : IImportFiles
             var dir = Guid.NewGuid().ToString();
 
             // write the metadata to a json file
+            // todo: is this killing the import time?
             await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
 
             (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
                 await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
+
+            var chapters = audiobook.SourcePaths.First().Chapters;
 
             // read in the chapters
             var chapterIndex = 0;
@@ -148,15 +160,15 @@ public class M4BFileImportService : IImportFiles
             {
                 var tmp = _mapper.Map<ChapterInfo>(ch);
                 tmp.Index = chapterIndex++;
-                audiobook.Chapters.Add(tmp);
+                chapters.Add(tmp);
             }
 
-            if (audiobook.Chapters.Count == 0)
+            if (chapters.Count == 0)
                 // create a single chapter for the entire book
-                audiobook.Chapters.Add(new ChapterInfo
+                chapters.Add(new ChapterInfo
                 {
                     StartTime = 0,
-                    EndTime = Convert.ToUInt32(audiobook.Duration * 1000),
+                    EndTime = Convert.ToUInt32(audiobook.SourcePaths.First().Duration * 1000),
                     StartOffset = 0,
                     EndOffset = 0,
                     UseOffset = false,

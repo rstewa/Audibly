@@ -26,7 +26,7 @@ public class AudiobookViewModel : BindableBase
         if (model == null) return;
 
         Chapters.Clear();
-        foreach (var chapter in model.Chapters) Chapters.Add(chapter);
+        foreach (var chapter in model.SourcePaths[model.CurrentSourceFileIndex].Chapters) Chapters.Add(chapter);
     }
 
     private Audiobook _model;
@@ -104,18 +104,20 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
+    
+    private SourceFile _currentSourceFile => Model.SourcePaths[Model.CurrentSourceFileIndex];
 
     /// <summary>
     ///     Gets or sets the duration of the audiobook (seconds).
     /// </summary>
     public long Duration
     {
-        get => Model.Duration;
+        get => _currentSourceFile.Duration;
         set
         {
-            if (value != Model.Duration)
+            if (value != _currentSourceFile.Duration)
             {
-                Model.Duration = value;
+                _currentSourceFile.Duration = value;
                 IsModified = true;
                 OnPropertyChanged();
             }
@@ -125,19 +127,19 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Gets the duration of the audiobook as a string in the format "hh:mm:ss".
     /// </summary>
-    public string DurationStr => Model.Duration.ToStr_s();
+    public string DurationStr => _currentSourceFile.Duration.ToStr_s();
 
     /// <summary>
     ///     Gets or sets the current time in milliseconds of the audiobook.
     /// </summary>
     public int CurrentTimeMs
     {
-        get => Model.CurrentTimeMs;
+        get => _currentSourceFile.CurrentTimeMs;
         set
         {
-            if (value != Model.CurrentTimeMs)
+            if (value != _currentSourceFile.CurrentTimeMs)
             {
-                Model.CurrentTimeMs = value;
+                _currentSourceFile.CurrentTimeMs = value;
                 IsModified = true;
                 OnPropertyChanged();
 
@@ -303,10 +305,10 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public ChapterInfo CurrentChapter
     {
-        get => Model.Chapters[Model.CurrentChapterIndex ?? 0];
+        get => _currentSourceFile.Chapters[_currentSourceFile.CurrentChapterIndex ?? 0];
         set
         {
-            Model.CurrentChapterIndex = Model.Chapters.IndexOf(value);
+            _currentSourceFile.CurrentChapterIndex = _currentSourceFile.Chapters.IndexOf(value);
             OnPropertyChanged();
         }
     }
@@ -317,10 +319,10 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public int? CurrentChapterIndex
     {
-        get => Model.CurrentChapterIndex;
+        get => _currentSourceFile.CurrentChapterIndex;
         set
         {
-            Model.CurrentChapterIndex = value;
+            _currentSourceFile.CurrentChapterIndex = value;
             OnPropertyChanged();
         }
     }

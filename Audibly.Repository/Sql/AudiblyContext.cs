@@ -5,7 +5,7 @@
 using Audibly.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Audibly.Repository;
+namespace Audibly.Repository.Sql;
 
 public class AudiblyContext : DbContext
 {
@@ -15,6 +15,16 @@ public class AudiblyContext : DbContext
     /// <param name="options"></param>
     public AudiblyContext(DbContextOptions<AudiblyContext> options) : base(options)
     {
+    }
+    
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var dbPath = folderPath + @"\Audibly.db";
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

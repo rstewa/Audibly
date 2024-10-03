@@ -19,4 +19,10 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="migration.sql">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -224,17 +224,14 @@ public partial class App : Application
     {
         var dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db";
 
-#if DEBUG
-        Debug.WriteLine($"Database path: {dbPath}");
-#endif
+        var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
+            .UseSqlite("Data Source=" + dbPath)
+            .Options;
+        using (var context = new AudiblyContext(dbOptions))
+        {
+            context.Database.Migrate();
+        }
 
-        // TODO: add demo database
-        // if (!File.Exists(databasePath))
-        // {
-        //     File.Copy(demoDatabasePath, databasePath);
-        // }
-        var dbOptions = new DbContextOptionsBuilder<AudiblyContext>().UseSqlite(
-            "Data Source=" + dbPath);
         Repository = new SqlAudiblyRepository(dbOptions);
     }
 

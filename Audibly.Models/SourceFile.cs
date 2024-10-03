@@ -6,8 +6,14 @@ namespace Audibly.Models;
 
 public class SourceFile : DbObject, IEquatable<SourceFile>
 {
-    public string FilePath { get; set; }
     public int Index { get; set; }
+
+    public string FilePath { get; set; }
+
+    public int CurrentTimeMs { get; set; }
+    public long Duration { get; set; }
+    public int? CurrentChapterIndex { get; set; }
+    public List<ChapterInfo> Chapters { get; init; } = [];
     
     public bool Equals(SourceFile? other)
     {

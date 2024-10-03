@@ -13,10 +13,11 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
 {
     public string Author { get; set; }
     public string Composer { get; set; }
+    public int CurrentSourceFileIndex { get; set; }
     public DateTime? DateLastPlayed { get; set; }
     public string Description { get; set; }
-    public long Duration { get; set; }
-    public int CurrentTimeMs { get; set; }
+    // public long Duration { get; set; } // *
+    // public int CurrentTimeMs { get; set; } // *
     public string CoverImagePath { get; set; }
 
     public string ThumbnailPath { get; set; }
@@ -31,9 +32,9 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public DateTime? ReleaseDate { get; set; }
     public string Title { get; set; }
     public double Volume { get; set; }
-    public int? CurrentChapterIndex { get; set; }
+    // public int? CurrentChapterIndex { get; set; } // *
 
-    public List<ChapterInfo> Chapters { get; init; } = [];
+    // public List<ChapterInfo> Chapters { get; init; } = []; // *
 
     public bool Equals(Audiobook? other)
     {

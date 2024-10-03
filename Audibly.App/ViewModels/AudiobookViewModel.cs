@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/7/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -104,7 +104,7 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
-    
+
     private SourceFile _currentSourceFile => Model.SourcePaths[Model.CurrentSourceFileIndex];
 
     /// <summary>
@@ -176,23 +176,6 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.ThumbnailPath)
             {
                 Model.ThumbnailPath = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Gets or sets the file path of the audiobook.
-    /// </summary>
-    public string FilePath
-    {
-        get => Model.FilePath;
-        set
-        {
-            if (value != Model.FilePath)
-            {
-                Model.FilePath = value;
                 IsModified = true;
                 OnPropertyChanged();
             }
@@ -328,6 +311,18 @@ public class AudiobookViewModel : BindableBase
     }
 
     public ObservableCollection<ChapterInfo> Chapters { get; set; } = [];
+
+    public int CurrentSourceFileIndex
+    {
+        get => Model.CurrentSourceFileIndex;
+        set
+        {
+            Model.CurrentSourceFileIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public SourceFile CurrentSourceFile => Model.SourcePaths[Model.CurrentSourceFileIndex];
 
     /// <summary>
     ///     Gets or sets a value that indicates whether the underlying model has been modified.

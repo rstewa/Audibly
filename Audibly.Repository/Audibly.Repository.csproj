@@ -20,9 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="migration.sql">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <Folder Include="Migrations\"/>
     </ItemGroup>
 
 </Project>

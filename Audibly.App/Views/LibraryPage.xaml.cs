@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/28/2024
+// Created: 08/03/2024
+// Updated: 10/03/2024
 
 using System;
 using System.Collections.Generic;
@@ -178,7 +178,8 @@ public sealed partial class LibraryPage : Page
 
             PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
             PlayerViewModel.NowPlaying.IsNowPlaying = true;
-            PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
+            PlayerViewModel.MediaPlayer.Source =
+                MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.CurrentSourceFile.FilePath.AsUri());
         });
     }
 }

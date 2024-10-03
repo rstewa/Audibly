@@ -1,9 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 4/17/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -15,7 +14,6 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
-using Audibly.App.Views.ControlPages;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -339,9 +337,9 @@ public class MainViewModel : BindableBase
             });
 
         await GetAudiobookListAsync();
-        
+
         // select the imported audiobook
-        var audiobook = Audiobooks.FirstOrDefault(a => a.FilePath == file.Path);
+        var audiobook = Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == file.Path);
         if (audiobook != null)
             App.PlayerViewModel.OpenAudiobook(audiobook);
     }
@@ -503,13 +501,13 @@ public class MainViewModel : BindableBase
         });
 
         await GetAudiobookListAsync();
-        
+
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
-    
+
     public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
-    
+
     public async void ImportAudiobookMultipleFilesAsync(object sender, RoutedEventArgs e)
     {
         var openPicker = new FileOpenPicker();
@@ -521,7 +519,7 @@ public class MainViewModel : BindableBase
         openPicker.FileTypeFilter.Add(".m4b");
 
         var files = await openPicker.PickMultipleFilesAsync();
-        if (files == null) return;
+        if (files.IsNullOrEmpty()) return;
 
         // show selected files and have user put them in order
         // var selectedFiles = files.Select(file => file.Path).ToList();
@@ -531,27 +529,25 @@ public class MainViewModel : BindableBase
         //     FileName = file.Name,
         //     FilePath = file.Path
         // }).ToList();
-        
+
         // add the selected files to the observable collection
         foreach (var file in files)
-        {
             SelectedFiles.Add(new SelectedFile
             {
                 FileName = file.Name,
                 FilePath = file.Path
             });
-        }
-        
+
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
-        
+
         // get framework element from sender
         var element = sender as FrameworkElement;
         if (element == null) return;
-        
+
         await element.ShowSelectFilesDialogAsync();
-        
+
         var test = SelectedFiles;
-        
+
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
@@ -567,27 +563,25 @@ public class MainViewModel : BindableBase
         stopwatch.Start();
         try
         {
-            foreach (var file in files)
-            {
-                await FileImporter.ImportFileAsync(file.Path, token,
-                    async (progress, total, title, didFail) =>
+            var filesArray = SelectedFiles.Select(file => file.FilePath).ToArray();
+            await FileImporter.ImportFilesAsync(filesArray, token,
+                async (progress, total, title, didFail) =>
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
                     {
-                        await dispatcherQueue.EnqueueAsync(() =>
-                        {
-                            totalBooks++;
-                            ImportProgress = ((double)progress / total * 100).ToInt();
-                            ImportText = $" {title}";
-                        });
-
-                        if (didFail)
-                        {
-                            totalBooks--;
-                            failedBooks++;
-                            EnqueueNotification(new Notification
-                                { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
-                        }
+                        totalBooks++;
+                        ImportProgress = ((double)progress / total * 100).ToInt();
+                        ImportText = $" {title}";
                     });
-            }
+
+                    if (didFail)
+                    {
+                        totalBooks--;
+                        failedBooks++;
+                        EnqueueNotification(new Notification
+                            { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
+                    }
+                });
         }
         catch (OperationCanceledException)
         {
@@ -595,6 +589,11 @@ public class MainViewModel : BindableBase
             {
                 Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
             });
+        }
+        finally
+        {
+            // clear selected files
+            SelectedFiles.Clear();
         }
 
         await dispatcherQueue.EnqueueAsync(() =>
@@ -615,11 +614,11 @@ public class MainViewModel : BindableBase
         });
 
         await GetAudiobookListAsync();
-        
+
         stopwatch.Stop();
-        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed } seconds.");
+        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");
     }
-    
+
     /// <summary>
     ///     Resets the audiobook list.
     /// </summary>

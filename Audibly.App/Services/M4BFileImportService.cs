@@ -3,6 +3,7 @@
 // Updated: 10/03/2024
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -65,6 +66,38 @@ public class M4BFileImportService : IImportFiles
         ImportCompleted?.Invoke();
     }
 
+    public async Task ImportFilesAsync(string[] paths, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback)
+    {
+        var didFail = false;
+
+        // todo: need to see if we can call progressCallback from the CreateAudiobook function
+        var numberOfFiles = 1; // paths.Length;
+
+        // Check if cancellation was requested
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var audiobook = await CreateAudiobookFromMultipleFiles(paths);
+
+        if (audiobook == null) didFail = true;
+
+        if (audiobook != null)
+        {
+            // insert the audiobook into the database
+            var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
+            if (result == null) didFail = true;
+        }
+
+        var title = audiobook?.Title ?? Path.GetFileNameWithoutExtension(paths.First());
+
+        // report progress
+        await progressCallback(1, numberOfFiles, title, didFail);
+
+        didFail = false;
+
+        ImportCompleted?.Invoke();
+    }
+
     public async Task ImportFileAsync(string path, CancellationToken cancellationToken,
         Func<int, int, string, bool, Task> progressCallback)
     {
@@ -90,6 +123,98 @@ public class M4BFileImportService : IImportFiles
         await progressCallback(1, 1, title, didFail);
 
         ImportCompleted?.Invoke();
+    }
+
+    private static async Task<Audiobook?> CreateAudiobookFromMultipleFiles(string[] paths)
+    {
+        try
+        {
+            var audiobook = new Audiobook
+            {
+                CurrentSourceFileIndex = 0,
+                SourcePaths = new List<SourceFile>(),
+                PlaybackSpeed = 1.0,
+                Volume = 1.0
+            };
+
+            foreach (var path in paths)
+            {
+                var track = new Track(path);
+
+                // check if this is the 1st file
+                if (audiobook.SourcePaths.Count == 0)
+                {
+                    audiobook.Title = track.Title;
+                    audiobook.Composer = track.Composer;
+                    audiobook.Author = track.Artist;
+                    audiobook.Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value)
+                        ? value
+                        : track.Comment;
+                    audiobook.ReleaseDate = track.Date;
+                }
+
+                var sourceFile = new SourceFile
+                {
+                    FilePath = path,
+                    Duration = track.Duration,
+                    CurrentTimeMs = 0,
+                    CurrentChapterIndex = 0,
+                    Chapters = []
+                };
+
+                audiobook.SourcePaths.Add(sourceFile);
+
+                // read in the chapters
+                var chapterIndex = 0;
+                foreach (var ch in track.Chapters)
+                {
+                    var tmp = _mapper.Map<ChapterInfo>(ch);
+                    tmp.Index = chapterIndex++;
+                    sourceFile.Chapters.Add(tmp);
+                }
+
+                if (sourceFile.Chapters.Count == 0)
+                    // create a single chapter for the entire book
+                    sourceFile.Chapters.Add(new ChapterInfo
+                    {
+                        StartTime = 0,
+                        EndTime = Convert.ToUInt32(audiobook.SourcePaths.First().Duration * 1000),
+                        StartOffset = 0,
+                        EndOffset = 0,
+                        UseOffset = false,
+                        Title = audiobook.Title,
+                        Index = 0
+                    });
+            }
+
+            // get duration of the entire audiobook
+            audiobook.Duration = audiobook.SourcePaths.Sum(x => x.Duration);
+
+            // save the cover image somewhere
+            var imageBytes = new Track(paths.First()).EmbeddedPictures.FirstOrDefault()?.PictureData;
+
+            // note: for now using a GUID to prevent the path from being too long and causing the import to fail
+            var dir = Guid.NewGuid().ToString();
+
+            // todo: do i want to write the metadata to a json file here?
+            // write the metadata to a json file
+            // await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
+
+            (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
+                await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
+
+            // combine the chapters from all the files
+            audiobook.Chapters = audiobook.SourcePaths.SelectMany(x => x.Chapters).ToList();
+            audiobook.CurrentChapterIndex = 0;
+
+            return audiobook;
+        }
+        catch (Exception e)
+        {
+            // log the error
+            App.ViewModel.LoggingService.LogError(e);
+            return null;
+        }
     }
 
     private static async Task<Audiobook?> CreateAudiobook(string path)
@@ -127,7 +252,6 @@ public class M4BFileImportService : IImportFiles
                 Composer = track.Composer,
                 Author = track.Artist,
                 Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
-                FilePath = path,
                 PlaybackSpeed = 1.0,
                 ReleaseDate = track.Date,
                 Volume = 1.0,

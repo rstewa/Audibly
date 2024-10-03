@@ -1,9 +1,8 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -66,7 +65,7 @@ public class PlayerViewModel : BindableBase
             > 0 => Constants.VolumeGlyph1,
             _ => Constants.VolumeGlyph0
         };
-        
+
         // save volume level to settings
         UserSettings.Volume = volume;
     }
@@ -83,7 +82,7 @@ public class PlayerViewModel : BindableBase
     {
         PlaybackSpeed = speed;
         MediaPlayer.PlaybackRate = speed;
-        
+
         // save playback speed to settings
         UserSettings.PlaybackSpeed = speed;
     }
@@ -180,7 +179,7 @@ public class PlayerViewModel : BindableBase
             return;
 
         MediaPlayer.Pause();
-        
+
         if (NowPlaying != null)
             NowPlaying.IsNowPlaying = false;
 
@@ -189,7 +188,7 @@ public class PlayerViewModel : BindableBase
         if (App.ViewModel.SelectedAudiobook == null) return;
 
         // verify that the file exists
-        if (!File.Exists(audiobook.FilePath))
+        if (!File.Exists(audiobook.CurrentSourceFile.FilePath))
         {
             App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
                 "Can't play Audiobook. The file was deleted or moved.");
@@ -200,7 +199,7 @@ public class PlayerViewModel : BindableBase
         NowPlaying.IsNowPlaying = true;
         NowPlaying.DateLastPlayed = DateTime.Now;
         await NowPlaying.SaveAsync();
-        MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.FilePath.AsUri());
+        MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
     }
 
     private void InitializeAudioPlayer()
@@ -214,7 +213,7 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.MediaFailed += AudioPlayer_MediaFailed;
         MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
-        
+
         // set volume level from settings
         UpdateVolume(UserSettings.Volume);
         UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);

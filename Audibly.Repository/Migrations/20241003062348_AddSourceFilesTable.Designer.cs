@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Audibly.Repository.Migrations
 {
     [DbContext(typeof(AudiblyContext))]
-    [Migration("20241003053944_AddSourceFilesTable")]
+    [Migration("20241003062348_AddSourceFilesTable")]
     partial class AddSourceFilesTable
     {
         /// <inheritdoc />
@@ -38,6 +38,9 @@ namespace Audibly.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("CurrentChapterIndex")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("CurrentSourceFileIndex")
                         .HasColumnType("INTEGER");
 
@@ -47,6 +50,9 @@ namespace Audibly.Repository.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<long>("Duration")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
@@ -89,6 +95,9 @@ namespace Audibly.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("AudiobookId")
+                        .HasColumnType("TEXT");
+
                     b.Property<uint>("EndOffset")
                         .HasColumnType("INTEGER");
 
@@ -123,6 +132,8 @@ namespace Audibly.Repository.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AudiobookId");
 
                     b.HasIndex("SourceFileId");
 
@@ -163,6 +174,10 @@ namespace Audibly.Repository.Migrations
 
             modelBuilder.Entity("Audibly.Models.ChapterInfo", b =>
                 {
+                    b.HasOne("Audibly.Models.Audiobook", null)
+                        .WithMany("Chapters")
+                        .HasForeignKey("AudiobookId");
+
                     b.HasOne("Audibly.Models.SourceFile", null)
                         .WithMany("Chapters")
                         .HasForeignKey("SourceFileId");
@@ -177,6 +192,8 @@ namespace Audibly.Repository.Migrations
 
             modelBuilder.Entity("Audibly.Models.Audiobook", b =>
                 {
+                    b.Navigation("Chapters");
+
                     b.Navigation("SourcePaths");
                 });
 

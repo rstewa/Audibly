@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using System;
 using System.Diagnostics;
@@ -15,7 +15,6 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
-using Audibly.Repository;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using CommunityToolkit.WinUI;
@@ -29,7 +28,6 @@ using WinRT.Interop;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
-using Microsoft.Extensions.Configuration;
 
 namespace Audibly.App;
 
@@ -80,7 +78,7 @@ public partial class App : Application
         {
             // Tells which project in Sentry to send events to:
             options.Dsn = Helpers.Sentry.Dsn;
-            
+
             options.AutoSessionTracking = true;
 
             // Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing.
@@ -91,8 +89,8 @@ public partial class App : Application
             options.IsGlobalModeEnabled = true;
 
             // TODO:Any other Sentry options you need go here.
-        });        
-        
+        });
+
         InitializeComponent();
         UnhandledException += OnUnhandledException;
     }
@@ -165,9 +163,7 @@ public partial class App : Application
         if (appActivationArguments.Kind is ExtendedActivationKind.File &&
             appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
-        {
             await _dispatcherQueue.EnqueueAsync(() => HandleFileActivation(storageFile));
-        }
 
         Window.Activate();
     }
@@ -176,13 +172,13 @@ public partial class App : Application
     {
         ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
 
-        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
 
         // set the current position
         if (audiobook == null)
         {
             await ViewModel.ImportAudiobookTest(storageFile.Path, false);
-            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
         }
 
         if (audiobook == null) return; // todo: handle if this isn't found
@@ -229,7 +225,7 @@ public partial class App : Application
             .Options;
         using (var context = new AudiblyContext(dbOptions))
         {
-            context.Database.Migrate();
+            // context.Database.Migrate();
         }
 
         Repository = new SqlAudiblyRepository(dbOptions);

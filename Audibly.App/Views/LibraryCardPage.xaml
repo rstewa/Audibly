@@ -17,7 +17,7 @@
         <DataTemplate x:DataType="viewModels:AudiobookViewModel" x:Key="AudiobookTemplate">
             <userControls:AudiobookTile
                 Author="{x:Bind Author}"
-                FilePath="{x:Bind FilePath, Mode=OneWay}"
+                FilePath="{x:Bind CurrentSourceFile.FilePath, Mode=OneWay}"
                 Progress="{x:Bind Progress, Mode=OneWay}"
                 Title="{x:Bind Title, Mode=OneWay}">
                 <userControls:AudiobookTile.Source>

@@ -21,6 +21,7 @@ namespace Audibly.Repository.Migrations
                     CurrentSourceFileIndex = table.Column<int>(type: "INTEGER", nullable: false),
                     DateLastPlayed = table.Column<DateTime>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Duration = table.Column<long>(type: "INTEGER", nullable: false),
                     CoverImagePath = table.Column<string>(type: "TEXT", nullable: false),
                     ThumbnailPath = table.Column<string>(type: "TEXT", nullable: false),
                     FilePath = table.Column<string>(type: "TEXT", nullable: false),
@@ -29,7 +30,8 @@ namespace Audibly.Repository.Migrations
                     Progress = table.Column<double>(type: "REAL", nullable: false),
                     ReleaseDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Volume = table.Column<double>(type: "REAL", nullable: false)
+                    Volume = table.Column<double>(type: "REAL", nullable: false),
+                    CurrentChapterIndex = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -72,11 +74,17 @@ namespace Audibly.Repository.Migrations
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     UniqueID = table.Column<string>(type: "TEXT", nullable: false),
                     Subtitle = table.Column<string>(type: "TEXT", nullable: false),
+                    AudiobookId = table.Column<Guid>(type: "TEXT", nullable: true),
                     SourceFileId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Chapters", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Chapters_Audiobooks_AudiobookId",
+                        column: x => x.AudiobookId,
+                        principalTable: "Audiobooks",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Chapters_SourceFile_SourceFileId",
                         column: x => x.SourceFileId,
@@ -89,6 +97,11 @@ namespace Audibly.Repository.Migrations
                 table: "Audiobooks",
                 columns: new[] { "Author", "Title" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Chapters_AudiobookId",
+                table: "Chapters",
+                column: "AudiobookId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Chapters_SourceFileId",

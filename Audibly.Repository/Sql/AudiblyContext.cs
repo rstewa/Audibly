@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 04/15/2024
+// Updated: 10/11/2024
 
 using Audibly.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,7 @@ public class AudiblyContext : DbContext
     public AudiblyContext(DbContextOptions<AudiblyContext> options) : base(options)
     {
     }
-    
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -43,4 +43,6 @@ public class AudiblyContext : DbContext
     public DbSet<Audiobook> Audiobooks { get; set; }
 
     public DbSet<ChapterInfo> Chapters { get; set; }
+
+    public DbSet<SourceFile> SourceFiles { get; set; }
 }

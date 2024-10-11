@@ -1,9 +1,8 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 10/11/2024
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -132,11 +131,13 @@ public class M4BFileImportService : IImportFiles
             var audiobook = new Audiobook
             {
                 CurrentSourceFileIndex = 0,
-                SourcePaths = new List<SourceFile>(),
+                SourcePaths = [],
                 PlaybackSpeed = 1.0,
                 Volume = 1.0
             };
 
+            var sourceFileIndex = 0;
+            var chapterIndex = 0;
             foreach (var path in paths)
             {
                 var track = new Track(path);
@@ -155,35 +156,35 @@ public class M4BFileImportService : IImportFiles
 
                 var sourceFile = new SourceFile
                 {
+                    Index = sourceFileIndex++,
                     FilePath = path,
                     Duration = track.Duration,
-                    CurrentTimeMs = 0,
-                    CurrentChapterIndex = 0,
-                    Chapters = []
+                    CurrentTimeMs = 0
                 };
 
                 audiobook.SourcePaths.Add(sourceFile);
 
                 // read in the chapters
-                var chapterIndex = 0;
                 foreach (var ch in track.Chapters)
                 {
                     var tmp = _mapper.Map<ChapterInfo>(ch);
                     tmp.Index = chapterIndex++;
-                    sourceFile.Chapters.Add(tmp);
+                    tmp.ParentSourceFileIndex = sourceFile.Index;
+                    audiobook.Chapters.Add(tmp);
                 }
 
-                if (sourceFile.Chapters.Count == 0)
+                if (track.Chapters.Count == 0)
                     // create a single chapter for the entire book
-                    sourceFile.Chapters.Add(new ChapterInfo
+                    audiobook.Chapters.Add(new ChapterInfo
                     {
                         StartTime = 0,
-                        EndTime = Convert.ToUInt32(audiobook.SourcePaths.First().Duration * 1000),
+                        EndTime = Convert.ToUInt32(audiobook.SourcePaths[sourceFileIndex - 1].Duration * 1000),
                         StartOffset = 0,
                         EndOffset = 0,
                         UseOffset = false,
                         Title = audiobook.Title,
-                        Index = 0
+                        Index = chapterIndex++,
+                        ParentSourceFileIndex = sourceFile.Index
                     });
             }
 
@@ -204,7 +205,7 @@ public class M4BFileImportService : IImportFiles
                 await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
 
             // combine the chapters from all the files
-            audiobook.Chapters = audiobook.SourcePaths.SelectMany(x => x.Chapters).ToList();
+            // audiobook.Chapters = audiobook.SourcePaths.SelectMany(x => x.Chapters).ToList();
             audiobook.CurrentChapterIndex = 0;
 
             return audiobook;
@@ -238,11 +239,12 @@ public class M4BFileImportService : IImportFiles
 
             var sourceFile = new SourceFile
             {
+                Index = 0,
                 FilePath = path,
                 Duration = track.Duration,
-                CurrentTimeMs = 0,
-                CurrentChapterIndex = 0,
-                Chapters = []
+                CurrentTimeMs = 0
+                // CurrentChapterIndex = 0,
+                // Chapters = []
             };
 
             var audiobook = new Audiobook
@@ -276,7 +278,7 @@ public class M4BFileImportService : IImportFiles
             (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
                 await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
 
-            var chapters = audiobook.SourcePaths.First().Chapters;
+            // var chapters = audiobook.SourcePaths.First().Chapters;
 
             // read in the chapters
             var chapterIndex = 0;
@@ -284,12 +286,13 @@ public class M4BFileImportService : IImportFiles
             {
                 var tmp = _mapper.Map<ChapterInfo>(ch);
                 tmp.Index = chapterIndex++;
-                chapters.Add(tmp);
+                tmp.ParentSourceFileIndex = sourceFile.Index;
+                audiobook.Chapters.Add(tmp);
             }
 
-            if (chapters.Count == 0)
+            if (audiobook.Chapters.Count == 0)
                 // create a single chapter for the entire book
-                chapters.Add(new ChapterInfo
+                audiobook.Chapters.Add(new ChapterInfo
                 {
                     StartTime = 0,
                     EndTime = Convert.ToUInt32(audiobook.SourcePaths.First().Duration * 1000),
@@ -297,7 +300,8 @@ public class M4BFileImportService : IImportFiles
                     EndOffset = 0,
                     UseOffset = false,
                     Title = audiobook.Title,
-                    Index = 0
+                    Index = 0,
+                    ParentSourceFileIndex = sourceFile.Index
                 });
 
             return audiobook;

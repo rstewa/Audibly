@@ -1,8 +1,9 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 10/11/2024
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Audibly.App.Extensions;
@@ -26,7 +27,7 @@ public class AudiobookViewModel : BindableBase
         if (model == null) return;
 
         Chapters.Clear();
-        foreach (var chapter in model.SourcePaths[model.CurrentSourceFileIndex].Chapters) Chapters.Add(chapter);
+        foreach (var chapter in model.Chapters) Chapters.Add(chapter);
     }
 
     private Audiobook _model;
@@ -105,41 +106,27 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    private SourceFile _currentSourceFile => Model.SourcePaths[Model.CurrentSourceFileIndex];
-
     /// <summary>
     ///     Gets or sets the duration of the audiobook (seconds).
     /// </summary>
-    public long Duration
-    {
-        get => _currentSourceFile.Duration;
-        set
-        {
-            if (value != _currentSourceFile.Duration)
-            {
-                _currentSourceFile.Duration = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public long Duration => Model.Duration;
 
     /// <summary>
     ///     Gets the duration of the audiobook as a string in the format "hh:mm:ss".
     /// </summary>
-    public string DurationStr => _currentSourceFile.Duration.ToStr_s();
+    public string DurationStr => CurrentSourceFile.Duration.ToStr_s();
 
     /// <summary>
     ///     Gets or sets the current time in milliseconds of the audiobook.
     /// </summary>
     public int CurrentTimeMs
     {
-        get => _currentSourceFile.CurrentTimeMs;
+        get => CurrentSourceFile.CurrentTimeMs;
         set
         {
-            if (value != _currentSourceFile.CurrentTimeMs)
+            if (value != CurrentSourceFile.CurrentTimeMs)
             {
-                _currentSourceFile.CurrentTimeMs = value;
+                CurrentSourceFile.CurrentTimeMs = value;
                 IsModified = true;
                 OnPropertyChanged();
 
@@ -286,15 +273,15 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Gets or sets the current chapter of the audiobook.
     /// </summary>
-    public ChapterInfo CurrentChapter
-    {
-        get => _currentSourceFile.Chapters[_currentSourceFile.CurrentChapterIndex ?? 0];
-        set
-        {
-            _currentSourceFile.CurrentChapterIndex = _currentSourceFile.Chapters.IndexOf(value);
-            OnPropertyChanged();
-        }
-    }
+    public ChapterInfo CurrentChapter => Chapters[CurrentChapterIndex ?? 0];
+    // {
+    //     get => Model.SourcePaths[Model.CurrentSourceFileIndex].Chapters.FirstOrDefault(c => c.Index == Model.SourcePaths[Model.CurrentSourceFileIndex].CurrentChapterIndex);
+    //     set
+    //     {
+    //         Model.SourcePaths[Model.CurrentSourceFileIndex].CurrentChapterIndex = Model.SourcePaths[Model.CurrentSourceFileIndex].Chapters.IndexOf(value);
+    //         OnPropertyChanged();
+    //     }
+    // }
 
     // todo: i don't think this is needed
     /// <summary>
@@ -302,10 +289,10 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public int? CurrentChapterIndex
     {
-        get => _currentSourceFile.CurrentChapterIndex;
+        get => Model.CurrentChapterIndex;
         set
         {
-            _currentSourceFile.CurrentChapterIndex = value;
+            Model.CurrentChapterIndex = value;
             OnPropertyChanged();
         }
     }
@@ -323,6 +310,8 @@ public class AudiobookViewModel : BindableBase
     }
 
     public SourceFile CurrentSourceFile => Model.SourcePaths[Model.CurrentSourceFileIndex];
+
+    public List<SourceFile> SourcePaths => Model.SourcePaths;
 
     /// <summary>
     ///     Gets or sets a value that indicates whether the underlying model has been modified.

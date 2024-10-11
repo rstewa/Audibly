@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <Page
     Background="Transparent"
@@ -19,6 +19,7 @@
                 Author="{x:Bind Author}"
                 FilePath="{x:Bind CurrentSourceFile.FilePath, Mode=OneWay}"
                 Progress="{x:Bind Progress, Mode=OneWay}"
+                SourcePaths="{x:Bind SourcePaths, Mode=OneWay}"
                 Title="{x:Bind Title, Mode=OneWay}">
                 <userControls:AudiobookTile.Source>
                     <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
@@ -123,7 +124,8 @@
                                 Icon="Folder"
                                 Text="Import audiobooks from a directory (recursively). Single-file audiobooks only (.M4B)" />
                             <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookMultipleFilesAsync}" Text="Import audiobook with 1-to-many files (.M4B)">
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookMultipleFilesAsync}"
+                                            Text="Import audiobook with 1-to-many files (beta)">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE838;" />
                                 </MenuFlyoutItem.Icon>

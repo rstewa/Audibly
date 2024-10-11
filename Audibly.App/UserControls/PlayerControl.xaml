@@ -8,6 +8,7 @@
     xmlns:local="using:Audibly.App.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:models="using:Audibly.Models"
     xmlns:vm="using:Audibly.App.ViewModels"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -111,17 +112,26 @@
                 <ComboBox
                     Background="Transparent"
                     BorderThickness="0"
-                    DisplayMemberPath="Title"
                     FontSize="16"
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center"
                     ItemsSource="{x:Bind PlayerViewModel.NowPlaying.Chapters, Mode=OneWay}"
+                    MaxWidth="250"
                     RelativePanel.RightOf="Separator"
                     SelectedIndex="{x:Bind PlayerViewModel.ChapterComboSelectedIndex, Mode=TwoWay}"
                     SelectionChanged="ChapterCombo_SelectionChanged"
                     ToolTipService.ToolTip="Chapter Selection"
                     VerticalAlignment="Center"
-                    x:Name="ChapterCombo" />
+                    x:Name="ChapterCombo">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:ChapterInfo">
+                            <TextBlock
+                                Text="{x:Bind Title}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <!--#region play/pause buttons-->
                 <StackPanel

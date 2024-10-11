@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/22/2024
+// Created: 04/15/2024
+// Updated: 10/11/2024
 
 namespace Audibly.Models;
 
@@ -68,6 +68,8 @@ public class ChapterInfo : DbObject, IEquatable<Audiobook>
             return Description + InternalValueSeparator + Url;
         }
     }
+
+    public int ParentSourceFileIndex { get; set; }
 
     /// <summary>
     ///     This is a sequential value that is used to keep the Chapters in order

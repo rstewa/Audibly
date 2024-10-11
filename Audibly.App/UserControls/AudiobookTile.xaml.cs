@@ -1,11 +1,13 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Created: 04/15/2024
+// Updated: 10/11/2024
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Audibly.App.ViewModels;
+using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -72,6 +74,18 @@ public sealed partial class AudiobookTile : UserControl
         audiobookTile.ProgressGrid.Visibility = (double)e.NewValue < 1 ? Visibility.Collapsed : Visibility.Visible;
         // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
     }
+
+    public int SourcePathsCount => SourcePaths.Count;
+
+    public List<SourceFile> SourcePaths
+    {
+        get => (List<SourceFile>)GetValue(SourcePathsProperty);
+        set => SetValue(SourcePathsProperty, value);
+    }
+
+    public static readonly DependencyProperty SourcePathsProperty =
+        DependencyProperty.Register(nameof(SourcePaths), typeof(List<SourceFile>), typeof(AudiobookTile),
+            new PropertyMetadata(null));
 
     public string FilePath
     {

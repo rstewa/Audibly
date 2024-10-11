@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 10/11/2024
 
 using System;
 using System.IO;
@@ -202,6 +202,20 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
     }
 
+    public async void OpenSourceFile(int index, int chapterIndex)
+    {
+        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex == index)
+            return;
+
+        NowPlaying.CurrentTimeMs = 0;
+        NowPlaying.CurrentSourceFileIndex = index;
+        NowPlaying.CurrentChapterIndex = chapterIndex;
+
+        await NowPlaying.SaveAsync();
+
+        MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
+    }
+
     private void InitializeAudioPlayer()
     {
         MediaPlayer.AutoPlay = false;
@@ -234,7 +248,7 @@ public class PlayerViewModel : BindableBase
                 return;
             }
 
-            NowPlaying.CurrentChapter = NowPlaying.Chapters[NowPlaying.CurrentChapterIndex ?? 0];
+            // NowPlaying.CurrentChapter = NowPlaying.Chapters //[NowPlaying.CurrentChapterIndex ?? 0];
 
             ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
 
@@ -251,7 +265,11 @@ public class PlayerViewModel : BindableBase
 
     private void AudioPlayer_MediaEnded(MediaPlayer sender, object args)
     {
-        ; // todo: implement
+        // check if there is a next source file
+        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1) return;
+
+        OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
+        MediaPlayer.Play();
     }
 
     // todo: check https://xamlbrewer.wordpress.com/2022/03/09/a-dialog-service-for-winui-3/
@@ -296,13 +314,17 @@ public class PlayerViewModel : BindableBase
         if (!NowPlaying.CurrentChapter.InRange(CurrentPosition.TotalMilliseconds))
         {
             var tmp = NowPlaying.Chapters.FirstOrDefault(c =>
+                c.ParentSourceFileIndex == NowPlaying.CurrentSourceFileIndex &&
                 c.InRange(CurrentPosition.TotalMilliseconds));
             if (tmp != null)
                 _ = _dispatcherQueue.EnqueueAsync(() =>
                 {
-                    NowPlaying.CurrentChapter = tmp;
-                    NowPlaying.CurrentChapterIndex = NowPlaying.Chapters.IndexOf(tmp);
-                    ChapterComboSelectedIndex = NowPlaying.Chapters.IndexOf(NowPlaying.CurrentChapter);
+                    var idx = NowPlaying.Chapters.IndexOf(tmp);
+                    // var idx = NowPlaying.CurrentSourceFile.Chapters.IndexOf(tmp);
+                    // NowPlaying.CurrentChapter = tmp;
+                    NowPlaying.CurrentChapterIndex = idx;
+                    // todo: use idx instead of NowPlaying.CurrentChapterIndex
+                    ChapterComboSelectedIndex = idx; // NowPlaying.Chapters.IndexOf(NowPlaying.CurrentChapter);
                     ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
                     return Task.CompletedTask;
                 });
@@ -316,11 +338,16 @@ public class PlayerViewModel : BindableBase
             ChapterPositionText = ChapterPositionMs.ToStr_ms();
             NowPlaying.CurrentTimeMs = (int)CurrentPosition.TotalMilliseconds;
 
-            if (MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
-            {
-                var tmp = CurrentPosition.TotalSeconds;
-                NowPlaying.Progress = Math.Floor(tmp / NowPlaying.Duration * 100);
-            }
+            if (MediaPlayer.PlaybackSession.PlaybackState != MediaPlaybackState.Playing) return Task.CompletedTask;
+
+            // TODO: this is gross
+            // calculate/update progress
+            double tmp = 0;
+            if (NowPlaying.CurrentSourceFileIndex != 0)
+                for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
+                    tmp += NowPlaying.SourcePaths[i].Duration;
+            tmp += CurrentPosition.TotalSeconds;
+            NowPlaying.Progress = Math.Floor(tmp / NowPlaying.Duration * 100);
 
             return Task.CompletedTask;
         });

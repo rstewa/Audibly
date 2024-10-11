@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 4/5/2024
-// Updated: 4/13/2024
+// Created: 04/15/2024
+// Updated: 10/11/2024
 
 using System;
 using System.Linq;
@@ -58,25 +58,51 @@ public sealed partial class PlayerControl : UserControl
             PlayerViewModel.MediaPlayer.Pause();
     }
 
-    private void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var container = sender as ComboBox;
         if (container == null || container.SelectedItem is not ChapterInfo chapter) return;
 
-        if (ChapterCombo.SelectedIndex == ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying.CurrentChapter)) return;
+        // get newly selected chapter
+        var newChapter = container.SelectedItem as ChapterInfo;
 
-        PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(chapter.StartTime);
+        if (newChapter == null) return;
+
+        // check if the newly selected chapter is in a different source file than the current chapter
+        if (PlayerViewModel.NowPlaying != null &&
+            PlayerViewModel.NowPlaying.CurrentSourceFile.Index != newChapter.ParentSourceFileIndex)
+        {
+            // set the current source file index to the new source file index
+            PlayerViewModel.OpenSourceFile(newChapter.ParentSourceFileIndex, newChapter.Index);
+            PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(newChapter.StartTime);
+        }
+        else if (ChapterCombo.SelectedIndex != ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying?.CurrentChapter))
+        {
+            PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(newChapter.StartTime);
+        }
     }
 
     private void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
+        if (PlayerViewModel.NowPlaying is not null &&
+            PlayerViewModel.NowPlaying?.CurrentChapterIndex - 1 > 0 &&
+            PlayerViewModel.NowPlaying?.Chapters[(int)(PlayerViewModel.NowPlaying?.CurrentChapterIndex - 1)]
+                .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
+        {
+            var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex - 1;
+            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx);
+            PlayerViewModel.CurrentPosition =
+                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
+            return;
+        }
+
         var newChapterIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex - 1 >= 0
             ? PlayerViewModel.NowPlaying.CurrentChapterIndex - 1
             : PlayerViewModel.NowPlaying.CurrentChapterIndex;
 
         if (newChapterIndex == null) return;
 
-        PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
+        // PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
         PlayerViewModel.ChapterDurationMs =
@@ -88,6 +114,18 @@ public sealed partial class PlayerControl : UserControl
 
     private void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
+        if (PlayerViewModel.NowPlaying is not null &&
+            PlayerViewModel.NowPlaying?.CurrentChapterIndex + 1 < PlayerViewModel.NowPlaying?.Chapters.Count &&
+            PlayerViewModel.NowPlaying?.Chapters[(int)(PlayerViewModel.NowPlaying?.CurrentChapterIndex + 1)]
+                .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
+        {
+            var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex + 1;
+            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx);
+            PlayerViewModel.CurrentPosition =
+                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
+            return;
+        }
+
         var newChapterIndex =
             PlayerViewModel.NowPlaying.CurrentChapterIndex + 1 < PlayerViewModel.NowPlaying.Chapters.Count
                 ? PlayerViewModel.NowPlaying.CurrentChapterIndex + 1
@@ -95,7 +133,7 @@ public sealed partial class PlayerControl : UserControl
 
         if (newChapterIndex == null) return;
 
-        PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
+        // PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
         PlayerViewModel.ChapterDurationMs =

@@ -1,20 +1,19 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 08/13/2024
-// Updated: 08/13/2024
+// Created: 09/29/2024
+// Updated: 10/11/2024
 
 namespace Audibly.Models;
 
 public class SourceFile : DbObject, IEquatable<SourceFile>
 {
     public int Index { get; set; }
-
     public string FilePath { get; set; }
-
     public int CurrentTimeMs { get; set; }
+
     public long Duration { get; set; }
-    public int? CurrentChapterIndex { get; set; }
-    public List<ChapterInfo> Chapters { get; init; } = [];
-    
+    // public int? CurrentChapterIndex { get; set; }
+    // public List<ChapterInfo> Chapters { get; set; } = [];
+
     public bool Equals(SourceFile? other)
     {
         if (ReferenceEquals(null, other)) return false;

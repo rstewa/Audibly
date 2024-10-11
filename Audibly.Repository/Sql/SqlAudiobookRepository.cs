@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 10/11/2024
 
 using Audibly.Models;
 using Audibly.Repository.Interfaces;
@@ -14,7 +14,8 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     {
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            // .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
             .OrderBy(audiobook => audiobook.Title)
             .AsNoTracking()
             .ToListAsync();
@@ -24,7 +25,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     {
         return db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook =>
                 audiobook.Title == title &&
@@ -36,7 +37,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     {
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook => audiobook.Id == id);
     }
@@ -46,7 +47,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         var parameters = search.Split(' ');
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .Where(audiobook =>
                 parameters.Any(parameter =>
                     audiobook.Author.StartsWith(parameter) ||
@@ -65,7 +66,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
     {
         var current = await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Title == audiobook.Title && a.Author == audiobook.Author);
 
@@ -90,14 +91,33 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return audiobook;
     }
 
+    // todo: figure out why deleting an audiobook doesn't cascade delete the source files & chapters
     public async Task DeleteAsync(Guid audiobookId)
     {
         var audiobook = await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
-            .AsNoTracking()
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .FirstOrDefaultAsync(a => a.Id == audiobookId);
 
+        // find all source files and chapters associated with the audiobook
+        var sourceFiles = audiobook?.SourcePaths;
+        var chapters = audiobook?.Chapters;
+
+        // remove all chapters
+        if (chapters != null)
+        {
+            db.Chapters.RemoveRange(chapters);
+            await db.SaveChangesAsync();
+        }
+
+        // remove all source files
+        if (sourceFiles != null)
+        {
+            db.SourceFiles.RemoveRange(sourceFiles);
+            await db.SaveChangesAsync();
+        }
+
+        // remove the audiobook
         if (audiobook != null)
         {
             db.Audiobooks.Remove(audiobook);

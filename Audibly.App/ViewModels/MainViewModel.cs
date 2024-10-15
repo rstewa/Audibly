@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 10/14/2024
 
 using System;
 using System.Collections.ObjectModel;
@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Audibly.App.Extensions;
@@ -260,7 +261,6 @@ public class MainViewModel : BindableBase
 
     public async void ImportAudiobookAsync()
     {
-        var importFailed = false;
         var openPicker = new FileOpenPicker();
         var window = App.Window;
         var hWnd = WindowNative.GetWindowHandle(window);
@@ -282,6 +282,12 @@ public class MainViewModel : BindableBase
         MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
             "Please wait while the audiobooks are imported...");
 
+        await ImportFilesAsync(file, token);
+    }
+
+    private async Task ImportFilesAsync(StorageFile file, CancellationToken token)
+    {
+        var importFailed = false;
         try
         {
             await FileImporter.ImportFileAsync(file.Path, token,
@@ -344,10 +350,8 @@ public class MainViewModel : BindableBase
             App.PlayerViewModel.OpenAudiobook(audiobook);
     }
 
-    public async Task<bool> ImportAudiobookTest(string path, bool showImportDialog = true)
+    public async Task ImportAudiobookFromFileActivation(string path, bool showImportDialog = true)
     {
-        var importFailed = false;
-
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
@@ -361,68 +365,14 @@ public class MainViewModel : BindableBase
                 "Please wait while the audiobooks are imported...");
         }
 
-        try
-        {
-            await FileImporter.ImportFileAsync(path, token,
-                async (progress, total, title, didFail) =>
-                {
-                    await dispatcherQueue.EnqueueAsync(() =>
-                    {
-                        ImportProgress = (int)((double)progress / total * 100);
-                        ImportText = $" {title}";
-                    });
+        var file = await StorageFile.GetFileFromPathAsync(path);
 
-                    if (didFail)
-                    {
-                        importFailed = true;
-                        EnqueueNotification(new Notification
-                        {
-                            Message = "Failed to import audiobook. Path: " + path,
-                            Severity = InfoBarSeverity.Error
-                        });
-                    }
-                });
-        }
-        catch (OperationCanceledException)
-        {
-            EnqueueNotification(new Notification
-            {
-                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
-            });
-        }
-        catch (Exception e)
-        {
-            importFailed = true;
-            EnqueueNotification(new Notification
-            {
-                Message = "Failed to import audiobook. Path: " + path,
-                Severity = InfoBarSeverity.Error
-            });
-            LoggingService.Log(e.Message);
-        }
-
-        await dispatcherQueue.EnqueueAsync(() =>
-        {
-            ImportText = string.Empty;
-            ImportProgress = 0;
-            return Task.CompletedTask;
-        });
-
-        if (!importFailed)
-            EnqueueNotification(new Notification
-            {
-                Message = "Audiobook imported successfully!",
-                Severity = InfoBarSeverity.Success
-            });
-
-        await GetAudiobookListAsync();
-
-        return !importFailed;
+        await ImportFilesAsync(file, token);
     }
 
     private CancellationTokenSource _cancellationTokenSource;
 
-    public async void ImportAudiobooksAsync()
+    public async void ImportAudiobooksFromDirectoryAsync()
     {
         var openPicker = new FolderPicker();
         var window = App.Window;
@@ -508,7 +458,7 @@ public class MainViewModel : BindableBase
 
     public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
 
-    public async void ImportAudiobookMultipleFilesAsync(object sender, RoutedEventArgs e)
+    public async void ImportAudiobookWithMultipleFilesAsync(object sender, RoutedEventArgs e)
     {
         var openPicker = new FileOpenPicker();
         var window = App.Window;
@@ -520,15 +470,6 @@ public class MainViewModel : BindableBase
 
         var files = await openPicker.PickMultipleFilesAsync();
         if (files.IsNullOrEmpty()) return;
-
-        // show selected files and have user put them in order
-        // var selectedFiles = files.Select(file => file.Path).ToList();
-
-        // SelectedFiles = files.Select(file => new SelectedFile
-        // {
-        //     FileName = file.Name,
-        //     FilePath = file.Path
-        // }).ToList();
 
         // add the selected files to the observable collection
         foreach (var file in files)
@@ -545,8 +486,6 @@ public class MainViewModel : BindableBase
         if (element == null) return;
 
         await element.ShowSelectFilesDialogAsync();
-
-        var test = SelectedFiles;
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
@@ -629,14 +568,6 @@ public class MainViewModel : BindableBase
     }
 
     // TODO: need to move these methods to a separate class
-
-    // TODO: add type and duration to the Notification class
-    // ViewModel.EnqueueNotification(new Notification
-    // {
-    //     Message = "This is a test notification",
-    //     Type = NotificationType.Info,
-    //     Duration = TimeSpan.FromSeconds(5)
-    // });
 
     public ObservableCollection<Notification> Notifications { get; } = [];
 

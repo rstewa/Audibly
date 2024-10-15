@@ -177,14 +177,8 @@ public partial class App : Application
         // set the current position
         if (audiobook == null)
         {
-            await ViewModel.ImportAudiobookTest(storageFile.Path, false);
-            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
+            await ViewModel.ImportAudiobookFromFileActivation(storageFile.Path, false);
         }
-
-        if (audiobook == null) return; // todo: handle if this isn't found
-
-        // ViewModel.SelectedAudiobook = audiobook;
-        PlayerViewModel.OpenAudiobook(audiobook);
     }
 
     private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)

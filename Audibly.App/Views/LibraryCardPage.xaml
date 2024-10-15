@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <Page
     Background="Transparent"
@@ -66,9 +66,14 @@
                 Text="Open Audiobook (.m4b)" />
 
             <userControls:CustomHyperlinkButton
-                ButtonClick="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                ButtonClick="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
                 Icon="&#xED25;"
                 Text="Import Audiobooks from a directory (recursively)" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}"
+                Icon="&#xE838;"
+                Text="Import Audiobook with multiple files (beta)" />
 
         </StackPanel>
 
@@ -120,12 +125,11 @@
                                 Icon="OpenFile"
                                 Text="Import single audiobook (.M4B)" />
                             <MenuFlyoutItem
-                                Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                                Click="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
                                 Icon="Folder"
                                 Text="Import audiobooks from a directory (recursively). Single-file audiobooks only (.M4B)" />
                             <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookMultipleFilesAsync}"
-                                            Text="Import audiobook with 1-to-many files (beta)">
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}" Text="Import audiobook with multiple files (beta)">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE838;" />
                                 </MenuFlyoutItem.Icon>

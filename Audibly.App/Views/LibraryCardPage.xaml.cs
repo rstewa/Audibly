@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Created: 04/15/2024
+// Updated: 10/16/2024
 
 using System;
 using System.Diagnostics;
@@ -29,6 +29,14 @@ public sealed partial class LibraryCardPage : Page
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+    
+    public const string ImportAudiobookText = "Import an audiobook";
+
+    public const string ImportAudiobooksFromDirectoryText =
+        "Import audiobooks from a directory (recursively). Single-file audiobooks only (.m4b, mp3)";
+
+    public const string ImportAudiobookWithMultipleFilesText =
+        "Import an audiobook with multiple files (e.g. chapters)";
 
     public LibraryCardPage()
     {

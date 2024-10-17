@@ -75,7 +75,15 @@ public sealed partial class AudiobookTile : UserControl
         // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
     }
 
-    public int SourcePathsCount => SourcePaths.Count;
+    public int SourcePathsCount
+    {
+        get => (int)GetValue(SourcePathsCountProperty);
+        set => SetValue(SourcePathsCountProperty, value);
+    }
+    
+    public static readonly DependencyProperty SourcePathsCountProperty =
+        DependencyProperty.Register(nameof(SourcePathsCount), typeof(int), typeof(AudiobookTile),
+            new PropertyMetadata(0));
 
     public List<SourceFile> SourcePaths
     {

@@ -48,7 +48,7 @@ public partial class App : Application
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
     public static MainViewModel ViewModel { get; } =
-        new(new M4BFileImportService(), new AppDataService(), new MessageService(),
+        new(new FileImportService(), new AppDataService(), new MessageService(),
             new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
 
     /// <summary>
@@ -177,7 +177,7 @@ public partial class App : Application
         // set the current position
         if (audiobook == null)
         {
-            await ViewModel.ImportAudiobookFromFileActivation(storageFile.Path, false);
+            await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
         }
     }
 

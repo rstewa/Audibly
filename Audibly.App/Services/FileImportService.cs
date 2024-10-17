@@ -18,13 +18,13 @@ using ChapterInfo = Audibly.Models.ChapterInfo;
 
 namespace Audibly.App.Services;
 
-public class M4BFileImportService : IImportFiles
+public class FileImportService : IImportFiles
 {
     public event IImportFiles.ImportCompletedHandler? ImportCompleted;
 
     private static IMapper _mapper;
 
-    public M4BFileImportService()
+    public FileImportService()
     {
         _mapper = new MapperConfiguration(cfg => { cfg.CreateMap<ATL.ChapterInfo, ChapterInfo>(); }).CreateMapper();
     }
@@ -34,8 +34,12 @@ public class M4BFileImportService : IImportFiles
         Func<int, int, string, bool, Task> progressCallback)
     {
         var didFail = false;
-        var files = Directory.GetFiles(path, "*.m4b", SearchOption.AllDirectories);
-        var numberOfFiles = files.Length;
+        
+        var files = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
+            .Where(file => file.EndsWith(".m4b", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var numberOfFiles = files.Count;
+        
         var filesList = files.AsList();
 
         foreach (var file in files)

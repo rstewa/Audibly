@@ -268,6 +268,7 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".mp3");
 
         var file = await openPicker.PickSingleFileAsync();
         if (file == null) return;
@@ -282,10 +283,30 @@ public class MainViewModel : BindableBase
         MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
             "Please wait while the audiobooks are imported...");
 
-        await ImportFilesAsync(file, token);
+        await ImportFileAsync(file, token);
+    }
+    
+    public async Task ImportAudiobookFromFileActivationAsync(string path, bool showImportDialog = true)
+    {
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        if (showImportDialog)
+        {
+            MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+            MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+                "Please wait while the audiobooks are imported...");
+        }
+
+        var file = await StorageFile.GetFileFromPathAsync(path);
+
+        await ImportFileAsync(file, token);
     }
 
-    private async Task ImportFilesAsync(StorageFile file, CancellationToken token)
+    private async Task ImportFileAsync(StorageFile file, CancellationToken token)
     {
         var importFailed = false;
         try
@@ -348,26 +369,6 @@ public class MainViewModel : BindableBase
         var audiobook = Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == file.Path);
         if (audiobook != null)
             App.PlayerViewModel.OpenAudiobook(audiobook);
-    }
-
-    public async Task ImportAudiobookFromFileActivation(string path, bool showImportDialog = true)
-    {
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
-
-        _cancellationTokenSource = new CancellationTokenSource();
-        var token = _cancellationTokenSource.Token;
-
-        if (showImportDialog)
-        {
-            MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
-
-            MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
-                "Please wait while the audiobooks are imported...");
-        }
-
-        var file = await StorageFile.GetFileFromPathAsync(path);
-
-        await ImportFilesAsync(file, token);
     }
 
     private CancellationTokenSource _cancellationTokenSource;
@@ -439,11 +440,11 @@ public class MainViewModel : BindableBase
             ImportProgress = 0;
         });
 
-        if (failedBooks > 0)
-            EnqueueNotification(new Notification
-            {
-                Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
-            });
+        // if (failedBooks > 0)
+        //     EnqueueNotification(new Notification
+        //     {
+        //         Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+        //     });
 
         EnqueueNotification(new Notification
         {
@@ -458,7 +459,7 @@ public class MainViewModel : BindableBase
 
     public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
 
-    public async void ImportAudiobookWithMultipleFilesAsync(object sender, RoutedEventArgs e)
+    public async Task ImportAudiobookWithMultipleFilesAsync(object sender, RoutedEventArgs e)
     {
         var openPicker = new FileOpenPicker();
         var window = App.Window;
@@ -467,6 +468,7 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".mp3");
 
         var files = await openPicker.PickMultipleFilesAsync();
         if (files.IsNullOrEmpty()) return;
@@ -561,7 +563,7 @@ public class MainViewModel : BindableBase
     /// <summary>
     ///     Resets the audiobook list.
     /// </summary>
-    public async Task ResetAudiobookList()
+    public async Task ResetAudiobookListAsync()
     {
         await dispatcherQueue.EnqueueAsync(async () =>
             await GetAudiobookListAsync());

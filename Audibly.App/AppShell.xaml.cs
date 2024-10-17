@@ -373,7 +373,7 @@ public sealed partial class AppShell : Page
         AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         if (string.IsNullOrEmpty(args.QueryText))
-            await ViewModel.ResetAudiobookList();
+            await ViewModel.ResetAudiobookListAsync();
         else
             await FilterAudiobookList(args.QueryText);
     }

@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:views="using:Audibly.App.Views"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -20,6 +21,7 @@
                 FilePath="{x:Bind CurrentSourceFile.FilePath, Mode=OneWay}"
                 Progress="{x:Bind Progress, Mode=OneWay}"
                 SourcePaths="{x:Bind SourcePaths, Mode=OneWay}"
+                SourcePathsCount="{x:Bind SourcePaths.Count, Mode=OneWay}"
                 Title="{x:Bind Title, Mode=OneWay}">
                 <userControls:AudiobookTile.Source>
                     <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
@@ -63,17 +65,17 @@
             <userControls:CustomHyperlinkButton
                 ButtonClick="{x:Bind ViewModel.ImportAudiobookAsync}"
                 Icon="&#xE8E5;"
-                Text="Open Audiobook (.m4b)" />
+                Text="{x:Bind views:LibraryCardPage.ImportAudiobookText}" />
 
             <userControls:CustomHyperlinkButton
                 ButtonClick="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
                 Icon="&#xED25;"
-                Text="Import Audiobooks from a directory (recursively)" />
+                Text="{x:Bind views:LibraryCardPage.ImportAudiobooksFromDirectoryText}" />
 
             <userControls:CustomHyperlinkButton
                 ButtonClick="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}"
                 Icon="&#xE838;"
-                Text="Import Audiobook with multiple files (beta)" />
+                Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}" />
 
         </StackPanel>
 
@@ -123,13 +125,13 @@
                             <MenuFlyoutItem
                                 Click="{x:Bind ViewModel.ImportAudiobookAsync}"
                                 Icon="OpenFile"
-                                Text="Import single audiobook (.M4B)" />
+                                Text="{x:Bind views:LibraryCardPage.ImportAudiobookText}" />
                             <MenuFlyoutItem
                                 Click="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
                                 Icon="Folder"
-                                Text="Import audiobooks from a directory (recursively). Single-file audiobooks only (.M4B)" />
+                                Text="{x:Bind views:LibraryCardPage.ImportAudiobooksFromDirectoryText}" />
                             <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}" Text="Import audiobook with multiple files (beta)">
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}" Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE838;" />
                                 </MenuFlyoutItem.Icon>

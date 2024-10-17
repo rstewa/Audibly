@@ -256,6 +256,7 @@ public class FileImportService : IImportFiles
                 CurrentSourceFileIndex = 0,
                 Title = track.Title,
                 Composer = track.Composer,
+                Duration = track.Duration,
                 Author = track.Artist,
                 Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
                 PlaybackSpeed = 1.0,

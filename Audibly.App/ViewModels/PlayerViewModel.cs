@@ -347,7 +347,7 @@ public class PlayerViewModel : BindableBase
                 for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
                     tmp += NowPlaying.SourcePaths[i].Duration;
             tmp += CurrentPosition.TotalSeconds;
-            NowPlaying.Progress = Math.Floor(tmp / NowPlaying.Duration * 100);
+            NowPlaying.Progress = Math.Floor((tmp / NowPlaying.Duration) * 100);
 
             return Task.CompletedTask;
         });

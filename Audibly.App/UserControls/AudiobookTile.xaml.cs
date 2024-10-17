@@ -1,11 +1,12 @@
 // Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/11/2024
+// Updated: 10/17/2024
 
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
@@ -80,7 +81,7 @@ public sealed partial class AudiobookTile : UserControl
         get => (int)GetValue(SourcePathsCountProperty);
         set => SetValue(SourcePathsCountProperty, value);
     }
-    
+
     public static readonly DependencyProperty SourcePathsCountProperty =
         DependencyProperty.Register(nameof(SourcePathsCount), typeof(int), typeof(AudiobookTile),
             new PropertyMetadata(0));
@@ -177,5 +178,15 @@ public sealed partial class AudiobookTile : UserControl
         p.StartInfo.FileName = "explorer.exe";
         p.StartInfo.Arguments = $"/open, \"{dir}\"";
         p.Start();
+    }
+
+    private async void MoreInfo_OnClick(object sender, RoutedEventArgs e)
+    {
+        var element = (FrameworkElement)sender;
+        var audiobookViewModel = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
+        if (audiobookViewModel == null) return;
+
+        CommandBarFlyout.Hide();
+        await element.ShowMoreInfoDialogAsync(audiobookViewModel);
     }
 }

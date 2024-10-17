@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/11/2024
+// Updated: 10/17/2024
 
 using System;
 using System.IO;
@@ -34,12 +34,13 @@ public class FileImportService : IImportFiles
         Func<int, int, string, bool, Task> progressCallback)
     {
         var didFail = false;
-        
+
         var files = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
-            .Where(file => file.EndsWith(".m4b", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+            .Where(file => file.EndsWith(".m4b", StringComparison.OrdinalIgnoreCase) ||
+                           file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
             .ToList();
         var numberOfFiles = files.Count;
-        
+
         var filesList = files.AsList();
 
         foreach (var file in files)
@@ -258,7 +259,8 @@ public class FileImportService : IImportFiles
                 Composer = track.Composer,
                 Duration = track.Duration,
                 Author = track.Artist,
-                Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
+                Description =
+                    track.Description, // track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
                 PlaybackSpeed = 1.0,
                 ReleaseDate = track.Date,
                 Volume = 1.0,

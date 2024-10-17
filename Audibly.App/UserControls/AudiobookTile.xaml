@@ -27,6 +27,10 @@
             <AppBarButton Click="OpenInAppFolder_OnClick" ToolTipService.ToolTip="Open in App Folder">
                 <FontIcon Glyph="&#xE8E5;" />
             </AppBarButton>
+            <!--  more info about the audiobook  -->
+            <AppBarButton Click="MoreInfo_OnClick" ToolTipService.ToolTip="More Info">
+                <FontIcon Glyph="&#xE946;" />
+            </AppBarButton>
         </CommandBarFlyout>
     </UserControl.Resources>
     <Button
@@ -86,8 +90,7 @@
                         <ResourceDictionary>
                             <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
                             <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
-                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush"
-                                            x:Key="ButtonForegroundPointerOver" />
+                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
                             <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
                         </ResourceDictionary>
                     </Button.Resources>
@@ -118,11 +121,11 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind Author, Mode=OneWay}" />
                     <!--  total number of source files  -->
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Style="{StaticResource CaptionTextBlockStyle}">
-                        <Run Text="Number of Source Files: " />
-                        <Run Text="{x:Bind SourcePathsCount, Mode=OneWay}" />
-                    </TextBlock>
+                    <!--  <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"  -->
+                    <!--  Style="{StaticResource CaptionTextBlockStyle}">  -->
+                    <!--     <Run Text="Number of Source Files: " /> -->
+                    <!--     <Run Text="{x:Bind SourcePathsCount, Mode=OneWay}" /> -->
+                    <!-- </TextBlock> -->
                 </StackPanel>
                 <Grid
                     HorizontalAlignment="Right"

@@ -26,6 +26,7 @@
     </PropertyGroup>
     <ItemGroup>
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
+        <None Remove="Views\ControlPages\MoreInfoDialogContent.xaml" />
         <None Remove="Views\ControlPages\OnBoardingDialogContent.xaml" />
         <None Remove="Views\ControlPages\SelectedFilesDialog.xaml" />
         <None Remove="Views\ResizableContentDialog.xaml" />
@@ -143,6 +144,11 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Changelog.resx</DependentUpon>
         </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Views\ControlPages\MoreInfoDialogContent.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
     <ItemGroup>
       <Page Update="Views\ControlPages\SelectFilesDialog.xaml">

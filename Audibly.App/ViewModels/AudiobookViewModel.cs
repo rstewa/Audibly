@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 10/11/2024
+// Updated: 10/17/2024
 
 using System;
 using System.Collections.Generic;
@@ -66,6 +66,23 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.Author)
             {
                 Model.Author = value;
+                IsModified = true;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Gets or sets the composer of the audiobook
+    /// </summary>
+    public string Narrator
+    {
+        get => Model.Composer;
+        set
+        {
+            if (value != Model.Composer)
+            {
+                Model.Composer = value;
                 IsModified = true;
                 OnPropertyChanged();
             }
@@ -269,6 +286,11 @@ public class AudiobookViewModel : BindableBase
             }
         }
     }
+
+    /// <summary>
+    ///     Gets or sets the release date of the audiobook.
+    /// </summary>
+    public string ReleaseDate => Model.ReleaseDate?.ToShortDateString() ?? string.Empty;
 
     /// <summary>
     ///     Gets or sets the current chapter of the audiobook.

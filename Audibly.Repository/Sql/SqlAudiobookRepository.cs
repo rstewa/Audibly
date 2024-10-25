@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/11/2024
+// Created: 10/22/2024
+// Updated: 10/24/2024
 
 using Audibly.Models;
 using Audibly.Repository.Interfaces;
@@ -15,7 +15,6 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
-            // .ThenInclude(sourceFile => sourceFile.Chapters.OrderBy(chapter => chapter.Index))
             .OrderBy(audiobook => audiobook.Title)
             .AsNoTracking()
             .ToListAsync();
@@ -91,36 +90,56 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return audiobook;
     }
 
-    // todo: figure out why deleting an audiobook doesn't cascade delete the source files & chapters
     public async Task DeleteAsync(Guid audiobookId)
     {
         var audiobook = await db.Audiobooks
-            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
-            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.SourcePaths)
+            .Include(x => x.Chapters)
             .FirstOrDefaultAsync(a => a.Id == audiobookId);
 
-        // find all source files and chapters associated with the audiobook
-        var sourceFiles = audiobook?.SourcePaths;
-        var chapters = audiobook?.Chapters;
+        if (audiobook != null) db.Remove(audiobook);
 
-        // remove all chapters
-        if (chapters != null)
+        try
         {
-            db.Chapters.RemoveRange(chapters);
             await db.SaveChangesAsync();
         }
-
-        // remove all source files
-        if (sourceFiles != null)
+        // this is for a really annoying edge case I was running into for some reason
+        catch (DbUpdateConcurrencyException ex)
         {
-            db.SourceFiles.RemoveRange(sourceFiles);
-            await db.SaveChangesAsync();
-        }
+            foreach (var entry in ex.Entries)
+                if (entry.Entity is Audiobook || entry.Entity is SourceFile || entry.Entity is ChapterInfo)
+                {
+                    var proposedValues = entry.CurrentValues;
+                    var databaseValues = entry.GetDatabaseValues();
 
-        // remove the audiobook
-        if (audiobook != null)
-        {
-            db.Audiobooks.Remove(audiobook);
+                    if (databaseValues == null)
+                    {
+                        // The entity was deleted by another process
+                        db.Entry(entry.Entity).State = EntityState.Detached;
+                    }
+                    else
+                    {
+                        foreach (var property in proposedValues.Properties)
+                        {
+                            var proposedValue = proposedValues[property];
+                            var databaseValue = databaseValues[property];
+
+                            // Decide which value should be written to database
+                            proposedValues[property] = proposedValue;
+                        }
+
+                        // Refresh original values to bypass next concurrency check
+                        entry.OriginalValues.SetValues(databaseValues);
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException(
+                        "Don't know how to handle concurrency conflicts for "
+                        + entry.Metadata.Name);
+                }
+
+            // Retry the save operation
             await db.SaveChangesAsync();
         }
     }

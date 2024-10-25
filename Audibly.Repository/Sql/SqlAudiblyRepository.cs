@@ -15,8 +15,8 @@ public class SqlAudiblyRepository : IAudiblyRepository
     {
         _dbContextOptions = dbContextOptions;
         // todo: prob need to re-comment the following 2 lines
-        using var db = new AudiblyContext(_dbContextOptions);
-        db.Database.EnsureCreated();
+        // using var db = new AudiblyContext(_dbContextOptions);
+        // db.Database.EnsureCreated();
     }
 
     public IAudiobookRepository Audiobooks => new SqlAudiobookRepository(

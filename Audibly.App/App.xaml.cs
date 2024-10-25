@@ -19,6 +19,7 @@ using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using CommunityToolkit.WinUI;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -217,9 +218,14 @@ public partial class App : Application
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
             .UseSqlite("Data Source=" + dbPath)
             .Options;
+        
         using (var context = new AudiblyContext(dbOptions))
         {
-            // context.Database.Migrate();
+            var databaseFacade = new DatabaseFacade(context);
+            
+            if(databaseFacade.GetPendingMigrations().Any()){
+                databaseFacade.Migrate();
+            }
         }
 
         Repository = new SqlAudiblyRepository(dbOptions);

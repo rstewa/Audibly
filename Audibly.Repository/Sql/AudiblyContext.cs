@@ -29,11 +29,20 @@ public class AudiblyContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // modelBuilder.Entity<Audiobook>()
+        //     .HasMany(a => a.SourcePaths)
+        //     .WithOne(s => s.Audiobook)
+        //     .HasForeignKey(s => s.AudiobookId)
+        //     .OnDelete(DeleteBehavior.Cascade);
+        //
+        // modelBuilder.Entity<Audiobook>()
+        //     .HasMany(a => a.Chapters)
+        //     .WithOne(c => c.Audiobook)
+        //     .HasForeignKey(c => c.AudiobookId)
+        //     .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Audiobook>()
-            .HasIndex(a => new
-            {
-                a.Author, a.Title
-            })
+            .HasIndex(a => new { a.Author, a.Title })
             .IsUnique();
     }
 

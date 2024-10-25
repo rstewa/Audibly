@@ -9,10 +9,9 @@ public class SourceFile : DbObject, IEquatable<SourceFile>
     public int Index { get; set; }
     public string FilePath { get; set; }
     public int CurrentTimeMs { get; set; }
-
     public long Duration { get; set; }
-    // public int? CurrentChapterIndex { get; set; }
-    // public List<ChapterInfo> Chapters { get; set; } = [];
+    public Guid AudiobookId { get; set; }
+    public Audiobook Audiobook { get; set; }
 
     public bool Equals(SourceFile? other)
     {
@@ -30,6 +29,6 @@ public class SourceFile : DbObject, IEquatable<SourceFile>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(FilePath, Index);
+        return HashCode.Combine(Index, FilePath);
     }
 }

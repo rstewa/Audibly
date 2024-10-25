@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Audibly.Repository.Migrations
 {
     [DbContext(typeof(AudiblyContext))]
-    [Migration("20241003062348_AddSourceFilesTable")]
-    partial class AddSourceFilesTable
+    [Migration("20241024004446_SourceFileTable")]
+    partial class SourceFileTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,10 +53,6 @@ namespace Audibly.Repository.Migrations
 
                     b.Property<long>("Duration")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsNowPlaying")
                         .HasColumnType("INTEGER");
@@ -107,8 +103,8 @@ namespace Audibly.Repository.Migrations
                     b.Property<int>("Index")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("SourceFileId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ParentSourceFileIndex")
+                        .HasColumnType("INTEGER");
 
                     b.Property<uint>("StartOffset")
                         .HasColumnType("INTEGER");
@@ -135,8 +131,6 @@ namespace Audibly.Repository.Migrations
 
                     b.HasIndex("AudiobookId");
 
-                    b.HasIndex("SourceFileId");
-
                     b.ToTable("Chapters");
                 });
 
@@ -148,9 +142,6 @@ namespace Audibly.Repository.Migrations
 
                     b.Property<Guid?>("AudiobookId")
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("CurrentChapterIndex")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("CurrentTimeMs")
                         .HasColumnType("INTEGER");
@@ -169,7 +160,7 @@ namespace Audibly.Repository.Migrations
 
                     b.HasIndex("AudiobookId");
 
-                    b.ToTable("SourceFile");
+                    b.ToTable("SourceFiles");
                 });
 
             modelBuilder.Entity("Audibly.Models.ChapterInfo", b =>
@@ -177,10 +168,6 @@ namespace Audibly.Repository.Migrations
                     b.HasOne("Audibly.Models.Audiobook", null)
                         .WithMany("Chapters")
                         .HasForeignKey("AudiobookId");
-
-                    b.HasOne("Audibly.Models.SourceFile", null)
-                        .WithMany("Chapters")
-                        .HasForeignKey("SourceFileId");
                 });
 
             modelBuilder.Entity("Audibly.Models.SourceFile", b =>
@@ -195,11 +182,6 @@ namespace Audibly.Repository.Migrations
                     b.Navigation("Chapters");
 
                     b.Navigation("SourcePaths");
-                });
-
-            modelBuilder.Entity("Audibly.Models.SourceFile", b =>
-                {
-                    b.Navigation("Chapters");
                 });
 #pragma warning restore 612, 618
         }

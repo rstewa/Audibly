@@ -13,7 +13,7 @@ namespace Audibly.App.Services;
 
 public static class DialogService
 {
-    public static async Task ShowSelectFilesDialogAsync(this FrameworkElement element)
+    public static async Task<ContentDialogResult> ShowSelectFilesDialogAsync(this FrameworkElement element)
     {
         var selectFilesDialog = new SelectFilesDialog();
 
@@ -27,7 +27,8 @@ public static class DialogService
             MinWidth = selectFilesDialog.ActualWidth
         };
 
-        await contentDialog.ShowAsync();
+        // Set the dialog result to the result of the dialog
+        return await contentDialog.ShowAsync();
     }
 
     public static async Task ShowMoreInfoDialogAsync(this FrameworkElement element,

@@ -30,13 +30,13 @@ public sealed partial class LibraryCardPage : Page
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
     
-    public const string ImportAudiobookText = "Import an audiobook";
+    public const string ImportAudiobookText = "Import an audiobook (.m4b, mp3)";
 
     public const string ImportAudiobooksFromDirectoryText =
-        "Import audiobooks from a directory (recursively). Single-file audiobooks only (.m4b, mp3)";
+        "Import all audiobooks in a directory (recursively). Single-file audiobooks only (.m4b, mp3)";
 
     public const string ImportAudiobookWithMultipleFilesText =
-        "Import an audiobook with multiple files (e.g. chapters)";
+        "Import an audiobook made up of multiple files (.m4b, mp3)";
 
     public LibraryCardPage()
     {

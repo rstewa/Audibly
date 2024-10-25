@@ -168,11 +168,6 @@ public class MainViewModel : BindableBase
     {
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
-        // NOTE: THIS IS FOR TESTING -> NEED TO REMOVE THIS
-#if DEBUG
-        // await Task.Delay(TimeSpan.FromSeconds(5));
-#endif
-
         var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
 
         await dispatcherQueue.EnqueueAsync(() =>
@@ -487,7 +482,12 @@ public class MainViewModel : BindableBase
         var element = sender as FrameworkElement;
         if (element == null) return;
 
-        await element.ShowSelectFilesDialogAsync();
+        var result = await element.ShowSelectFilesDialogAsync();
+        if (result == ContentDialogResult.None)
+        {
+            await dispatcherQueue.EnqueueAsync(() => IsLoading = false);
+            return;
+        }
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;

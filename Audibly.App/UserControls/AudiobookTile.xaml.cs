@@ -130,6 +130,7 @@ public sealed partial class AudiobookTile : UserControl
                 return;
 
             PlayerViewModel.OpenAudiobook(audiobook);
+            PlayerViewModel.MediaPlayer.Play();
         });
     }
 

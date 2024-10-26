@@ -575,7 +575,12 @@ public class MainViewModel : BindableBase
 
     public void EnqueueNotification(Notification notification)
     {
-        dispatcherQueue.EnqueueAsync(() => { Notifications.Add(notification); });
+        dispatcherQueue.EnqueueAsync(async () =>
+        {
+            Notifications.Add(notification);
+            await Task.Delay(notification.Duration);
+            Notifications.Remove(notification);
+        });
     }
 
     // Call this method when the InfoBar is closed
@@ -593,4 +598,5 @@ public class Notification
 {
     public string Message { get; set; }
     public InfoBarSeverity Severity { get; set; }
+    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(10); // Default duration of 10 seconds
 }

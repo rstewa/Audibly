@@ -109,7 +109,7 @@
                     <TextBlock
                         FontSize="18"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        MaxWidth="275"
+                        MaxWidth="200"
                         Style="{StaticResource BodyTextBlockStyle}"
                         Text="{x:Bind Title, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"

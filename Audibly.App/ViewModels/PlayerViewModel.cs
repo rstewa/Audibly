@@ -304,8 +304,8 @@ public class PlayerViewModel : BindableBase
                 break;
         }
 
-        if (NowPlaying == null) return;
-        Task.Run(NowPlaying.SaveAsync);
+        // if (NowPlaying == null) return;
+        // Task.Run(NowPlaying.SaveAsync); // todo: is this necessary?
     }
 
     private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)

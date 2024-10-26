@@ -147,7 +147,7 @@ public class AudiobookViewModel : BindableBase
                 IsModified = true;
                 OnPropertyChanged();
 
-                Task.Run(SaveAsync);
+                Task.Run(SaveAsync); // todo: should this be done here?
             }
         }
     }
@@ -343,16 +343,16 @@ public class AudiobookViewModel : BindableBase
     /// </remarks>
     public bool IsModified { get; set; }
 
-    private bool _isNewAudiobook;
-
-    /// <summary>
-    ///     Gets or sets a value that indicates whether this is a new audiobook.
-    /// </summary>
-    public bool IsNewAudiobook
-    {
-        get => _isNewAudiobook;
-        set => Set(ref _isNewAudiobook, value);
-    }
+    // private bool _isNewAudiobook;
+    //
+    // /// <summary>
+    // ///     Gets or sets a value that indicates whether this is a new audiobook.
+    // /// </summary>
+    // public bool IsNewAudiobook
+    // {
+    //     get => _isNewAudiobook;
+    //     set => Set(ref _isNewAudiobook, value);
+    // }
 
     /// <summary>
     ///     Saves audiobook data that has been edited.
@@ -360,11 +360,11 @@ public class AudiobookViewModel : BindableBase
     public async Task SaveAsync()
     {
         IsModified = false;
-        if (IsNewAudiobook)
-        {
-            IsNewAudiobook = false;
-            App.ViewModel.Audiobooks.Add(this);
-        }
+        // if (IsNewAudiobook)
+        // {
+        //     IsNewAudiobook = false;
+        //     App.ViewModel.Audiobooks.Add(this);
+        // }
 
         await App.Repository.Audiobooks.UpsertAsync(Model);
     }

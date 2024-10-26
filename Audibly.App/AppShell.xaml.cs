@@ -380,7 +380,7 @@ public sealed partial class AppShell : Page
 
     private List<AudiobookViewModel> GetFilteredAudiobooks(string text)
     {
-        var parameters = text.Split(new[] { ' ' },
+        var parameters = text.Split([' '],
             StringSplitOptions.RemoveEmptyEntries);
 
         var matches = ViewModel.Audiobooks
@@ -399,7 +399,8 @@ public sealed partial class AppShell : Page
         var exactMatches = matches.Where(audiobook =>
             audiobook.Author.Equals(text, StringComparison.OrdinalIgnoreCase) ||
             audiobook.Title.Equals(text, StringComparison.OrdinalIgnoreCase)).ToList();
-        return exactMatches.Any() ? exactMatches : matches;
+        
+        return exactMatches.Count != 0 ? exactMatches : matches;
     }
 
     /// <summary>

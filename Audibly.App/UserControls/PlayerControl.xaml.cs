@@ -8,6 +8,7 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
+using Audibly.App.Views.Legacy;
 using Audibly.Models;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;

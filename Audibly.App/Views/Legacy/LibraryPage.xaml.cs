@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Sharpener.Extensions;
 
-namespace Audibly.App.Views;
+namespace Audibly.App.Views.Legacy;
 
 /// <summary>
 ///     An empty page that can be used on its own or navigated to within a Frame.

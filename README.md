@@ -55,7 +55,7 @@
 
 <!-- link to store page -->
 <a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">
-	<img src="https://get.microsoft.com/images/en-US%20dark.svg" style="width:250px"/>
+	<img src="https://get.microsoft.com/images/en-US%20dark.svg" style="width:400px"/>
 </a>
 
 <br>
@@ -93,7 +93,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This is a desktop audiobook player for Windows 10/11. It currently only supports playing `.M4B` files.
+This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b` and `.mp3` files. It also supports audiobooks that consist of multiple files.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -102,17 +102,17 @@ This is a desktop audiobook player for Windows 10/11. It currently only supports
 ## Screenshots
 
 <p align="middle">
-  <img src="images/v2/super-hero-art.png" />
+  <img src="images/v2/new/super-hero-art.png" />
 </p> 
 
 ### Home/Library
 <p align="middle">
-  <img src="images/v2/home-library-page.png" />
+  <img src="images/v2/new/home-library-page-sidebar-collapsed-75-percent.PNG" />
 </p> 
 
 ### Player
 <p align="middle">
-  <img src="images/v2/now-playing-page.png" />
+  <img src="images/v2/new/now-playing-page-75-percent.PNG" />
 </p> 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -138,7 +138,8 @@ This is a desktop audiobook player for Windows 10/11. It currently only supports
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add `.mp3` file support
+- [x] Add `.mp3` file support
+- [x] Add support for multiple files in an audiobook
 - [ ] Add mini-player from v1 to v2
 
 See the [open issues](https://github.com/rstewa/Audibly/issues) for a full list of proposed features (and known issues).
@@ -161,6 +162,12 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+### Top contributors:
+
+<a href="https://github.com/rstewa/audibly/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=rstewa/audibly" alt="contrib.rocks image" />
+</a>
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -177,6 +184,8 @@ Distributed under the GNU General Public License v3.0. See `LICENSE.txt` for mor
 <!-- CONTACT -->
 ## Contact
 
+rstewa - dev@audibly.info
+
 Project Link: [https://github.com/rstewa/Audibly](https://github.com/rstewa/Audibly)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -189,6 +198,7 @@ Project Link: [https://github.com/rstewa/Audibly](https://github.com/rstewa/Audi
 * [Rise Media Player](https://github.com/Rise-Software/Rise-Media-Player) for inspiration
 * [Libation](https://github.com/rmcrackan/Libation) for the FolderIcon code
 * [OpenAudible](https://openaudible.org/) for giving me a license and for helping me find/fix a bug in my import code
+* [Best-README-Template](https://github.com/othneildrew/Best-README-Template) for the README template
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

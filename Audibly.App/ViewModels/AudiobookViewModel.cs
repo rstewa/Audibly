@@ -58,36 +58,12 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Gets or sets the author of the audiobook.
     /// </summary>
-    public string Author
-    {
-        get => Model.Author;
-        set
-        {
-            if (value != Model.Author)
-            {
-                Model.Author = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public string Author => Model.Author;
 
     /// <summary>
     ///     Gets or sets the composer of the audiobook
     /// </summary>
-    public string Narrator
-    {
-        get => Model.Composer;
-        set
-        {
-            if (value != Model.Composer)
-            {
-                Model.Composer = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public string Narrator => Model.Composer;
 
     /// <summary>
     ///     Gets or sets the date the audiobook was last played.
@@ -109,19 +85,7 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Gets or sets the description of the audiobook.
     /// </summary>
-    public string Description
-    {
-        get => Model.Description;
-        set
-        {
-            if (value != Model.Description)
-            {
-                Model.Description = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public string Description => Model.Description;
 
     /// <summary>
     ///     Gets or sets the duration of the audiobook (seconds).
@@ -155,36 +119,12 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Gets or sets the cover image path of the audiobook.
     /// </summary>
-    public string CoverImagePath
-    {
-        get => Model.CoverImagePath;
-        set
-        {
-            if (value != Model.CoverImagePath)
-            {
-                Model.CoverImagePath = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public string CoverImagePath => Model.CoverImagePath;
 
     /// <summary>
     ///     Gets or sets the thumbnail path of the audiobook.
     /// </summary>
-    public string ThumbnailPath
-    {
-        get => Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
-        set
-        {
-            if (value != Model.ThumbnailPath)
-            {
-                Model.ThumbnailPath = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public string ThumbnailPath => Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
 
     /// <summary>
     ///     Gets or sets whether the audiobook is currently playing or not.
@@ -240,21 +180,9 @@ public class AudiobookViewModel : BindableBase
     }
 
     /// <summary>
-    ///     Gets or sets the title of the audiobook.
+    ///     Gets the title of the audiobook.
     /// </summary>
-    public string Title
-    {
-        get => Model.Title ?? string.Empty;
-        set
-        {
-            if (value != Model.Title)
-            {
-                Model.Title = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public string Title => Model.Title;
 
     private string _volumeGlyph;
 

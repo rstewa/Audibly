@@ -2,6 +2,7 @@
 // Created: 04/15/2024
 // Updated: 10/17/2024
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -23,14 +24,26 @@ public sealed partial class AudiobookTile : UserControl
     /// <summary>
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
-    public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+    private static PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
-    public MainViewModel ViewModel => App.ViewModel;
+    private static MainViewModel ViewModel => App.ViewModel;
 
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+    #region dependency properties
+
+    public Guid Id
+    {
+        get => (Guid)GetValue(IdProperty);
+        set => SetValue(IdProperty, value);
+    }
+
+    public static readonly DependencyProperty IdProperty =
+        DependencyProperty.Register(nameof(Id), typeof(Guid), typeof(AudiobookTile),
+            new PropertyMetadata(Guid.Empty));
 
     public string Title
     {
@@ -106,6 +119,8 @@ public sealed partial class AudiobookTile : UserControl
         DependencyProperty.Register(nameof(FilePath), typeof(string), typeof(AudiobookTile),
             new PropertyMetadata(null));
 
+    #endregion
+
     public AudiobookTile()
     {
         InitializeComponent();
@@ -123,20 +138,15 @@ public sealed partial class AudiobookTile : UserControl
 
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            var audiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-            if (audiobook == null)
-                return;
+            await PlayerViewModel.OpenAudiobook(audiobook);
 
-            PlayerViewModel.OpenAudiobook(audiobook);
-            PlayerViewModel.MediaPlayer.Play();
+            // todo: this really breaks shit
+            // PlayerViewModel.MediaPlayer.Play();
         });
-    }
-
-    private void InfoButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        // todo
     }
 
     private void ShowInFileExplorer_OnClick(object sender, RoutedEventArgs e)
@@ -149,14 +159,11 @@ public sealed partial class AudiobookTile : UserControl
 
     private async void DeleteAudiobook_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.SelectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-        await ViewModel.DeleteAudiobookAsync();
-    }
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
+        ViewModel.SelectedAudiobook = audiobook;
 
-    // TODO
-    private void OnElementClicked(object sender, RoutedEventArgs e)
-    {
-        ;
+        await ViewModel.DeleteAudiobookAsync();
     }
 
     private void ButtonTile_OnRightTapped(object sender, RightTappedRoutedEventArgs? e)
@@ -171,9 +178,9 @@ public sealed partial class AudiobookTile : UserControl
 
     private void OpenInAppFolder_OnClick(object sender, RoutedEventArgs e)
     {
-        var selectedAudiobook = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-        if (selectedAudiobook == null) return;
-        var dir = Path.GetDirectoryName(selectedAudiobook.CoverImagePath);
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
+        var dir = Path.GetDirectoryName(audiobook.CoverImagePath);
         if (dir == null) return;
         Process p = new();
         p.StartInfo.FileName = "explorer.exe";
@@ -183,11 +190,12 @@ public sealed partial class AudiobookTile : UserControl
 
     private async void MoreInfo_OnClick(object sender, RoutedEventArgs e)
     {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
+
         var element = (FrameworkElement)sender;
-        var audiobookViewModel = App.ViewModel.Audiobooks.FirstOrDefault(a => a.Title == Title);
-        if (audiobookViewModel == null) return;
 
         CommandBarFlyout.Hide();
-        await element.ShowMoreInfoDialogAsync(audiobookViewModel);
+        await element.ShowMoreInfoDialogAsync(audiobook);
     }
 }

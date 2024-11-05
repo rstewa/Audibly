@@ -140,7 +140,7 @@ public partial class App : Application
         if (nowPlaying != null)
         {
             ViewModel.SelectedAudiobook = nowPlaying; // todo: this is probably not necessary
-            PlayerViewModel.OpenAudiobook(nowPlaying);
+            await PlayerViewModel.OpenAudiobook(nowPlaying);
         }
 
         RootFrame = Window.Content as Frame;

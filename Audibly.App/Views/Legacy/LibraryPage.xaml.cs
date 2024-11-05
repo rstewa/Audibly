@@ -171,15 +171,21 @@ public sealed partial class LibraryPage : Page
 
     private async void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)
     {
-        await _dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            if (PlayerViewModel.NowPlaying != null)
-                PlayerViewModel.NowPlaying.IsNowPlaying = false;
+            if (ViewModel.SelectedAudiobook != null) 
+                await PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);
 
-            PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
-            PlayerViewModel.NowPlaying.IsNowPlaying = true;
-            PlayerViewModel.MediaPlayer.Source =
-                MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.CurrentSourceFile.FilePath.AsUri());
+            // if (PlayerViewModel.NowPlaying != null)
+            //     PlayerViewModel.NowPlaying.IsNowPlaying = false;
+            //
+            // PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
+            //
+            // if (PlayerViewModel.NowPlaying == null) return;
+            //
+            // PlayerViewModel.NowPlaying.IsNowPlaying = true;
+            // PlayerViewModel.MediaPlayer.Source =
+            //     MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.CurrentSourceFile.FilePath.AsUri());
         });
     }
 }

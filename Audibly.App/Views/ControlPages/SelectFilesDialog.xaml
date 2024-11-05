@@ -14,16 +14,21 @@
     <Grid HorizontalAlignment="Stretch">
         <ListView
             AllowDrop="True"
+            BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+            BorderThickness="1"
             CanDragItems="True"
             CanReorderItems="True"
             DragItemsCompleted="SelectedFilesListView_OnDragItemsCompleted"
+            DragOver="SelectedFiles_DragOver"
             ItemsSource="{x:Bind ViewModel.SelectedFiles}"
+            Margin="12"
             SelectionMode="Single"
             x:Name="SelectedFilesListView">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:SelectedFile">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
@@ -56,6 +61,7 @@
                             x:Phase="2" />
                         <!--  a delete button to delete the file from the list  -->
                         <Button
+                            BorderThickness="0"
                             Click="DeleteFileButton_OnClick"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="16"
@@ -64,6 +70,7 @@
                             Grid.RowSpan="2"
                             HorizontalAlignment="Right"
                             Margin="24,0,0,0"
+                            ToolTipService.ToolTip="Delete"
                             VerticalAlignment="Center"
                             x:Name="DeleteFileButton">
                             <Button.Resources>
@@ -74,6 +81,13 @@
                             </Button.Resources>
                             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;" />
                         </Button>
+                        <!--<Border
+                            x:Name="Separator"
+                            Grid.Row="2"
+                            Grid.ColumnSpan="2"
+                            Height="2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource AppBarSeparatorForeground}" />-->
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

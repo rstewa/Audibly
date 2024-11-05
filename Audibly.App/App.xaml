@@ -4,8 +4,8 @@
 <Application
     x:Class="Audibly.App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,55 +18,55 @@
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Light">
-                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
-                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
+                                    <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                                    <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />
 
-                                    <SolidColorBrush Color="#1a1a1a" x:Key="MyTextFillColorPrimaryBrush" />
-                                    <SolidColorBrush Color="#5d5d5d" x:Key="MyTextFillColorSecondaryBrush" />
-                                    <SolidColorBrush Color="#868686" x:Key="MyTextFillColorTertiaryBrush" />
-                                    <SolidColorBrush Color="#9b9b9b" x:Key="MyTextFillColorDisabledBrush" />
+                                    <SolidColorBrush x:Key="MyTextFillColorPrimaryBrush" Color="#1a1a1a" />
+                                    <SolidColorBrush x:Key="MyTextFillColorSecondaryBrush" Color="#5d5d5d" />
+                                    <SolidColorBrush x:Key="MyTextFillColorTertiaryBrush" Color="#868686" />
+                                    <SolidColorBrush x:Key="MyTextFillColorDisabledBrush" Color="#9b9b9b" />
 
-                                    <StaticResource ResourceKey="MyTextFillColorPrimaryBrush" x:Key="ButtonForeground" />
-                                    <StaticResource ResourceKey="MyTextFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
-                                    <StaticResource ResourceKey="MyTextFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
-                                    <StaticResource ResourceKey="MyTextFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
-                                    <StaticResource ResourceKey="MyTextFillColorPrimaryBrush" x:Key="RepeatButtonForeground" />
-                                    <StaticResource ResourceKey="MyTextFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" />
-                                    <StaticResource ResourceKey="MyTextFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" />
-                                    <StaticResource ResourceKey="MyTextFillColorDisabledBrush" x:Key="RepeatButtonForegroundDisabled" />
+                                    <StaticResource x:Key="ButtonForeground" ResourceKey="MyTextFillColorPrimaryBrush" />
+                                    <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="MyTextFillColorTertiaryBrush" />
+                                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="MyTextFillColorSecondaryBrush" />
+                                    <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="MyTextFillColorDisabledBrush" />
+                                    <StaticResource x:Key="RepeatButtonForeground" ResourceKey="MyTextFillColorPrimaryBrush" />
+                                    <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="MyTextFillColorTertiaryBrush" />
+                                    <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="MyTextFillColorSecondaryBrush" />
+                                    <StaticResource x:Key="RepeatButtonForegroundDisabled" ResourceKey="MyTextFillColorDisabledBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
-                                    <SolidColorBrush Color="Transparent" x:Key="HomePageBackgroundBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
                                     <!-- <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" /> -->
                                     <!-- <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="LayerOnAcrylicFillColorDefaultBrush" /> -->
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
-                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
+                                    <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                                    <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />
 
-                                    <SolidColorBrush Color="#ffffff" x:Key="MyTextFillColorPrimaryBrush" />
-                                    <SolidColorBrush Color="#cccccc" x:Key="MyTextFillColorSecondaryBrush" />
-                                    <SolidColorBrush Color="#969696" x:Key="MyTextFillColorTertiaryBrush" />
-                                    <SolidColorBrush Color="#717171" x:Key="MyTextFillColorDisabledBrush" />
+                                    <SolidColorBrush x:Key="MyTextFillColorPrimaryBrush" Color="#ffffff" />
+                                    <SolidColorBrush x:Key="MyTextFillColorSecondaryBrush" Color="#cccccc" />
+                                    <SolidColorBrush x:Key="MyTextFillColorTertiaryBrush" Color="#969696" />
+                                    <SolidColorBrush x:Key="MyTextFillColorDisabledBrush" Color="#717171" />
 
-                                    <StaticResource ResourceKey="MyTextFillColorPrimaryBrush" x:Key="ButtonForeground" />
-                                    <StaticResource ResourceKey="MyTextFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
-                                    <StaticResource ResourceKey="MyTextFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
-                                    <StaticResource ResourceKey="MyTextFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
-                                    <StaticResource ResourceKey="MyTextFillColorPrimaryBrush" x:Key="RepeatButtonForeground" />
-                                    <StaticResource ResourceKey="MyTextFillColorTertiaryBrush" x:Key="RepeatButtonForegroundPressed" />
-                                    <StaticResource ResourceKey="MyTextFillColorSecondaryBrush" x:Key="RepeatButtonForegroundPointerOver" />
-                                    <StaticResource ResourceKey="MyTextFillColorDisabledBrush" x:Key="RepeatButtonForegroundDisabled" />
+                                    <StaticResource x:Key="ButtonForeground" ResourceKey="MyTextFillColorPrimaryBrush" />
+                                    <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="MyTextFillColorTertiaryBrush" />
+                                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="MyTextFillColorSecondaryBrush" />
+                                    <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="MyTextFillColorDisabledBrush" />
+                                    <StaticResource x:Key="RepeatButtonForeground" ResourceKey="MyTextFillColorPrimaryBrush" />
+                                    <StaticResource x:Key="RepeatButtonForegroundPressed" ResourceKey="MyTextFillColorTertiaryBrush" />
+                                    <StaticResource x:Key="RepeatButtonForegroundPointerOver" ResourceKey="MyTextFillColorSecondaryBrush" />
+                                    <StaticResource x:Key="RepeatButtonForegroundDisabled" ResourceKey="MyTextFillColorDisabledBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
-                                    <StaticResource ResourceKey="SolidBackgroundFillColorBaseBrush" x:Key="AudiblyBackgroundBrush" />
-                                    <StaticResource ResourceKey="CardStrokeColorDefaultBrush" x:Key="AudiblyBorderBrush" />
-                                    <SolidColorBrush Color="#121212" x:Key="OverlayBackgroundBrush" />
+                                    <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+                                    <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+                                    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />
 
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="HomePageBackgroundBrush" />
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBackgroundBrush" />
-                                    <SolidColorBrush Color="{ThemeResource SystemColorWindowColor}" x:Key="GalleryBorderBrush" />
+                                    <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush x:Key="GalleryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+                                    <SolidColorBrush x:Key="GalleryBorderBrush" Color="{ThemeResource SystemColorWindowColor}" />
                                 </ResourceDictionary>
                             </ResourceDictionary.ThemeDictionaries>
                         </ResourceDictionary>
@@ -80,9 +80,9 @@
                             <x:Double x:Key="LargeWindowSnapPoint">1008</x:Double>
 
                             <Style
+                                x:Key="PageTitleTextBlockStyle"
                                 BasedOn="{StaticResource TitleTextBlockStyle}"
-                                TargetType="TextBlock"
-                                x:Key="PageTitleTextBlockStyle">
+                                TargetType="TextBlock">
                                 <Setter Property="FontSize" Value="28" />
                                 <Setter Property="TextWrapping" Value="NoWrap" />
                                 <Setter Property="HorizontalAlignment" Value="Left" />

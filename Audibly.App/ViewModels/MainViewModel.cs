@@ -187,9 +187,10 @@ public class MainViewModel : BindableBase
     {
         Task.Run(async () =>
         {
-            foreach (var modifiedAudiobook in Audiobooks
-                         .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
-                await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
+            // todo: may need to bring this back idk
+            // foreach (var modifiedAudiobook in Audiobooks
+            //              .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
+            //     await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
 
             await GetAudiobookListAsync();
         });
@@ -363,7 +364,7 @@ public class MainViewModel : BindableBase
         // select the imported audiobook
         var audiobook = Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == file.Path);
         if (audiobook != null)
-            App.PlayerViewModel.OpenAudiobook(audiobook);
+            await App.PlayerViewModel.OpenAudiobook(audiobook);
     }
 
     private CancellationTokenSource _cancellationTokenSource;
@@ -470,11 +471,7 @@ public class MainViewModel : BindableBase
 
         // add the selected files to the observable collection
         foreach (var file in files)
-            SelectedFiles.Add(new SelectedFile
-            {
-                FileName = file.Name,
-                FilePath = file.Path
-            });
+            SelectedFiles.Add(new SelectedFile(filePath: file.Path, fileName: file.Name));
 
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 

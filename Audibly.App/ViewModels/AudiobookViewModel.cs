@@ -30,6 +30,14 @@ public class AudiobookViewModel : BindableBase
         foreach (var chapter in model.Chapters) Chapters.Add(chapter);
     }
 
+    /// <summary>
+    ///     Gets the chapters of the audiobook.
+    /// </summary>
+    public ObservableCollection<ChapterInfo> Chapters { get; set; } = [];
+
+
+    #region model database properties
+    
     private Audiobook _model;
 
     /// <summary>
@@ -51,21 +59,6 @@ public class AudiobookViewModel : BindableBase
     }
 
     /// <summary>
-    ///     Gets the unique identifier for the audiobook.
-    /// </summary>
-    public Guid Id => Model.Id;
-
-    /// <summary>
-    ///     Gets or sets the author of the audiobook.
-    /// </summary>
-    public string Author => Model.Author;
-
-    /// <summary>
-    ///     Gets or sets the composer of the audiobook
-    /// </summary>
-    public string Narrator => Model.Composer;
-
-    /// <summary>
     ///     Gets or sets the date the audiobook was last played.
     /// </summary>
     public DateTime? DateLastPlayed
@@ -76,26 +69,10 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.DateLastPlayed)
             {
                 Model.DateLastPlayed = value;
-                IsModified = true;
                 OnPropertyChanged();
             }
         }
     }
-
-    /// <summary>
-    ///     Gets or sets the description of the audiobook.
-    /// </summary>
-    public string Description => Model.Description;
-
-    /// <summary>
-    ///     Gets or sets the duration of the audiobook (seconds).
-    /// </summary>
-    public long Duration => Model.Duration;
-
-    /// <summary>
-    ///     Gets the duration of the audiobook as a string in the format "hh:mm:ss".
-    /// </summary>
-    public string DurationStr => CurrentSourceFile.Duration.ToStr_s();
 
     /// <summary>
     ///     Gets or sets the current time in milliseconds of the audiobook.
@@ -108,23 +85,12 @@ public class AudiobookViewModel : BindableBase
             if (value != CurrentSourceFile.CurrentTimeMs)
             {
                 CurrentSourceFile.CurrentTimeMs = value;
-                IsModified = true;
                 OnPropertyChanged();
 
-                Task.Run(SaveAsync); // todo: should this be done here?
+                // Task.Run(SaveAsync); // todo: should this be done here?
             }
         }
     }
-
-    /// <summary>
-    ///     Gets or sets the cover image path of the audiobook.
-    /// </summary>
-    public string CoverImagePath => Model.CoverImagePath;
-
-    /// <summary>
-    ///     Gets or sets the thumbnail path of the audiobook.
-    /// </summary>
-    public string ThumbnailPath => Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
 
     /// <summary>
     ///     Gets or sets whether the audiobook is currently playing or not.
@@ -134,14 +100,12 @@ public class AudiobookViewModel : BindableBase
         get => Model.IsNowPlaying;
         set
         {
-            if (value != Model.IsNowPlaying)
-            {
-                Model.IsNowPlaying = value;
-                IsModified = true;
-                OnPropertyChanged();
+            if (value == Model.IsNowPlaying) return;
+            
+            Model.IsNowPlaying = value;
+            OnPropertyChanged();
 
-                Task.Run(SaveAsync);
-            }
+            // Task.Run(SaveAsync);
         }
     }
 
@@ -153,12 +117,10 @@ public class AudiobookViewModel : BindableBase
         get => Model.PlaybackSpeed;
         set
         {
-            if (value != Model.PlaybackSpeed)
-            {
-                Model.PlaybackSpeed = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
+            if (value.Equals(Model.PlaybackSpeed)) return;
+            
+            Model.PlaybackSpeed = value;
+            OnPropertyChanged();
         }
     }
 
@@ -170,26 +132,11 @@ public class AudiobookViewModel : BindableBase
         get => Model.Progress;
         set
         {
-            if (value != Model.Progress)
-            {
-                Model.Progress = value;
-                IsModified = true;
-                OnPropertyChanged();
-            }
+            if (value.Equals(Model.Progress)) return;
+            
+            Model.Progress = value;
+            OnPropertyChanged();
         }
-    }
-
-    /// <summary>
-    ///     Gets the title of the audiobook.
-    /// </summary>
-    public string Title => Model.Title;
-
-    private string _volumeGlyph;
-
-    public string VolumeGlyph
-    {
-        get => _volumeGlyph;
-        set => Set(ref _volumeGlyph, value);
     }
 
     /// <summary>
@@ -200,38 +147,18 @@ public class AudiobookViewModel : BindableBase
         get => Model.Volume;
         set
         {
-            if (value != Model.Volume)
+            if (value.Equals(Model.Volume)) return;
+            
+            Model.Volume = value;
+            VolumeGlyph = value switch
             {
-                Model.Volume = value;
-                VolumeGlyph = value switch
-                {
-                    0 => "\uE992",
-                    < 0.5 => "\uE993",
-                    _ => "\uE994"
-                };
-                IsModified = true;
-                OnPropertyChanged();
-            }
+                0 => "\uE992",
+                < 0.5 => "\uE993",
+                _ => "\uE994"
+            };
+            OnPropertyChanged();
         }
     }
-
-    /// <summary>
-    ///     Gets or sets the release date of the audiobook.
-    /// </summary>
-    public string ReleaseDate => Model.ReleaseDate?.ToShortDateString() ?? string.Empty;
-
-    /// <summary>
-    ///     Gets or sets the current chapter of the audiobook.
-    /// </summary>
-    public ChapterInfo CurrentChapter => Chapters[CurrentChapterIndex ?? 0];
-    // {
-    //     get => Model.SourcePaths[Model.CurrentSourceFileIndex].Chapters.FirstOrDefault(c => c.Index == Model.SourcePaths[Model.CurrentSourceFileIndex].CurrentChapterIndex);
-    //     set
-    //     {
-    //         Model.SourcePaths[Model.CurrentSourceFileIndex].CurrentChapterIndex = Model.SourcePaths[Model.CurrentSourceFileIndex].Chapters.IndexOf(value);
-    //         OnPropertyChanged();
-    //     }
-    // }
 
     // todo: i don't think this is needed
     /// <summary>
@@ -247,8 +174,9 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    public ObservableCollection<ChapterInfo> Chapters { get; set; } = [];
-
+    /// <summary>
+    ///     Gets or sets the current source file index of the audiobook.
+    /// </summary>
     public int CurrentSourceFileIndex
     {
         get => Model.CurrentSourceFileIndex;
@@ -258,10 +186,88 @@ public class AudiobookViewModel : BindableBase
             OnPropertyChanged();
         }
     }
+    
+    #region read-only
 
+    /// <summary>
+    ///     Gets the unique identifier for the audiobook.
+    /// </summary>
+    public Guid Id => Model.Id;
+
+    /// <summary>
+    ///     Gets or sets the author of the audiobook.
+    /// </summary>
+    public string Author => Model.Author;
+
+    /// <summary>
+    ///     Gets or sets the composer of the audiobook
+    /// </summary>
+    public string Narrator => Model.Composer;
+
+    /// <summary>
+    ///     Gets or sets the description of the audiobook.
+    /// </summary>
+    public string Description => Model.Description;
+
+    /// <summary>
+    ///     Gets or sets the duration of the audiobook (seconds).
+    /// </summary>
+    public long Duration => Model.Duration;
+
+    /// <summary>
+    ///     Gets the duration of the audiobook as a string in the format "hh:mm:ss".
+    /// </summary>
+    public string DurationStr => CurrentSourceFile.Duration.ToStr_s();
+    
+    /// <summary>
+    ///     Gets or sets the cover image path of the audiobook.
+    /// </summary>
+    public string CoverImagePath => Model.CoverImagePath;
+
+    /// <summary>
+    ///     Gets or sets the thumbnail path of the audiobook.
+    /// </summary>
+    public string ThumbnailPath => Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
+    
+    /// <summary>
+    ///     Gets the title of the audiobook.
+    /// </summary>
+    public string Title => Model.Title;
+    
+    /// <summary>
+    ///     Gets or sets the release date of the audiobook.
+    /// </summary>
+    public string ReleaseDate => Model.ReleaseDate?.ToShortDateString() ?? string.Empty;
+
+    /// <summary>
+    ///     Gets or sets the current chapter of the audiobook.
+    /// </summary>
+    public ChapterInfo CurrentChapter => Chapters[CurrentChapterIndex ?? 0];
+    
+    /// <summary>
+    ///     Gets the current source file of the audiobook.
+    /// </summary>
     public SourceFile CurrentSourceFile => Model.SourcePaths[Model.CurrentSourceFileIndex];
 
+    /// <summary>
+    ///     Gets the source paths of the audiobook.
+    /// </summary>
     public List<SourceFile> SourcePaths => Model.SourcePaths;
+    
+    #endregion
+    
+    #endregion
+    
+    private string _volumeGlyph;
+    
+    /// <summary>
+    ///     Gets or sets the volume glyph of the audiobook.
+    /// </summary>
+    public string VolumeGlyph
+    {
+        get => _volumeGlyph;
+        set => Set(ref _volumeGlyph, value);
+    }
 
     /// <summary>
     ///     Gets or sets a value that indicates whether the underlying model has been modified.
@@ -269,7 +275,7 @@ public class AudiobookViewModel : BindableBase
     /// <remarks>
     ///     Used when sync'ing with the server to reduce load and only upload the models that have changed.
     /// </remarks>
-    public bool IsModified { get; set; }
+    // public bool IsModified { get; set; }
 
     // private bool _isNewAudiobook;
     //
@@ -287,7 +293,7 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public async Task SaveAsync()
     {
-        IsModified = false;
+        // IsModified = false;
         // if (IsNewAudiobook)
         // {
         //     IsNewAudiobook = false;

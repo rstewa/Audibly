@@ -17,8 +17,9 @@
     <Page.Resources>
         <DataTemplate x:DataType="viewModels:AudiobookViewModel" x:Key="AudiobookTemplate">
             <userControls:AudiobookTile
-                Author="{x:Bind Author}"
+                Author="{x:Bind Author, Mode=OneWay}"
                 FilePath="{x:Bind CurrentSourceFile.FilePath, Mode=OneWay}"
+                Id="{x:Bind Id, Mode=OneWay}"
                 Progress="{x:Bind Progress, Mode=OneWay}"
                 SourcePaths="{x:Bind SourcePaths, Mode=OneWay}"
                 SourcePathsCount="{x:Bind SourcePaths.Count, Mode=OneWay}"

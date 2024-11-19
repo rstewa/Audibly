@@ -46,7 +46,8 @@ public class MainViewModel : BindableBase
         AppDataService = appDataService;
         MessageService = messageService;
         LoggingService = loggingService;
-        Task.Run(GetAudiobookListAsync);
+        // Task.Run(GetAudiobookListAsync(firstRun: true));
+        Task.Run(() => GetAudiobookListAsync(firstRun: true));
     }
 
     /// <summary>
@@ -160,11 +161,11 @@ public class MainViewModel : BindableBase
         get => _notificationSeverity;
         set => Set(ref _notificationSeverity, value);
     }
-
+    
     /// <summary>
     ///     Gets the complete list of audiobooks from the database.
     /// </summary>
-    public async Task GetAudiobookListAsync()
+    public async Task GetAudiobookListAsync(bool firstRun = false)
     {
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
@@ -176,6 +177,14 @@ public class MainViewModel : BindableBase
 
             Audiobooks.Clear();
             foreach (var c in audiobooks) Audiobooks.Add(new AudiobookViewModel(c));
+            
+            if (firstRun)
+            {
+                var nowPlaying = Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+                if (nowPlaying != null)
+                    _ = App.PlayerViewModel.OpenAudiobook(nowPlaying);
+            }
+            
             IsLoading = false;
         });
     }
@@ -187,9 +196,10 @@ public class MainViewModel : BindableBase
     {
         Task.Run(async () =>
         {
-            foreach (var modifiedAudiobook in Audiobooks
-                         .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
-                await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
+            // todo: do i need this?
+            // foreach (var modifiedAudiobook in Audiobooks
+            //              .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
+            //     await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
 
             await GetAudiobookListAsync();
         });

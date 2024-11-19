@@ -28,6 +28,8 @@ public class AudiobookViewModel : BindableBase
 
         Chapters.Clear();
         foreach (var chapter in model.Chapters) Chapters.Add(chapter);
+        
+        // CurrentTimeMs = model.SourcePaths[model.CurrentSourceFileIndex].CurrentTimeMs;
     }
 
     /// <summary>
@@ -76,19 +78,24 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
+    // private int _currentTimeMs;
+    
     /// <summary>
     ///     Gets or sets the current time in milliseconds of the audiobook.
     /// </summary>
     public int CurrentTimeMs
     {
+        // get => _currentTimeMs;
+        // set => Set(ref _currentTimeMs, value);
         get => CurrentSourceFile.CurrentTimeMs;
         set
         {
             if (value != CurrentSourceFile.CurrentTimeMs)
             {
                 CurrentSourceFile.CurrentTimeMs = value;
+                IsModified = true;
                 OnPropertyChanged();
-
+        
                 // Task.Run(SaveAsync); // todo: should this be done here?
             }
         }

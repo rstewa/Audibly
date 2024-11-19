@@ -16,7 +16,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
             .OrderBy(audiobook => audiobook.Title)
-            // .AsNoTracking()
+            // .AsNoTracking()  // todo: testing this out
             .ToListAsync();
     }
 

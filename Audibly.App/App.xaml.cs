@@ -139,16 +139,6 @@ public partial class App : Application
 
         UseSqlite();
 
-        // set now playing audiobook
-        await ViewModel.GetAudiobookListAsync();
-        var nowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
-
-        if (nowPlaying != null)
-        {
-            ViewModel.SelectedAudiobook = nowPlaying; // todo: this is probably not necessary
-            await PlayerViewModel.OpenAudiobook(nowPlaying);
-        }
-
         RootFrame = Window.Content as Frame;
 
         if (RootFrame == null)

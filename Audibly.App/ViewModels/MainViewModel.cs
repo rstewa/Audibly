@@ -187,10 +187,9 @@ public class MainViewModel : BindableBase
     {
         Task.Run(async () =>
         {
-            // todo: may need to bring this back idk
-            // foreach (var modifiedAudiobook in Audiobooks
-            //              .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
-            //     await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
+            foreach (var modifiedAudiobook in Audiobooks
+                         .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
+                await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
 
             await GetAudiobookListAsync();
         });

@@ -309,10 +309,10 @@ public class PlayerViewModel : BindableBase
             ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
 
             ChapterPositionMs =
-                CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
-                    ? (int)(CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime)
+                NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
+                    ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
                     : 0;
-
+            
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
         });
     }
@@ -380,12 +380,12 @@ public class PlayerViewModel : BindableBase
                 });
         }
 
-        _ = _dispatcherQueue.EnqueueAsync(() =>
+        _ = _dispatcherQueue.EnqueueAsync(async () =>
         {
             ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
                 ? CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime
                 : 0);
-            ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime);
+            // ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime);
             NowPlaying.CurrentTimeMs = (int)CurrentPosition.TotalMilliseconds;
 
             // TODO: this is gross
@@ -397,7 +397,7 @@ public class PlayerViewModel : BindableBase
             tmp += CurrentPosition.TotalSeconds;
             NowPlaying.Progress = Math.Floor(tmp / NowPlaying.Duration * 100);
         });
-
+        
         await NowPlaying.SaveAsync();
     }
 

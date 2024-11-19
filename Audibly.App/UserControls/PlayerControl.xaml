@@ -360,7 +360,7 @@
                         Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
                         PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
                         ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}"
-                        Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=TwoWay}"
+                        Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}"
                         VerticalAlignment="Center"
                         x:Name="NowPlayingBar" />
 

@@ -128,6 +128,12 @@ public partial class App : Application
 
         Window = WindowHelper.CreateWindow();
 
+        var appWindow = WindowHelper.GetAppWindow(Window);
+        appWindow.Closing += async (_, _) =>
+        {
+            if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
+        };
+
         win32WindowHelper = new Win32WindowHelper(Window);
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1600, y = 800 });
 

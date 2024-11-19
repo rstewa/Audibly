@@ -37,7 +37,7 @@ public class AudiobookViewModel : BindableBase
 
 
     #region model database properties
-    
+
     private Audiobook _model;
 
     /// <summary>
@@ -53,6 +53,7 @@ public class AudiobookViewModel : BindableBase
                 _model = value;
 
                 // Raise the PropertyChanged event for all properties.
+                IsModified = true;
                 OnPropertyChanged(string.Empty);
             }
         }
@@ -69,6 +70,7 @@ public class AudiobookViewModel : BindableBase
             if (value != Model.DateLastPlayed)
             {
                 Model.DateLastPlayed = value;
+                IsModified = true;
                 OnPropertyChanged();
             }
         }
@@ -101,8 +103,9 @@ public class AudiobookViewModel : BindableBase
         set
         {
             if (value == Model.IsNowPlaying) return;
-            
+
             Model.IsNowPlaying = value;
+            IsModified = true;
             OnPropertyChanged();
 
             // Task.Run(SaveAsync);
@@ -118,8 +121,9 @@ public class AudiobookViewModel : BindableBase
         set
         {
             if (value.Equals(Model.PlaybackSpeed)) return;
-            
+
             Model.PlaybackSpeed = value;
+            IsModified = true;
             OnPropertyChanged();
         }
     }
@@ -133,8 +137,9 @@ public class AudiobookViewModel : BindableBase
         set
         {
             if (value.Equals(Model.Progress)) return;
-            
+
             Model.Progress = value;
+            IsModified = true;
             OnPropertyChanged();
         }
     }
@@ -148,7 +153,7 @@ public class AudiobookViewModel : BindableBase
         set
         {
             if (value.Equals(Model.Volume)) return;
-            
+
             Model.Volume = value;
             VolumeGlyph = value switch
             {
@@ -156,6 +161,7 @@ public class AudiobookViewModel : BindableBase
                 < 0.5 => "\uE993",
                 _ => "\uE994"
             };
+            IsModified = true;
             OnPropertyChanged();
         }
     }
@@ -170,6 +176,7 @@ public class AudiobookViewModel : BindableBase
         set
         {
             Model.CurrentChapterIndex = value;
+            IsModified = true;
             OnPropertyChanged();
         }
     }
@@ -183,10 +190,11 @@ public class AudiobookViewModel : BindableBase
         set
         {
             Model.CurrentSourceFileIndex = value;
+            IsModified = true;
             OnPropertyChanged();
         }
     }
-    
+
     #region read-only
 
     /// <summary>
@@ -218,7 +226,7 @@ public class AudiobookViewModel : BindableBase
     ///     Gets the duration of the audiobook as a string in the format "hh:mm:ss".
     /// </summary>
     public string DurationStr => CurrentSourceFile.Duration.ToStr_s();
-    
+
     /// <summary>
     ///     Gets or sets the cover image path of the audiobook.
     /// </summary>
@@ -227,13 +235,14 @@ public class AudiobookViewModel : BindableBase
     /// <summary>
     ///     Gets or sets the thumbnail path of the audiobook.
     /// </summary>
-    public string ThumbnailPath => Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
-    
+    public string ThumbnailPath =>
+        Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
+
     /// <summary>
     ///     Gets the title of the audiobook.
     /// </summary>
     public string Title => Model.Title;
-    
+
     /// <summary>
     ///     Gets or sets the release date of the audiobook.
     /// </summary>
@@ -243,7 +252,7 @@ public class AudiobookViewModel : BindableBase
     ///     Gets or sets the current chapter of the audiobook.
     /// </summary>
     public ChapterInfo CurrentChapter => Chapters[CurrentChapterIndex ?? 0];
-    
+
     /// <summary>
     ///     Gets the current source file of the audiobook.
     /// </summary>
@@ -253,13 +262,13 @@ public class AudiobookViewModel : BindableBase
     ///     Gets the source paths of the audiobook.
     /// </summary>
     public List<SourceFile> SourcePaths => Model.SourcePaths;
-    
+
     #endregion
-    
+
     #endregion
-    
+
     private string _volumeGlyph;
-    
+
     /// <summary>
     ///     Gets or sets the volume glyph of the audiobook.
     /// </summary>
@@ -275,7 +284,7 @@ public class AudiobookViewModel : BindableBase
     /// <remarks>
     ///     Used when sync'ing with the server to reduce load and only upload the models that have changed.
     /// </remarks>
-    // public bool IsModified { get; set; }
+    public bool IsModified { get; set; }
 
     // private bool _isNewAudiobook;
     //
@@ -293,13 +302,15 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public async Task SaveAsync()
     {
-        // IsModified = false;
         // if (IsNewAudiobook)
         // {
         //     IsNewAudiobook = false;
         //     App.ViewModel.Audiobooks.Add(this);
         // }
 
-        await App.Repository.Audiobooks.UpsertAsync(Model);
+        if (IsModified)
+            await App.Repository.Audiobooks.UpsertAsync(Model);
+
+        IsModified = false;
     }
 }

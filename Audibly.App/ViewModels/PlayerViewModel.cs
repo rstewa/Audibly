@@ -396,6 +396,7 @@ public class PlayerViewModel : BindableBase
                     tmp += NowPlaying.SourcePaths[i].Duration;
             tmp += CurrentPosition.TotalSeconds;
             NowPlaying.Progress = Math.Floor(tmp / NowPlaying.Duration * 100);
+            NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
         });
         
         await NowPlaying.SaveAsync();

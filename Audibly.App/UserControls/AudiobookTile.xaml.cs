@@ -81,12 +81,36 @@ public sealed partial class AudiobookTile : UserControl
     public static readonly DependencyProperty ProgressProperty =
         DependencyProperty.Register(nameof(Progress), typeof(double), typeof(AudiobookTile),
             new PropertyMetadata(0.0, ProgressPropertyChangedCallback));
-
+    
     private static void ProgressPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is not AudiobookTile audiobookTile) return;
+        
+        var isCompleted = (bool)audiobookTile.GetValue(IsCompletedProperty);
+        if (isCompleted) return;
+        
         audiobookTile.ProgressGrid.Visibility = (double)e.NewValue < 1 ? Visibility.Collapsed : Visibility.Visible;
         // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
+    }
+
+    public bool IsCompleted
+    {
+        get => (bool)GetValue(IsCompletedProperty);
+        set => SetValue(IsCompletedProperty, value);
+    }
+    
+    public static readonly DependencyProperty IsCompletedProperty =
+        DependencyProperty.Register(nameof(IsCompleted), typeof(bool), typeof(AudiobookTile),
+            new PropertyMetadata(false, IsCompletedPropertyChangedCallback));
+
+    private static void IsCompletedPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not AudiobookTile audiobookTile) return;
+        var isCompleted = (bool)e.NewValue;
+        audiobookTile.ProgressGrid.Visibility = isCompleted ? Visibility.Collapsed : Visibility.Visible;
+        audiobookTile.CompletedGrid.Visibility = isCompleted ? Visibility.Visible : Visibility.Collapsed;
+        audiobookTile.MarkAsCompletedButton.Visibility = isCompleted ? Visibility.Collapsed : Visibility.Visible;
+        audiobookTile.MarkAsIncompleteButton.Visibility = isCompleted ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public int SourcePathsCount
@@ -197,5 +221,21 @@ public sealed partial class AudiobookTile : UserControl
 
         CommandBarFlyout.Hide();
         await element.ShowMoreInfoDialogAsync(audiobook);
+    }
+
+    private async void MarkAsCompleted_OnClick(object sender, RoutedEventArgs e)
+    {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
+        audiobook.IsCompleted = true;
+        await audiobook.SaveAsync();
+    }
+
+    private async void MarkAsIncomplete_OnClick(object sender, RoutedEventArgs e)
+    {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
+        audiobook.IsCompleted = false;
+        await audiobook.SaveAsync();
     }
 }

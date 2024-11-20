@@ -29,6 +29,7 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public string Title { get; set; }
     public double Volume { get; set; }
     public int? CurrentChapterIndex { get; set; }
+    public bool IsCompleted { get; set; }
 
     public List<ChapterInfo> Chapters { get; set; } = [];
 

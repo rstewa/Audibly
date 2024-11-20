@@ -202,8 +202,22 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    #region read-only
+    /// <summary>
+    ///     Gets or sets a value that indicates whether the audiobook has been completed.
+    /// </summary>
+    public bool IsCompleted
+    {
+        get => Model.IsCompleted;
+        set
+        {
+            Model.IsCompleted = value;
+            IsModified = true;
+            OnPropertyChanged();
+        }
+    }
 
+    #region read-only
+    
     /// <summary>
     ///     Gets the unique identifier for the audiobook.
     /// </summary>

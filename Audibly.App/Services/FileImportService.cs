@@ -138,7 +138,8 @@ public class FileImportService : IImportFiles
                 CurrentSourceFileIndex = 0,
                 SourcePaths = [],
                 PlaybackSpeed = 1.0,
-                Volume = 1.0
+                Volume = 1.0,
+                IsCompleted = false
             };
 
             var sourceFileIndex = 0;
@@ -264,6 +265,7 @@ public class FileImportService : IImportFiles
                 PlaybackSpeed = 1.0,
                 ReleaseDate = track.Date,
                 Volume = 1.0,
+                IsCompleted = false,
                 SourcePaths =
                 [
                     sourceFile

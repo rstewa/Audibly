@@ -138,9 +138,32 @@
                                     <FontIcon Glyph="&#xE838;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem
+                                Click="{x:Bind ViewModel.ImportFromUserSelectedJsonFileAsync}"
+                                Icon="Download"
+                                Text="{x:Bind views:LibraryCardPage.ImportFromJsonFileText}" />
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
+                <AppBarButton Label="Export" ToolTipService.ToolTip="Export audiobooks">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEDE1;" />
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.CreateExportFile}" Text="Export audiobooks in library to JSON file for later import">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xEDE1;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <!--  <AppBarButton  -->
+                <!--  Click="{x:Bind ViewModel.CreateExportFileAsync}"  -->
+                <!--  Label="Export"  -->
+                <!--  ToolTipService.ToolTip="Export audiobooks in library to JSON file for later import">  -->
+                <!--     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEDE1;" /> -->
+                <!-- </AppBarButton> -->
 
                 <!--  debug menu  -->
                 <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />

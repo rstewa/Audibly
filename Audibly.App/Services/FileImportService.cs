@@ -3,10 +3,13 @@
 // Updated: 10/17/2024
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using ATL;
 using Audibly.App.Services.Interfaces;
 using Audibly.App.ViewModels;
@@ -70,7 +73,54 @@ public class FileImportService : IImportFiles
         ImportCompleted?.Invoke();
     }
 
-    public async Task ImportFilesAsync(string[] paths, CancellationToken cancellationToken,
+    public async Task ImportFromJsonAsync(StorageFile file, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback)
+    {
+        // read the json string from the file
+        var json = FileIO.ReadTextAsync(file).AsTask().Result;
+
+        // deserialize the json string to a list of audiobooks
+        var importedAudiobooks = JsonSerializer.Deserialize<List<ImportedAudiobook>>(json);
+
+        if (importedAudiobooks == null)
+        {
+            // log the error
+            App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"));
+            return;
+        }
+
+        var didFail = false;
+        var numberOfFiles = importedAudiobooks.Count;
+
+        foreach (var importedAudiobook in importedAudiobooks)
+        {
+            // Check if cancellation was requested
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var audiobook = await CreateAudiobook(importedAudiobook.FilePath, importedAudiobook.CurrentTimeMs,
+                importedAudiobook.Progress);
+
+            if (audiobook == null) didFail = true;
+
+            if (audiobook != null)
+            {
+                // insert the audiobook into the database
+                var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
+                if (result == null) didFail = true;
+            }
+
+            var title = audiobook?.Title ?? Path.GetFileNameWithoutExtension(importedAudiobook.FilePath);
+
+            // report progress
+            await progressCallback(importedAudiobooks.IndexOf(importedAudiobook), numberOfFiles, title, didFail);
+
+            didFail = false;
+        }
+
+        ImportCompleted?.Invoke();
+    }
+
+    public async Task ImportFromMultipleFilesAsync(string[] paths, CancellationToken cancellationToken,
         Func<int, int, string, bool, Task> progressCallback)
     {
         var didFail = false;
@@ -224,7 +274,7 @@ public class FileImportService : IImportFiles
         }
     }
 
-    private static async Task<Audiobook?> CreateAudiobook(string path)
+    private static async Task<Audiobook?> CreateAudiobook(string path, int currentTimeMs = 0, double progress = 0)
     {
         try
         {
@@ -248,7 +298,7 @@ public class FileImportService : IImportFiles
                 Index = 0,
                 FilePath = path,
                 Duration = track.Duration,
-                CurrentTimeMs = 0
+                CurrentTimeMs = currentTimeMs
                 // CurrentChapterIndex = 0,
                 // Chapters = []
             };
@@ -263,6 +313,7 @@ public class FileImportService : IImportFiles
                 Description =
                     track.Description, // track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
                 PlaybackSpeed = 1.0,
+                Progress = progress,
                 ReleaseDate = track.Date,
                 Volume = 1.0,
                 IsCompleted = false,

@@ -3,6 +3,7 @@
 // Updated: 6/11/2024
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ public class AppDataService : IAppDataService
         string coverImagePath;
         var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
             CreationCollisionOption.OpenIfExists);
-        
+
         if (imageBytes == null)
         {
             var coverImage = await AssetHelper.GetAssetFileAsync("DefaultCoverImage.png");
@@ -39,7 +40,7 @@ public class AppDataService : IAppDataService
             await FileIO.WriteBytesAsync(coverImage, imageBytes);
             coverImagePath = coverImage.Path;
         }
-        
+
         // create 400x400 thumbnail
         var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
         var result = await ShrinkAndSaveAsync(coverImagePath, thumbnailPath, 400, 400);
@@ -61,6 +62,20 @@ public class AppDataService : IAppDataService
         // FolderIcon.DeleteIcon(dir);
         var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path));
         await folder.DeleteAsync();
+    }
+
+    // todo: need a cleaner way to handle this
+    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
+
+    public async Task DeleteCoverImagesAsync(List<string> paths, Func<int, int, string, Task> progressCallback)
+    {
+        for (var i = 0; i < paths.Count; i++)
+        {
+            await DeleteCoverImageAsync(paths[i]);
+            await progressCallback(i, paths.Count, Path.GetFileName(paths[i]));
+        }
+
+        ImportCompleted?.Invoke();
     }
 
     public async Task WriteMetadataAsync(string path, Track track)

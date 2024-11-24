@@ -271,7 +271,7 @@
         <userControls:ProgressBarCard
             IsIndeterminate="False"
             Margin="25,0,50,0"
-            Progress="{x:Bind ViewModel.ImportProgress, Mode=OneWay}"
+            Progress="{x:Bind ViewModel.ProgressDialogProgress, Mode=OneWay}"
             RelativePanel.AlignHorizontalCenterWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"

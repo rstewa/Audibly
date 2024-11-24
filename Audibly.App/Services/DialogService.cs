@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views.ControlPages;
 using Microsoft.UI.Xaml;
@@ -44,6 +45,41 @@ public static class DialogService
             XamlRoot = element.XamlRoot,
             MinWidth = moreInfoDialog.ActualWidth
         };
+
+        await contentDialog.ShowAsync();
+    }
+
+    public static async Task ShowConfirmDialogAsync(this FrameworkElement element, string title, string content,
+        Action onConfirm)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = content,
+            CloseButtonText = "Okay",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = element.XamlRoot
+        };
+
+        dialog.CloseButtonClick += (sender, args) => onConfirm.Invoke();
+
+        await dialog.ShowAsync();
+    }
+
+    // function to show progress dialog
+    public static async Task ShowProgressDialogAsync(this FrameworkElement element, string title)
+    {
+        var progressDialog = new ProgressDialogContent();
+
+        var contentDialog = new ContentDialog
+        {
+            Title = title,
+            Content = progressDialog,
+            XamlRoot = element.XamlRoot,
+            MinWidth = progressDialog.ActualWidth
+        };
+
+        App.ViewModel.ProgressDialogCompleted += () => { contentDialog.Hide(); };
 
         await contentDialog.ShowAsync();
     }

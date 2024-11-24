@@ -10,14 +10,14 @@ namespace Audibly.App.Views.ControlPages;
 /// <summary>
 ///     An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class ImportDialogContent : Page
+public sealed partial class ProgressDialogContent : Page
 {
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
 
-    public ImportDialogContent()
+    public ProgressDialogContent()
     {
         InitializeComponent();
         DataContext = ViewModel;

@@ -61,6 +61,7 @@ public sealed partial class AppShell : Page
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
+        App.ViewModel.ProgressDialogCompleted += HideProgressDialog;
 
         // todo: add a listener for when the app is suspended to save the current audiobook
     }
@@ -120,6 +121,8 @@ public sealed partial class AppShell : Page
 
     private ContentDialog? _importDialog;
 
+    private ContentDialog? _progressDialog;
+
     private async Task<bool> ShowYesNoDialogAsync(string title, string content)
     {
         var result = false;
@@ -147,7 +150,7 @@ public sealed partial class AppShell : Page
 
     private ContentDialog CreateImportDialog(string title)
     {
-        var importDialog = new ImportDialogContent();
+        var importDialog = new ProgressDialogContent();
         _importDialog = new ContentDialog
         {
             Title = title,
@@ -175,6 +178,17 @@ public sealed partial class AppShell : Page
         {
             _importDialog.Hide();
             // _importDialog = null;
+        });
+    }
+
+    private void HideProgressDialog()
+    {
+        if (_progressDialog == null) return;
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            _progressDialog.Hide();
+            // _progressDialog = null;
         });
     }
 
@@ -244,9 +258,22 @@ public sealed partial class AppShell : Page
         return dialog;
     }
 
+    private ContentDialog CreateProgressDialog(string title)
+    {
+        var progressDialog = new ProgressDialogContent();
+        _progressDialog = new ContentDialog
+        {
+            Title = title,
+            Content = progressDialog,
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
+
+        return _progressDialog;
+    }
+
     private readonly Queue<ContentDialog> _dialogQueue = new();
 
-    private async void OnShowDialogRequested(DialogType type, string title, string content)
+    private async void OnShowDialogRequested(DialogType type, string title, string content, Action? onConfirm)
     {
         var dialog = type switch
         {
@@ -255,6 +282,7 @@ public sealed partial class AppShell : Page
             DialogType.Restart => CreateRestartDialog(title, content),
             DialogType.Changelog => CreateChangelogDialog(content),
             DialogType.Import => CreateImportDialog(title),
+            DialogType.Progress => CreateProgressDialog(title),
             _ => null
         };
 
@@ -399,7 +427,7 @@ public sealed partial class AppShell : Page
         var exactMatches = matches.Where(audiobook =>
             audiobook.Author.Equals(text, StringComparison.OrdinalIgnoreCase) ||
             audiobook.Title.Equals(text, StringComparison.OrdinalIgnoreCase)).ToList();
-        
+
         return exactMatches.Count != 0 ? exactMatches : matches;
     }
 

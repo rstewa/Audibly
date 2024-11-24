@@ -4,8 +4,10 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
@@ -20,11 +22,14 @@ using Audibly.Repository.Sql;
 using CommunityToolkit.WinUI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
+using Sharpener.Extensions;
+using WinRT;
 using WinRT.Interop;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -172,10 +177,7 @@ public partial class App : Application
         var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
 
         // set the current position
-        if (audiobook == null)
-        {
-            await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
-        }
+        if (audiobook == null) await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
     }
 
     private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)
@@ -214,17 +216,74 @@ public partial class App : Application
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
             .UseSqlite("Data Source=" + dbPath)
             .Options;
-        
-        using (var context = new AudiblyContext(dbOptions))
-        {
-            var databaseFacade = new DatabaseFacade(context);
-            
-            if(databaseFacade.GetPendingMigrations().Any()){
-                databaseFacade.Migrate();
-            }
-        }
 
-        Repository = new SqlAudiblyRepository(dbOptions);
+        // check for current version key
+        var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
+        if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
+            // if (true) // todo: this is temporary until we have a version to test against
+        {
+            // if the user's version is not the current version, then we need to update the database
+            // to the current version
+            // this is a breaking change, so we need to reset the database
+            // and re-import the demo data
+
+            // need to apply the migrations first
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                var databaseFacade = new DatabaseFacade(context);
+                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+            }
+
+            Repository = new SqlAudiblyRepository(dbOptions);
+
+            var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
+            // convert to audiobook viewmodels
+            var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
+            var audiobooksExport = audiobookViewModels.Select(x => new
+                { x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress });
+            var json = JsonSerializer.Serialize(audiobooksExport);
+
+            var folder = ApplicationData.Current.LocalFolder;
+            var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
+                .GetAwaiter().GetResult();
+            FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
+
+            // delete all the audiobooks before we delete the database
+            // TODO: going to do this in LibraryCardPage.xaml.cs
+            // foreach (var f in audiobooks.Select(audiobook =>
+            //              StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(audiobook.CoverImagePath))
+            //                  .GetAwaiter().GetResult())) 
+            //     f.DeleteAsync().GetAwaiter().GetResult();
+
+            // delete the old database
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                context.Database.EnsureDeleted();
+            }
+
+            // create the new database
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                var databaseFacade = new DatabaseFacade(context);
+                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+            }
+
+            ViewModel.NeedToImportAudiblyExport = true;
+            Repository = new SqlAudiblyRepository(dbOptions); // do i need to set this again?
+
+            // ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
+        }
+        else
+        {
+            // create the db context
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                var databaseFacade = new DatabaseFacade(context);
+                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+            }
+
+            Repository = new SqlAudiblyRepository(dbOptions);
+        }
     }
 
     public static void RestartApp()

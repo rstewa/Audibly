@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace Audibly.App.Services.Interfaces;
 
@@ -20,6 +21,9 @@ public interface IImportFiles
     Task ImportFileAsync(string path, CancellationToken cancellationToken,
         Func<int, int, string, bool, Task> progressCallback);
 
-    Task ImportFilesAsync(string[] paths, CancellationToken cancellationToken,
+    Task ImportFromMultipleFilesAsync(string[] paths, CancellationToken cancellationToken,
+        Func<int, int, string, bool, Task> progressCallback);
+
+    Task ImportFromJsonAsync(StorageFile file, CancellationToken cancellationToken,
         Func<int, int, string, bool, Task> progressCallback);
 }

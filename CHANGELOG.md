@@ -9,16 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added support for .mp3 files
+- Added support for audiobooks that consist of multiple files (.mp3 & .m4b only)
+- Added feature that allows users to mark an audiobook as finished
+  - Will mark an audiobook as finished when the progress is at 100% by default
+- Added data migration feature to migrate user data to the new database
+- Added database migrations so that updating the database going forward will be easier
+- Added export button to allow users to export their library to a .json file
+- Added import button to allow users to import a library from a .json file (has to be exported from Audibly)
 - Added a powershell script that packages the .msix files into a .msixbundle file
 
 ### Changed
 
 - Changed playback speed maximum to 2.0x
+- Made notifications disappear after 10 seconds
+- Improved now playing slider to be more responsive
 
 ### Fixed
 
 - Fixed a bug (#57) where:
   - The icons would turn black on hover when the app was in dark mode but the system was in light mode
+- Fixed a bug (#58) where:
+  - Added a default cover image when the import operation was unable to get a cover image from the audiobook file
+- Fixed a bug where:
+  - The now playing book on startup would not update its progress when playing
+- Fixed a bug where:
+  - The progress icon on the audiobook wouldn't update when the audiobook was playing
 
 ## [2.0.15] - 07-21-24
 

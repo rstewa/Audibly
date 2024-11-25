@@ -219,8 +219,8 @@ public partial class App : Application
 
         // check for current version key
         var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
-        // if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
-        if (true) // todo: this is temporary until we have a version to test against
+        if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
+            // if (true) // todo: this is temporary until we have a version to test against
         {
             // if the user's version is not the current version, then we need to update the database
             // to the current version
@@ -240,7 +240,10 @@ public partial class App : Application
             var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
             var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
             var audiobooksExport = audiobookViewModels.Select(x => new
-                { x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress, x.CurrentChapterIndex, x.IsNowPlaying });
+            {
+                x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
+                x.CurrentChapterIndex, x.IsNowPlaying
+            });
             var json = JsonSerializer.Serialize(audiobooksExport);
 
             var folder = ApplicationData.Current.LocalFolder;

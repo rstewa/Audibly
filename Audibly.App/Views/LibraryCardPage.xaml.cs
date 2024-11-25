@@ -49,7 +49,7 @@ public sealed partial class LibraryCardPage : Page
     public const string ImportAudiobookWithMultipleFilesText =
         "Import an audiobook made up of multiple files (.m4b, mp3)";
 
-    public const string ImportFromJsonFileText = "Import audiobooks from a JSON file";
+    public const string ImportFromJsonFileText = "Import audiobooks from an Audibly export file (.audibly)";
 
     public LibraryCardPage()
     {
@@ -148,7 +148,7 @@ public sealed partial class LibraryCardPage : Page
 
                 ViewModel.NeedToImportAudiblyExport = false;
 
-                await ViewModel.GetAudiobookListAsync(firstRun: true);
+                await ViewModel.GetAudiobookListAsync(true);
             });
     }
 

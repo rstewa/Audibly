@@ -197,16 +197,6 @@ public class MainViewModel : BindableBase
     {
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
-        // if (NeedToImportAudiblyExport)
-        // {
-        //     var file = ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly").AsTask().Result;
-        //     if (file != null)
-        //     {
-        //         await ImportFromJsonFileAsync(file);
-        //         NeedToImportAudiblyExport = false;
-        //     }
-        // }
-
         var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
 
         await dispatcherQueue.EnqueueAsync(() =>
@@ -221,6 +211,17 @@ public class MainViewModel : BindableBase
                 var nowPlaying = Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
                 if (nowPlaying != null)
                     _ = App.PlayerViewModel.OpenAudiobook(nowPlaying);
+
+                // in the background check if there are any other audiobook records where IsNowPlaying is true and set them to false
+                Task.Run(async () =>
+                {
+                    var otherNowPlaying = Audiobooks.Where(x => x.IsNowPlaying && x != nowPlaying).ToList();
+                    foreach (var audiobook in otherNowPlaying)
+                    {
+                        audiobook.IsNowPlaying = false;
+                        await App.Repository.Audiobooks.UpsertAsync(audiobook.Model);
+                    }
+                });
             }
 
             IsLoading = false;
@@ -323,6 +324,8 @@ public class MainViewModel : BindableBase
 
         MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
 
+        ProgressDialogProgress = 0;
+        ProgressDialogPrefix = "Importing";
         MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
             "Please wait while the audiobooks are imported...");
 
@@ -360,7 +363,8 @@ public class MainViewModel : BindableBase
                     await dispatcherQueue.EnqueueAsync(() =>
                     {
                         ProgressDialogProgress = (int)((double)progress / total * 100);
-                        ProgressDialogText = $"Importing {title}";
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
                     });
 
                     if (didFail)
@@ -457,7 +461,8 @@ public class MainViewModel : BindableBase
                     {
                         totalBooks++;
                         ProgressDialogProgress = ((double)progress / total * 100).ToInt();
-                        ProgressDialogText = $"Importing {title}";
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
                     });
 
                     if (didFail)
@@ -556,7 +561,8 @@ public class MainViewModel : BindableBase
                     {
                         totalBooks++;
                         ProgressDialogProgress = ((double)progress / total * 100).ToInt();
-                        ProgressDialogText = $"Importing {title}";
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
                     });
 
                     if (didFail)
@@ -637,43 +643,29 @@ public class MainViewModel : BindableBase
         });
     }
 
-    public void CreateExportFile(object sender, RoutedEventArgs e)
+    public async void CreateExportFile(object sender, RoutedEventArgs e)
     {
-        _ = CreateExportFileInAppFolder();
-    }
+        await GetAudiobookListAsync();
 
-    public async Task<string> CreateExportFileInAppFolder(bool letUserChooseLocation = true)
-    {
-        var audiobookRecords = (await App.Repository.Audiobooks.GetAsync()).AsList();
-        Audiobooks.Clear();
-        foreach (var c in audiobookRecords) Audiobooks.Add(new AudiobookViewModel(c));
-
-        // get the filepath and currenttimems for each audiobook and write it to a json file
-        var audiobooks = Audiobooks.Select(a =>
-            new { a.CurrentSourceFile.FilePath, a.CurrentSourceFile.CurrentTimeMs });
-        var json = JsonSerializer.Serialize(audiobooks);
-
-        StorageFile file;
-        if (!letUserChooseLocation)
+        var audiobooksExport = Audiobooks.Select(x => new
         {
-            var folder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("Exports",
-                CreationCollisionOption.OpenIfExists);
-            file = await folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting);
-        }
-        else
-        {
-            // let user choose where to save the file
-            var savePicker = new FileSavePicker();
-            var window = App.Window;
-            var hWnd = WindowNative.GetWindowHandle(window);
-            InitializeWithWindow.Initialize(savePicker, hWnd);
-            savePicker.SuggestedStartLocation = PickerLocationId.Desktop;
-            savePicker.FileTypeChoices.Add("Audibly Export File", new List<string> { ".audibly" });
+            x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
+            x.CurrentChapterIndex, x.IsNowPlaying
+        });
+        var json = JsonSerializer.Serialize(audiobooksExport);
 
-            file = savePicker.PickSaveFileAsync().AsTask().Result;
-        }
+        // let user choose where to save the file
+        var savePicker = new FileSavePicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(savePicker, hWnd);
+        savePicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        savePicker.FileTypeChoices.Add("Audibly Export File", new List<string> { ".audibly" });
+        savePicker.SuggestedFileName = "audibly_export";
 
-        if (file == null) return string.Empty;
+        var file = savePicker.PickSaveFileAsync().AsTask().Result;
+
+        if (file == null) return;
 
         // write the json string to the file
         FileIO.WriteTextAsync(file, json).AsTask().Wait();
@@ -684,8 +676,6 @@ public class MainViewModel : BindableBase
             Message = "Export file created successfully!",
             Severity = InfoBarSeverity.Success
         });
-
-        return file.Path;
     }
 
 
@@ -731,7 +721,8 @@ public class MainViewModel : BindableBase
                     {
                         totalBooks++;
                         ProgressDialogProgress = ((double)progress / total * 100).ToInt();
-                        ProgressDialogText = $"Importing {title}";
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
                     });
 
                     if (didFail)
@@ -768,7 +759,7 @@ public class MainViewModel : BindableBase
             Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
         });
 
-        await GetAudiobookListAsync();
+        await GetAudiobookListAsync(true);
 
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");

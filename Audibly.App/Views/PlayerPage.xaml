@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <Page
+    Background="Transparent"
+    mc:Ignorable="d"
     x:Class="Audibly.App.Views.PlayerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:winUi="using:CommunityToolkit.WinUI"
-    Background="Transparent"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
 
     <Grid>
@@ -26,19 +26,19 @@
         </Grid.RowDefinitions>
 
         <Border
-            x:Name="NowPlayingAppTitleBar"
-            Grid.Column="1"
-            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
-            Margin="48,0,0,0"
-            VerticalAlignment="Stretch"
             AutomationProperties.AutomationId="NowPlayingAppTitleBar"
             Canvas.ZIndex="1"
-            IsHitTestVisible="True" />
+            Grid.Column="1"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
+            IsHitTestVisible="True"
+            Margin="48,0,0,0"
+            VerticalAlignment="Stretch"
+            x:Name="NowPlayingAppTitleBar" />
 
         <Grid
-            Grid.RowSpan="2"
+            Canvas.ZIndex="0"
             Grid.Column="1"
-            Canvas.ZIndex="0">
+            Grid.RowSpan="2">
             <!--  backdrop  -->
             <Grid>
                 <Border BorderBrush="Transparent" BorderThickness="0">
@@ -65,19 +65,19 @@
 
             <RelativePanel HorizontalAlignment="Stretch">
                 <Button
-                    x:Name="BackButton"
                     Click="BackButton_OnClick"
                     IsEnabled="{x:Bind Frame.CanGoBack, Mode=OneWay}"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignTopWithPanel="True"
                     Style="{StaticResource NavigationBackButtonNormalStyle}"
-                    ToolTipService.ToolTip="Back" />
+                    ToolTipService.ToolTip="Back"
+                    x:Name="BackButton" />
                 <Border
-                    Width="300"
-                    Height="300"
                     BorderThickness="0"
+                    Height="300"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
-                    RelativePanel.AlignVerticalCenterWithPanel="True">
+                    RelativePanel.AlignVerticalCenterWithPanel="True"
+                    Width="300">
                     <Border
                         BorderBrush="Transparent"
                         BorderThickness="0"
@@ -93,8 +93,8 @@
 
                 <!--  player controls  -->
                 <userControls:PlayerControl
-                    Margin="0,20,20,20"
                     HorizontalAlignment="Stretch"
+                    Margin="0,20,20,20"
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"

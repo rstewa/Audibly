@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed playback speed maximum to 2.0x
 - Made notifications disappear after 10 seconds
 - Improved now playing slider to be more responsive
+- Added warning that the light theme is in beta and may not appear correctly 
 
 ### Fixed
 

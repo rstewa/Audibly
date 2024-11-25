@@ -219,8 +219,8 @@ public partial class App : Application
 
         // check for current version key
         var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
-        if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
-            // if (true) // todo: this is temporary until we have a version to test against
+        // if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
+        if (true) // todo: this is temporary until we have a version to test against
         {
             // if the user's version is not the current version, then we need to update the database
             // to the current version
@@ -236,24 +236,17 @@ public partial class App : Application
 
             Repository = new SqlAudiblyRepository(dbOptions);
 
+            // create audibly export file
             var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
-            // convert to audiobook viewmodels
             var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
             var audiobooksExport = audiobookViewModels.Select(x => new
-                { x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress });
+                { x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress, x.CurrentChapterIndex, x.IsNowPlaying });
             var json = JsonSerializer.Serialize(audiobooksExport);
 
             var folder = ApplicationData.Current.LocalFolder;
             var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
             FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
-
-            // delete all the audiobooks before we delete the database
-            // TODO: going to do this in LibraryCardPage.xaml.cs
-            // foreach (var f in audiobooks.Select(audiobook =>
-            //              StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(audiobook.CoverImagePath))
-            //                  .GetAwaiter().GetResult())) 
-            //     f.DeleteAsync().GetAwaiter().GetResult();
 
             // delete the old database
             using (var context = new AudiblyContext(dbOptions))

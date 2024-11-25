@@ -113,7 +113,7 @@ public sealed partial class LibraryCardPage : Page
                 // notify user that we successfully deleted the old cover images
                 ViewModel.EnqueueNotification(new Notification
                 {
-                    Message = "Deleted old cover images",
+                    Message = "Deleted audiobooks from old database",
                     Severity = InfoBarSeverity.Success
                 });
 
@@ -148,7 +148,7 @@ public sealed partial class LibraryCardPage : Page
 
                 ViewModel.NeedToImportAudiblyExport = false;
 
-                await ViewModel.GetAudiobookListAsync();
+                await ViewModel.GetAudiobookListAsync(firstRun: true);
             });
     }
 

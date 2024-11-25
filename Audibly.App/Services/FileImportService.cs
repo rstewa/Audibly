@@ -97,8 +97,7 @@ public class FileImportService : IImportFiles
             // Check if cancellation was requested
             cancellationToken.ThrowIfCancellationRequested();
 
-            var audiobook = await CreateAudiobook(importedAudiobook.FilePath, importedAudiobook.CurrentTimeMs,
-                importedAudiobook.Progress);
+            var audiobook = await CreateAudiobook(importedAudiobook.FilePath, importedAudiobook);
 
             if (audiobook == null) didFail = true;
 
@@ -274,7 +273,7 @@ public class FileImportService : IImportFiles
         }
     }
 
-    private static async Task<Audiobook?> CreateAudiobook(string path, int currentTimeMs = 0, double progress = 0)
+    private static async Task<Audiobook?> CreateAudiobook(string path, ImportedAudiobook? importedAudiobook = null)
     {
         try
         {
@@ -298,7 +297,7 @@ public class FileImportService : IImportFiles
                 Index = 0,
                 FilePath = path,
                 Duration = track.Duration,
-                CurrentTimeMs = currentTimeMs
+                CurrentTimeMs = importedAudiobook?.CurrentTimeMs ?? 0
                 // CurrentChapterIndex = 0,
                 // Chapters = []
             };
@@ -308,15 +307,17 @@ public class FileImportService : IImportFiles
                 CurrentSourceFileIndex = 0,
                 Title = track.Title,
                 Composer = track.Composer,
+                CurrentChapterIndex = importedAudiobook?.CurrentChapterIndex ?? 0,
                 Duration = track.Duration,
                 Author = track.Artist,
                 Description =
                     track.Description, // track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
                 PlaybackSpeed = 1.0,
-                Progress = progress,
+                Progress = importedAudiobook?.Progress ?? 0,
                 ReleaseDate = track.Date,
                 Volume = 1.0,
                 IsCompleted = false,
+                IsNowPlaying = importedAudiobook?.IsNowPlaying ?? false,
                 SourcePaths =
                 [
                     sourceFile

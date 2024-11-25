@@ -10,4 +10,6 @@ public class ImportedAudiobook
     public string CoverImagePath { get; set; }
     public string FilePath { get; set; }
     public double Progress { get; set; }
+    public int CurrentChapterIndex { get; set; }
+    public bool IsNowPlaying { get; set; }
 }

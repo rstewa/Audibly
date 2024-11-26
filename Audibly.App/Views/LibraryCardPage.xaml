@@ -100,12 +100,57 @@
                 RelativePanel.RightOf="PageTitle"
                 x:Name="MainCommandBar">
                 <!--  todo: may implement this in the future  -->
-                <!--  <AppBarButton  -->
-                <!--  Icon="Filter"  -->
-                <!--  Label="Filter"  -->
-                <!--  ToolTipService.ToolTip="Filter Audiobooks" />  -->
                 <AppBarButton
-                    Click="{x:Bind ViewModel.Refresh}"
+                    Icon="Filter"
+                    Label="Filter"
+                    ToolTipService.ToolTip="Filter Audiobooks">
+                    <Grid>
+                        <SymbolIcon Symbol="Sync" />
+                        <InfoBadge
+                            Background="#C42B1C"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            x:Name="buttonInfoBadge">
+                            <InfoBadge.IconSource>
+                                <FontIconSource Glyph="&#xEA6A;" />
+                            </InfoBadge.IconSource>
+                        </InfoBadge>
+                    </Grid>
+                    <Button.Flyout>
+                        <!--  create custom filter checkbox flyout  -->
+                        <Flyout Placement="BottomEdgeAlignedLeft">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox
+                                    Checked="SelectAllFiltersCheckBox_OnChecked"
+                                    Content="Select all"
+                                    Indeterminate="SelectAllFiltersCheckBox_OnIndeterminate"
+                                    IsThreeState="True"
+                                    Unchecked="SelectAllFiltersCheckBox_OnUnchecked"
+                                    x:Name="SelectAllFiltersCheckBox" />
+                                <CheckBox
+                                    Checked="InProgressFilterCheckBox_OnChecked"
+                                    Content="In Progress"
+                                    Margin="24,0,0,0"
+                                    Unchecked="InProgressFilterCheckBox_OnUnchecked"
+                                    x:Name="InProgressFilterCheckBox" />
+                                <CheckBox
+                                    Checked="NotStartedFilterCheckBox_OnChecked"
+                                    Content="Not Started"
+                                    Margin="24,0,0,0"
+                                    Unchecked="NotStartedFilterCheckBox_OnUnchecked"
+                                    x:Name="NotStartedFilterCheckBox" />
+                                <CheckBox
+                                    Checked="CompletedFilterCheckBox_OnChecked"
+                                    Content="Completed"
+                                    Margin="24,0,0,0"
+                                    Unchecked="CompletedFilterCheckBox_OnUnchecked"
+                                    x:Name="CompletedFilterCheckBox" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind RefreshButton_OnClick}"
                     Icon="Refresh"
                     Label="Refresh"
                     ToolTipService.ToolTip="Refresh audiobooks" />
@@ -158,12 +203,6 @@
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <!--  <AppBarButton  -->
-                <!--  Click="{x:Bind ViewModel.CreateExportFileAsync}"  -->
-                <!--  Label="Export"  -->
-                <!--  ToolTipService.ToolTip="Export audiobooks in library to JSON file for later import">  -->
-                <!--     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEDE1;" /> -->
-                <!-- </AppBarButton> -->
 
                 <!--  debug menu  -->
                 <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />

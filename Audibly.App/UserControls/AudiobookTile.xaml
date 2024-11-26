@@ -1,80 +1,125 @@
 <UserControl
-    Height="400"
-    Width="300"
-    mc:Ignorable="d"
     x:Class="Audibly.App.UserControls.AudiobookTile"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:Audibly.App.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:winUi="using:CommunityToolkit.WinUI"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    Width="300"
+    Height="400"
+    mc:Ignorable="d">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
     <UserControl.Resources>
         <converters:BooleanNegationConverter x:Key="BooleanNegationConverter" />
-        <CommandBarFlyout Placement="TopEdgeAlignedRight" x:Name="CommandBarFlyout">
-            <AppBarButton
+        <MenuFlyout
+            x:Name="MenuFlyout"
+            Closed="MenuFlyout_Closed"
+            Placement="RightEdgeAlignedTop">
+            <MenuFlyoutItem
                 Click="PlayButton_Click"
                 Icon="Play"
-                ToolTipService.ToolTip="Play" />
-            <AppBarButton
+                Text="Play" />
+            <MenuFlyoutItem
                 Click="DeleteAudiobook_OnClick"
                 Icon="Delete"
-                ToolTipService.ToolTip="Delete" />
-            <AppBarButton Click="ShowInFileExplorer_OnClick" ToolTipService.ToolTip="Show in File Explorer">
-                <FontIcon Glyph="&#xEC50;" />
-            </AppBarButton>
-            <!--  open audiobook in app state folder  -->
-            <AppBarButton Click="OpenInAppFolder_OnClick" ToolTipService.ToolTip="Open in App Folder">
-                <FontIcon Glyph="&#xE8E5;" />
-            </AppBarButton>
-            <!--  more info about the audiobook  -->
-            <AppBarButton Click="MoreInfo_OnClick" ToolTipService.ToolTip="More Info">
-                <FontIcon Glyph="&#xE946;" />
-            </AppBarButton>
-            <!--  button to mark audiobook as completed  -->
-            <AppBarButton
+                Text="Delete" />
+            <MenuFlyoutItem Click="ShowInFileExplorer_OnClick" Text="Show in File Explorer">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xEC50;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Click="OpenInAppFolder_OnClick" Text="Open in App Folder">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8E5;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Click="MoreInfo_OnClick" Text="More Info">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE946;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem
+                x:Name="MarkAsCompletedButton"
                 Click="MarkAsCompleted_OnClick"
-                ToolTipService.ToolTip="Mark as Completed"
-                x:Name="MarkAsCompletedButton">
-                <FontIcon Glyph="&#xE73E;" />
-            </AppBarButton>
-            <!--  mark as incomplete button  -->
-            <AppBarButton
+                Text="Mark as Completed">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE73E;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem
+                x:Name="MarkAsIncompleteButton"
                 Click="MarkAsIncomplete_OnClick"
-                ToolTipService.ToolTip="Mark as Incomplete"
-                Visibility="Collapsed"
-                x:Name="MarkAsIncompleteButton">
-                <FontIcon Glyph="&#xE894;" />
-            </AppBarButton>
-        </CommandBarFlyout>
+                Text="Mark as Incomplete"
+                Visibility="Collapsed">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE894;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+        <!-- <CommandBarFlyout Placement="TopEdgeAlignedRight" x:Name="CommandBarFlyout"> -->
+        <!--  <AppBarButton  -->
+        <!--  Click="PlayButton_Click"  -->
+        <!--  Icon="Play"  -->
+        <!--  ToolTipService.ToolTip="Play" />  -->
+        <!--  <AppBarButton  -->
+        <!--  Click="DeleteAudiobook_OnClick"  -->
+        <!--  Icon="Delete"  -->
+        <!--  ToolTipService.ToolTip="Delete" />  -->
+        <!--     <AppBarButton Click="ShowInFileExplorer_OnClick" ToolTipService.ToolTip="Show in File Explorer"> -->
+        <!--         <FontIcon Glyph="&#xEC50;" /> -->
+        <!--     </AppBarButton> -->
+        <!--  ~1~  open audiobook in app state folder  @1@  -->
+        <!--     <AppBarButton Click="OpenInAppFolder_OnClick" ToolTipService.ToolTip="Open in App Folder"> -->
+        <!--         <FontIcon Glyph="&#xE8E5;" /> -->
+        <!--     </AppBarButton> -->
+        <!--  ~1~  more info about the audiobook  @1@  -->
+        <!--     <AppBarButton Click="MoreInfo_OnClick" ToolTipService.ToolTip="More Info"> -->
+        <!--         <FontIcon Glyph="&#xE946;" /> -->
+        <!--     </AppBarButton> -->
+        <!--  ~1~  button to mark audiobook as completed  @1@  -->
+        <!--  <AppBarButton  -->
+        <!--  Click="MarkAsCompleted_OnClick"  -->
+        <!--  ToolTipService.ToolTip="Mark as Completed"  -->
+        <!--  x:Name="MarkAsCompletedButton">  -->
+        <!--         <FontIcon Glyph="&#xE73E;" /> -->
+        <!--     </AppBarButton> -->
+        <!--  ~1~  mark as incomplete button  @1@  -->
+        <!--  <AppBarButton  -->
+        <!--  Click="MarkAsIncomplete_OnClick"  -->
+        <!--  ToolTipService.ToolTip="Mark as Incomplete"  -->
+        <!--  Visibility="Collapsed"  -->
+        <!--  x:Name="MarkAsIncompleteButton">  -->
+        <!--         <FontIcon Glyph="&#xE894;" /> -->
+        <!--     </AppBarButton> -->
+        <!-- </CommandBarFlyout> -->
     </UserControl.Resources>
     <Button
+        x:Name="ButtonTile"
+        Padding="16"
         Background="Transparent"
         BorderBrush="Transparent"
         CornerRadius="8"
-        Padding="16"
         PointerEntered="AudiobookTile_OnPointerEntered"
         PointerExited="AudiobookTile_OnPointerExited"
-        RightTapped="ButtonTile_OnRightTapped"
-        x:Name="ButtonTile">
-        <Grid RowSpacing="16" VerticalAlignment="Stretch">
+        RightTapped="ButtonTile_OnRightTapped">
+        <Grid VerticalAlignment="Stretch" RowSpacing="16">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Border BorderThickness="0" Grid.Row="0">
+            <Border Grid.Row="0" BorderThickness="0">
                 <Border
                     BorderBrush="Transparent"
                     BorderThickness="0"
                     CornerRadius="15">
                     <ContentPresenter
-                        Content="{x:Bind Source, Mode=OneWay}"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Top" />
+                        VerticalAlignment="Top"
+                        Content="{x:Bind Source, Mode=OneWay}" />
                 </Border>
                 <winUi:Effects.Shadow>
                     <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
@@ -82,9 +127,9 @@
             </Border>
 
             <Grid
+                x:Name="BlackOverlayGrid"
                 Grid.Row="0"
-                Visibility="Collapsed"
-                x:Name="BlackOverlayGrid">
+                Visibility="Collapsed">
                 <Grid.Resources>
                     <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
                     <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
@@ -96,22 +141,22 @@
                     CornerRadius="15"
                     Opacity="0.55" />
                 <Button
+                    x:Name="PlayPauseButton"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     BorderThickness="0"
                     Click="PlayButton_Click"
-                    HorizontalAlignment="Center"
                     Tag="play"
-                    ToolTipService.ToolTip="Play"
-                    VerticalAlignment="Center"
-                    x:Name="PlayPauseButton">
+                    ToolTipService.ToolTip="Play">
                     <Button.Resources>
                         <ResourceDictionary>
-                            <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" />
-                            <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" />
-                            <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" />
-                            <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" />
+                            <StaticResource x:Key="ButtonForeground" ResourceKey="AccentFillColorDefaultBrush" />
+                            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+                            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+                            <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="AccentFillColorDisabledBrush" />
                         </ResourceDictionary>
                     </Button.Resources>
-                    <Viewbox MaxHeight="70" MaxWidth="70">
+                    <Viewbox MaxWidth="70" MaxHeight="70">
                         <FontIcon Glyph="&#xF5B0;" />
                     </Viewbox>
                 </Button>
@@ -119,20 +164,20 @@
 
             <RelativePanel Grid.Row="1">
                 <StackPanel
+                    x:Name="TitleAuthorPanel"
                     Orientation="Vertical"
                     RelativePanel.AlignLeftWithPanel="True"
-                    Spacing="4"
-                    x:Name="TitleAuthorPanel">
+                    Spacing="4">
                     <TextBlock
+                        x:Name="TitleText"
+                        MaxWidth="200"
                         FontSize="18"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        MaxWidth="200"
                         Style="{StaticResource BodyTextBlockStyle}"
                         Text="{x:Bind Title, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
-                        ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}"
-                        x:Name="TitleText" />
+                        ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
@@ -145,39 +190,39 @@
                     <!-- </TextBlock> -->
                 </StackPanel>
                 <Grid
+                    x:Name="ProgressGrid"
                     HorizontalAlignment="Right"
                     RelativePanel.AlignRightWithPanel="True"
                     RelativePanel.RightOf="TitleAuthorPanel"
-                    Visibility="Collapsed"
-                    x:Name="ProgressGrid">
+                    Visibility="Collapsed">
                     <ProgressRing
-                        Background="LightGray"
-                        Height="50"
+                        Width="40"
+                        Height="40"
                         HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="LightGray"
                         IsIndeterminate="False"
                         Maximum="100"
                         Minimum="0"
-                        Value="{x:Bind Progress, Mode=OneWay}"
-                        VerticalAlignment="Center"
-                        Width="50" />
+                        Value="{x:Bind Progress, Mode=OneWay}" />
                     <TextBlock
-                        FontSize="18"
                         HorizontalAlignment="Center"
-                        Text="{x:Bind Progress, Mode=OneWay}"
-                        VerticalAlignment="Center" />
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        Text="{x:Bind Progress, Mode=OneWay}" />
                 </Grid>
                 <Grid
+                    x:Name="CompletedGrid"
                     HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
                     RelativePanel.AlignRightWithPanel="True"
                     RelativePanel.RightOf="TitleAuthorPanel"
-                    VerticalAlignment="Bottom"
-                    Visibility="Collapsed"
-                    x:Name="CompletedGrid">
+                    Visibility="Collapsed">
                     <FontIcon
-                        FontSize="50"
-                        Glyph="&#xE73E;"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center" />
+                        VerticalAlignment="Center"
+                        FontSize="40"
+                        Glyph="&#xEC61;" />
                 </Grid>
             </RelativePanel>
         </Grid>

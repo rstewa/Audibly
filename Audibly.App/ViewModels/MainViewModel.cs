@@ -61,6 +61,8 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
+    
+    public List<AudiobookViewModel> AudiobooksForFilter { get; } = [];
 
     public bool NeedToImportAudiblyExport { get; set; } = false;
 
@@ -204,7 +206,11 @@ public class MainViewModel : BindableBase
             ShowStartPanel = audiobooks.Count == 0;
 
             Audiobooks.Clear();
-            foreach (var c in audiobooks) Audiobooks.Add(new AudiobookViewModel(c));
+            foreach (var audiobookViewModel in audiobooks.Select(c => new AudiobookViewModel(c)))
+            {
+                Audiobooks.Add(audiobookViewModel);
+                AudiobooksForFilter.Add(audiobookViewModel);
+            }
 
             if (firstRun)
             {

@@ -11,11 +11,14 @@ using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
+using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using ColorHelper = CommunityToolkit.WinUI.Helpers.ColorHelper;
 
 namespace Audibly.App.UserControls;
 
@@ -153,11 +156,20 @@ public sealed partial class AudiobookTile : UserControl
     private void AudiobookTile_OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         BlackOverlayGrid.Visibility = Visibility.Visible;
+        ButtonTile.Background = new SolidColorBrush(ColorHelper.ToColor("#393939")); // Change background to indicate hover
     }
 
     private void AudiobookTile_OnPointerExited(object sender, PointerRoutedEventArgs e)
     {
+        if (MenuFlyout.IsOpen) return;
         BlackOverlayGrid.Visibility = Visibility.Collapsed;
+        ButtonTile.Background = new SolidColorBrush(Colors.Transparent); // Revert background to original
+    }
+
+    private void MenuFlyout_Closed(object sender, object e)
+    {
+        BlackOverlayGrid.Visibility = Visibility.Collapsed;
+        ButtonTile.Background = new SolidColorBrush(Colors.Transparent); // Revert background to original
     }
 
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -197,7 +209,8 @@ public sealed partial class AudiobookTile : UserControl
         {
             ShowMode = FlyoutShowMode.Transient
         };
-        CommandBarFlyout.ShowAt(ButtonTile, myOption);
+        // CommandBarFlyout.ShowAt(ButtonTile, myOption);
+        MenuFlyout.ShowAt(ButtonTile, myOption);
     }
 
     private void OpenInAppFolder_OnClick(object sender, RoutedEventArgs e)
@@ -219,7 +232,8 @@ public sealed partial class AudiobookTile : UserControl
 
         var element = (FrameworkElement)sender;
 
-        CommandBarFlyout.Hide();
+        // CommandBarFlyout.Hide();
+        MenuFlyout.Hide();
         await element.ShowMoreInfoDialogAsync(audiobook);
     }
 

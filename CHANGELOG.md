@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added database migrations so that updating the database going forward will be easier
 - Added export button to allow users to export their library to a .json file
 - Added import button to allow users to import a library from a .json file (has to be exported from Audibly)
+- Added "More Info" button when user right clicks on an audiobook in the library
+  - Shows the audiobook's metadata
 - Added a powershell script that packages the .msix files into a .msixbundle file
 
 ### Changed

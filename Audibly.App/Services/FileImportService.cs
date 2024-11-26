@@ -316,7 +316,7 @@ public class FileImportService : IImportFiles
                 Progress = importedAudiobook?.Progress ?? 0,
                 ReleaseDate = track.Date,
                 Volume = 1.0,
-                IsCompleted = false,
+                IsCompleted = importedAudiobook?.IsCompleted ?? false,
                 IsNowPlaying = importedAudiobook?.IsNowPlaying ?? false,
                 SourcePaths =
                 [

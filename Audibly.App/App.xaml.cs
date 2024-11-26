@@ -242,7 +242,7 @@ public partial class App : Application
             var audiobooksExport = audiobookViewModels.Select(x => new
             {
                 x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
-                x.CurrentChapterIndex, x.IsNowPlaying
+                x.CurrentChapterIndex, x.IsNowPlaying, x.IsCompleted
             });
             var json = JsonSerializer.Serialize(audiobooksExport);
 

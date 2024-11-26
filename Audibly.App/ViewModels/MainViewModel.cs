@@ -206,6 +206,7 @@ public class MainViewModel : BindableBase
             ShowStartPanel = audiobooks.Count == 0;
 
             Audiobooks.Clear();
+            AudiobooksForFilter.Clear();
             foreach (var audiobookViewModel in audiobooks.Select(c => new AudiobookViewModel(c)))
             {
                 Audiobooks.Add(audiobookViewModel);

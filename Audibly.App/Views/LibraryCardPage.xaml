@@ -103,19 +103,8 @@
                 <AppBarButton
                     Icon="Filter"
                     Label="Filter"
-                    ToolTipService.ToolTip="Filter Audiobooks">
-                    <Grid>
-                        <SymbolIcon Symbol="Sync" />
-                        <InfoBadge
-                            Background="#C42B1C"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            x:Name="buttonInfoBadge">
-                            <InfoBadge.IconSource>
-                                <FontIconSource Glyph="&#xEA6A;" />
-                            </InfoBadge.IconSource>
-                        </InfoBadge>
-                    </Grid>
+                    ToolTipService.ToolTip="Filter Audiobooks"
+                    x:Name="FilterButton">
                     <Button.Flyout>
                         <!--  create custom filter checkbox flyout  -->
                         <Flyout Placement="BottomEdgeAlignedLeft">

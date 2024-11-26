@@ -10,18 +10,22 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.UI;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
+using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Sentry;
 using Sharpener.Extensions;
+using ColorHelper = CommunityToolkit.WinUI.Helpers.ColorHelper;
 
 namespace Audibly.App.Views;
 
@@ -156,9 +160,8 @@ public sealed partial class LibraryCardPage : Page
     private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)
     {
         // unchecked all the filter flyout items
-        InProgressFilterCheckBox.IsChecked = false;
-        NotStartedFilterCheckBox.IsChecked = false;
-        CompletedFilterCheckBox.IsChecked = false;
+        InProgressFilterCheckBox.IsChecked =
+            NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = false;
 
         await ViewModel.GetAudiobookListAsync();
     }
@@ -278,10 +281,10 @@ public sealed partial class LibraryCardPage : Page
 
     private HashSet<AudioBookFilter> _activeFilters = new();
 
-    private List<AudiobookViewModel> GetFilteredAudiobooks()
+    private HashSet<AudiobookViewModel> GetFilteredAudiobooks()
     {
         // matches audiobooks for each active filter
-        var matches = new List<AudiobookViewModel>();
+        var matches = new HashSet<AudiobookViewModel>();
 
         foreach (var audiobook in ViewModel.AudiobooksForFilter)
         {
@@ -321,6 +324,20 @@ public sealed partial class LibraryCardPage : Page
         // Controls are null the first time this is called, so we just 
         // need to perform a null check on any one of the controls.
         if (InProgressFilterCheckBox == null) return;
+        
+        // check if any of the filters are checked and change the appbar button background color
+        if (InProgressFilterCheckBox.IsChecked == true ||
+            NotStartedFilterCheckBox.IsChecked == true ||
+            CompletedFilterCheckBox.IsChecked == true)
+        {
+            FilterButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]);
+            FilterButton.BorderThickness = new Thickness(2);
+        }
+        else
+        {
+            FilterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            FilterButton.BorderThickness = new Thickness(0);
+        }
         
         if (InProgressFilterCheckBox.IsChecked == true &&
             NotStartedFilterCheckBox.IsChecked == true &&

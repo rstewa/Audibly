@@ -63,7 +63,8 @@ public sealed partial class AppShell : Page
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
         App.ViewModel.ProgressDialogCompleted += HideProgressDialog;
 
-        // todo: add a listener for when the app is suspended to save the current audiobook
+        NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
+        NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
     }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
@@ -117,6 +118,13 @@ public sealed partial class AppShell : Page
         }
 
         await ProcessDialogQueue();
+        
+        // get sidebar state
+        if (UserSettings.IsSidebarCollapsed)
+        {
+            NavView.IsPaneOpen = false;
+            NavView.CompactModeThresholdWidth = 0;
+        }
     }
 
     private ContentDialog? _importDialog;

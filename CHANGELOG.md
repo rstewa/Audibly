@@ -15,18 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Will mark an audiobook as finished when the progress is at 100% by default
 - Added data migration feature to migrate user data to the new database
 - Added database migrations so that updating the database going forward will be easier
+- Added filter button that allows users to filter their library by:
+  - In Progress
+  - Not Started
+  - Completed
 - Added export button to allow users to export their library to a .json file
 - Added import button to allow users to import a library from a .json file (has to be exported from Audibly)
-- Added "More Info" button when user right clicks on an audiobook in the library
+- Added "More Info" button to audiobook tile context menu in library card view
   - Shows the audiobook's metadata
 - Added a powershell script that packages the .msix files into a .msixbundle file
+- Added warning when user switches to light theme that it is in beta and may not appear correctly
 
 ### Changed
 
 - Changed playback speed maximum to 2.0x
 - Made notifications disappear after 10 seconds
 - Improved now playing slider to be more responsive
-- Added warning that the light theme is in beta and may not appear correctly 
+- Added warning that the light theme is in beta and may not appear correctly
+- Modified sidebar to remember its collapsed state on startup
 
 ### Fixed
 

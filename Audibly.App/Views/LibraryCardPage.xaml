@@ -79,6 +79,11 @@
                 Icon="&#xE838;"
                 Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}" />
 
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportFromUserSelectedJsonFileAsync}"
+                Icon="&#xE896;"
+                Text="{x:Bind views:LibraryCardPage.ImportFromJsonFileText}" />
+
         </StackPanel>
 
         <!--  title and command bar  -->
@@ -144,13 +149,13 @@
                     Label="Refresh"
                     ToolTipService.ToolTip="Refresh audiobooks" />
                 <AppBarSeparator />
-                <AppBarButton
-                    Click="{x:Bind ViewModel.ImportAudiobookAsync}"
-                    Icon="Add"
-                    Label="Open"
-                    ToolTipService.ToolTip="Open audiobook">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
-                </AppBarButton>
+                <!--  <AppBarButton  -->
+                <!--  Click="{x:Bind ViewModel.ImportAudiobookAsync}"  -->
+                <!--  Icon="Add"  -->
+                <!--  Label="Open"  -->
+                <!--  ToolTipService.ToolTip="Open audiobook">  -->
+                <!--     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" /> -->
+                <!-- </AppBarButton> -->
                 <AppBarButton
                     Icon="Download"
                     Label="Import"

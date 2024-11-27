@@ -253,10 +253,12 @@ public class PlayerViewModel : BindableBase
         App.ViewModel.SelectedAudiobook = audiobook;
 
         // verify that the file exists
-        if (!File.Exists(audiobook.CurrentSourceFile.FilePath))
+        // if there are multiple source files, check them all
+        
+        if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
         {
             App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
-                "Can't play Audiobook. The file was deleted or moved.");
+                $"Can't play Audiobook: {audiobook.Title}. One of its source files was deleted or moved.");
             return;
         }
 

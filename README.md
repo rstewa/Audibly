@@ -53,7 +53,7 @@
 
 > [!IMPORTANT]  
 > Audibly v2 is **NOW** in the Microsoft Store!
-> Now supports `.m4b` and `.mp3` file types as well as audiobooks that consist of multiple files!
+> Update that addes support for `.mp3` files and audiobooks that consist of multiple files will be published to the store soon!
 
 <!-- link to store page -->
 <a href="https://apps.microsoft.com/detail/9p6r1m1gg9jr?mode=direct">

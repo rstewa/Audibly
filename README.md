@@ -37,7 +37,8 @@
 <h3 align="center">Audibly — Audiobook Player</h3>
 
   <p align="center">
-    Desktop Audiobook player for Windows 10/11. I created this because Audible removed their desktop player.
+    Desktop Audiobook player for Windows 10/11. Supports `.m4b` and `.mp3` file types. It also supports audiobooks that
+    consist of multiple files. I created this because Audible removed their desktop player (and I really hate browser based players).
     <br />
     <a href="https://github.com/rstewa/Audibly"><strong>Explore the docs »</strong></a>
     <br />
@@ -52,10 +53,11 @@
 
 > [!IMPORTANT]  
 > Audibly v2 is **NOW** in the Microsoft Store!
+> Now supports `.m4b` and `.mp3` file types as well as audiobooks that consist of multiple files!
 
 <!-- link to store page -->
-<a href="https://apps.microsoft.com/store/detail/9P6R1M1GG9JR?launch=true&mode=full">
-	<img src="https://get.microsoft.com/images/en-US%20dark.svg" style="width:400px"/>
+<a href="https://apps.microsoft.com/detail/9p6r1m1gg9jr?mode=direct">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
 </a>
 
 <br>
@@ -102,18 +104,30 @@ This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b`
 ## Screenshots
 
 <p align="middle">
-  <img src="images/v2/new/super-hero-art.png" />
+  <img src="images/v2.0.16/super-hero-art.png" />
 </p> 
 
 ### Home/Library
 <p align="middle">
-  <img src="images/v2/new/home-library-page-sidebar-collapsed-75-percent.PNG" />
+  <img src="images/v2.0.16/home-library-page-sidebar-collapsed-75-percent.PNG" />
 </p> 
 
-### Player
+### Expanded Player
 <p align="middle">
-  <img src="images/v2/new/now-playing-page-75-percent.PNG" />
+  <img src="images/v2.0.16/now-playing-page-75-percent.PNG" />
 </p> 
+
+<details>
+  <summary>Additional Screenshots</summary>
+    <p align="middle">
+        <img src="images/v2.0.16/home-library-page-while-importing-75-percent.PNG" />
+    </p>
+    <p align="middle">
+        <img src="images/v2.0.16/home-library-page-no-audiobooks-75-percent.PNG" />
+    </p>
+
+
+</details>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

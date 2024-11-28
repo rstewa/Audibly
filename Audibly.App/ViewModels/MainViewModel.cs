@@ -541,6 +541,7 @@ public class MainViewModel : BindableBase
         var result = await element.ShowSelectFilesDialogAsync();
         if (result == ContentDialogResult.None)
         {
+            SelectedFiles.Clear();
             await dispatcherQueue.EnqueueAsync(() => IsLoading = false);
             return;
         }

@@ -94,7 +94,7 @@
             <TextBlock
                 Margin="20,8,6,0"
                 Style="{StaticResource PageTitleTextBlockStyle}"
-                Text="Audiobooks"
+                Text="Audiobook Library"
                 x:Name="PageTitle" />
             <CommandBar
                 Background="Transparent"

@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
 // Created: 04/15/2024
-// Updated: 07/09/2024
+// Updated: 10/03/2024
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
-using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
@@ -19,8 +18,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
-using Path = System.IO.Path;
 
 namespace Audibly.App;
 
@@ -62,8 +61,10 @@ public sealed partial class AppShell : Page
 
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
+        App.ViewModel.ProgressDialogCompleted += HideProgressDialog;
 
-        // todo: add a listener for when the app is suspended to save the current audiobook
+        NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
+        NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
     }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
@@ -75,37 +76,37 @@ public sealed partial class AppShell : Page
         {
             ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
 
-            // check if user had v1 and was listening to an audiobook
-            var currentAudiobookPath = ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"]?.ToString();
-            if (currentAudiobookPath != null)
-            {
-                var result = await ShowYesNoDialogAsync("Welcome Back!",
-                    "We've detected that you were listening to an audiobook in a previous version of Audibly. Would you like to continue listening?");
-                if (!result) return;
-
-                // get that audiobooks current position
-                var name = Path.GetFileNameWithoutExtension(currentAudiobookPath);
-                var currentPosition =
-                    ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
-
-                // import the audiobook
-                var importSuccess = await ViewModel.ImportAudiobookTest(currentAudiobookPath);
-                if (!importSuccess) return;
-
-                // set the current position
-                var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == currentAudiobookPath);
-                if (audiobook == null) return;
-
-                ViewModel.SelectedAudiobook = audiobook;
-                if (currentPosition != null)
-                    audiobook.CurrentTimeMs = (int)currentPosition;
-                PlayerViewModel.OpenAudiobook(audiobook);
-            }
-            else
-            {
-                ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
-                    "We're glad you're here. Let's get started by adding your first audiobook.");
-            }
+            // // check if user had v1 and was listening to an audiobook
+            // var currentAudiobookPath = ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"]?.ToString();
+            // if (currentAudiobookPath != null)
+            // {
+            //     var result = await ShowYesNoDialogAsync("Welcome Back!",
+            //         "We've detected that you were listening to an audiobook in a previous version of Audibly. Would you like to continue listening?");
+            //     if (!result) return;
+            //
+            //     // get that audiobooks current position
+            //     var name = Path.GetFileNameWithoutExtension(currentAudiobookPath);
+            //     var currentPosition =
+            //         ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
+            //
+            //     // import the audiobook
+            //     var importSuccess = await ViewModel.ImportAudiobookTest(currentAudiobookPath);
+            //     if (!importSuccess) return;
+            //
+            //     // set the current position
+            //     var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a. == currentAudiobookPath);
+            //     if (audiobook == null) return;
+            //
+            //     ViewModel.SelectedAudiobook = audiobook;
+            //     if (currentPosition != null)
+            //         audiobook.CurrentTimeMs = (int)currentPosition;
+            //     PlayerViewModel.OpenAudiobook(audiobook);
+            // }
+            // else
+            // {
+            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
+                "We're glad you're here. Let's get started by adding your first audiobook.");
+            // }
         }
 
         // check for current version key
@@ -117,9 +118,18 @@ public sealed partial class AppShell : Page
         }
 
         await ProcessDialogQueue();
+        
+        // get sidebar state
+        if (UserSettings.IsSidebarCollapsed)
+        {
+            NavView.IsPaneOpen = false;
+            NavView.CompactModeThresholdWidth = 0;
+        }
     }
 
     private ContentDialog? _importDialog;
+
+    private ContentDialog? _progressDialog;
 
     private async Task<bool> ShowYesNoDialogAsync(string title, string content)
     {
@@ -148,7 +158,7 @@ public sealed partial class AppShell : Page
 
     private ContentDialog CreateImportDialog(string title)
     {
-        var importDialog = new ImportDialogContent();
+        var importDialog = new ProgressDialogContent();
         _importDialog = new ContentDialog
         {
             Title = title,
@@ -176,6 +186,17 @@ public sealed partial class AppShell : Page
         {
             _importDialog.Hide();
             // _importDialog = null;
+        });
+    }
+
+    private void HideProgressDialog()
+    {
+        if (_progressDialog == null) return;
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            _progressDialog.Hide();
+            // _progressDialog = null;
         });
     }
 
@@ -245,9 +266,22 @@ public sealed partial class AppShell : Page
         return dialog;
     }
 
+    private ContentDialog CreateProgressDialog(string title)
+    {
+        var progressDialog = new ProgressDialogContent();
+        _progressDialog = new ContentDialog
+        {
+            Title = title,
+            Content = progressDialog,
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
+
+        return _progressDialog;
+    }
+
     private readonly Queue<ContentDialog> _dialogQueue = new();
 
-    private async void OnShowDialogRequested(DialogType type, string title, string content)
+    private async void OnShowDialogRequested(DialogType type, string title, string content, Action? onConfirm)
     {
         var dialog = type switch
         {
@@ -256,6 +290,7 @@ public sealed partial class AppShell : Page
             DialogType.Restart => CreateRestartDialog(title, content),
             DialogType.Changelog => CreateChangelogDialog(content),
             DialogType.Import => CreateImportDialog(title),
+            DialogType.Progress => CreateProgressDialog(title),
             _ => null
         };
 
@@ -284,7 +319,7 @@ public sealed partial class AppShell : Page
             _dialogQueueLock.Release();
         }
     }
-    
+
     /// <summary>
     ///     Gets the navigation frame instance.
     /// </summary>
@@ -374,14 +409,14 @@ public sealed partial class AppShell : Page
         AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         if (string.IsNullOrEmpty(args.QueryText))
-            await ViewModel.ResetAudiobookList();
+            await ViewModel.ResetAudiobookListAsync();
         else
             await FilterAudiobookList(args.QueryText);
     }
 
     private List<AudiobookViewModel> GetFilteredAudiobooks(string text)
     {
-        var parameters = text.Split(new[] { ' ' },
+        var parameters = text.Split([' '],
             StringSplitOptions.RemoveEmptyEntries);
 
         var matches = ViewModel.Audiobooks
@@ -400,7 +435,8 @@ public sealed partial class AppShell : Page
         var exactMatches = matches.Where(audiobook =>
             audiobook.Author.Equals(text, StringComparison.OrdinalIgnoreCase) ||
             audiobook.Title.Equals(text, StringComparison.OrdinalIgnoreCase)).ToList();
-        return exactMatches.Any() ? exactMatches : matches;
+
+        return exactMatches.Count != 0 ? exactMatches : matches;
     }
 
     /// <summary>

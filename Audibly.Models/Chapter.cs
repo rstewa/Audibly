@@ -1,73 +1,15 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/5/2024
-// Updated: 3/22/2024
+// Created: 04/15/2024
+// Updated: 10/11/2024
 
 namespace Audibly.Models;
 
 /// <summary>
 ///     Information describing a chapter
 /// </summary>
-public class ChapterInfo : DbObject, IEquatable<Audiobook>
+public class ChapterInfo : DbObject, IEquatable<ChapterInfo>
 {
-    private const char
-        InternalValueSeparator =
-            '˵'; // Some obscure unicode character that hopefully won't be used anywhere in an actual tag
-
-    /// <summary>
-    ///     Information describing an URL
-    /// </summary>
-    public class UrlInfo
-    {
-        /// <summary>
-        ///     Description
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        ///     The URL itself
-        /// </summary>
-        public string Url { get; set; }
-
-        /// <summary>
-        ///     Construct by copying data from the given UrlInfo
-        /// </summary>
-        /// <param name="url">Object to copy data from</param>
-        public UrlInfo(UrlInfo url)
-        {
-            Description = url.Description;
-            Url = url.Url;
-        }
-
-        /// <summary>
-        ///     Construct the structure from the URL and its description
-        /// </summary>
-        /// <param name="description">Description</param>
-        /// <param name="url">The URL itself</param>
-        public UrlInfo(string description, string url)
-        {
-            Description = description;
-            Url = url;
-        }
-
-        /// <summary>
-        ///     Construct the structure from a single URL
-        /// </summary>
-        /// <param name="url">The URL itself</param>
-        public UrlInfo(string url)
-        {
-            Description = "";
-            Url = url;
-        }
-
-        /// <summary>
-        ///     Internal string representation of the structure
-        /// </summary>
-        /// <returns>Internal string representation of the structure</returns>
-        public override string ToString()
-        {
-            return Description + InternalValueSeparator + Url;
-        }
-    }
+    public int ParentSourceFileIndex { get; set; }
 
     /// <summary>
     ///     This is a sequential value that is used to keep the Chapters in order
@@ -124,19 +66,9 @@ public class ChapterInfo : DbObject, IEquatable<Audiobook>
     ///     NB : Only supported by ID3v2
     /// </summary>
     public string Subtitle { get; set; }
-
-    /// <summary>
-    ///     Associated URL
-    ///     NB : Only supported by ID3v2
-    /// </summary>
-    // public UrlInfo Url { get; set; }
-
-    /// <summary>
-    ///     Associated picture
-    ///     NB : Only supported by ID3v2 and MP4/M4A
-    /// </summary>
-    // public PictureInfo Picture { get; set; }
-
+    
+    public Guid AudiobookId { get; set; }
+    public Audiobook Audiobook { get; set; }
 
     // ---------------- CONSTRUCTORS
 
@@ -151,14 +83,12 @@ public class ChapterInfo : DbObject, IEquatable<Audiobook>
         EndOffset = 0;
         UseOffset = false;
         Title = title;
-
         UniqueID = "";
         Subtitle = "";
-        // Picture = null;
     }
 
     /// <summary>
-    ///     Construct a structure by copying informatio from the given ChapterInfo
+    ///     Construct a structure by copying information from the given ChapterInfo
     /// </summary>
     /// <param name="chapter">Structure to copy information from</param>
     public ChapterInfo(ChapterInfo chapter)
@@ -169,17 +99,41 @@ public class ChapterInfo : DbObject, IEquatable<Audiobook>
         EndOffset = chapter.EndOffset;
         Title = chapter.Title;
         Subtitle = chapter.Subtitle;
-        // Url = chapter.Url;
         UniqueID = chapter.UniqueID;
-
-        // if (chapter.Url != null) Url = new UrlInfo(chapter.Url);
-        // if (chapter.Picture != null) Picture = new PictureInfo(chapter.Picture);
     }
 
-    public bool Equals(Audiobook? other)
+    // public bool Equals(Audiobook? other)
+    // {
+    //     if (ReferenceEquals(null, other)) return false;
+    //     if (ReferenceEquals(this, other)) return true;
+    //     return string.Equals(Title, other.Title, StringComparison.OrdinalIgnoreCase);
+    // }
+
+    public bool Equals(ChapterInfo? other)
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
         return string.Equals(Title, other.Title, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as ChapterInfo);
+    }
+
+    public override int GetHashCode()
+    {
+        var hashCode = new HashCode();
+        hashCode.Add(ParentSourceFileIndex);
+        hashCode.Add(Index);
+        hashCode.Add(StartTime);
+        hashCode.Add(EndTime);
+        hashCode.Add(StartOffset);
+        hashCode.Add(EndOffset);
+        hashCode.Add(UseOffset);
+        hashCode.Add(Title);
+        hashCode.Add(UniqueID);
+        hashCode.Add(Subtitle);
+        return hashCode.ToHashCode();
     }
 }

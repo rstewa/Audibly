@@ -10,5 +10,7 @@ public enum DialogType
     Info,
     Restart,
     Changelog,
-    Import
+    Import,
+    Progress,
+    SelectFiles
 }

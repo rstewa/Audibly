@@ -3,11 +3,13 @@
 // Updated: 6/11/2024
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
+using Audibly.App.Helpers;
 using Audibly.App.Helpers.IconUtils;
 using Audibly.App.Services.Interfaces;
 using SixLabors.ImageSharp;
@@ -21,15 +23,27 @@ public class AppDataService : IAppDataService
 
     public async Task<Tuple<string, string>> WriteCoverImageAsync(string path, byte[]? imageBytes)
     {
+        string coverImagePath;
         var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
             CreationCollisionOption.OpenIfExists);
-        var coverImage =
-            await bookAppdataDir.CreateFileAsync("CoverImage.png", CreationCollisionOption.ReplaceExisting);
-        await FileIO.WriteBytesAsync(coverImage, imageBytes);
+
+        if (imageBytes == null)
+        {
+            var coverImage = await AssetHelper.GetAssetFileAsync("DefaultCoverImage.png");
+            await coverImage.CopyAsync(bookAppdataDir, "CoverImage.png", NameCollisionOption.ReplaceExisting);
+            coverImagePath = coverImage.Path;
+        }
+        else
+        {
+            var coverImage =
+                await bookAppdataDir.CreateFileAsync("CoverImage.png", CreationCollisionOption.ReplaceExisting);
+            await FileIO.WriteBytesAsync(coverImage, imageBytes);
+            coverImagePath = coverImage.Path;
+        }
 
         // create 400x400 thumbnail
         var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
-        var result = await ShrinkAndSaveAsync(coverImage.Path, thumbnailPath, 400, 400);
+        var result = await ShrinkAndSaveAsync(coverImagePath, thumbnailPath, 400, 400);
         if (!result) thumbnailPath = string.Empty; // return empty string if thumbnail creation failed
 
         // leaving this commented out for now because it increases the import time an absurd amount
@@ -37,7 +51,7 @@ public class AppDataService : IAppDataService
         // var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
         // FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
 
-        return new Tuple<string, string>(coverImage.Path, thumbnailPath);
+        return new Tuple<string, string>(coverImagePath, thumbnailPath);
     }
 
     public async Task DeleteCoverImageAsync(string path)
@@ -48,6 +62,20 @@ public class AppDataService : IAppDataService
         // FolderIcon.DeleteIcon(dir);
         var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path));
         await folder.DeleteAsync();
+    }
+
+    // todo: need a cleaner way to handle this
+    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
+
+    public async Task DeleteCoverImagesAsync(List<string> paths, Func<int, int, string, Task> progressCallback)
+    {
+        for (var i = 0; i < paths.Count; i++)
+        {
+            await DeleteCoverImageAsync(paths[i]);
+            await progressCallback(i, paths.Count, Path.GetFileName(paths[i]));
+        }
+
+        ImportCompleted?.Invoke();
     }
 
     public async Task WriteMetadataAsync(string path, Track track)

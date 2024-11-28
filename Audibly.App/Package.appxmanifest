@@ -54,6 +54,15 @@
                         <uap:EditFlags OpenIsSafe="true"/>
                     </uap:FileTypeAssociation>
                 </uap:Extension>
+                <uap:Extension Category="windows.fileTypeAssociation">
+                    <uap:FileTypeAssociation Name="mp3">
+                        <uap:SupportedFileTypes>
+                            <uap:FileType>.mp3</uap:FileType>
+                        </uap:SupportedFileTypes>
+                        <uap:DisplayName>Audiobook Player</uap:DisplayName>
+                        <uap:EditFlags OpenIsSafe="true"/>
+                    </uap:FileTypeAssociation>
+                </uap:Extension>
             </Extensions>
         </Application>
     </Applications>

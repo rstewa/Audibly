@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/22/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using Audibly.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,15 +9,16 @@ namespace Audibly.Repository.Sql;
 
 public class SqlAudiblyRepository : IAudiblyRepository
 {
-    private readonly DbContextOptions<AudiblyContext> _dbOptions;
+    private readonly DbContextOptions<AudiblyContext> _dbContextOptions;
 
-    public SqlAudiblyRepository(DbContextOptionsBuilder<AudiblyContext> dbOptionsBuilder)
+    public SqlAudiblyRepository(DbContextOptions<AudiblyContext> dbContextOptions)
     {
-        _dbOptions = dbOptionsBuilder.Options;
-        using var db = new AudiblyContext(_dbOptions);
-        db.Database.EnsureCreated();
+        _dbContextOptions = dbContextOptions;
+        // todo: prob need to re-comment the following 2 lines
+        // using var db = new AudiblyContext(_dbContextOptions);
+        // db.Database.EnsureCreated();
     }
 
     public IAudiobookRepository Audiobooks => new SqlAudiobookRepository(
-        new AudiblyContext(_dbOptions));
+        new AudiblyContext(_dbContextOptions));
 }

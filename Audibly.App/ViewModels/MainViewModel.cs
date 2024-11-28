@@ -1,21 +1,27 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 4/17/2024
+// Created: 04/15/2024
+// Updated: 10/14/2024
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
+using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Sharpener.Extensions;
 using WinRT.Interop;
@@ -33,6 +39,10 @@ public class MainViewModel : BindableBase
     public readonly MessageService MessageService;
     public readonly IloggingService LoggingService;
 
+    public delegate void ProgressDialogCompletedHandler();
+
+    public event ProgressDialogCompletedHandler? ProgressDialogCompleted;
+
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
@@ -43,13 +53,18 @@ public class MainViewModel : BindableBase
         AppDataService = appDataService;
         MessageService = messageService;
         LoggingService = loggingService;
-        Task.Run(GetAudiobookListAsync);
+        // Task.Run(GetAudiobookListAsync(firstRun: true));
+        Task.Run(() => GetAudiobookListAsync(true));
     }
 
     /// <summary>
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
+    
+    public List<AudiobookViewModel> AudiobooksForFilter { get; } = [];
+
+    public bool NeedToImportAudiblyExport { get; set; } = false;
 
     private AudiobookViewModel? _selectedAudiobook;
 
@@ -111,26 +126,37 @@ public class MainViewModel : BindableBase
         set => Set(ref _isNavigationViewVisible, value);
     }
 
-    private int _importProgress;
+    private int _progressDialogProgress;
 
     /// <summary>
     ///     Gets or sets the progress of the current import operation.
     /// </summary>
-    public int ImportProgress
+    public int ProgressDialogProgress
     {
-        get => _importProgress;
-        set => Set(ref _importProgress, value);
+        get => _progressDialogProgress;
+        set => Set(ref _progressDialogProgress, value);
     }
 
-    private string _importText;
+    private string _progressDialogText;
 
     /// <summary>
     ///     Gets or sets the text to display while importing audiobooks.
     /// </summary>
-    public string ImportText
+    public string ProgressDialogText
     {
-        get => _importText;
-        set => Set(ref _importText, value);
+        get => _progressDialogText;
+        set => Set(ref _progressDialogText, value);
+    }
+
+    private string _progressDialogPrefix;
+
+    /// <summary>
+    ///     Gets or sets the prefix to display before the progress dialog text.
+    /// </summary>
+    public string ProgressDialogPrefix
+    {
+        get => _progressDialogPrefix;
+        set => Set(ref _progressDialogPrefix, value);
     }
 
     private string _notificationText;
@@ -159,16 +185,19 @@ public class MainViewModel : BindableBase
     }
 
     /// <summary>
+    ///     Invokes the ProgressDialogCompleted event.
+    /// </summary>
+    public void OnProgressDialogCompleted()
+    {
+        ProgressDialogCompleted?.Invoke();
+    }
+
+    /// <summary>
     ///     Gets the complete list of audiobooks from the database.
     /// </summary>
-    public async Task GetAudiobookListAsync()
+    public async Task GetAudiobookListAsync(bool firstRun = false)
     {
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
-
-        // NOTE: THIS IS FOR TESTING -> NEED TO REMOVE THIS
-#if DEBUG
-        // await Task.Delay(TimeSpan.FromSeconds(5));
-#endif
 
         var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
 
@@ -177,7 +206,31 @@ public class MainViewModel : BindableBase
             ShowStartPanel = audiobooks.Count == 0;
 
             Audiobooks.Clear();
-            foreach (var c in audiobooks) Audiobooks.Add(new AudiobookViewModel(c));
+            AudiobooksForFilter.Clear();
+            foreach (var audiobookViewModel in audiobooks.Select(c => new AudiobookViewModel(c)))
+            {
+                Audiobooks.Add(audiobookViewModel);
+                AudiobooksForFilter.Add(audiobookViewModel);
+            }
+
+            if (firstRun)
+            {
+                var nowPlaying = Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+                if (nowPlaying != null)
+                    _ = App.PlayerViewModel.OpenAudiobook(nowPlaying);
+
+                // in the background check if there are any other audiobook records where IsNowPlaying is true and set them to false
+                Task.Run(async () =>
+                {
+                    var otherNowPlaying = Audiobooks.Where(x => x.IsNowPlaying && x != nowPlaying).ToList();
+                    foreach (var audiobook in otherNowPlaying)
+                    {
+                        audiobook.IsNowPlaying = false;
+                        await App.Repository.Audiobooks.UpsertAsync(audiobook.Model);
+                    }
+                });
+            }
+
             IsLoading = false;
         });
     }
@@ -189,9 +242,10 @@ public class MainViewModel : BindableBase
     {
         Task.Run(async () =>
         {
-            foreach (var modifiedAudiobook in Audiobooks
-                         .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
-                await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
+            // todo: do i need this?
+            // foreach (var modifiedAudiobook in Audiobooks
+            //              .Where(audiobook => audiobook.IsModified).Select(audiobook => audiobook.Model))
+            //     await App.Repository.Audiobooks.UpsertAsync(modifiedAudiobook);
 
             await GetAudiobookListAsync();
         });
@@ -258,7 +312,6 @@ public class MainViewModel : BindableBase
 
     public async void ImportAudiobookAsync()
     {
-        var importFailed = false;
         var openPicker = new FileOpenPicker();
         var window = App.Window;
         var hWnd = WindowNative.GetWindowHandle(window);
@@ -266,6 +319,7 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".mp3");
 
         var file = await openPicker.PickSingleFileAsync();
         if (file == null) return;
@@ -277,9 +331,37 @@ public class MainViewModel : BindableBase
 
         MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
 
+        ProgressDialogProgress = 0;
+        ProgressDialogPrefix = "Importing";
         MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
             "Please wait while the audiobooks are imported...");
 
+        await ImportFileAsync(file, token);
+    }
+
+    public async Task ImportAudiobookFromFileActivationAsync(string path, bool showImportDialog = true)
+    {
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        if (showImportDialog)
+        {
+            MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+            MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+                "Please wait while the audiobooks are imported...");
+        }
+
+        var file = await StorageFile.GetFileFromPathAsync(path);
+
+        await ImportFileAsync(file, token);
+    }
+
+    private async Task ImportFileAsync(StorageFile file, CancellationToken token)
+    {
+        var importFailed = false;
         try
         {
             await FileImporter.ImportFileAsync(file.Path, token,
@@ -287,8 +369,9 @@ public class MainViewModel : BindableBase
                 {
                     await dispatcherQueue.EnqueueAsync(() =>
                     {
-                        ImportProgress = (int)((double)progress / total * 100);
-                        ImportText = $" {title}";
+                        ProgressDialogProgress = (int)((double)progress / total * 100);
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
                     });
 
                     if (didFail)
@@ -322,8 +405,8 @@ public class MainViewModel : BindableBase
 
         await dispatcherQueue.EnqueueAsync(() =>
         {
-            ImportText = string.Empty;
-            ImportProgress = 0;
+            ProgressDialogText = string.Empty;
+            ProgressDialogProgress = 0;
             return Task.CompletedTask;
         });
 
@@ -335,92 +418,16 @@ public class MainViewModel : BindableBase
             });
 
         await GetAudiobookListAsync();
-        
+
         // select the imported audiobook
-        var audiobook = Audiobooks.FirstOrDefault(a => a.FilePath == file.Path);
+        var audiobook = Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == file.Path);
         if (audiobook != null)
-            App.PlayerViewModel.OpenAudiobook(audiobook);
-    }
-
-    public async Task<bool> ImportAudiobookTest(string path, bool showImportDialog = true)
-    {
-        var importFailed = false;
-
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
-
-        _cancellationTokenSource = new CancellationTokenSource();
-        var token = _cancellationTokenSource.Token;
-
-        if (showImportDialog)
-        {
-            MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
-
-            MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
-                "Please wait while the audiobooks are imported...");
-        }
-
-        try
-        {
-            await FileImporter.ImportFileAsync(path, token,
-                async (progress, total, title, didFail) =>
-                {
-                    await dispatcherQueue.EnqueueAsync(() =>
-                    {
-                        ImportProgress = (int)((double)progress / total * 100);
-                        ImportText = $" {title}";
-                    });
-
-                    if (didFail)
-                    {
-                        importFailed = true;
-                        EnqueueNotification(new Notification
-                        {
-                            Message = "Failed to import audiobook. Path: " + path,
-                            Severity = InfoBarSeverity.Error
-                        });
-                    }
-                });
-        }
-        catch (OperationCanceledException)
-        {
-            EnqueueNotification(new Notification
-            {
-                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
-            });
-        }
-        catch (Exception e)
-        {
-            importFailed = true;
-            EnqueueNotification(new Notification
-            {
-                Message = "Failed to import audiobook. Path: " + path,
-                Severity = InfoBarSeverity.Error
-            });
-            LoggingService.Log(e.Message);
-        }
-
-        await dispatcherQueue.EnqueueAsync(() =>
-        {
-            ImportText = string.Empty;
-            ImportProgress = 0;
-            return Task.CompletedTask;
-        });
-
-        if (!importFailed)
-            EnqueueNotification(new Notification
-            {
-                Message = "Audiobook imported successfully!",
-                Severity = InfoBarSeverity.Success
-            });
-
-        await GetAudiobookListAsync();
-
-        return !importFailed;
+            await App.PlayerViewModel.OpenAudiobook(audiobook);
     }
 
     private CancellationTokenSource _cancellationTokenSource;
 
-    public async void ImportAudiobooksAsync()
+    public async void ImportAudiobooksFromDirectoryAsync()
     {
         var openPicker = new FolderPicker();
         var window = App.Window;
@@ -460,8 +467,9 @@ public class MainViewModel : BindableBase
                     await dispatcherQueue.EnqueueAsync(() =>
                     {
                         totalBooks++;
-                        ImportProgress = ((double)progress / total * 100).ToInt();
-                        ImportText = $" {title}";
+                        ProgressDialogProgress = ((double)progress / total * 100).ToInt();
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
                     });
 
                     if (didFail)
@@ -483,8 +491,114 @@ public class MainViewModel : BindableBase
 
         await dispatcherQueue.EnqueueAsync(() =>
         {
-            ImportText = string.Empty;
-            ImportProgress = 0;
+            ProgressDialogText = string.Empty;
+            ProgressDialogProgress = 0;
+        });
+
+        // if (failedBooks > 0)
+        //     EnqueueNotification(new Notification
+        //     {
+        //         Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+        //     });
+
+        EnqueueNotification(new Notification
+        {
+            Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
+        });
+
+        await GetAudiobookListAsync();
+
+        stopwatch.Stop();
+        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
+    }
+
+    public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
+
+    public async Task ImportAudiobookWithMultipleFilesAsync(object sender, RoutedEventArgs e)
+    {
+        var openPicker = new FileOpenPicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".mp3");
+
+        var files = await openPicker.PickMultipleFilesAsync();
+        if (files.IsNullOrEmpty()) return;
+
+        // add the selected files to the observable collection
+        foreach (var file in files)
+            SelectedFiles.Add(new SelectedFile(filePath: file.Path, fileName: file.Name));
+
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+        // get framework element from sender
+        var element = sender as FrameworkElement;
+        if (element == null) return;
+
+        var result = await element.ShowSelectFilesDialogAsync();
+        if (result == ContentDialogResult.None)
+        {
+            SelectedFiles.Clear();
+            await dispatcherQueue.EnqueueAsync(() => IsLoading = false);
+            return;
+        }
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+            "Please wait while the audiobooks are imported...");
+
+        var totalBooks = 0;
+        var failedBooks = 0;
+
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+        try
+        {
+            var filesArray = SelectedFiles.Select(file => file.FilePath).ToArray();
+            await FileImporter.ImportFromMultipleFilesAsync(filesArray, token,
+                async (progress, total, title, didFail) =>
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        totalBooks++;
+                        ProgressDialogProgress = ((double)progress / total * 100).ToInt();
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
+                    });
+
+                    if (didFail)
+                    {
+                        totalBooks--;
+                        failedBooks++;
+                        EnqueueNotification(new Notification
+                            { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
+                    }
+                });
+        }
+        catch (OperationCanceledException)
+        {
+            EnqueueNotification(new Notification
+            {
+                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
+            });
+        }
+        finally
+        {
+            // clear selected files
+            SelectedFiles.Clear();
+        }
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            ProgressDialogText = string.Empty;
+            ProgressDialogProgress = 0;
         });
 
         if (failedBooks > 0)
@@ -499,15 +613,15 @@ public class MainViewModel : BindableBase
         });
 
         await GetAudiobookListAsync();
-        
+
         stopwatch.Stop();
-        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
+        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");
     }
 
     /// <summary>
     ///     Resets the audiobook list.
     /// </summary>
-    public async Task ResetAudiobookList()
+    public async Task ResetAudiobookListAsync()
     {
         await dispatcherQueue.EnqueueAsync(async () =>
             await GetAudiobookListAsync());
@@ -515,19 +629,16 @@ public class MainViewModel : BindableBase
 
     // TODO: need to move these methods to a separate class
 
-    // TODO: add type and duration to the Notification class
-    // ViewModel.EnqueueNotification(new Notification
-    // {
-    //     Message = "This is a test notification",
-    //     Type = NotificationType.Info,
-    //     Duration = TimeSpan.FromSeconds(5)
-    // });
-
     public ObservableCollection<Notification> Notifications { get; } = [];
 
     public void EnqueueNotification(Notification notification)
     {
-        dispatcherQueue.EnqueueAsync(() => { Notifications.Add(notification); });
+        dispatcherQueue.EnqueueAsync(async () =>
+        {
+            Notifications.Add(notification);
+            await Task.Delay(notification.Duration);
+            Notifications.Remove(notification);
+        });
     }
 
     // Call this method when the InfoBar is closed
@@ -539,10 +650,133 @@ public class MainViewModel : BindableBase
             if (Notifications.Count == 0) Notifications.Clear();
         });
     }
+
+    public async void CreateExportFile(object sender, RoutedEventArgs e)
+    {
+        await GetAudiobookListAsync();
+
+        var audiobooksExport = Audiobooks.Select(x => new
+        {
+            x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
+            x.CurrentChapterIndex, x.IsNowPlaying, x.IsCompleted
+        });
+        var json = JsonSerializer.Serialize(audiobooksExport);
+
+        // let user choose where to save the file
+        var savePicker = new FileSavePicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(savePicker, hWnd);
+        savePicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        savePicker.FileTypeChoices.Add("Audibly Export File", new List<string> { ".audibly" });
+        savePicker.SuggestedFileName = "audibly_export";
+
+        var file = savePicker.PickSaveFileAsync().AsTask().Result;
+
+        if (file == null) return;
+
+        // write the json string to the file
+        FileIO.WriteTextAsync(file, json).AsTask().Wait();
+
+        // notify the user that the file was created
+        EnqueueNotification(new Notification
+        {
+            Message = "Export file created successfully!",
+            Severity = InfoBarSeverity.Success
+        });
+    }
+
+
+    public async void ImportFromUserSelectedJsonFileAsync(object sender, RoutedEventArgs e)
+    {
+        var openPicker = new FileOpenPicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add(".audibly");
+
+        var file = await openPicker.PickSingleFileAsync();
+        if (file == null) return;
+
+        await ImportFromJsonFileAsync(file);
+    }
+
+    public async Task ImportFromJsonFileAsync(StorageFile file)
+    {
+        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+
+        MessageService.CancelDialogRequested += () => _cancellationTokenSource.Cancel();
+
+        MessageService.ShowDialog(DialogType.Import, "Importing Audiobooks",
+            "Please wait while the audiobooks are imported...");
+
+        var totalBooks = 0;
+        var failedBooks = 0;
+
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+        try
+        {
+            await FileImporter.ImportFromJsonAsync(file, token,
+                async (progress, total, title, didFail) =>
+                {
+                    await dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        totalBooks++;
+                        ProgressDialogProgress = ((double)progress / total * 100).ToInt();
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = title;
+                    });
+
+                    if (didFail)
+                    {
+                        totalBooks--;
+                        failedBooks++;
+                        EnqueueNotification(new Notification
+                            { Message = $"Failed to import {title}!", Severity = InfoBarSeverity.Error });
+                    }
+                });
+        }
+        catch (OperationCanceledException)
+        {
+            EnqueueNotification(new Notification
+            {
+                Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
+            });
+        }
+
+        await dispatcherQueue.EnqueueAsync(() =>
+        {
+            ProgressDialogText = string.Empty;
+            ProgressDialogProgress = 0;
+        });
+
+        if (failedBooks > 0)
+            EnqueueNotification(new Notification
+            {
+                Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+            });
+
+        EnqueueNotification(new Notification
+        {
+            Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
+        });
+
+        await GetAudiobookListAsync(true);
+
+        stopwatch.Stop();
+        LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");
+    }
 }
 
 public class Notification
 {
     public string Message { get; set; }
     public InfoBarSeverity Severity { get; set; }
+    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(10); // Default duration of 10 seconds
 }

@@ -57,4 +57,28 @@ public static class UserSettings
         }
         set => ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"] = value;
     }
+    
+    public static bool IsSidebarCollapsed
+    {
+        get
+        {
+            try
+            {
+                var isCollapsed = ApplicationData.Current.LocalSettings.Values["IsSidebarCollapsed"];
+                if (isCollapsed != null)
+                    if (bool.TryParse(isCollapsed.ToString(), out var result))
+                        return result;
+
+                ApplicationData.Current.LocalSettings.Values["IsSidebarCollapsed"] = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return false;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["IsSidebarCollapsed"] = value;
+    }
 }

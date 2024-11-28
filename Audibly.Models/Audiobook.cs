@@ -1,6 +1,6 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/8/2024
+// Created: 04/15/2024
+// Updated: 10/11/2024
 
 namespace Audibly.Models;
 
@@ -11,13 +11,17 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
 {
     public string Author { get; set; }
     public string Composer { get; set; }
+    public int CurrentSourceFileIndex { get; set; }
     public DateTime? DateLastPlayed { get; set; }
     public string Description { get; set; }
-    public long Duration { get; set; }
-    public int CurrentTimeMs { get; set; }
+    public long Duration { get; set; } // *
+
+    // public int CurrentTimeMs { get; set; } // *
     public string CoverImagePath { get; set; }
+
     public string ThumbnailPath { get; set; }
-    public string FilePath { get; set; }
+
+    public List<SourceFile> SourcePaths { get; set; }
     public bool IsNowPlaying { get; set; }
     public double PlaybackSpeed { get; set; }
     public double Progress { get; set; }
@@ -25,8 +29,9 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public string Title { get; set; }
     public double Volume { get; set; }
     public int? CurrentChapterIndex { get; set; }
+    public bool IsCompleted { get; set; }
 
-    public List<ChapterInfo> Chapters { get; init; } = [];
+    public List<ChapterInfo> Chapters { get; set; } = [];
 
     public bool Equals(Audiobook? other)
     {
@@ -40,8 +45,7 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Audiobook)obj);
+        return obj.GetType() == GetType() && Equals((Audiobook)obj);
     }
 
     public override int GetHashCode()

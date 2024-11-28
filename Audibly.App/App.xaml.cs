@@ -1,11 +1,13 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Created: 04/15/2024
+// Updated: 10/03/2024
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
@@ -15,21 +17,23 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
-using Audibly.Repository;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using CommunityToolkit.WinUI;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
+using Sharpener.Extensions;
+using WinRT;
 using WinRT.Interop;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
-using Microsoft.Extensions.Configuration;
 
 namespace Audibly.App;
 
@@ -50,7 +54,7 @@ public partial class App : Application
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
     public static MainViewModel ViewModel { get; } =
-        new(new M4BFileImportService(), new AppDataService(), new MessageService(),
+        new(new FileImportService(), new AppDataService(), new MessageService(),
             new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
 
     /// <summary>
@@ -80,7 +84,7 @@ public partial class App : Application
         {
             // Tells which project in Sentry to send events to:
             options.Dsn = Helpers.Sentry.Dsn;
-            
+
             options.AutoSessionTracking = true;
 
             // Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing.
@@ -91,8 +95,8 @@ public partial class App : Application
             options.IsGlobalModeEnabled = true;
 
             // TODO:Any other Sentry options you need go here.
-        });        
-        
+        });
+
         InitializeComponent();
         UnhandledException += OnUnhandledException;
     }
@@ -129,20 +133,16 @@ public partial class App : Application
 
         Window = WindowHelper.CreateWindow();
 
+        var appWindow = WindowHelper.GetAppWindow(Window);
+        appWindow.Closing += async (_, _) =>
+        {
+            if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
+        };
+
         win32WindowHelper = new Win32WindowHelper(Window);
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1600, y = 800 });
 
         UseSqlite();
-
-        // set now playing audiobook
-        await ViewModel.GetAudiobookListAsync();
-        var nowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
-
-        if (nowPlaying != null)
-        {
-            ViewModel.SelectedAudiobook = nowPlaying; // todo: this is probably not necessary
-            PlayerViewModel.OpenAudiobook(nowPlaying);
-        }
 
         RootFrame = Window.Content as Frame;
 
@@ -165,9 +165,7 @@ public partial class App : Application
         if (appActivationArguments.Kind is ExtendedActivationKind.File &&
             appActivationArguments.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
-        {
             await _dispatcherQueue.EnqueueAsync(() => HandleFileActivation(storageFile));
-        }
 
         Window.Activate();
     }
@@ -176,19 +174,10 @@ public partial class App : Application
     {
         ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
 
-        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
 
         // set the current position
-        if (audiobook == null)
-        {
-            await ViewModel.ImportAudiobookTest(storageFile.Path, false);
-            audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.FilePath == storageFile.Path);
-        }
-
-        if (audiobook == null) return; // todo: handle if this isn't found
-
-        // ViewModel.SelectedAudiobook = audiobook;
-        PlayerViewModel.OpenAudiobook(audiobook);
+        if (audiobook == null) await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
     }
 
     private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)
@@ -224,18 +213,73 @@ public partial class App : Application
     {
         var dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db";
 
-#if DEBUG
-        Debug.WriteLine($"Database path: {dbPath}");
-#endif
+        var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
+            .UseSqlite("Data Source=" + dbPath)
+            .Options;
 
-        // TODO: add demo database
-        // if (!File.Exists(databasePath))
-        // {
-        //     File.Copy(demoDatabasePath, databasePath);
-        // }
-        var dbOptions = new DbContextOptionsBuilder<AudiblyContext>().UseSqlite(
-            "Data Source=" + dbPath);
-        Repository = new SqlAudiblyRepository(dbOptions);
+        // check for current version key
+        var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
+        if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
+            // if (true) // todo: this is temporary until we have a version to test against
+        {
+            // if the user's version is not the current version, then we need to update the database
+            // to the current version
+            // this is a breaking change, so we need to reset the database
+            // and re-import the demo data
+
+            // need to apply the migrations first
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                var databaseFacade = new DatabaseFacade(context);
+                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+            }
+
+            Repository = new SqlAudiblyRepository(dbOptions);
+
+            // create audibly export file
+            var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
+            var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
+            var audiobooksExport = audiobookViewModels.Select(x => new
+            {
+                x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
+                x.CurrentChapterIndex, x.IsNowPlaying, x.IsCompleted
+            });
+            var json = JsonSerializer.Serialize(audiobooksExport);
+
+            var folder = ApplicationData.Current.LocalFolder;
+            var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
+                .GetAwaiter().GetResult();
+            FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
+
+            // delete the old database
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                context.Database.EnsureDeleted();
+            }
+
+            // create the new database
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                var databaseFacade = new DatabaseFacade(context);
+                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+            }
+
+            ViewModel.NeedToImportAudiblyExport = true;
+            Repository = new SqlAudiblyRepository(dbOptions); // do i need to set this again?
+
+            // ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
+        }
+        else
+        {
+            // create the db context
+            using (var context = new AudiblyContext(dbOptions))
+            {
+                var databaseFacade = new DatabaseFacade(context);
+                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+            }
+
+            Repository = new SqlAudiblyRepository(dbOptions);
+        }
     }
 
     public static void RestartApp()

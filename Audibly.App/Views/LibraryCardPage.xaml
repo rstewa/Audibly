@@ -10,15 +10,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:views="using:Audibly.App.Views"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Page.Resources>
         <DataTemplate x:DataType="viewModels:AudiobookViewModel" x:Key="AudiobookTemplate">
             <userControls:AudiobookTile
-                Author="{x:Bind Author}"
-                FilePath="{x:Bind FilePath, Mode=OneWay}"
+                Author="{x:Bind Author, Mode=OneWay}"
+                FilePath="{x:Bind CurrentSourceFile.FilePath, Mode=OneWay}"
+                Id="{x:Bind Id, Mode=OneWay}"
+                IsCompleted="{x:Bind IsCompleted, Mode=OneWay}"
                 Progress="{x:Bind Progress, Mode=OneWay}"
+                SourcePaths="{x:Bind SourcePaths, Mode=OneWay}"
+                SourcePathsCount="{x:Bind SourcePaths.Count, Mode=OneWay}"
                 Title="{x:Bind Title, Mode=OneWay}">
                 <userControls:AudiobookTile.Source>
                     <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
@@ -62,12 +67,22 @@
             <userControls:CustomHyperlinkButton
                 ButtonClick="{x:Bind ViewModel.ImportAudiobookAsync}"
                 Icon="&#xE8E5;"
-                Text="Open Audiobook (.m4b)" />
+                Text="{x:Bind views:LibraryCardPage.ImportAudiobookText}" />
 
             <userControls:CustomHyperlinkButton
-                ButtonClick="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                ButtonClick="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
                 Icon="&#xED25;"
-                Text="Import Audiobooks from a directory (recursively)" />
+                Text="{x:Bind views:LibraryCardPage.ImportAudiobooksFromDirectoryText}" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}"
+                Icon="&#xE838;"
+                Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}" />
+
+            <userControls:CustomHyperlinkButton
+                ButtonClick="{x:Bind ViewModel.ImportFromUserSelectedJsonFileAsync}"
+                Icon="&#xE896;"
+                Text="{x:Bind views:LibraryCardPage.ImportFromJsonFileText}" />
 
         </StackPanel>
 
@@ -79,7 +94,7 @@
             <TextBlock
                 Margin="20,8,6,0"
                 Style="{StaticResource PageTitleTextBlockStyle}"
-                Text="Audiobooks"
+                Text="Audiobook Library"
                 x:Name="PageTitle" />
             <CommandBar
                 Background="Transparent"
@@ -90,28 +105,97 @@
                 RelativePanel.RightOf="PageTitle"
                 x:Name="MainCommandBar">
                 <!--  todo: may implement this in the future  -->
-                <!--  <AppBarButton  -->
-                <!--  Icon="Filter"  -->
-                <!--  Label="Filter"  -->
-                <!--  ToolTipService.ToolTip="Filter Audiobooks" />  -->
                 <AppBarButton
-                    Click="{x:Bind ViewModel.Refresh}"
+                    Icon="Filter"
+                    Label="Filter"
+                    ToolTipService.ToolTip="Filter Audiobooks"
+                    x:Name="FilterButton">
+                    <Button.Flyout>
+                        <!--  create custom filter checkbox flyout  -->
+                        <Flyout Placement="BottomEdgeAlignedLeft">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox
+                                    Checked="SelectAllFiltersCheckBox_OnChecked"
+                                    Content="Select all"
+                                    Indeterminate="SelectAllFiltersCheckBox_OnIndeterminate"
+                                    IsThreeState="True"
+                                    Unchecked="SelectAllFiltersCheckBox_OnUnchecked"
+                                    x:Name="SelectAllFiltersCheckBox" />
+                                <CheckBox
+                                    Checked="InProgressFilterCheckBox_OnChecked"
+                                    Content="In Progress"
+                                    Margin="24,0,0,0"
+                                    Unchecked="InProgressFilterCheckBox_OnUnchecked"
+                                    x:Name="InProgressFilterCheckBox" />
+                                <CheckBox
+                                    Checked="NotStartedFilterCheckBox_OnChecked"
+                                    Content="Not Started"
+                                    Margin="24,0,0,0"
+                                    Unchecked="NotStartedFilterCheckBox_OnUnchecked"
+                                    x:Name="NotStartedFilterCheckBox" />
+                                <CheckBox
+                                    Checked="CompletedFilterCheckBox_OnChecked"
+                                    Content="Completed"
+                                    Margin="24,0,0,0"
+                                    Unchecked="CompletedFilterCheckBox_OnUnchecked"
+                                    x:Name="CompletedFilterCheckBox" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </AppBarButton>
+                <AppBarButton
+                    Click="{x:Bind RefreshButton_OnClick}"
                     Icon="Refresh"
                     Label="Refresh"
                     ToolTipService.ToolTip="Refresh audiobooks" />
                 <AppBarSeparator />
+                <!--  <AppBarButton  -->
+                <!--  Click="{x:Bind ViewModel.ImportAudiobookAsync}"  -->
+                <!--  Icon="Add"  -->
+                <!--  Label="Open"  -->
+                <!--  ToolTipService.ToolTip="Open audiobook">  -->
+                <!--     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" /> -->
+                <!-- </AppBarButton> -->
                 <AppBarButton
-                    Click="{x:Bind ViewModel.ImportAudiobookAsync}"
-                    Icon="Add"
-                    Label="Open"
-                    ToolTipService.ToolTip="Open audiobook">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind ViewModel.ImportAudiobooksAsync}"
+                    Icon="Download"
                     Label="Import"
-                    ToolTipService.ToolTip="Import audiobooks from a directory (recursively)">
+                    ToolTipService.ToolTip="Import audiobooks">
                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuFlyoutItem
+                                Click="{x:Bind ViewModel.ImportAudiobookAsync}"
+                                Icon="OpenFile"
+                                Text="{x:Bind views:LibraryCardPage.ImportAudiobookText}" />
+                            <MenuFlyoutItem
+                                Click="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
+                                Icon="Folder"
+                                Text="{x:Bind views:LibraryCardPage.ImportAudiobooksFromDirectoryText}" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}" Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE838;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem
+                                Click="{x:Bind ViewModel.ImportFromUserSelectedJsonFileAsync}"
+                                Icon="Download"
+                                Text="{x:Bind views:LibraryCardPage.ImportFromJsonFileText}" />
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Label="Export" ToolTipService.ToolTip="Export audiobooks">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEDE1;" />
+                    <AppBarButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuFlyoutItem Click="{x:Bind ViewModel.CreateExportFile}" Text="Export audiobooks in library to JSON file for later import">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xEDE1;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
                 </AppBarButton>
 
                 <!--  debug menu  -->

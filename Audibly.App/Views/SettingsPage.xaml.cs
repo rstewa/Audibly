@@ -57,7 +57,13 @@ public sealed partial class SettingsPage : Page
             if (selectedTheme == "Dark")
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.White);
             else if (selectedTheme == "Light")
+            {
+                // warn user that the light theme is in beta and may not be fully supported
+                App.ViewModel.MessageService.ShowDialog(DialogType.Info, "Light Theme Warning",
+                    "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
+                
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
+            }
             else
                 _ = TitleBarHelper.ApplySystemThemeToCaptionButtons(window) == Colors.White ? "Dark" : "Light";
         }

@@ -11,7 +11,7 @@ namespace Audibly.App.UserControls;
 
 public sealed partial class CustomHyperlinkButton : UserControl
 {
-    public event EventHandler? ButtonClick;
+    public event RoutedEventHandler? ButtonClick;
 
     public static readonly DependencyProperty ButtonClickProperty =
         DependencyProperty.Register("ButtonClick", typeof(EventHandler), typeof(CustomHyperlinkButton),
@@ -42,6 +42,6 @@ public sealed partial class CustomHyperlinkButton : UserControl
 
     private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
-        ButtonClick?.Invoke(this, EventArgs.Empty);
+        ButtonClick?.Invoke(this, e);
     }
 }

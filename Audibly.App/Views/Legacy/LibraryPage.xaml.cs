@@ -1,6 +1,6 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 3/21/2024
-// Updated: 3/28/2024
+// Created: 08/03/2024
+// Updated: 10/03/2024
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Sharpener.Extensions;
 
-namespace Audibly.App.Views;
+namespace Audibly.App.Views.Legacy;
 
 /// <summary>
 ///     An empty page that can be used on its own or navigated to within a Frame.
@@ -171,14 +171,21 @@ public sealed partial class LibraryPage : Page
 
     private async void PlayThisBookButton_OnClick(object sender, RoutedEventArgs e)
     {
-        await _dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            if (PlayerViewModel.NowPlaying != null)
-                PlayerViewModel.NowPlaying.IsNowPlaying = false;
+            if (ViewModel.SelectedAudiobook != null) 
+                await PlayerViewModel.OpenAudiobook(ViewModel.SelectedAudiobook);
 
-            PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
-            PlayerViewModel.NowPlaying.IsNowPlaying = true;
-            PlayerViewModel.MediaPlayer.Source = MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.FilePath.AsUri());
+            // if (PlayerViewModel.NowPlaying != null)
+            //     PlayerViewModel.NowPlaying.IsNowPlaying = false;
+            //
+            // PlayerViewModel.NowPlaying = ViewModel.SelectedAudiobook;
+            //
+            // if (PlayerViewModel.NowPlaying == null) return;
+            //
+            // PlayerViewModel.NowPlaying.IsNowPlaying = true;
+            // PlayerViewModel.MediaPlayer.Source =
+            //     MediaSource.CreateFromUri(PlayerViewModel.NowPlaying.CurrentSourceFile.FilePath.AsUri());
         });
     }
 }

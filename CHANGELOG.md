@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for audiobooks that consist of multiple files (.mp3 & .m4b only)
 - Added feature that allows users to mark an audiobook as finished
   - Will mark an audiobook as finished when the progress is at 100% by default
+  - This is indicated by a new icon (a checkmark) on the audiobook tile in place of the progress icon
 - Added data migration feature to migrate user data to the new database
 - Added database migrations so that updating the database going forward will be easier
 - Added filter button that allows users to filter their library by:
@@ -33,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved now playing slider to be more responsive
 - Added warning that the light theme is in beta and may not appear correctly
 - Modified sidebar to remember its collapsed state on startup
+- Removed "Open" button from the library card view
+- Updated library card view s
 
 ### Fixed
 

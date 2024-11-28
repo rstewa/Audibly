@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -49,6 +50,15 @@ public sealed partial class PlayerControl : UserControl
     {
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
+        TitleMarqueeText.MarqueeCompleted += TitleMarqueeText_MarqueeCompleted;
+        // TitleMarqueeText.Marquee
+    }
+
+    private async void TitleMarqueeText_MarqueeCompleted(object? sender, EventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StopMarquee());
+        await Task.Delay(TimeSpan.FromSeconds(3)); // wait for 3 seconds
+        _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StartMarquee());
     }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)

@@ -5,6 +5,7 @@
     x:Class="Audibly.App.UserControls.PlayerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarqueeTextRns"
     xmlns:local="using:Audibly.App.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
@@ -76,17 +77,27 @@
                     x:Name="TitleArtistStackPanel">
 
                     <!--  Title  -->
-                    <TextBlock
+                    <labs:MarqueeText
+                        Behavior="Looping"
+                        Direction="Left"
                         FontSize="16"
-                        Margin="0,0,0,0"
-                        MaxHeight="150"
-                        MaxWidth="300"
-                        Style="{StaticResource TitleTextBlockStyle}"
+                        FontWeight="SemiBold"
+                        MaxWidth="230"
+                        Speed="20"
                         Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
-                        TextTrimming="WordEllipsis"
-                        TextWrapping="NoWrap"
-                        ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
-                        x:Name="TitleTextBlock" />
+                        x:Name="TitleMarqueeText" />
+
+                    <!--  <TextBlock  -->
+                    <!--  FontSize="16"  -->
+                    <!--  Margin="0,0,0,0"  -->
+                    <!--  MaxHeight="150"  -->
+                    <!--  MaxWidth="300"  -->
+                    <!--  Style="{StaticResource TitleTextBlockStyle}"  -->
+                    <!--  Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"  -->
+                    <!--  TextTrimming="WordEllipsis"  -->
+                    <!--  TextWrapping="NoWrap"  -->
+                    <!--  ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"  -->
+                    <!--  x:Name="TitleTextBlock" />  -->
 
                     <!--  Artist  -->
                     <TextBlock

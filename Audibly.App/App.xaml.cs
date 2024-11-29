@@ -220,7 +220,6 @@ public partial class App : Application
         // check for current version key
         var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
         if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
-            // if (true) // todo: this is temporary until we have a version to test against
         {
             // if the user's version is not the current version, then we need to update the database
             // to the current version
@@ -266,8 +265,6 @@ public partial class App : Application
 
             ViewModel.NeedToImportAudiblyExport = true;
             Repository = new SqlAudiblyRepository(dbOptions); // do i need to set this again?
-
-            // ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
         }
         else
         {

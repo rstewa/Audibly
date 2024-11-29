@@ -3,6 +3,7 @@
 // Updated: 6/1/2024
 
 using Audibly.App.Helpers;
+using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Views.ControlPages;
@@ -17,6 +18,8 @@ public sealed partial class ChangelogDialogContent : Page
     public string ChangelogText { get; set; }
 
     public string Subtitle { get; set; }
+    
+    public MarkdownConfig MarkdownConfig = MarkdownConfig.Default;
 
     public ChangelogDialogContent(string changelogText)
     {

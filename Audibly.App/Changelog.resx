@@ -118,7 +118,57 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.0.15] - 07-21-24
+    <value># Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+### Added
+
+- Added support for .mp3 files
+- Added support for audiobooks that consist of multiple files (.mp3 &amp; .m4b only)
+- Added feature that allows users to mark an audiobook as finished
+  - Will mark an audiobook as finished when the progress is at 100% by default
+  - This is indicated by a new icon (a checkmark) on the audiobook tile in place of the progress icon
+- Added data migration feature to migrate user data to the new database
+- Added database migrations so that updating the database going forward will be easier
+- Added filter button that allows users to filter their library by:
+  - In Progress
+  - Not Started
+  - Completed
+- Added export button to allow users to export their library to a .json file
+- Added import button to allow users to import a library from a .json file (has to be exported from Audibly)
+- Added "More Info" button to audiobook tile context menu in library card view
+  - Shows the audiobook's metadata
+- Added a powershell script that packages the .msix files into a .msixbundle file
+- Added warning when user switches to light theme that it is in beta and may not appear correctly
+
+### Changed
+
+- Changed playback speed maximum to 2.0x
+- Made notifications disappear after 10 seconds
+- Improved now playing slider to be more responsive
+- Added warning that the light theme is in beta and may not appear correctly
+- Modified sidebar to remember its collapsed state on startup
+- Removed "Open" button from the library card view
+- Updated library card view s
+
+### Fixed
+
+- Fixed a bug (#57) where:
+  - The icons would turn black on hover when the app was in dark mode but the system was in light mode
+- Fixed a bug (#58) where:
+  - Added a default cover image when the import operation was unable to get a cover image from the audiobook file
+- Fixed a bug where:
+  - The now playing book on startup would not update its progress when playing
+- Fixed a bug where:
+  - The progress icon on the audiobook wouldn't update when the audiobook was playing
+
+## [2.0.15] - 07-21-24
 
 ### Changed
 
@@ -128,10 +178,111 @@
 
 - Fixed a bug (#51) where:
   - The back button would sometimes lose focus when hovering over it
-
 - Fixed a bug (#52) where:
   - The app would try to display more than one content dialog causing it to crash
   - Added a mutex lock to ProcessDialogQueue to hopefully fix this issue
-</value>
+
+## [2.0.14] - 07-01-24
+
+### Fixed
+
+- Hotfix for 2.0.13:
+  - The app would crash when trying to parse saved user settings (volume &amp; playback speed) from local storage
+
+## [2.0.13] - 06-29-24
+
+### Fixed
+
+- Hotfix for 2.0.12:
+  - The app would crash when trying to parse saved user settings (volume &amp; playback speed) from local storage
+
+### Changed
+
+- Updated some dependencies
+
+## [2.0.12] - 06-27-24
+
+### Fixed
+
+- Fixed link to Privacy Policy in CHANGELOG
+
+## [2.0.11] - 06-27-24
+
+### Changed
+
+- Updated Privacy Policy (because of the addition of Sentry.io for error tracking).
+  - You can view the updated Privacy Policy [here](https://github.com/rstewa/Audibly/blob/main/PrivacyPolicy.md)
+- Updated the volume and playback speed settings to be saved even after restarting the app
+
+### Added
+
+- Sentry.io for error tracking
+- Added contact card on Settings Page 
+
+## [2.0.10] - 06-12-2024
+
+### Added
+
+- Added link to Libation
+- Added link to OpenAudible
+
+### Fixed
+
+- Added try/catch to thumbnail generation
+- Fixed a bug where:
+  - The import would fail if an audiobook had a long title (this prevented the metadata directory from being created)
+- Fixed a bug where:
+  - The title would cover the play buttons on the now playing bar if it was too long
+
+## [2.0.9] - 06-04-2024
+
+### Added
+
+- Added file activation support
+  - Users can now open audiobooks (.m4b) from the file explorer
+  - Users can also set Audibly as the default app for opening audiobooks (.m4b)
+
+- Added Donation button
+
+- Added Changelog dialog for new versions
+  - Users will now see a dialog with the changelog when they update the app
+
+### Fixed
+
+- Fixed a bug where:
+  - The app would crash when deleting the now playing audiobook from the library
+
+## [2.0.8] - 04-24-2024
+
+### Fixed
+
+- Better fix for the chapter bug from 2.0.7
+  - When there is no chapter metadata, the app will now default to a single chapter with the title of the audiobook.
+
+## [2.0.7] - 04-24-2024
+
+### Fixed
+
+- Fixed a bug where:
+  - A user imports an audiobook that the file importer service was unable to get any chapter metadata from.
+  - The app would then crash when trying to play the audiobook (because it was trying to load chapters that didn't exist).
+  - The app would then crash until the user reset the app's data (which would remove the problematic audiobook).
+- Updated the dialog service 
+
+## [2.0.6] - 04-17-2024
+
+### Changed
+
+- Complete redesign of the UI
+- Complete refactor of the code base
+- Added a library view
+- First v2 version in the store
+
+
+## [1.0.0] - 08-31-2023
+
+### Added
+
+- 1st version for Microsoft App Store</value>
   </data>
 </root>

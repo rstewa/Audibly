@@ -1,38 +1,43 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <Page
-    Background="Transparent"
-    mc:Ignorable="d"
     x:Class="Audibly.App.Views.ControlPages.ChangelogDialogContent"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:markdownTextBlock="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    Height="500"
+    Background="Transparent"
+    mc:Ignorable="d">
 
-    <StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
         <TextBlock
+            Grid.Row="0"
             Margin="0,0,0,12"
             Style="{StaticResource TitleTextBlockStyle}"
             Text="{x:Bind Title}" />
 
-        <TextBlock Margin="0,0,0,8" Text="{x:Bind Subtitle}" />
         <Border
-            Background="{ThemeResource ControlOnImageFillColorTertiaryBrush}"
-            CornerRadius="10"
+            Grid.Row="2"
             Margin="0,0,0,8"
-            Padding="10">
-            <ScrollViewer
-                HorizontalScrollBarVisibility="Auto"
-                Margin="0,0,0,8"
-                VerticalScrollBarVisibility="Auto">
-                <TextBlock
-                    FontFamily="Consolas"
-                    Foreground="White"
-                    Text="{x:Bind ChangelogText, Mode=OneWay}" />
+            Padding="10"
+                Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
+            CornerRadius="10">
+            <ScrollViewer>
+                <markdownTextBlock:MarkdownTextBlock Config="{x:Bind MarkdownConfig}" Text="{x:Bind ChangelogText, Mode=OneWay}" />
             </ScrollViewer>
         </Border>
-        <TextBlock>
+
+        <TextBlock Grid.Row="3">
             <Hyperlink NavigateUri="https://github.com/rstewa/Audibly/blob/main/CHANGELOG.md">Link to CHANGELOG</Hyperlink>
         </TextBlock>
-    </StackPanel>
+    </Grid>
 </Page>

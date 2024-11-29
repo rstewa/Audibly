@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The now playing book on startup would not update its progress when playing
 - Fixed a bug where:
   - The progress icon on the audiobook wouldn't update when the audiobook was playing
+- Fixed a bug in the file activation code
 
 ## [2.0.15] - 07-21-24
 

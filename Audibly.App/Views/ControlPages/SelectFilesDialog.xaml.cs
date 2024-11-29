@@ -2,15 +2,13 @@
 // Created: 08/14/2024
 // Updated: 09/06/2024
 
-using System;
-using System.Linq;
-using System.Text;
+using System.Collections.Specialized;
+using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
 using Audibly.Models;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Contacts;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Audibly.App.Views.ControlPages;
 
@@ -19,46 +17,23 @@ namespace Audibly.App.Views.ControlPages;
 /// </summary>
 public sealed partial class SelectFilesDialog : Page
 {
-    /// <summary>
-    ///     Gets the app-wide ViewModel instance.
-    /// </summary>
-    public MainViewModel ViewModel => App.ViewModel;
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public SelectFilesDialog()
     {
         InitializeComponent();
+
+        ViewModel.SelectedFiles.CollectionChanged += SelectedFiles_CollectionChanged;
     }
 
-    //private void SelectedFiles_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-    //{
-    //    // Prepare a string with one dragged item per line
-    //    StringBuilder items = new StringBuilder();
-    //    foreach (SelectedFile item in e.Items)
-    //    {
-    //        if (items.Length > 0) { items.AppendLine(); }
-    //        if (item.ToString() != null)
-    //        {
-    //            // Append name from contact object onto data string
-    //            items.Append(item.ToString() + " " + item.FileName);
-    //        }
-    //    }
-    //    // Set the content of the DataPackage
-    //    e.Data.SetText(items.ToString());
+    public MainViewModel ViewModel => App.ViewModel;
 
-    //    e.Data.RequestedOperation = DataPackageOperation.Move;
-    //}
-
-    private void SelectedFiles_DragOver(object sender, DragEventArgs e)
+    private void SelectedFiles_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        e.AcceptedOperation = DataPackageOperation.Move;
-    }
-
-    private void SelectedFilesListView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs e)
-    {
-        // update the SelectedFiles observable collection
-        var selectedFiles = SelectedFilesListView.Items.Cast<SelectedFile>().ToList();
-        ViewModel.SelectedFiles.Clear();
-        foreach (var selectedFile in selectedFiles) ViewModel.SelectedFiles.Add(selectedFile);
+        var action = e.Action;
+        if (action == NotifyCollectionChangedAction.Add)
+            // Call ReapplyAlternateColors after the collection changes
+            _dispatcherQueue.TryEnqueue(() => ListViewExtensions.ReapplyAlternateColors(SelectedFilesListView));
     }
 
     private void DeleteFileButton_OnClick(object sender, RoutedEventArgs e)

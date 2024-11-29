@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <Page
     x:Class="Audibly.App.Views.ControlPages.SelectFilesDialog"
@@ -7,90 +7,73 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Audibly.Models"
+    xmlns:test="using:Audibly.App.Extensions"
     mc:Ignorable="d">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
 
+    <Page.Resources>
+        <DataTemplate x:Name="NormalTemplate" />
+    </Page.Resources>
+
     <!--  this dialog will show users the selected files and allow them to put them in order  -->
     <Grid HorizontalAlignment="Stretch">
-        <ListView
-            x:Name="SelectedFilesListView"
-            Margin="12"
-            AllowDrop="True"
-            BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CanDragItems="True"
-            CanReorderItems="True"
-            DragItemsCompleted="SelectedFilesListView_OnDragItemsCompleted"
-            DragOver="SelectedFiles_DragOver"
-            ItemsSource="{x:Bind ViewModel.SelectedFiles}"
-            SelectionMode="Single">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="models:SelectedFile">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <!--  <Ellipse  -->
-                        <!--  Fill="{ThemeResource SystemControlBackgroundBaseMediumBrush}"  -->
-                        <!--  Grid.RowSpan="2"  -->
-                        <!--  Height="32"  -->
-                        <!--  HorizontalAlignment="Center"  -->
-                        <!--  Margin="6"  -->
-                        <!--  VerticalAlignment="Center"  -->
-                        <!--  Width="32"  -->
-                        <!--  x:Name="Ellipse" />  -->
-                        <TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Margin="0,6,0,0"
-                            x:Phase="1"
-                            Style="{ThemeResource BaseTextBlockStyle}"
-                            Text="{x:Bind FileName}" />
-                        <TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            x:Phase="2"
-                            Style="{ThemeResource CaptionTextBlockStyle}"
-                            Text="{x:Bind FilePath}" />
-                        <!--  a delete button to delete the file from the list  -->
-                        <Button
-                            x:Name="DeleteFileButton"
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            Margin="24,0,0,0"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            BorderThickness="0"
-                            Click="DeleteFileButton_OnClick"
-                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            FontSize="16"
-                            ToolTipService.ToolTip="Delete">
-                            <Button.Resources>
-                                <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                                <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                                <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-                            </Button.Resources>
-                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;" />
-                        </Button>
-                        <!--<Border
-                            x:Name="Separator"
-                            Grid.Row="2"
-                            Grid.ColumnSpan="2"
-                            Height="2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource AppBarSeparatorForeground}" />-->
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <Border Background="{ThemeResource ControlOnImageFillColorDefaultBrush}" CornerRadius="5">
+            <ScrollView>
+                <ListView
+                    x:Name="SelectedFilesListView"
+                    Padding="10"
+                    test:ListViewExtensions.AlternateColor="{StaticResource ControlFillColorDefaultBrush}"
+                    test:ListViewExtensions.PrimaryColor="{StaticResource ControlFillColorDefaultBrush}"
+                    AllowDrop="True"
+                    BorderThickness="0"
+                    CanDragItems="True"
+                    CanReorderItems="True"
+                    ItemsSource="{x:Bind ViewModel.SelectedFiles}"
+                    SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:SelectedFile">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="48" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    x:Phase="1"
+                                    Style="{ThemeResource BaseTextBlockStyle}"
+                                    Text="{x:Bind FileName}"
+                                    ToolTipService.ToolTip="{x:Bind FilePath}" />
+                                <Button
+                                    x:Name="DeleteFileButton"
+                                    Grid.Row="0"
+                                    Grid.RowSpan="2"
+                                    Grid.Column="1"
+                                    Margin="24,0,0,0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    BorderThickness="0"
+                                    Click="DeleteFileButton_OnClick"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="16"
+                                    ToolTipService.ToolTip="Delete">
+                                    <Button.Resources>
+                                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                                    </Button.Resources>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollView>
+        </Border>
     </Grid>
 </Page>

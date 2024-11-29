@@ -170,16 +170,62 @@ public partial class App : Application
         Window.Activate();
     }
 
-    private async void HandleFileActivation(IStorageFile storageFile)
+    private async void HandleFileActivation(IStorageFile storageFile, bool onAppInstanceActivated = false)
     {
         ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
 
+        if (onAppInstanceActivated)
+        {
+            // if the app is already running and a file is opened, then we need to handle it differently
+            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivationOnAppInstanceActivated(storageFile));
+            return;
+        }
+        
+        // check the database for the audiobook
+        var audiobook = await Repository.Audiobooks.GetByFilePathAsync(storageFile.Path);
+
+        // if the audiobook is not in the database, then we need to import it
+        if (audiobook == null)
+        {
+            await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
+            return;
+        }
+        
+        // if the audiobook is already playing, then we don't need to do anything
+        if (audiobook.IsNowPlaying) return;
+        
+        // we need to get the currently playing audiobook and set it to not playing
+        var nowPlayingAudiobook = await Repository.Audiobooks.GetNowPlayingAsync();
+        if (nowPlayingAudiobook != null)
+        {
+            nowPlayingAudiobook.IsNowPlaying = false;
+            await Repository.Audiobooks.UpsertAsync(nowPlayingAudiobook);
+        }
+        
+        // set file activated audiobook to now playing
+        audiobook.IsNowPlaying = true;
+        await Repository.Audiobooks.UpsertAsync(audiobook);
+    }
+
+    private async void HandleFileActivationOnAppInstanceActivated(IStorageFile storageFile)
+    {
         var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
 
         // set the current position
-        if (audiobook == null) await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
+        if (audiobook == null)
+        {
+            await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
+            return;
+        }
+        
+        // if the audiobook is already playing, then we don't need to do anything
+        if (audiobook.IsNowPlaying) return;
+        
+        // if the audiobook is not playing, then we need to set the current position
+        await PlayerViewModel.OpenAudiobook(audiobook);
     }
 
+    // note: this is only called when audibly is already running and a file is opened
     private async void OnAppInstanceActivated(object? sender, AppActivationArguments e)
     {
         var mainInstance = AppInstance.FindOrRegisterForKey("main");
@@ -187,7 +233,7 @@ public partial class App : Application
         if (e.Kind is ExtendedActivationKind.File && e.Data is IFileActivatedEventArgs fileActivatedEventArgs &&
             fileActivatedEventArgs.Files.FirstOrDefault() is IStorageFile storageFile)
         {
-            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivation(storageFile));
+            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivation(storageFile, true));
 
             // Bring the window to the foreground... first get the window handle...
             var hwnd = (HWND)WindowNative.GetWindowHandle(Window);

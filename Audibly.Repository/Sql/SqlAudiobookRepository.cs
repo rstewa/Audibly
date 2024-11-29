@@ -20,6 +20,16 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
             .ToListAsync();
     }
 
+    public Task<Audiobook?> GetNowPlayingAsync()
+    {
+        // return now playing audiobook
+        return db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(audiobook => audiobook.IsNowPlaying);
+    }
+
     public Task<Audiobook?> GetAsync(string title, string author, string composer)
     {
         return db.Audiobooks
@@ -30,6 +40,17 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
                 audiobook.Title == title &&
                 audiobook.Author == author &&
                 audiobook.Composer == composer);
+    }
+    
+    // get async using filepath
+    public async Task<Audiobook?> GetByFilePathAsync(string filePath)
+    {
+        return await db.Audiobooks
+            .Include(x => x.SourcePaths.OrderBy(source => source.Index))
+            .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(audiobook =>
+                audiobook.SourcePaths.Any(source => source.FilePath == filePath));
     }
 
     public async Task<Audiobook?> GetAsync(Guid id)

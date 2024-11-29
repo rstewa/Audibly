@@ -19,6 +19,20 @@ public interface IAudiobookRepository
         Task<IEnumerable<Audiobook>> GetAsync(string search);
 
         /// <summary>
+        ///     Returns the audiobook with the given file path.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        Task<Audiobook?> GetByFilePathAsync(string filePath);
+        
+        // get now playing audiobook
+        /// <summary>
+        ///     Returns the audiobook that is currently playing.
+        /// </summary>
+        /// <returns></returns>
+        Task<Audiobook?> GetNowPlayingAsync();
+
+        /// <summary>
         ///     Returns the audiobook with the given title and author.
         /// </summary>
         /// <param name="title"></param>

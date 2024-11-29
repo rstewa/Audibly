@@ -100,8 +100,7 @@ public class FileImportService : IImportFiles
             var audiobook = await CreateAudiobook(importedAudiobook.FilePath, importedAudiobook);
 
             if (audiobook == null) didFail = true;
-
-            if (audiobook != null)
+            else
             {
                 // insert the audiobook into the database
                 var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
@@ -144,7 +143,7 @@ public class FileImportService : IImportFiles
                 App.ViewModel.LoggingService.LogError(new Exception("Audiobook already exists in the database"));
                 App.ViewModel.EnqueueNotification(new Notification
                 {
-                    Message = "Audiobook is already in the library.",
+                    Message = $"Audiobook is already in the library: {existingAudioBook.Title}",
                     Severity = InfoBarSeverity.Warning
                 });
                 

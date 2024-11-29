@@ -757,10 +757,11 @@ public class MainViewModel : BindableBase
                 Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
             });
 
-        EnqueueNotification(new Notification
-        {
-            Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
-        });
+        if (totalBooks > 0)
+            EnqueueNotification(new Notification
+            {
+                Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
+            });
 
         await GetAudiobookListAsync(true);
 
@@ -773,5 +774,5 @@ public class Notification
 {
     public string Message { get; set; }
     public InfoBarSeverity Severity { get; set; }
-    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(10); // Default duration of 10 seconds
+    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(20); // Default duration of 10 seconds
 }

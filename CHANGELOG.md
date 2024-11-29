@@ -35,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added warning that the light theme is in beta and may not appear correctly
 - Modified sidebar to remember its collapsed state on startup
 - Removed "Open" button from the library card view
-- Updated library card view s
+- Modified Player Control title to use Marquee text when the title is too long
+- Modified the changelog dialog to use the MarkdownTextBlock when rendering the changelog
 
 ### Fixed
 

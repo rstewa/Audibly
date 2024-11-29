@@ -1,16 +1,16 @@
 ﻿<!--  ReSharper disable once Xaml.InvalidResourceType  -->
 <Page
+    Background="{ThemeResource AudiblyBackgroundBrush}"
+    Loaded="AppShell_OnLoaded"
+    TabNavigation="Cycle"
+    mc:Ignorable="d"
     x:Class="Audibly.App.AppShell"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:winUi="using:CommunityToolkit.WinUI"
-    Background="{ThemeResource AudiblyBackgroundBrush}"
-    Loaded="AppShell_OnLoaded"
-    TabNavigation="Cycle"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -24,39 +24,39 @@
         </Grid.RowDefinitions>
 
         <Border
-            x:Name="AppTitleBar"
-            Grid.Column="1"
-            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
-            Margin="48,0,0,0"
-            VerticalAlignment="Stretch"
             AutomationProperties.AutomationId="AppTitleBar"
             Canvas.ZIndex="1"
-            IsHitTestVisible="True">
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                <Image Width="24" Source="ms-appx:///Assets/book-open-flat.png" />
+            Grid.Column="1"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
+            IsHitTestVisible="True"
+            Margin="48,0,0,0"
+            VerticalAlignment="Stretch"
+            x:Name="AppTitleBar">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Source="ms-appx:///Assets/book-open-flat.png" Width="24" />
                 <TextBlock
-                    x:Name="AppTitle"
                     Margin="12,0,0,0"
-                    VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Audibly" />
+                    Text="Audibly"
+                    VerticalAlignment="Center"
+                    x:Name="AppTitle" />
             </StackPanel>
         </Border>
 
         <muxc:NavigationView
-            x:Name="NavView"
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            Grid.Column="1"
             AlwaysShowHeader="False"
             BackRequested="NavigationView_BackRequested"
             Canvas.ZIndex="0"
+            Grid.Column="1"
+            Grid.Row="0"
+            Grid.RowSpan="2"
             IsBackEnabled="{x:Bind AppAppShellFrame.CanGoBack, Mode=OneWay}"
             IsSettingsVisible="True"
             IsTitleBarAutoPaddingEnabled="False"
             ItemInvoked="NavigationView_ItemInvoked"
             PaneDisplayMode="Left"
-            Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}"
+            x:Name="NavView">
             <NavigationView.Resources>
                 <!--  ReSharper disable all Xaml.RedundantResource  -->
                 <!--  This top margin is the height of the custom titleBar  -->
@@ -78,44 +78,34 @@
                 <!--     </muxc:NavigationViewItem.Icon> -->
                 <!-- </muxc:NavigationViewItem> -->
                 <muxc:NavigationViewItem
-                    x:Name="LibraryCardMenuItem"
                     Content="{x:Bind LibraryLabel}"
                     Tag="LibraryPage"
-                    ToolTipService.ToolTip="{x:Bind LibraryLabel}">
+                    ToolTipService.ToolTip="{x:Bind LibraryLabel}"
+                    x:Name="LibraryCardMenuItem">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
                     <NavigationViewItem.InfoBadge>
-                        <InfoBadge x:Name="infoBadge1" Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" />
+                        <InfoBadge Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" x:Name="infoBadge1" />
                     </NavigationViewItem.InfoBadge>
                 </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem
-                    x:Name="NowPlayingMenuItem"
                     Content="{x:Bind NowPlayingLabel}"
                     Tag="NowPlayingPage"
-                    ToolTipService.ToolTip="{x:Bind NowPlayingLabel}">
+                    ToolTipService.ToolTip="{x:Bind NowPlayingLabel}"
+                    x:Name="NowPlayingMenuItem">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
-                    </muxc:NavigationViewItem.Icon>
-                </muxc:NavigationViewItem>
-                <!--  test markdown page  -->
-                <muxc:NavigationViewItem
-                    x:Name="TestMarkdownMenuItem"
-                    Content="Test Markdown"
-                    Tag="TestMarkdownPage"
-                    ToolTipService.ToolTip="Test Markdown">
-                    <muxc:NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE943;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
 
             <NavigationView.AutoSuggestBox>
                 <AutoSuggestBox
-                    x:Name="AudiobookSearchBox"
                     AutomationProperties.Name="AudiobookSearchBox"
                     Loaded="AudiobookSearchBox_Loaded"
-                    QueryIcon="Find" />
+                    QueryIcon="Find"
+                    x:Name="AudiobookSearchBox" />
             </NavigationView.AutoSuggestBox>
 
             <muxc:NavigationView.PaneFooter>
@@ -133,9 +123,9 @@
 
             <!--  In OnNavigatingToPage, we synchronize the selected item in the NavigationView with the current page.  -->
             <Frame
-                x:Name="AppShellFrame"
                 Margin="12,0,0,0"
-                Navigating="OnNavigatingToPage">
+                Navigating="OnNavigatingToPage"
+                x:Name="AppShellFrame">
                 <Frame.ContentTransitions>
                     <TransitionCollection>
                         <NavigationThemeTransition>

@@ -136,6 +136,27 @@ public class FileImportService : IImportFiles
 
         if (audiobook != null)
         {
+            var existingAudioBook = await App.Repository.Audiobooks.GetAsync(audiobook.Title, audiobook.Author,
+                audiobook.Composer);
+            if (existingAudioBook != null)
+            {
+                // log the error
+                App.ViewModel.LoggingService.LogError(new Exception("Audiobook already exists in the database"));
+                App.ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = "Audiobook is already in the library.",
+                    Severity = InfoBarSeverity.Warning
+                });
+                
+                didFail = true;
+                
+                await progressCallback(numberOfFiles, numberOfFiles, audiobook.Title, didFail);
+                
+                ImportCompleted?.Invoke();
+                
+                return;
+            }
+            
             // insert the audiobook into the database
             var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
             if (result == null) didFail = true;
@@ -144,9 +165,7 @@ public class FileImportService : IImportFiles
         var title = audiobook?.Title ?? Path.GetFileNameWithoutExtension(paths.First());
 
         // report progress
-        await progressCallback(1, numberOfFiles, title, didFail);
-
-        didFail = false;
+        await progressCallback(numberOfFiles, numberOfFiles, title, didFail);
 
         ImportCompleted?.Invoke();
     }

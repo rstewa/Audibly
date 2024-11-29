@@ -601,16 +601,11 @@ public class MainViewModel : BindableBase
             ProgressDialogProgress = 0;
         });
 
-        if (failedBooks > 0)
+        if (failedBooks == 0)
             EnqueueNotification(new Notification
             {
-                Message = $"{failedBooks} Audiobooks failed to import!", Severity = InfoBarSeverity.Error
+                Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
             });
-
-        EnqueueNotification(new Notification
-        {
-            Message = $"{totalBooks} Audiobooks imported successfully!", Severity = InfoBarSeverity.Success
-        });
 
         await GetAudiobookListAsync();
 

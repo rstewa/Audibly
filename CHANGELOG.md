@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed "Open" button from the library card view
 - Modified Player Control title to use Marquee text when the title is too long
 - Modified the changelog dialog to use the MarkdownTextBlock when rendering the changelog
+- Modified file activation code to open book even if the filepath doesn't match (assuming the title is already in the library)
+  - The match is made on the Title, Author, and Narrator
 
 ### Fixed
 

@@ -117,6 +117,11 @@ This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b`
   <img src="images/v2.0.16/now-playing-page-75-percent.PNG" />
 </p> 
 
+### Import audiobook consisting of multiple files dialog
+<p align="middle">
+  <img src="images/v2.0.16/home-library-page-import-audiobooks-with-multiple-files-75-percent.PNG" />
+</p>
+
 <details>
   <summary>Additional Screenshots</summary>
     <p align="middle">

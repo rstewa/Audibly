@@ -4,7 +4,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -22,14 +21,12 @@ using Audibly.Repository.Sql;
 using CommunityToolkit.WinUI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using Sharpener.Extensions;
-using WinRT;
 using WinRT.Interop;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -42,35 +39,8 @@ namespace Audibly.App;
 /// </summary>
 public partial class App : Application
 {
-    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private static Win32WindowHelper win32WindowHelper;
-
-    /// <summary>
-    ///     Gets main App Window
-    /// </summary>
-    public static Window Window { get; private set; }
-
-    /// <summary>
-    ///     Gets the app-wide MainViewModel singleton instance.
-    /// </summary>
-    public static MainViewModel ViewModel { get; } =
-        new(new FileImportService(), new AppDataService(), new MessageService(),
-            new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
-
-    /// <summary>
-    ///     Gets the app-wide PlayerViewModel singleton instance.
-    /// </summary>
-    public static PlayerViewModel PlayerViewModel { get; } = new();
-
-    /// <summary>
-    ///     Pipeline for interacting with backend service or database.
-    /// </summary>
-    public static IAudiblyRepository Repository { get; private set; }
-
-    /// <summary>
-    ///     Gets the root frame of the app. This contains the nav view and the player page
-    /// </summary>
-    public static Frame? RootFrame { get; private set; }
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
     ///     Initializes the singleton application object.  This is the first line of authored code
@@ -99,6 +69,44 @@ public partial class App : Application
 
         InitializeComponent();
         UnhandledException += OnUnhandledException;
+    }
+
+    /// <summary>
+    ///     Gets main App Window
+    /// </summary>
+    public static Window Window { get; private set; }
+
+    /// <summary>
+    ///     Gets the app-wide MainViewModel singleton instance.
+    /// </summary>
+    public static MainViewModel ViewModel { get; } =
+        new(new FileImportService(), new AppDataService(), new MessageService(),
+            new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
+
+    /// <summary>
+    ///     Gets the app-wide PlayerViewModel singleton instance.
+    /// </summary>
+    public static PlayerViewModel PlayerViewModel { get; } = new();
+
+    /// <summary>
+    ///     Pipeline for interacting with backend service or database.
+    /// </summary>
+    public static IAudiblyRepository Repository { get; private set; }
+
+    /// <summary>
+    ///     Gets the root frame of the app. This contains the nav view and the player page
+    /// </summary>
+    public static Frame? RootFrame { get; private set; }
+
+    public static string Version
+    {
+        get
+        {
+            var version = Assembly.GetEntryAssembly()?.GetName().Version;
+            return version != null
+                ? $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+                : string.Empty;
+        }
     }
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -180,20 +188,28 @@ public partial class App : Application
             await _dispatcherQueue.EnqueueAsync(() => HandleFileActivationOnAppInstanceActivated(storageFile));
             return;
         }
-        
+
         // check the database for the audiobook
         var audiobook = await Repository.Audiobooks.GetByFilePathAsync(storageFile.Path);
 
-        // if the audiobook is not in the database, then we need to import it
+        // if filepath doesn't match, then we need its metadata to check if it's in the database
         if (audiobook == null)
         {
-            await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
-            return;
+            var metadata = storageFile.GetAudiobookSearchParameters();
+            audiobook = await Repository.Audiobooks.GetByTitleAuthorComposerAsync(metadata.Title, metadata.Author,
+                metadata.Composer);
+
+            // if the audiobook is not in the database, then we need to import it
+            if (audiobook == null)
+            {
+                await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
+                return;
+            }
         }
-        
+
         // if the audiobook is already playing, then we don't need to do anything
         if (audiobook.IsNowPlaying) return;
-        
+
         // we need to get the currently playing audiobook and set it to not playing
         var nowPlayingAudiobook = await Repository.Audiobooks.GetNowPlayingAsync();
         if (nowPlayingAudiobook != null)
@@ -201,7 +217,7 @@ public partial class App : Application
             nowPlayingAudiobook.IsNowPlaying = false;
             await Repository.Audiobooks.UpsertAsync(nowPlayingAudiobook);
         }
-        
+
         // set file activated audiobook to now playing
         audiobook.IsNowPlaying = true;
         await Repository.Audiobooks.UpsertAsync(audiobook);
@@ -209,7 +225,13 @@ public partial class App : Application
 
     private async void HandleFileActivationOnAppInstanceActivated(IStorageFile storageFile)
     {
-        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == storageFile.Path);
+        // need to refresh the audiobook list in case any filters or searches have been applied
+        await ViewModel.GetAudiobookListAsync();
+
+        var searchParameters = storageFile.GetAudiobookSearchParameters();
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Title == searchParameters.Title &&
+                                                                 a.Author == searchParameters.Author &&
+                                                                 a.Narrator == searchParameters.Composer);
 
         // set the current position
         if (audiobook == null)
@@ -217,10 +239,10 @@ public partial class App : Application
             await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
             return;
         }
-        
+
         // if the audiobook is already playing, then we don't need to do anything
         if (audiobook.IsNowPlaying) return;
-        
+
         // if the audiobook is not playing, then we need to set the current position
         await PlayerViewModel.OpenAudiobook(audiobook);
     }
@@ -360,16 +382,5 @@ public partial class App : Application
         if (!typeof(TEnum).GetTypeInfo().IsEnum)
             throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
         return (TEnum)Enum.Parse(typeof(TEnum), text);
-    }
-
-    public static string Version
-    {
-        get
-        {
-            var version = Assembly.GetEntryAssembly()?.GetName().Version;
-            return version != null
-                ? $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
-                : string.Empty;
-        }
     }
 }

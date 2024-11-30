@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -33,15 +32,46 @@ namespace Audibly.App.ViewModels;
 /// </summary>
 public class MainViewModel : BindableBase
 {
-    private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    public readonly IImportFiles FileImporter;
-    public readonly IAppDataService AppDataService;
-    public readonly MessageService MessageService;
-    public readonly IloggingService LoggingService;
+    #region Delegates
 
     public delegate void ProgressDialogCompletedHandler();
 
-    public event ProgressDialogCompletedHandler? ProgressDialogCompleted;
+    public delegate void ResetFiltersHandler();
+
+    #endregion
+
+    public readonly IAppDataService AppDataService;
+    private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    public readonly IImportFiles FileImporter;
+    public readonly IloggingService LoggingService;
+    public readonly MessageService MessageService;
+
+    private CancellationTokenSource _cancellationTokenSource;
+
+    private bool _isImporting;
+
+    private bool _isLoading;
+
+    private bool _isNavigationViewVisible = true;
+
+    // todo: don't need this anymore
+    private bool _isNotificationVisible;
+
+    private InfoBarSeverity _notificationSeverity;
+
+    private string _notificationText;
+
+    private string _progressDialogPrefix;
+
+    private int _progressDialogProgress;
+
+    private string _progressDialogText;
+
+    private AudiobookViewModel? _selectedAudiobook;
+
+    private bool _showDebugMenu;
+
+    private bool _showStartPanel;
 
     /// <summary>
     ///     Creates a new MainViewModel.
@@ -61,12 +91,10 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
-    
+
     public List<AudiobookViewModel> AudiobooksForFilter { get; } = [];
 
     public bool NeedToImportAudiblyExport { get; set; } = false;
-
-    private AudiobookViewModel? _selectedAudiobook;
 
     /// <summary>
     ///     Gets or sets the selected audiobook, or null if no audiobook is selected.
@@ -77,8 +105,6 @@ public class MainViewModel : BindableBase
         set => Set(ref _selectedAudiobook, value);
     }
 
-    private bool _showStartPanel;
-
     /// <summary>
     ///     Gets or sets a value indicating whether the start panel is visible.
     /// </summary>
@@ -88,15 +114,11 @@ public class MainViewModel : BindableBase
         private set => Set(ref _showStartPanel, value);
     }
 
-    private bool _showDebugMenu;
-
     public bool ShowDebugMenu
     {
         get => _showDebugMenu;
         set => Set(ref _showDebugMenu, value);
     }
-
-    private bool _isLoading;
 
     /// <summary>
     ///     Gets or sets a value indicating whether the Audiobooks list is currently being updated.
@@ -107,8 +129,6 @@ public class MainViewModel : BindableBase
         set => Set(ref _isLoading, value);
     }
 
-    private bool _isImporting;
-
     /// <summary>
     ///     Gets or sets a value indicating whether the app is currently importing audiobooks.
     /// </summary>
@@ -118,15 +138,11 @@ public class MainViewModel : BindableBase
         set => Set(ref _isImporting, value);
     }
 
-    private bool _isNavigationViewVisible = true;
-
     public bool IsNavigationViewVisible
     {
         get => _isNavigationViewVisible;
         set => Set(ref _isNavigationViewVisible, value);
     }
-
-    private int _progressDialogProgress;
 
     /// <summary>
     ///     Gets or sets the progress of the current import operation.
@@ -137,8 +153,6 @@ public class MainViewModel : BindableBase
         set => Set(ref _progressDialogProgress, value);
     }
 
-    private string _progressDialogText;
-
     /// <summary>
     ///     Gets or sets the text to display while importing audiobooks.
     /// </summary>
@@ -147,8 +161,6 @@ public class MainViewModel : BindableBase
         get => _progressDialogText;
         set => Set(ref _progressDialogText, value);
     }
-
-    private string _progressDialogPrefix;
 
     /// <summary>
     ///     Gets or sets the prefix to display before the progress dialog text.
@@ -159,16 +171,11 @@ public class MainViewModel : BindableBase
         set => Set(ref _progressDialogPrefix, value);
     }
 
-    private string _notificationText;
-
     public string NotificationText
     {
         get => _notificationText;
         set => Set(ref _notificationText, value);
     }
-
-    // todo: don't need this anymore
-    private bool _isNotificationVisible;
 
     public bool IsNotificationVisible
     {
@@ -176,13 +183,19 @@ public class MainViewModel : BindableBase
         set => Set(ref _isNotificationVisible, value);
     }
 
-    private InfoBarSeverity _notificationSeverity;
-
     public InfoBarSeverity NotificationSeverity
     {
         get => _notificationSeverity;
         set => Set(ref _notificationSeverity, value);
     }
+
+    public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
+
+    // TODO: need to move these methods to a separate class
+
+    public ObservableCollection<Notification> Notifications { get; } = [];
+
+    public event ProgressDialogCompletedHandler? ProgressDialogCompleted;
 
     /// <summary>
     ///     Invokes the ProgressDialogCompleted event.
@@ -193,10 +206,17 @@ public class MainViewModel : BindableBase
     }
 
     /// <summary>
+    ///     Invoked when we want to reset the filters in the LibraryCardPage.
+    /// </summary>
+    public event ResetFiltersHandler? ResetFilters;
+
+    /// <summary>
     ///     Gets the complete list of audiobooks from the database.
     /// </summary>
     public async Task GetAudiobookListAsync(bool firstRun = false)
     {
+        ResetFilters?.Invoke();
+
         await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
@@ -425,8 +445,6 @@ public class MainViewModel : BindableBase
             await App.PlayerViewModel.OpenAudiobook(audiobook);
     }
 
-    private CancellationTokenSource _cancellationTokenSource;
-
     public async void ImportAudiobooksFromDirectoryAsync()
     {
         var openPicker = new FolderPicker();
@@ -511,8 +529,6 @@ public class MainViewModel : BindableBase
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed.TotalSeconds} seconds.");
     }
-
-    public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
 
     public async Task ImportAudiobookWithMultipleFilesAsync(object sender, RoutedEventArgs e)
     {
@@ -621,10 +637,6 @@ public class MainViewModel : BindableBase
         await dispatcherQueue.EnqueueAsync(async () =>
             await GetAudiobookListAsync());
     }
-
-    // TODO: need to move these methods to a separate class
-
-    public ObservableCollection<Notification> Notifications { get; } = [];
 
     public void EnqueueNotification(Notification notification)
     {

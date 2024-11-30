@@ -23,14 +23,16 @@ namespace Audibly.App.Services;
 
 public class FileImportService : IImportFiles
 {
-    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
-
     private static IMapper _mapper;
 
     public FileImportService()
     {
         _mapper = new MapperConfiguration(cfg => { cfg.CreateMap<ATL.ChapterInfo, ChapterInfo>(); }).CreateMapper();
     }
+
+    #region IImportFiles Members
+
+    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
 
     // TODO: need a better way of checking if a file is one we have already imported
     public async Task ImportDirectoryAsync(string path, CancellationToken cancellationToken,
@@ -99,7 +101,10 @@ public class FileImportService : IImportFiles
 
             var audiobook = await CreateAudiobook(importedAudiobook.FilePath, importedAudiobook);
 
-            if (audiobook == null) didFail = true;
+            if (audiobook == null)
+            {
+                didFail = true;
+            }
             else
             {
                 // insert the audiobook into the database
@@ -135,7 +140,8 @@ public class FileImportService : IImportFiles
 
         if (audiobook != null)
         {
-            var existingAudioBook = await App.Repository.Audiobooks.GetAsync(audiobook.Title, audiobook.Author,
+            var existingAudioBook = await App.Repository.Audiobooks.GetByTitleAuthorComposerAsync(audiobook.Title,
+                audiobook.Author,
                 audiobook.Composer);
             if (existingAudioBook != null)
             {
@@ -146,16 +152,16 @@ public class FileImportService : IImportFiles
                     Message = $"Audiobook is already in the library: {existingAudioBook.Title}",
                     Severity = InfoBarSeverity.Warning
                 });
-                
+
                 didFail = true;
-                
+
                 await progressCallback(numberOfFiles, numberOfFiles, audiobook.Title, didFail);
-                
+
                 ImportCompleted?.Invoke();
-                
+
                 return;
             }
-            
+
             // insert the audiobook into the database
             var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
             if (result == null) didFail = true;
@@ -195,6 +201,8 @@ public class FileImportService : IImportFiles
 
         ImportCompleted?.Invoke();
     }
+
+    #endregion
 
     private static async Task<Audiobook?> CreateAudiobookFromMultipleFiles(string[] paths)
     {
@@ -297,7 +305,9 @@ public class FileImportService : IImportFiles
         {
             var track = new Track(path);
 
-            var existingAudioBook = await App.Repository.Audiobooks.GetAsync(track.Title, track.Artist, track.Composer);
+            var existingAudioBook =
+                await App.Repository.Audiobooks.GetByTitleAuthorComposerAsync(track.Title, track.Artist,
+                    track.Composer);
             if (existingAudioBook != null)
             {
                 // log the error

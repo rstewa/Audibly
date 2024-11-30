@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI;
@@ -24,8 +25,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Sentry;
-using Sharpener.Extensions;
-using ColorHelper = CommunityToolkit.WinUI.Helpers.ColorHelper;
 
 namespace Audibly.App.Views;
 
@@ -34,7 +33,38 @@ namespace Audibly.App.Views;
 /// </summary>
 public sealed partial class LibraryCardPage : Page
 {
+    #region AudioBookFilter enum
+
+    public enum AudioBookFilter
+    {
+        InProgress,
+        NotStarted,
+        Completed
+    }
+
+    #endregion
+
+    public const string ImportAudiobookText = "Import an audiobook (.m4b, mp3)";
+
+    public const string ImportAudiobooksFromDirectoryText =
+        "Import all audiobooks in a directory (recursively). Single-file audiobooks only (.m4b, mp3)";
+
+    public const string ImportAudiobookWithMultipleFilesText =
+        "Import an audiobook made up of multiple files (.m4b, mp3)";
+
+    public const string ImportFromJsonFileText = "Import audiobooks from an Audibly export file (.audibly)";
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+    private readonly HashSet<AudioBookFilter> _activeFilters = new();
+
+    public LibraryCardPage()
+    {
+        InitializeComponent();
+
+        // subscribe to page loaded event
+        Loaded += LibraryCardPage_Loaded;
+        ViewModel.ResetFilters += ViewModelOnResetFilters;
+    }
 
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
@@ -46,22 +76,9 @@ public sealed partial class LibraryCardPage : Page
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
-    public const string ImportAudiobookText = "Import an audiobook (.m4b, mp3)";
-
-    public const string ImportAudiobooksFromDirectoryText =
-        "Import all audiobooks in a directory (recursively). Single-file audiobooks only (.m4b, mp3)";
-
-    public const string ImportAudiobookWithMultipleFilesText =
-        "Import an audiobook made up of multiple files (.m4b, mp3)";
-
-    public const string ImportFromJsonFileText = "Import audiobooks from an Audibly export file (.audibly)";
-
-    public LibraryCardPage()
+    private void ViewModelOnResetFilters()
     {
-        InitializeComponent();
-
-        // subscribe to page loaded event
-        Loaded += LibraryCardPage_Loaded;
+        SelectAllFiltersCheckBox.IsChecked = false;
     }
 
     private async void LibraryCardPage_Loaded(object sender, RoutedEventArgs e)
@@ -123,7 +140,7 @@ public sealed partial class LibraryCardPage : Page
                 });
 
                 // re-import the user's audiobooks
-                await ViewModel.FileImporter.ImportFromJsonAsync(file, new System.Threading.CancellationToken(),
+                await ViewModel.FileImporter.ImportFromJsonAsync(file, new CancellationToken(),
                     async (i, count, title, _) =>
                     {
                         await _dispatcherQueue.EnqueueAsync(() =>
@@ -160,11 +177,176 @@ public sealed partial class LibraryCardPage : Page
     private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)
     {
         // unchecked all the filter flyout items
-        InProgressFilterCheckBox.IsChecked =
-            NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = false;
+        // InProgressFilterCheckBox.IsChecked =
+        //     NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = false;
 
         await ViewModel.GetAudiobookListAsync();
     }
+
+    /// <summary>
+    ///     Resets the audiobook list.
+    /// </summary>
+    public async Task ResetAudiobookListAsync()
+    {
+        _activeFilters.Clear();
+
+        // unchecked all the filter flyout items
+        InProgressFilterCheckBox.IsChecked = false;
+        NotStartedFilterCheckBox.IsChecked = false;
+        CompletedFilterCheckBox.IsChecked = false;
+
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            ViewModel.Audiobooks.Clear();
+            foreach (var a in ViewModel.AudiobooksForFilter) ViewModel.Audiobooks.Add(a);
+        });
+    }
+
+    private HashSet<AudiobookViewModel> GetFilteredAudiobooks()
+    {
+        // matches audiobooks for each active filter
+        var matches = new HashSet<AudiobookViewModel>();
+
+        foreach (var audiobook in ViewModel.AudiobooksForFilter)
+        {
+            if (_activeFilters.Contains(AudioBookFilter.InProgress) && audiobook.Progress > 0 && !audiobook.IsCompleted)
+                matches.Add(audiobook);
+            if (_activeFilters.Contains(AudioBookFilter.NotStarted) && audiobook.Progress == 0)
+                matches.Add(audiobook);
+            if (_activeFilters.Contains(AudioBookFilter.Completed) && audiobook.IsCompleted)
+                matches.Add(audiobook);
+        }
+
+        return matches;
+    }
+
+    /// <summary>
+    ///     Filters the audiobook list based on the search text.
+    /// </summary>
+    private async Task FilterAudiobookList()
+    {
+        if (_activeFilters.Count == 0)
+        {
+            await ResetAudiobookListAsync();
+            return;
+        }
+
+        var matches = GetFilteredAudiobooks();
+
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            ViewModel.Audiobooks.Clear();
+            foreach (var match in matches) ViewModel.Audiobooks.Add(match);
+        });
+    }
+
+    private void SetCheckedState()
+    {
+        // Controls are null the first time this is called, so we just 
+        // need to perform a null check on any one of the controls.
+        if (InProgressFilterCheckBox == null) return;
+
+        // check if any of the filters are checked and change the appbar button background color
+        if (InProgressFilterCheckBox.IsChecked == true ||
+            NotStartedFilterCheckBox.IsChecked == true ||
+            CompletedFilterCheckBox.IsChecked == true)
+        {
+            FilterButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]);
+            FilterButton.BorderThickness = new Thickness(2);
+        }
+        else
+        {
+            FilterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            FilterButton.BorderThickness = new Thickness(0);
+        }
+
+        if (InProgressFilterCheckBox.IsChecked == true &&
+            NotStartedFilterCheckBox.IsChecked == true &&
+            CompletedFilterCheckBox.IsChecked == true)
+            SelectAllFiltersCheckBox.IsChecked = true;
+        else if (InProgressFilterCheckBox.IsChecked == false &&
+                 NotStartedFilterCheckBox.IsChecked == false &&
+                 CompletedFilterCheckBox.IsChecked == false)
+            SelectAllFiltersCheckBox.IsChecked = false;
+        else
+            // Set third state (indeterminate) by setting IsChecked to null.
+            SelectAllFiltersCheckBox.IsChecked = null;
+    }
+
+    private async void InProgressFilterCheckBox_OnChecked(object sender, RoutedEventArgs e)
+    {
+        SetCheckedState();
+
+        _activeFilters.Add(AudioBookFilter.InProgress);
+
+        await FilterAudiobookList();
+    }
+
+    private async void NotStartedFilterCheckBox_OnChecked(object sender, RoutedEventArgs e)
+    {
+        SetCheckedState();
+
+        _activeFilters.Add(AudioBookFilter.NotStarted);
+
+        await FilterAudiobookList();
+    }
+
+    private async void CompletedFilterCheckBox_OnChecked(object sender, RoutedEventArgs e)
+    {
+        SetCheckedState();
+
+        _activeFilters.Add(AudioBookFilter.Completed);
+
+        await FilterAudiobookList();
+    }
+
+    private async void InProgressFilterCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        SetCheckedState();
+
+        _activeFilters.Remove(AudioBookFilter.InProgress);
+
+        await FilterAudiobookList();
+    }
+
+    private async void NotStartedFilterCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        SetCheckedState();
+
+        _activeFilters.Remove(AudioBookFilter.NotStarted);
+
+        await FilterAudiobookList();
+    }
+
+    private async void CompletedFilterCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        SetCheckedState();
+
+        _activeFilters.Remove(AudioBookFilter.Completed);
+
+        await FilterAudiobookList();
+    }
+
+    private async void SelectAllFiltersCheckBox_OnChecked(object sender, RoutedEventArgs e)
+    {
+        InProgressFilterCheckBox.IsChecked =
+            NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = true;
+    }
+
+    private async void SelectAllFiltersCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        InProgressFilterCheckBox.IsChecked =
+            NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = false;
+    }
+
+    private void SelectAllFiltersCheckBox_OnIndeterminate(object sender, RoutedEventArgs e)
+    {
+        if (InProgressFilterCheckBox.IsChecked == true && NotStartedFilterCheckBox.IsChecked == true &&
+            CompletedFilterCheckBox.IsChecked == true)
+            SelectAllFiltersCheckBox.IsChecked = false;
+    }
+
+    #region debug button
 
     private void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
@@ -253,175 +435,5 @@ public sealed partial class LibraryCardPage : Page
         });
     }
 
-    public enum AudioBookFilter
-    {
-        InProgress,
-        NotStarted,
-        Completed
-    }
-
-    /// <summary>
-    ///     Resets the audiobook list.
-    /// </summary>
-    public async Task ResetAudiobookListAsync()
-    {
-        _activeFilters.Clear();
-
-        // unchecked all the filter flyout items
-        InProgressFilterCheckBox.IsChecked = false;
-        NotStartedFilterCheckBox.IsChecked = false;
-        CompletedFilterCheckBox.IsChecked = false;
-
-        await _dispatcherQueue.EnqueueAsync(() =>
-        {
-            ViewModel.Audiobooks.Clear();
-            foreach (var a in ViewModel.AudiobooksForFilter) ViewModel.Audiobooks.Add(a);
-        });
-    }
-
-    private HashSet<AudioBookFilter> _activeFilters = new();
-
-    private HashSet<AudiobookViewModel> GetFilteredAudiobooks()
-    {
-        // matches audiobooks for each active filter
-        var matches = new HashSet<AudiobookViewModel>();
-
-        foreach (var audiobook in ViewModel.AudiobooksForFilter)
-        {
-            if (_activeFilters.Contains(AudioBookFilter.InProgress) && audiobook.Progress > 0 && !audiobook.IsCompleted)
-                matches.Add(audiobook);
-            if (_activeFilters.Contains(AudioBookFilter.NotStarted) && audiobook.Progress == 0)
-                matches.Add(audiobook);
-            if (_activeFilters.Contains(AudioBookFilter.Completed) && audiobook.IsCompleted)
-                matches.Add(audiobook);
-        }
-
-        return matches;
-    }
-
-    /// <summary>
-    ///     Filters the audiobook list based on the search text.
-    /// </summary>
-    private async Task FilterAudiobookList()
-    {
-        if (_activeFilters.Count == 0)
-        {
-            await ResetAudiobookListAsync();
-            return;
-        }
-
-        var matches = GetFilteredAudiobooks();
-
-        await _dispatcherQueue.EnqueueAsync(() =>
-        {
-            ViewModel.Audiobooks.Clear();
-            foreach (var match in matches) ViewModel.Audiobooks.Add(match);
-        });
-    }
-
-    private void SetCheckedState()
-    {
-        // Controls are null the first time this is called, so we just 
-        // need to perform a null check on any one of the controls.
-        if (InProgressFilterCheckBox == null) return;
-        
-        // check if any of the filters are checked and change the appbar button background color
-        if (InProgressFilterCheckBox.IsChecked == true ||
-            NotStartedFilterCheckBox.IsChecked == true ||
-            CompletedFilterCheckBox.IsChecked == true)
-        {
-            FilterButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]);
-            FilterButton.BorderThickness = new Thickness(2);
-        }
-        else
-        {
-            FilterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
-            FilterButton.BorderThickness = new Thickness(0);
-        }
-        
-        if (InProgressFilterCheckBox.IsChecked == true &&
-            NotStartedFilterCheckBox.IsChecked == true &&
-            CompletedFilterCheckBox.IsChecked == true)
-            SelectAllFiltersCheckBox.IsChecked = true;
-        else if (InProgressFilterCheckBox.IsChecked == false &&
-                 NotStartedFilterCheckBox.IsChecked == false &&
-                 CompletedFilterCheckBox.IsChecked == false)
-            SelectAllFiltersCheckBox.IsChecked = false;
-        else
-            // Set third state (indeterminate) by setting IsChecked to null.
-            SelectAllFiltersCheckBox.IsChecked = null;
-    }
-
-    private async void InProgressFilterCheckBox_OnChecked(object sender, RoutedEventArgs e)
-    {
-        SetCheckedState();
-
-        _activeFilters.Add(AudioBookFilter.InProgress);
-
-        await FilterAudiobookList();
-    }
-
-    private async void NotStartedFilterCheckBox_OnChecked(object sender, RoutedEventArgs e)
-    {
-        SetCheckedState();
-
-        _activeFilters.Add(AudioBookFilter.NotStarted);
-
-        await FilterAudiobookList();
-    }
-
-    private async void CompletedFilterCheckBox_OnChecked(object sender, RoutedEventArgs e)
-    {
-        SetCheckedState();
-
-        _activeFilters.Add(AudioBookFilter.Completed);
-
-        await FilterAudiobookList();
-    }
-
-    private async void InProgressFilterCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
-    {
-        SetCheckedState();
-
-        _activeFilters.Remove(AudioBookFilter.InProgress);
-
-        await FilterAudiobookList();
-    }
-
-    private async void NotStartedFilterCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
-    {
-        SetCheckedState();
-
-        _activeFilters.Remove(AudioBookFilter.NotStarted);
-
-        await FilterAudiobookList();
-    }
-
-    private async void CompletedFilterCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
-    {
-        SetCheckedState();
-
-        _activeFilters.Remove(AudioBookFilter.Completed);
-
-        await FilterAudiobookList();
-    }
-
-    private async void SelectAllFiltersCheckBox_OnChecked(object sender, RoutedEventArgs e)
-    {
-        InProgressFilterCheckBox.IsChecked =
-            NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = true;
-    }
-
-    private async void SelectAllFiltersCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
-    {
-        InProgressFilterCheckBox.IsChecked =
-            NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = false;
-    }
-
-    private void SelectAllFiltersCheckBox_OnIndeterminate(object sender, RoutedEventArgs e)
-    {
-        if (InProgressFilterCheckBox.IsChecked == true && NotStartedFilterCheckBox.IsChecked == true &&
-            CompletedFilterCheckBox.IsChecked == true)
-            SelectAllFiltersCheckBox.IsChecked = false;
-    }
+    #endregion
 }

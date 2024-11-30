@@ -10,6 +10,8 @@ namespace Audibly.Repository.Sql;
 
 public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
 {
+    #region IAudiobookRepository Members
+
     public async Task<IEnumerable<Audiobook>> GetAsync()
     {
         return await db.Audiobooks
@@ -30,7 +32,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
             .FirstOrDefaultAsync(audiobook => audiobook.IsNowPlaying);
     }
 
-    public Task<Audiobook?> GetAsync(string title, string author, string composer)
+    public Task<Audiobook?> GetByTitleAuthorComposerAsync(string title, string author, string composer)
     {
         return db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
@@ -41,7 +43,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
                 audiobook.Author == author &&
                 audiobook.Composer == composer);
     }
-    
+
     // get async using filepath
     public async Task<Audiobook?> GetByFilePathAsync(string filePath)
     {
@@ -164,4 +166,6 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
             await db.SaveChangesAsync();
         }
     }
+
+    #endregion
 }

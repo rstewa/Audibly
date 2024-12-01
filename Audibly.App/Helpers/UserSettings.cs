@@ -10,6 +10,30 @@ namespace Audibly.App.Helpers;
 
 public static class UserSettings
 {
+    public static bool NeedToImportAudiblyExport
+    {
+        get
+        {
+            try 
+            {
+                var needToImport = ApplicationData.Current.LocalSettings.Values["NeedToImportAudiblyExportFile"];
+                if (needToImport != null)
+                    if (bool.TryParse(needToImport.ToString(), out var result))
+                        return result;
+
+                ApplicationData.Current.LocalSettings.Values["NeedToImportAudiblyExportFile"] = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return false;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["NeedToImportAudiblyExportFile"] = value;
+    }
+    
     public static string? Version
     {
         get

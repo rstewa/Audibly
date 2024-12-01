@@ -127,11 +127,10 @@ public sealed partial class AppShell : Page
         else
         {
             // check for current version key
-            var userCurrentVersion =
-                UserSettings.Version; // ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
+            var userCurrentVersion = UserSettings.Version;
             if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
             {
-                ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
+                UserSettings.Version = Constants.Version;
                 ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
             }
         }

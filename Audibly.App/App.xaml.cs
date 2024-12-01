@@ -320,6 +320,9 @@ public partial class App : Application
             var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
             FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
+            
+            // set flag that data migration is required
+            UserSettings.NeedToImportAudiblyExport = true;
 
             // delete the old database
             using (var context = new AudiblyContext(dbOptions))
@@ -334,7 +337,7 @@ public partial class App : Application
                 if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
             }
 
-            ViewModel.NeedToImportAudiblyExport = true;
+            // ViewModel.NeedToImportAudiblyExport = true;
             Repository = new SqlAudiblyRepository(dbOptions); // do i need to set this again?
         }
         else

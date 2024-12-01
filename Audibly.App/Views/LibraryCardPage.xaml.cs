@@ -82,14 +82,13 @@ public sealed partial class LibraryCardPage : Page
 
     private async void LibraryCardPage_Loaded(object sender, RoutedEventArgs e)
     {
-        if (!ViewModel.NeedToImportAudiblyExport) return;
+        if (!UserSettings.NeedToImportAudiblyExport) return;
 
-        var element = (FrameworkElement)sender;
         // let the user know that we need to migrate their data into the new database
         // todo: re-word this message && change the width of the dialog
         // todo: add try-catch block
         ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
-            "To ensure compatibility with the latest update, we need to migrate your data to the new database format. This process may take a few minutes depending on the size of your library.",
+            "To ensure compatibility with the latest update, we need to migrate your data to the new database format. This process may take a few minutes depending on the size of your library. Do not close the app during this process.",
             async () =>
             {
                 var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
@@ -170,6 +169,8 @@ public sealed partial class LibraryCardPage : Page
                 ViewModel.NeedToImportAudiblyExport = false;
 
                 await ViewModel.GetAudiobookListAsync(true);
+                
+                UserSettings.NeedToImportAudiblyExport = false;
             });
     }
 

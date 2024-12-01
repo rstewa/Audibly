@@ -60,21 +60,17 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to # Changelog
-        ///
-        ///All notable changes to this project will be documented in this file.
-        ///
-        ///The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-        ///and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-        ///
-        ///## Unreleased
+        ///   Looks up a localized string similar to ## [2.1.0] - 11-30-24
         ///
         ///### Added
         ///
         ///- Added support for .mp3 files
         ///- Added support for audiobooks that consist of multiple files (.mp3 &amp; .m4b only)
         ///- Added feature that allows users to mark an audiobook as finished
-        ///  - Will mark an audiobook as finished w [rest of string was truncated]&quot;;.
+        ///  - Will mark an audiobook as finished when the progress is at 100% by default
+        ///  - This is indicated by a new icon (a checkmark) on the audiobook tile in place of the progress icon
+        ///- Added data migration feature to migrate user data to the new database
+        ///- Added database migrations so that  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

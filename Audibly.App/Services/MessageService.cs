@@ -9,11 +9,15 @@ namespace Audibly.App.Services;
 
 public class MessageService
 {
-    public delegate void ShowDialogDelegate(DialogType type, string title, string content, Action? onConfirm = null);
-
-    public event ShowDialogDelegate ShowDialogRequested;
+    #region Delegates
 
     public delegate void CancelDialogDelegate();
+
+    public delegate void ShowDialogDelegate(DialogType type, string title, string content, Action? onConfirm = null);
+
+    #endregion
+
+    public event ShowDialogDelegate ShowDialogRequested;
 
     public event CancelDialogDelegate CancelDialogRequested;
 
@@ -24,7 +28,7 @@ public class MessageService
 
     public void ShowDialog(DialogType type, string title, string content, Action? onConfirm = null)
     {
-        ShowDialogRequested?.Invoke(type, title, content);
+        ShowDialogRequested?.Invoke(type, title, content, onConfirm);
     }
 
     public void CancelDialog()

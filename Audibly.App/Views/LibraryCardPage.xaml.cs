@@ -14,7 +14,6 @@ using Windows.Storage;
 using Windows.UI;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
-using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
@@ -53,9 +52,9 @@ public sealed partial class LibraryCardPage : Page
         "Import an audiobook made up of multiple files (.m4b, mp3)";
 
     public const string ImportFromJsonFileText = "Import audiobooks from an Audibly export file (.audibly)";
-    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     private readonly HashSet<AudioBookFilter> _activeFilters = new();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public LibraryCardPage()
     {
@@ -89,7 +88,7 @@ public sealed partial class LibraryCardPage : Page
         // let the user know that we need to migrate their data into the new database
         // todo: re-word this message && change the width of the dialog
         // todo: add try-catch block
-        await element.ShowConfirmDialogAsync("Data Migration Required",
+        ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
             "To ensure compatibility with the latest update, we need to migrate your data to the new database format. This process may take a few minutes depending on the size of your library.",
             async () =>
             {

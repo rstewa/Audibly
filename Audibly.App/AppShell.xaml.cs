@@ -29,17 +29,18 @@ namespace Audibly.App;
 /// </summary>
 public sealed partial class AppShell : Page
 {
+    private readonly Queue<ContentDialog> _dialogQueue = new();
+
+    private readonly SemaphoreSlim _dialogQueueLock = new(1, 1);
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    /// <summary>
-    ///     Gets the app-wide ViewModel instance.
-    /// </summary>
-    public MainViewModel ViewModel => App.ViewModel;
+    public readonly string AudiobookListLabel = "Audiobooks";
+    public readonly string LibraryLabel = "Library";
+    public readonly string NowPlayingLabel = "Now Playing";
 
-    /// <summary>
-    ///     Gets the app-wide PlayerViewModel instance.
-    /// </summary>
-    public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+    private ContentDialog? _importDialog;
+
+    private ContentDialog? _progressDialog;
 
     /// <summary>
     ///     Initializes a new instance of the AppShell, sets the static 'Current' reference,
@@ -66,6 +67,21 @@ public sealed partial class AppShell : Page
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
     }
+
+    /// <summary>
+    ///     Gets the app-wide ViewModel instance.
+    /// </summary>
+    public MainViewModel ViewModel => App.ViewModel;
+
+    /// <summary>
+    ///     Gets the app-wide PlayerViewModel instance.
+    /// </summary>
+    public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    /// <summary>
+    ///     Gets the navigation frame instance.
+    /// </summary>
+    public Frame AppAppShellFrame => AppShellFrame;
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -108,17 +124,20 @@ public sealed partial class AppShell : Page
                 "We're glad you're here. Let's get started by adding your first audiobook.");
             // }
         }
-
-        // check for current version key
-        var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
-        if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
+        else
         {
-            ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
-            ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+            // check for current version key
+            var userCurrentVersion =
+                UserSettings.Version; // ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
+            if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
+            {
+                ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = Constants.Version;
+                ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+            }
         }
 
         await ProcessDialogQueue();
-        
+
         // get sidebar state
         if (UserSettings.IsSidebarCollapsed)
         {
@@ -126,10 +145,6 @@ public sealed partial class AppShell : Page
             NavView.CompactModeThresholdWidth = 0;
         }
     }
-
-    private ContentDialog? _importDialog;
-
-    private ContentDialog? _progressDialog;
 
     private async Task<bool> ShowYesNoDialogAsync(string title, string content)
     {
@@ -279,7 +294,22 @@ public sealed partial class AppShell : Page
         return _progressDialog;
     }
 
-    private readonly Queue<ContentDialog> _dialogQueue = new();
+    private ContentDialog CreateConfirmationDialog(string title, string content, Action? onConfirm)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = content,
+            CloseButtonText = "Okay",
+            DefaultButton = ContentDialogButton.Close,
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
+
+        if (onConfirm != null)
+            dialog.CloseButtonClick += (_, _) => { onConfirm.Invoke(); };
+
+        return dialog;
+    }
 
     private async void OnShowDialogRequested(DialogType type, string title, string content, Action? onConfirm)
     {
@@ -291,6 +321,7 @@ public sealed partial class AppShell : Page
             DialogType.Changelog => CreateChangelogDialog(content),
             DialogType.Import => CreateImportDialog(title),
             DialogType.Progress => CreateProgressDialog(title),
+            DialogType.Confirmation => CreateConfirmationDialog(title, content, onConfirm),
             _ => null
         };
 
@@ -299,8 +330,6 @@ public sealed partial class AppShell : Page
         _dialogQueue.Enqueue(dialog);
         await ProcessDialogQueue();
     }
-
-    private readonly SemaphoreSlim _dialogQueueLock = new(1, 1);
 
     private async Task ProcessDialogQueue()
     {
@@ -319,15 +348,6 @@ public sealed partial class AppShell : Page
             _dialogQueueLock.Release();
         }
     }
-
-    /// <summary>
-    ///     Gets the navigation frame instance.
-    /// </summary>
-    public Frame AppAppShellFrame => AppShellFrame;
-
-    public readonly string AudiobookListLabel = "Audiobooks";
-    public readonly string LibraryLabel = "Library";
-    public readonly string NowPlayingLabel = "Now Playing";
 
     /// <summary>
     ///     Navigates to the page corresponding to the tapped item.

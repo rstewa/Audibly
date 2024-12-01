@@ -284,10 +284,13 @@ public partial class App : Application
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
             .UseSqlite("Data Source=" + dbPath)
             .Options;
-
+        
         // check for current version key
-        var userCurrentVersion = ApplicationData.Current.LocalSettings.Values["CurrentVersion"]?.ToString();
-        if (userCurrentVersion != null && userCurrentVersion != Constants.Version)
+        var userCurrentVersion = UserSettings.Version;
+
+        // check if user current version is less than 2.1.0
+        if (userCurrentVersion != null &&
+            Constants.CompareVersions(userCurrentVersion, Constants.DatabaseMigrationVersion) == -1)
         {
             // if the user's version is not the current version, then we need to update the database
             // to the current version

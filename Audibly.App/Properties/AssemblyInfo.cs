@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -24,8 +25,8 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 // Note: package version and assembly version must be kept in sync
-[assembly: AssemblyVersion("2.0.16.0")]
-[assembly: AssemblyFileVersion("2.0.16.0")]
-[assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows10.0.19041.0")]
-[assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows10.0.17763.0")]
+[assembly: AssemblyVersion("2.1.0.0")]
+[assembly: AssemblyFileVersion("2.1.0.0")]
+[assembly: TargetPlatform("Windows10.0.19041.0")]
+[assembly: SupportedOSPlatform("Windows10.0.17763.0")]
 [assembly: ComVisible(false)]

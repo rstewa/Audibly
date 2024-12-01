@@ -10,6 +10,16 @@ namespace Audibly.App.Helpers;
 
 public static class UserSettings
 {
+    public static string? Version
+    {
+        get
+        {
+            var version = ApplicationData.Current.LocalSettings.Values["Version"];
+            return version?.ToString();
+        }
+        set => ApplicationData.Current.LocalSettings.Values["Version"] = value;
+    }
+
     public static double Volume
     {
         get
@@ -57,7 +67,7 @@ public static class UserSettings
         }
         set => ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"] = value;
     }
-    
+
     public static bool IsSidebarCollapsed
     {
         get

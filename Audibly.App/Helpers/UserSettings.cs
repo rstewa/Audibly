@@ -38,10 +38,10 @@ public static class UserSettings
     {
         get
         {
-            var version = ApplicationData.Current.LocalSettings.Values["Version"];
+            var version = ApplicationData.Current.LocalSettings.Values["CurrentVersion"];
             return version?.ToString();
         }
-        set => ApplicationData.Current.LocalSettings.Values["Version"] = value;
+        set => ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = value;
     }
 
     public static double Volume

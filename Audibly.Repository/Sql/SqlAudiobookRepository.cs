@@ -167,5 +167,21 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         }
     }
 
+    public async Task DeleteAllAsync(Func<int, int, string, string, Task> progressCallback)
+    {
+        var audiobooks = db.Audiobooks
+            .Include(x => x.SourcePaths)
+            .Include(x => x.Chapters)
+            .ToList();
+        
+        for (var i = 0; i < audiobooks.Count; i++) 
+        {
+            db.Remove(audiobooks[i]);
+            await progressCallback(i, audiobooks.Count, audiobooks[i].Title, audiobooks[i].CoverImagePath);
+        }
+
+        await db.SaveChangesAsync();
+    }
+
     #endregion
 }

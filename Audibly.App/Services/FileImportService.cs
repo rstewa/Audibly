@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
+using Audibly.App.Extensions;
 using Audibly.App.Services.Interfaces;
 using Audibly.App.ViewModels;
 using Audibly.Models;
@@ -275,15 +276,15 @@ public class FileImportService : IImportFiles
             // save the cover image somewhere
             var imageBytes = new Track(paths.First()).EmbeddedPictures.FirstOrDefault()?.PictureData;
 
-            // note: for now using a GUID to prevent the path from being too long and causing the import to fail
-            var dir = Guid.NewGuid().ToString();
+            // generate hash from title, author, and composer
+            var hash = $"{audiobook.Title}{audiobook.Author}{audiobook.Composer}".GetSha256Hash();
 
             // todo: do i want to write the metadata to a json file here?
             // write the metadata to a json file
             // await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
 
             (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
-                await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
+                await App.ViewModel.AppDataService.WriteCoverImageAsync(hash, imageBytes);
 
             // combine the chapters from all the files
             // audiobook.Chapters = audiobook.SourcePaths.SelectMany(x => x.Chapters).ToList();
@@ -357,15 +358,15 @@ public class FileImportService : IImportFiles
             // save the cover image somewhere
             var imageBytes = track.EmbeddedPictures.FirstOrDefault()?.PictureData;
 
-            // note: for now using a GUID to prevent the path from being too long and causing the import to fail
-            var dir = Guid.NewGuid().ToString();
+            // generate hash from title, author, and composer
+            var hash = $"{audiobook.Title}{audiobook.Author}{audiobook.Composer}".GetSha256Hash();
 
             // write the metadata to a json file
             // todo: is this killing the import time?
-            await App.ViewModel.AppDataService.WriteMetadataAsync(dir, track);
+            // await App.ViewModel.AppDataService.WriteMetadataAsync(hash, track);
 
             (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
-                await App.ViewModel.AppDataService.WriteCoverImageAsync(dir, imageBytes);
+                await App.ViewModel.AppDataService.WriteCoverImageAsync(hash, imageBytes);
 
             // var chapters = audiobook.SourcePaths.First().Chapters;
 

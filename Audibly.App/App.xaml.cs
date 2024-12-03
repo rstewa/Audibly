@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -284,7 +285,10 @@ public partial class App : Application
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
             .UseSqlite("Data Source=" + dbPath)
             .Options;
-        
+
+        // NOTE: for manual testing
+        // UserSettings.Version = "2.0.15.0";
+
         // check for current version key
         var userCurrentVersion = UserSettings.Version;
 
@@ -292,10 +296,12 @@ public partial class App : Application
         if (userCurrentVersion != null &&
             Constants.CompareVersions(userCurrentVersion, Constants.DatabaseMigrationVersion) == -1)
         {
-            // if the user's version is not the current version, then we need to update the database
-            // to the current version
-            // this is a breaking change, so we need to reset the database
-            // and re-import the demo data
+            // if the user's version is less than v2.1, then we need to update the database to the current version
+            // this is a breaking change, so we need to reset the database and then re-import their data
+
+            // make a copy of the current database
+            var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
+            File.Copy(dbPath, dbCopyPath, true);
 
             // need to apply the migrations first
             using (var context = new AudiblyContext(dbOptions))
@@ -309,6 +315,16 @@ public partial class App : Application
             // create audibly export file
             var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
             var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
+
+            // have to manually calculate the progress for each audiobook
+            foreach (var audiobookViewModel in audiobookViewModels)
+            {
+                var currentPositionSeconds = audiobookViewModel.CurrentTimeMs.ToSeconds();
+                audiobookViewModel.Progress =
+                    Math.Ceiling(currentPositionSeconds / audiobookViewModel.CurrentSourceFile.Duration * 100);
+                audiobookViewModel.IsCompleted = audiobookViewModel.Progress >= 99.9;
+            }
+
             var audiobooksExport = audiobookViewModels.Select(x => new
             {
                 x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
@@ -320,7 +336,7 @@ public partial class App : Application
             var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
             FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
-            
+
             // set flag that data migration is required
             UserSettings.NeedToImportAudiblyExport = true;
 

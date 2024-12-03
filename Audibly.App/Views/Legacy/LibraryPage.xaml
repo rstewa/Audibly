@@ -311,7 +311,7 @@
         <InfoBar
             IsClosable="True"
             IsIconVisible="True"
-            IsOpen="{x:Bind ViewModel.IsNotificationVisible, Mode=OneWay}"
+            IsOpen="{x:Bind ViewModel.IsNotificationBarVisible, Mode=OneWay}"
             Margin="0,0,8,12"
             Message="{x:Bind ViewModel.NotificationText, Mode=OneWay}"
             RelativePanel.Above="Player"

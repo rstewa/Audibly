@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
 using Audibly.App.Helpers;
-using Audibly.App.Helpers.IconUtils;
 using Audibly.App.Services.Interfaces;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -20,6 +19,8 @@ namespace Audibly.App.Services;
 public class AppDataService : IAppDataService
 {
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
+
+    #region IAppDataService Members
 
     public async Task<Tuple<string, string>> WriteCoverImageAsync(string path, byte[]? imageBytes)
     {
@@ -60,12 +61,21 @@ public class AppDataService : IAppDataService
         // var dir = Path.GetDirectoryName(path);
         // FolderIcon.ResetFolderAttributes(dir);
         // FolderIcon.DeleteIcon(dir);
-        var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(path));
-        await folder.DeleteAsync();
-    }
 
-    // todo: need a cleaner way to handle this
-    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
+        try
+        {
+            var dirName = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(dirName)) return;
+
+            var folder = await StorageFolder.GetFolderFromPathAsync(dirName);
+
+            await folder.DeleteAsync();
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e);
+        }
+    }
 
     public async Task DeleteCoverImagesAsync(List<string> paths, Func<int, int, string, Task> progressCallback)
     {
@@ -86,6 +96,11 @@ public class AppDataService : IAppDataService
         await FileIO.WriteTextAsync(
             await bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting), json);
     }
+
+    #endregion
+
+    // todo: need a cleaner way to handle this
+    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
 
     // from: https://stackoverflow.com/questions/26486671/how-to-resize-an-image-maintaining-the-aspect-ratio-in-c-sharp
     private async Task<bool> ShrinkAndSaveAsync(string path, string savePath, int maxHeight, int maxWidth)

@@ -8,22 +8,22 @@ namespace Audibly.Repository.Interfaces;
 
 public interface IAudiobookRepository
 {
-        /// <summary>
-        ///     Returns all audiobooks.
-        /// </summary>
-        Task<IEnumerable<Audiobook>> GetAsync();
+    /// <summary>
+    ///     Returns all audiobooks.
+    /// </summary>
+    Task<IEnumerable<Audiobook>> GetAsync();
 
-        /// <summary>
-        ///     Returns all audiobooks with a data field matching the start of the given string.
-        /// </summary>
-        Task<IEnumerable<Audiobook>> GetAsync(string search);
+    /// <summary>
+    ///     Returns all audiobooks with a data field matching the start of the given string.
+    /// </summary>
+    Task<IEnumerable<Audiobook>> GetAsync(string search);
 
-        /// <summary>
-        ///     Returns the audiobook with the given file path.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        Task<Audiobook?> GetByFilePathAsync(string filePath);
+    /// <summary>
+    ///     Returns the audiobook with the given file path.
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    Task<Audiobook?> GetByFilePathAsync(string filePath);
 
     // get now playing audiobook
     /// <summary>
@@ -56,4 +56,11 @@ public interface IAudiobookRepository
     ///     Deletes a audiobook.
     /// </summary>
     Task DeleteAsync(Guid audiobookId);
+    
+    /// <summary>
+    ///     Deletes all audiobooks.
+    /// </summary>
+    /// <param name="progressCallback"></param>
+    /// <returns></returns>
+    Task DeleteAllAsync(Func<int, int, string, string, Task> progressCallback);
 }

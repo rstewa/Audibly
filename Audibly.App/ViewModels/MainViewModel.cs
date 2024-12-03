@@ -41,7 +41,7 @@ public class MainViewModel : BindableBase
     #endregion
 
     public readonly IAppDataService AppDataService;
-    private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     public readonly IImportFiles FileImporter;
     public readonly IloggingService LoggingService;
     public readonly MessageService MessageService;
@@ -55,7 +55,7 @@ public class MainViewModel : BindableBase
     private bool _isNavigationViewVisible = true;
 
     // todo: don't need this anymore
-    private bool _isNotificationVisible;
+    private bool _isNotificationBarVisible;
 
     private InfoBarSeverity _notificationSeverity;
 
@@ -171,16 +171,24 @@ public class MainViewModel : BindableBase
         set => Set(ref _progressDialogPrefix, value);
     }
 
+    // TODO: the following 2 properties are not needed anymore (unless the library list page is put back)
+
+    /// <summary>
+    ///     Gets or sets the text to display in the notification bar.
+    /// </summary>
     public string NotificationText
     {
         get => _notificationText;
         set => Set(ref _notificationText, value);
     }
 
-    public bool IsNotificationVisible
+    /// <summary>
+    ///     Gets or sets a value indicating whether the notification bar is visible.
+    /// </summary>
+    public bool IsNotificationBarVisible
     {
-        get => _isNotificationVisible;
-        set => Set(ref _isNotificationVisible, value);
+        get => _isNotificationBarVisible;
+        set => Set(ref _isNotificationBarVisible, value);
     }
 
     public InfoBarSeverity NotificationSeverity
@@ -217,11 +225,11 @@ public class MainViewModel : BindableBase
     {
         ResetFilters?.Invoke();
 
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ShowStartPanel = audiobooks.Count == 0;
 
@@ -279,7 +287,7 @@ public class MainViewModel : BindableBase
         if (SelectedAudiobook == null) return;
 
         if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
-            dispatcherQueue.TryEnqueue(() =>
+            _dispatcherQueue.TryEnqueue(() =>
             {
                 App.PlayerViewModel.MediaPlayer.Pause();
                 App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
@@ -291,7 +299,7 @@ public class MainViewModel : BindableBase
 
         await GetAudiobookListAsync();
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             SelectedAudiobook = null;
             EnqueueNotification(new Notification
@@ -305,7 +313,7 @@ public class MainViewModel : BindableBase
     // todo: fix the bug here and add a confirmation dialog
     public async void DeleteAudiobooksAsync()
     {
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             App.PlayerViewModel.MediaPlayer.Pause();
             App.PlayerViewModel.NowPlaying = null;
@@ -344,7 +352,7 @@ public class MainViewModel : BindableBase
         var file = await openPicker.PickSingleFileAsync();
         if (file == null) return;
 
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
@@ -361,7 +369,7 @@ public class MainViewModel : BindableBase
 
     public async Task ImportAudiobookFromFileActivationAsync(string path, bool showImportDialog = true)
     {
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
@@ -387,7 +395,7 @@ public class MainViewModel : BindableBase
             await FileImporter.ImportFileAsync(file.Path, token,
                 async (progress, total, title, didFail) =>
                 {
-                    await dispatcherQueue.EnqueueAsync(() =>
+                    await _dispatcherQueue.EnqueueAsync(() =>
                     {
                         ProgressDialogProgress = (int)((double)progress / total * 100);
                         ProgressDialogPrefix = "Importing";
@@ -423,7 +431,7 @@ public class MainViewModel : BindableBase
             LoggingService.Log(e.Message);
         }
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ProgressDialogText = string.Empty;
             ProgressDialogProgress = 0;
@@ -462,7 +470,7 @@ public class MainViewModel : BindableBase
             return;
 
         // todo: idk if i want the loading progress bar to be shown or not
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
@@ -482,7 +490,7 @@ public class MainViewModel : BindableBase
             await FileImporter.ImportDirectoryAsync(folder.Path, token,
                 async (progress, total, title, didFail) =>
                 {
-                    await dispatcherQueue.EnqueueAsync(() =>
+                    await _dispatcherQueue.EnqueueAsync(() =>
                     {
                         totalBooks++;
                         ProgressDialogProgress = ((double)progress / total * 100).ToInt();
@@ -507,7 +515,7 @@ public class MainViewModel : BindableBase
             });
         }
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ProgressDialogText = string.Empty;
             ProgressDialogProgress = 0;
@@ -548,7 +556,7 @@ public class MainViewModel : BindableBase
         foreach (var file in files)
             SelectedFiles.Add(new SelectedFile(filePath: file.Path, fileName: file.Name));
 
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         // get framework element from sender
         var element = sender as FrameworkElement;
@@ -558,7 +566,7 @@ public class MainViewModel : BindableBase
         if (result == ContentDialogResult.None)
         {
             SelectedFiles.Clear();
-            await dispatcherQueue.EnqueueAsync(() => IsLoading = false);
+            await _dispatcherQueue.EnqueueAsync(() => IsLoading = false);
             return;
         }
 
@@ -581,7 +589,7 @@ public class MainViewModel : BindableBase
             await FileImporter.ImportFromMultipleFilesAsync(filesArray, token,
                 async (progress, total, title, didFail) =>
                 {
-                    await dispatcherQueue.EnqueueAsync(() =>
+                    await _dispatcherQueue.EnqueueAsync(() =>
                     {
                         totalBooks++;
                         ProgressDialogProgress = ((double)progress / total * 100).ToInt();
@@ -611,7 +619,7 @@ public class MainViewModel : BindableBase
             SelectedFiles.Clear();
         }
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ProgressDialogText = string.Empty;
             ProgressDialogProgress = 0;
@@ -634,13 +642,17 @@ public class MainViewModel : BindableBase
     /// </summary>
     public async Task ResetAudiobookListAsync()
     {
-        await dispatcherQueue.EnqueueAsync(async () =>
+        await _dispatcherQueue.EnqueueAsync(async () =>
             await GetAudiobookListAsync());
     }
 
+    /// <summary>
+    ///     Enqueues a notification to be displayed in the InfoBar.
+    /// </summary>
+    /// <param name="notification"></param>
     public void EnqueueNotification(Notification notification)
     {
-        dispatcherQueue.EnqueueAsync(async () =>
+        _dispatcherQueue.EnqueueAsync(async () =>
         {
             Notifications.Add(notification);
             await Task.Delay(notification.Duration);
@@ -648,16 +660,24 @@ public class MainViewModel : BindableBase
         });
     }
 
-    // Call this method when the InfoBar is closed
+    /// <summary>
+    ///     Invoked when a notification is closed.
+    /// </summary>
+    /// <param name="notification"></param>
     public void OnNotificationClosed(Notification notification)
     {
-        dispatcherQueue.EnqueueAsync(() =>
+        _dispatcherQueue.EnqueueAsync(() =>
         {
             Notifications.Remove(notification);
             if (Notifications.Count == 0) Notifications.Clear();
         });
     }
 
+    /// <summary>
+    ///     Creates a JSON file containing all the audiobooks in the database.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     public async void CreateExportFile(object sender, RoutedEventArgs e)
     {
         await GetAudiobookListAsync();
@@ -693,7 +713,11 @@ public class MainViewModel : BindableBase
         });
     }
 
-
+    /// <summary>
+    ///     Imports audiobooks from a user-selected JSON file.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     public async void ImportFromUserSelectedJsonFileAsync(object sender, RoutedEventArgs e)
     {
         var openPicker = new FileOpenPicker();
@@ -710,9 +734,13 @@ public class MainViewModel : BindableBase
         await ImportFromJsonFileAsync(file);
     }
 
+    /// <summary>
+    ///     Imports audiobooks from a JSON file.
+    /// </summary>
+    /// <param name="file"></param>
     public async Task ImportFromJsonFileAsync(StorageFile file)
     {
-        await dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
@@ -732,7 +760,7 @@ public class MainViewModel : BindableBase
             await FileImporter.ImportFromJsonAsync(file, token,
                 async (progress, total, title, didFail) =>
                 {
-                    await dispatcherQueue.EnqueueAsync(() =>
+                    await _dispatcherQueue.EnqueueAsync(() =>
                     {
                         totalBooks++;
                         ProgressDialogProgress = ((double)progress / total * 100).ToInt();
@@ -757,7 +785,7 @@ public class MainViewModel : BindableBase
             });
         }
 
-        await dispatcherQueue.EnqueueAsync(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ProgressDialogText = string.Empty;
             ProgressDialogProgress = 0;
@@ -779,6 +807,133 @@ public class MainViewModel : BindableBase
 
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");
+    }
+    
+    public async Task MigrateDatabase()
+    {
+        try
+        {
+            var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
+
+            if (file == null) return;
+
+            var json = await FileIO.ReadTextAsync(file);
+            var importedAudiobooks = JsonSerializer.Deserialize<List<ImportedAudiobook>>(json);
+
+            if (importedAudiobooks == null)
+            {
+                // log the error
+                App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"));
+                return;
+            }
+
+            // delete the old cover images
+
+            await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+            MessageService.ShowDialog(DialogType.Progress, "Data Migration",
+                "Deleting audiobooks from old database");
+            
+            // check if the user has any audiobooks in the database (data migration was stopped midway)
+            var audiobooks = await App.Repository.Audiobooks.GetAsync();
+            if (audiobooks.Any())
+            {
+                await App.Repository.Audiobooks.DeleteAllAsync(async (i, count, title, coverImagePath) =>
+                {
+                    // delete the cover image directory
+                    await App.ViewModel.AppDataService.DeleteCoverImageAsync(coverImagePath);
+                    
+                    await _dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ProgressDialogProgress = ((double)i / count * 100).ToInt();
+                        ProgressDialogPrefix = $"Deleting {title}:";
+                        ProgressDialogText = $"{i} of {count}";
+                    });
+                });
+            }
+            
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                ProgressDialogPrefix = "Starting cover image deletion";
+                ProgressDialogText = string.Empty;
+                ProgressDialogProgress = 0;
+            });
+
+            await AppDataService.DeleteCoverImagesAsync(
+                importedAudiobooks.Select(x => x.CoverImagePath).ToList(),
+                async (i, count, _) =>
+                {
+                    await _dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ProgressDialogProgress = ((double)i / count * 100).ToInt();
+                        ProgressDialogPrefix = "Deleting audiobook";
+                        ProgressDialogText = $"{i} of {count}";
+                    });
+                });
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                ProgressDialogPrefix = "Starting audiobook import";
+                ProgressDialogText = string.Empty;
+                ProgressDialogProgress = 0;
+            });
+
+            // notify user that we successfully deleted the old cover images
+            EnqueueNotification(new Notification
+            {
+                Message = "Deleted audiobooks from old database",
+                Severity = InfoBarSeverity.Success
+            });
+
+            // re-import the user's audiobooks
+            await FileImporter.ImportFromJsonAsync(file, new CancellationToken(),
+                async (i, count, title, _) =>
+                {
+                    await _dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ProgressDialogProgress = ((double)i / count * 100).ToInt();
+                        ProgressDialogPrefix = "Importing";
+                        ProgressDialogText = $"{title}";
+                    });
+                });
+
+            OnProgressDialogCompleted();
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                ProgressDialogPrefix = string.Empty;
+                ProgressDialogText = string.Empty;
+                ProgressDialogProgress = 0;
+                IsLoading = false;
+            });
+
+            // notify user that we successfully imported their audiobooks
+            EnqueueNotification(new Notification
+            {
+                Message = "Data migration completed successfully",
+                Severity = InfoBarSeverity.Success
+            });
+
+            NeedToImportAudiblyExport = false;
+
+            await GetAudiobookListAsync(true);
+
+            UserSettings.NeedToImportAudiblyExport = false;
+        }
+        catch (Exception exception)
+        {
+            UserSettings.DataMigrationFailed = true;
+
+            // log the error
+            LoggingService.LogError(exception);
+
+            // notify user that we failed to import their audiobooks
+            EnqueueNotification(new Notification
+            {
+                Message = "Failed to import audiobooks",
+                Severity = InfoBarSeverity.Error
+            });
+        }
     }
 }
 

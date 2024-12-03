@@ -10,11 +10,35 @@ namespace Audibly.App.Helpers;
 
 public static class UserSettings
 {
+    public static bool DataMigrationFailed
+    {
+        get
+        {
+            try
+            {
+                var dataMigrationFailed = ApplicationData.Current.LocalSettings.Values["DataMigrationFailed"];
+                if (dataMigrationFailed != null)
+                    if (bool.TryParse(dataMigrationFailed.ToString(), out var result))
+                        return result;
+
+                ApplicationData.Current.LocalSettings.Values["DataMigrationFailed"] = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return false;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["DataMigrationFailed"] = value;
+    }
+
     public static bool NeedToImportAudiblyExport
     {
         get
         {
-            try 
+            try
             {
                 var needToImport = ApplicationData.Current.LocalSettings.Values["NeedToImportAudiblyExportFile"];
                 if (needToImport != null)
@@ -33,7 +57,7 @@ public static class UserSettings
         }
         set => ApplicationData.Current.LocalSettings.Values["NeedToImportAudiblyExportFile"] = value;
     }
-    
+
     public static string? Version
     {
         get

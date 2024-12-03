@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using Sentry;
 using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -339,8 +340,25 @@ public sealed partial class AppShell : Page
             {
                 var dialog = _dialogQueue.Dequeue();
                 dialog.XamlRoot = XamlRoot;
-                await dialog.ShowAsync();
+
+                await _dispatcherQueue.EnqueueAsync(async () =>
+                {
+                    try
+                    {
+                        await dialog.ShowAsync();
+                    }
+                    catch (Exception e)
+                    {
+                        ViewModel.LoggingService.LogError(e);
+                        SentrySdk.CaptureException(e);
+                    }
+                });
             }
+        }
+        catch (Exception e)
+        {
+            ViewModel.LoggingService.LogError(e);
+            SentrySdk.CaptureException(e);
         }
         finally
         {

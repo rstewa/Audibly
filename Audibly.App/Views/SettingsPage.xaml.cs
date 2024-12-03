@@ -103,4 +103,9 @@ public sealed partial class SettingsPage : Page
         // wait 1 second and change back to copy icon
         Task.Delay(1000).ContinueWith(_ => DispatcherQueue.TryEnqueue(() => CopyIcon.Glyph = "\uE8C8"));
     }
+
+    private void advancedSettingsToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -272,6 +273,9 @@ public partial class App : Application
     {
         ViewModel.LoggingService.Log(e.Exception.Message);
     }
+    
+    // private const bool _debug = true;
+    private const bool _debug = false;
 
     /// <summary>
     ///     Configures the app to use the Sqlite data source. If no existing Sqlite database exists,
@@ -284,7 +288,12 @@ public partial class App : Application
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
             .UseSqlite("Data Source=" + dbPath)
             .Options;
-        
+
+        if (_debug)
+            UserSettings.Version = "2.0.15.0";
+        else
+            UserSettings.Version = Version;
+
         // check for current version key
         var userCurrentVersion = UserSettings.Version;
 
@@ -292,10 +301,12 @@ public partial class App : Application
         if (userCurrentVersion != null &&
             Constants.CompareVersions(userCurrentVersion, Constants.DatabaseMigrationVersion) == -1)
         {
-            // if the user's version is not the current version, then we need to update the database
-            // to the current version
-            // this is a breaking change, so we need to reset the database
-            // and re-import the demo data
+            // if the user's version is less than v2.1, then we need to update the database to the current version
+            // this is a breaking change, so we need to reset the database and then re-import their data
+            
+            // make a copy of the current database
+            var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
+            File.Copy(dbPath, dbCopyPath, true);
 
             // need to apply the migrations first
             using (var context = new AudiblyContext(dbOptions))
@@ -320,7 +331,7 @@ public partial class App : Application
             var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
                 .GetAwaiter().GetResult();
             FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
-            
+
             // set flag that data migration is required
             UserSettings.NeedToImportAudiblyExport = true;
 

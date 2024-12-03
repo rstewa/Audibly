@@ -88,90 +88,111 @@ public sealed partial class LibraryCardPage : Page
         // todo: re-word this message && change the width of the dialog
         // todo: add try-catch block
         ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
-            "To ensure compatibility with the latest update, we need to migrate your data to the new database format. This process may take a few minutes depending on the size of your library. Do not close the app during this process.",
-            async () =>
+            "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
+            "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
+            "during this process.",
+            async () => { await ViewModel.MigrateDatabase(); });
+    }
+
+    private async Task MigrateDatabase()
+    {
+        try
+        {
+            var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
+
+            if (file == null) return;
+
+            var json = await FileIO.ReadTextAsync(file);
+            var importedAudiobooks = JsonSerializer.Deserialize<List<ImportedAudiobook>>(json);
+
+            if (importedAudiobooks == null)
             {
-                var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
+                // log the error
+                App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"));
+                return;
+            }
 
-                if (file == null) return;
+            // delete the old cover images
 
-                var json = await FileIO.ReadTextAsync(file);
-                var importedAudiobooks = JsonSerializer.Deserialize<List<ImportedAudiobook>>(json);
+            await _dispatcherQueue.EnqueueAsync(() => ViewModel.IsLoading = true);
 
-                if (importedAudiobooks == null)
+            ViewModel.MessageService.ShowDialog(DialogType.Progress, "Data Migration",
+                "Deleting old cover images");
+
+            await ViewModel.AppDataService.DeleteCoverImagesAsync(
+                importedAudiobooks.Select(x => x.CoverImagePath).ToList(),
+                async (i, count, _) =>
                 {
-                    // log the error
-                    App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"));
-                    return;
-                }
-
-                // delete the old cover images
-
-                await _dispatcherQueue.EnqueueAsync(() => ViewModel.IsLoading = true);
-
-                ViewModel.MessageService.ShowDialog(DialogType.Progress, "Data Migration",
-                    "Deleting old cover images");
-
-                await ViewModel.AppDataService.DeleteCoverImagesAsync(
-                    importedAudiobooks.Select(x => x.CoverImagePath).ToList(),
-                    async (i, count, _) =>
+                    await _dispatcherQueue.EnqueueAsync(() =>
                     {
-                        await _dispatcherQueue.EnqueueAsync(() =>
-                        {
-                            ViewModel.ProgressDialogProgress = ((double)i / count * 100).ToInt();
-                            ViewModel.ProgressDialogPrefix = "Deleting audiobook";
-                            ViewModel.ProgressDialogText = $"{i} of {count}";
-                        });
+                        ViewModel.ProgressDialogProgress = ((double)i / count * 100).ToInt();
+                        ViewModel.ProgressDialogPrefix = "Deleting audiobook";
+                        ViewModel.ProgressDialogText = $"{i} of {count}";
                     });
-
-                await _dispatcherQueue.EnqueueAsync(() =>
-                {
-                    // ViewModel.ProgressDialogText = string.Empty;
-                    ViewModel.ProgressDialogProgress = 0;
                 });
 
-                // notify user that we successfully deleted the old cover images
-                ViewModel.EnqueueNotification(new Notification
-                {
-                    Message = "Deleted audiobooks from old database",
-                    Severity = InfoBarSeverity.Success
-                });
-
-                // re-import the user's audiobooks
-                await ViewModel.FileImporter.ImportFromJsonAsync(file, new CancellationToken(),
-                    async (i, count, title, _) =>
-                    {
-                        await _dispatcherQueue.EnqueueAsync(() =>
-                        {
-                            ViewModel.ProgressDialogProgress = ((double)i / count * 100).ToInt();
-                            ViewModel.ProgressDialogPrefix = "Importing";
-                            ViewModel.ProgressDialogText = $"{title}";
-                        });
-                    });
-
-                ViewModel.OnProgressDialogCompleted();
-
-                await _dispatcherQueue.EnqueueAsync(() =>
-                {
-                    ViewModel.ProgressDialogPrefix = string.Empty;
-                    ViewModel.ProgressDialogText = string.Empty;
-                    ViewModel.ProgressDialogProgress = 0;
-                    ViewModel.IsLoading = false;
-                });
-
-                // notify user that we successfully imported their audiobooks
-                ViewModel.EnqueueNotification(new Notification
-                {
-                    Message = "Data migration completed successfully",
-                    Severity = InfoBarSeverity.Success
-                });
-
-                ViewModel.NeedToImportAudiblyExport = false;
-
-                await ViewModel.GetAudiobookListAsync(true);
-                
-                UserSettings.NeedToImportAudiblyExport = false;
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                // ViewModel.ProgressDialogText = string.Empty;
+                ViewModel.ProgressDialogProgress = 0;
             });
+
+            // notify user that we successfully deleted the old cover images
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "Deleted audiobooks from old database",
+                Severity = InfoBarSeverity.Success
+            });
+
+            // re-import the user's audiobooks
+            await ViewModel.FileImporter.ImportFromJsonAsync(file, new CancellationToken(),
+                async (i, count, title, _) =>
+                {
+                    await _dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ViewModel.ProgressDialogProgress = ((double)i / count * 100).ToInt();
+                        ViewModel.ProgressDialogPrefix = "Importing";
+                        ViewModel.ProgressDialogText = $"{title}";
+                    });
+                });
+
+            ViewModel.OnProgressDialogCompleted();
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                ViewModel.ProgressDialogPrefix = string.Empty;
+                ViewModel.ProgressDialogText = string.Empty;
+                ViewModel.ProgressDialogProgress = 0;
+                ViewModel.IsLoading = false;
+            });
+
+            // notify user that we successfully imported their audiobooks
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "Data migration completed successfully",
+                Severity = InfoBarSeverity.Success
+            });
+
+            ViewModel.NeedToImportAudiblyExport = false;
+
+            await ViewModel.GetAudiobookListAsync(true);
+
+            UserSettings.NeedToImportAudiblyExport = false;
+        }
+        catch (Exception exception)
+        {
+            UserSettings.DataMigrationFailed = true;
+
+            // log the error
+            App.ViewModel.LoggingService.LogError(exception);
+
+            // notify user that we failed to import their audiobooks
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "Failed to import audiobooks",
+                Severity = InfoBarSeverity.Error
+            });
+        }
     }
 
     private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)

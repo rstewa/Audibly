@@ -273,9 +273,6 @@ public partial class App : Application
     {
         ViewModel.LoggingService.Log(e.Exception.Message);
     }
-    
-    // private const bool _debug = true;
-    private const bool _debug = false;
 
     /// <summary>
     ///     Configures the app to use the Sqlite data source. If no existing Sqlite database exists,
@@ -289,10 +286,8 @@ public partial class App : Application
             .UseSqlite("Data Source=" + dbPath)
             .Options;
 
-        if (_debug)
-            UserSettings.Version = "2.0.15.0";
-        else
-            UserSettings.Version = Version;
+        // NOTE: for manual testing
+        // UserSettings.Version = "2.0.15.0";
 
         // check for current version key
         var userCurrentVersion = UserSettings.Version;
@@ -303,7 +298,7 @@ public partial class App : Application
         {
             // if the user's version is less than v2.1, then we need to update the database to the current version
             // this is a breaking change, so we need to reset the database and then re-import their data
-            
+
             // make a copy of the current database
             var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
             File.Copy(dbPath, dbCopyPath, true);
@@ -320,6 +315,16 @@ public partial class App : Application
             // create audibly export file
             var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
             var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
+
+            // have to manually calculate the progress for each audiobook
+            foreach (var audiobookViewModel in audiobookViewModels)
+            {
+                var currentPositionSeconds = audiobookViewModel.CurrentTimeMs.ToSeconds();
+                audiobookViewModel.Progress =
+                    Math.Ceiling(currentPositionSeconds / audiobookViewModel.CurrentSourceFile.Duration * 100);
+                audiobookViewModel.IsCompleted = audiobookViewModel.Progress >= 99.9;
+            }
+
             var audiobooksExport = audiobookViewModels.Select(x => new
             {
                 x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,

@@ -832,7 +832,32 @@ public class MainViewModel : BindableBase
             await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
             MessageService.ShowDialog(DialogType.Progress, "Data Migration",
-                "Deleting old cover images");
+                "Deleting audiobooks from old database");
+            
+            // check if the user has any audiobooks in the database (data migration was stopped midway)
+            var audiobooks = await App.Repository.Audiobooks.GetAsync();
+            if (audiobooks.Any())
+            {
+                await App.Repository.Audiobooks.DeleteAllAsync(async (i, count, title, coverImagePath) =>
+                {
+                    // delete the cover image directory
+                    await App.ViewModel.AppDataService.DeleteCoverImageAsync(coverImagePath);
+                    
+                    await _dispatcherQueue.EnqueueAsync(() =>
+                    {
+                        ProgressDialogProgress = ((double)i / count * 100).ToInt();
+                        ProgressDialogPrefix = $"Deleting {title}:";
+                        ProgressDialogText = $"{i} of {count}";
+                    });
+                });
+            }
+            
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                ProgressDialogPrefix = "Starting cover image deletion";
+                ProgressDialogText = string.Empty;
+                ProgressDialogProgress = 0;
+            });
 
             await AppDataService.DeleteCoverImagesAsync(
                 importedAudiobooks.Select(x => x.CoverImagePath).ToList(),
@@ -848,7 +873,8 @@ public class MainViewModel : BindableBase
 
             await _dispatcherQueue.EnqueueAsync(() =>
             {
-                // ProgressDialogText = string.Empty;
+                ProgressDialogPrefix = "Starting audiobook import";
+                ProgressDialogText = string.Empty;
                 ProgressDialogProgress = 0;
             });
 

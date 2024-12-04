@@ -82,6 +82,14 @@ public class FileImportService : IImportFiles
         // read the json string from the file
         var json = FileIO.ReadTextAsync(file).AsTask().Result;
 
+        if (string.IsNullOrEmpty(json))
+        {
+            // log the error
+            App.ViewModel.LoggingService.LogError(new Exception("Failed to read the json file"));
+            ImportCompleted?.Invoke();
+            return;
+        }
+
         // deserialize the json string to a list of audiobooks
         var importedAudiobooks = JsonSerializer.Deserialize<List<ImportedAudiobook>>(json);
 
@@ -99,6 +107,21 @@ public class FileImportService : IImportFiles
         {
             // Check if cancellation was requested
             cancellationToken.ThrowIfCancellationRequested();
+
+            // verify that the audiobook file exists
+            if (!File.Exists(importedAudiobook.FilePath))
+            {
+                // log the error
+                App.ViewModel.LoggingService.LogError(new Exception("Audiobook file does not exist"));
+                App.ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = $"Audiobook file was moved or deleted: {importedAudiobook.FilePath}",
+                    Severity = InfoBarSeverity.Warning
+                });
+
+                didFail = true;
+                continue;
+            }
 
             var audiobook = await CreateAudiobook(importedAudiobook.FilePath, importedAudiobook);
 

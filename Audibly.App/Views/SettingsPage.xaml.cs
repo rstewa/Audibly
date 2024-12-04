@@ -3,7 +3,6 @@
 // Updated: 4/9/2024
 
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -17,18 +16,18 @@ namespace Audibly.App.Views;
 
 public sealed partial class SettingsPage : Page
 {
+    public SettingsPage()
+    {
+        InitializeComponent();
+        Loaded += OnSettingsPageLoaded;
+    }
+
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
 
     public static string Version => Constants.Version;
-
-    public SettingsPage()
-    {
-        InitializeComponent();
-        Loaded += OnSettingsPageLoaded;
-    }
 
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
@@ -55,17 +54,21 @@ public sealed partial class SettingsPage : Page
         {
             ThemeHelper.RootTheme = App.GetEnum<ElementTheme>(selectedTheme);
             if (selectedTheme == "Dark")
+            {
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.White);
+            }
             else if (selectedTheme == "Light")
             {
                 // warn user that the light theme is in beta and may not be fully supported
                 App.ViewModel.MessageService.ShowDialog(DialogType.Info, "Light Theme Warning",
                     "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
-                
+
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
             }
             else
+            {
                 _ = TitleBarHelper.ApplySystemThemeToCaptionButtons(window) == Colors.White ? "Dark" : "Light";
+            }
         }
     }
 
@@ -73,7 +76,7 @@ public sealed partial class SettingsPage : Page
     {
         await Launcher.LaunchUriAsync(new Uri("https://github.com/rstewa/Audibly/issues/new/choose"));
     }
-    
+
     private async void donateCard_Click(object sender, RoutedEventArgs e)
     {
         await Launcher.LaunchUriAsync(new Uri("https://paypal.me/rstewa35"));
@@ -99,12 +102,12 @@ public sealed partial class SettingsPage : Page
 
         // change icon to checkmark
         DispatcherQueue.TryEnqueue(() => CopyIcon.Glyph = "\uE8FB");
-        
+
         // wait 1 second and change back to copy icon
         Task.Delay(1000).ContinueWith(_ => DispatcherQueue.TryEnqueue(() => CopyIcon.Glyph = "\uE8C8"));
     }
 
-    private void advancedSettingsToggle_Toggled(object sender, RoutedEventArgs e)
+    private void ReAttemptDataMigration_OnClick(object sender, RoutedEventArgs e)
     {
         throw new NotImplementedException();
     }

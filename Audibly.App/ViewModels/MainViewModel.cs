@@ -41,8 +41,9 @@ public class MainViewModel : BindableBase
 
     #endregion
 
-    public readonly IAppDataService AppDataService;
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+    public readonly IAppDataService AppDataService;
     public readonly IImportFiles FileImporter;
     public readonly IloggingService LoggingService;
     public readonly MessageService MessageService;
@@ -84,7 +85,7 @@ public class MainViewModel : BindableBase
         AppDataService = appDataService;
         MessageService = messageService;
         LoggingService = loggingService;
-        // Task.Run(GetAudiobookListAsync(firstRun: true));
+        // DataMigrationFailed = UserSettings.DataMigrationFailed;
         Task.Run(() => GetAudiobookListAsync(true));
     }
 
@@ -93,9 +94,30 @@ public class MainViewModel : BindableBase
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
 
+    /// <summary>
+    ///     The collection of audiobooks to be used for filtering.
+    /// </summary>
     public List<AudiobookViewModel> AudiobooksForFilter { get; } = [];
 
-    public bool NeedToImportAudiblyExport { get; set; } = false;
+    /// <summary>
+    ///     Gets or sets a value indicating whether the app needs to import the audibly export file.
+    /// </summary>
+    public bool NeedToImportAudiblyExport { get; set; }
+
+    // private bool _dataMigrationFailed;
+    //
+    // /// <summary>
+    // ///     Gets or sets a value indicating whether the data migration failed.
+    // /// </summary>
+    // public bool DataMigrationFailed
+    // {
+    //     get => _dataMigrationFailed;
+    //     set
+    //     {
+    //         Set(ref _dataMigrationFailed, value);
+    //         UserSettings.DataMigrationFailed = value;
+    //     }
+    // }
 
     /// <summary>
     ///     Gets or sets the selected audiobook, or null if no audiobook is selected.
@@ -809,11 +831,11 @@ public class MainViewModel : BindableBase
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");
     }
-    
+
     public async Task MigrateDatabase()
     {
         var transaction = SentrySdk.StartTransaction("Data Migration", "Data Migration");
-        
+
         try
         {
             var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
@@ -836,16 +858,15 @@ public class MainViewModel : BindableBase
 
             MessageService.ShowDialog(DialogType.Progress, "Data Migration",
                 "Deleting audiobooks from old database");
-            
+
             // check if the user has any audiobooks in the database (data migration was stopped midway)
             var audiobooks = await App.Repository.Audiobooks.GetAsync();
             if (audiobooks.Any())
-            {
                 await App.Repository.Audiobooks.DeleteAllAsync(async (i, count, title, coverImagePath) =>
                 {
                     // delete the cover image directory
                     await App.ViewModel.AppDataService.DeleteCoverImageAsync(coverImagePath);
-                    
+
                     await _dispatcherQueue.EnqueueAsync(() =>
                     {
                         ProgressDialogProgress = ((double)i / count * 100).ToInt();
@@ -853,8 +874,7 @@ public class MainViewModel : BindableBase
                         ProgressDialogText = $"{i} of {count}";
                     });
                 });
-            }
-            
+
             await _dispatcherQueue.EnqueueAsync(() =>
             {
                 ProgressDialogPrefix = "Starting cover image deletion";
@@ -925,7 +945,7 @@ public class MainViewModel : BindableBase
         }
         catch (Exception exception)
         {
-            UserSettings.DataMigrationFailed = true;
+            // DataMigrationFailed = true;
 
             // log the error
             LoggingService.LogError(exception);
@@ -937,7 +957,7 @@ public class MainViewModel : BindableBase
                 Severity = InfoBarSeverity.Error
             });
         }
-        
+
         transaction.Finish();
     }
 }

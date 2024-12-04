@@ -64,6 +64,8 @@ public partial class App : Application
 
             // Enable Global Mode since this is a client app.
             options.IsGlobalModeEnabled = true;
+            
+            options.ProfilesSampleRate = 1.0;
 
             // TODO:Any other Sentry options you need go here.
         });
@@ -112,7 +114,7 @@ public partial class App : Application
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
-        ViewModel.LoggingService.Log(e.Exception.Message);
+        ViewModel.LoggingService.LogError(e.Exception);
         // RestartApp();
     }
 

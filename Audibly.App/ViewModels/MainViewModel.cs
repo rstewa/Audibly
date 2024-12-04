@@ -22,6 +22,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Sentry;
 using Sharpener.Extensions;
 using WinRT.Interop;
 
@@ -811,6 +812,8 @@ public class MainViewModel : BindableBase
     
     public async Task MigrateDatabase()
     {
+        var transaction = SentrySdk.StartTransaction("Data Migration", "Data Migration");
+        
         try
         {
             var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
@@ -934,6 +937,8 @@ public class MainViewModel : BindableBase
                 Severity = InfoBarSeverity.Error
             });
         }
+        
+        transaction.Finish();
     }
 }
 

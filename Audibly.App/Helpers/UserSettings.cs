@@ -68,6 +68,16 @@ public static class UserSettings
         set => ApplicationData.Current.LocalSettings.Values["CurrentVersion"] = value;
     }
 
+    public static string? PreviousVersion
+    {
+        get
+        {
+            var version = ApplicationData.Current.LocalSettings.Values["PreviousVersion"];
+            return version?.ToString();
+        }
+        set => ApplicationData.Current.LocalSettings.Values["PreviousVersion"] = value;
+    }
+
     public static double Volume
     {
         get

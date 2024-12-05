@@ -64,7 +64,7 @@ public partial class App : Application
 
             // Enable Global Mode since this is a client app.
             options.IsGlobalModeEnabled = true;
-            
+
             options.ProfilesSampleRate = 1.0;
 
             // TODO:Any other Sentry options you need go here.
@@ -292,7 +292,9 @@ public partial class App : Application
         // UserSettings.Version = "2.0.15.0";
 
         // check for current version key
-        var userCurrentVersion = UserSettings.Version;
+        var userCurrentVersion = UserSettings.PreviousVersion = UserSettings.Version;
+
+        ViewModel.LoggingService.Log($"User's current version: {userCurrentVersion}");
 
         // check if user current version is less than 2.1.0
         if (userCurrentVersion != null &&

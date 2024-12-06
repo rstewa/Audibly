@@ -39,6 +39,8 @@ public sealed partial class AppShell : Page
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
 
+    private ContentDialog? _dialog;
+
     private ContentDialog? _importDialog;
 
     private ContentDialog? _progressDialog;
@@ -64,6 +66,7 @@ public sealed partial class AppShell : Page
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
         App.ViewModel.ProgressDialogCompleted += HideProgressDialog;
+        App.ViewModel.ClearDialogQueue += OnClearDialogQueue;
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
@@ -83,6 +86,12 @@ public sealed partial class AppShell : Page
     ///     Gets the navigation frame instance.
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
+
+    private void OnClearDialogQueue()
+    {
+        _dialogQueue.Clear();
+        if (_dialog != null) _dialog.Hide();
+    }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -310,14 +319,14 @@ public sealed partial class AppShell : Page
         {
             while (XamlRoot != null && _dialogQueue.Count > 0)
             {
-                var dialog = _dialogQueue.Dequeue();
-                dialog.XamlRoot = XamlRoot;
+                _dialog = _dialogQueue.Dequeue();
+                _dialog.XamlRoot = XamlRoot;
 
                 await _dispatcherQueue.EnqueueAsync(async () =>
                 {
                     try
                     {
-                        await dialog.ShowAsync();
+                        await _dialog.ShowAsync();
                     }
                     catch (Exception e)
                     {
@@ -334,6 +343,8 @@ public sealed partial class AppShell : Page
         }
         finally
         {
+            // todo: decide on this
+            // OnClearDialogQueue();
             _dialogQueueLock.Release();
         }
     }

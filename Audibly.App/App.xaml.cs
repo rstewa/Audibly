@@ -72,8 +72,8 @@ public partial class App : Application
 
             options.ProfilesSampleRate = 1.0;
 
-            options.Environment = "development";
-            // TODO:Any other Sentry options you need go here.
+            // note: only for running locally
+            // options.Environment = "development";
         });
 
         InitializeComponent();
@@ -284,6 +284,7 @@ public partial class App : Application
 
         // NOTE: for manual testing
         // UserSettings.Version = "2.0.15.0";
+        // UserSettings.DataMigrationFailed = false;
 
         // check for current version key
         var userCurrentVersion = UserSettings.PreviousVersion = UserSettings.Version;
@@ -294,70 +295,89 @@ public partial class App : Application
         if (userCurrentVersion != null &&
             Constants.CompareVersions(userCurrentVersion, Constants.DatabaseMigrationVersion) == -1)
         {
-            // if the user's version is less than v2.1, then we need to update the database to the current version
-            // this is a breaking change, so we need to reset the database and then re-import their data
-
-            // make a copy of the current database
-            var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
-            File.Copy(dbPath, dbCopyPath, true);
-
-            // NOTE: for manual testing: need to remove this line
-            // dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly_2015.db";
-
-            var baseConnectionString = "Data Source=" + dbPath;
-            var connectionString = new SqliteConnectionStringBuilder(baseConnectionString)
+            try
             {
-                Mode = SqliteOpenMode.ReadOnly
-            }.ToString();
+                // if the user's version is less than v2.1, then we need to update the database to the current version
+                // this is a breaking change, so we need to reset the database and then re-import their data
 
-            List<Audiobooks> audiobooks;
-            using (var connection = new SqliteConnection(connectionString))
-            {
-                audiobooks = connection.Query<Audiobooks>("SELECT * FROM Audiobooks").ToList();
-            }
+                // make a copy of the current database
+                var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
+                File.Copy(dbPath, dbCopyPath, true);
 
-            var audiobookExport = new List<ImportedAudiobook>();
-            foreach (var audiobook in audiobooks)
-            {
-                var importedAudiobook = new ImportedAudiobook
+                // NOTE: for manual testing: need to remove this line
+                // dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly_2015.db";
+
+                var baseConnectionString = "Data Source=" + dbPath;
+                var connectionString = new SqliteConnectionStringBuilder(baseConnectionString)
                 {
-                    CurrentTimeMs = audiobook.CurrentTimeMs,
-                    CoverImagePath = audiobook.CoverImagePath,
-                    FilePath = audiobook.FilePath,
-                    CurrentChapterIndex = audiobook.CurrentChapterIndex,
-                    IsNowPlaying = audiobook.IsNowPlaying
-                };
-                var currentPositionSeconds = audiobook.CurrentTimeMs.ToSeconds();
-                importedAudiobook.Progress = Math.Ceiling(currentPositionSeconds / audiobook.Duration * 100);
-                importedAudiobook.IsCompleted = importedAudiobook.Progress >= 99.9;
+                    Mode = SqliteOpenMode.ReadOnly
+                }.ToString();
 
-                audiobookExport.Add(importedAudiobook);
+                List<Audiobooks> audiobooks;
+                using (var connection = new SqliteConnection(connectionString))
+                {
+                    audiobooks = connection.Query<Audiobooks>("SELECT * FROM Audiobooks").ToList();
+                }
+
+                var audiobookExport = new List<ImportedAudiobook>();
+                foreach (var audiobook in audiobooks)
+                {
+                    var importedAudiobook = new ImportedAudiobook
+                    {
+                        CurrentTimeMs = audiobook.CurrentTimeMs,
+                        CoverImagePath = audiobook.CoverImagePath,
+                        FilePath = audiobook.FilePath,
+                        CurrentChapterIndex = audiobook.CurrentChapterIndex,
+                        IsNowPlaying = audiobook.IsNowPlaying
+                    };
+                    var currentPositionSeconds = audiobook.CurrentTimeMs.ToSeconds();
+                    importedAudiobook.Progress = Math.Ceiling(currentPositionSeconds / audiobook.Duration * 100);
+                    importedAudiobook.IsCompleted = importedAudiobook.Progress >= 99.9;
+
+                    audiobookExport.Add(importedAudiobook);
+                }
+
+                var json = JsonSerializer.Serialize(audiobookExport);
+
+                var folder = ApplicationData.Current.LocalFolder;
+                var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
+                    .GetAwaiter().GetResult();
+                FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
+
+                // set flag that data migration is required
+                UserSettings.NeedToImportAudiblyExport = true;
+
+                // delete the old database
+                using (var context = new AudiblyContext(dbOptions))
+                {
+                    context.Database.EnsureDeleted();
+                }
+
+                // create the new database
+                using (var context = new AudiblyContext(dbOptions))
+                {
+                    var databaseFacade = new DatabaseFacade(context);
+                    if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+                }
+
+                Repository = new SqlAudiblyRepository(dbOptions);
             }
-
-            var json = JsonSerializer.Serialize(audiobookExport);
-
-            var folder = ApplicationData.Current.LocalFolder;
-            var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
-                .GetAwaiter().GetResult();
-            FileIO.WriteTextAsync(file, json).GetAwaiter().GetResult();
-
-            // set flag that data migration is required
-            UserSettings.NeedToImportAudiblyExport = true;
-
-            // delete the old database
-            using (var context = new AudiblyContext(dbOptions))
+            catch (Exception e)
             {
-                context.Database.EnsureDeleted();
-            }
+                ViewModel.LoggingService.LogError(e);
+                // if there's an error, then we need to just start fresh with the new database
+                using (var context = new AudiblyContext(dbOptions))
+                {
+                    var databaseFacade = new DatabaseFacade(context);
+                    if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+                }
 
-            // create the new database
-            using (var context = new AudiblyContext(dbOptions))
-            {
-                var databaseFacade = new DatabaseFacade(context);
-                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
-            }
+                Repository = new SqlAudiblyRepository(dbOptions);
 
-            Repository = new SqlAudiblyRepository(dbOptions);
+                // let user know that the data migration failed but that they can re-attempt it by going to
+                // settings->advanced settings->re-attempt data migration
+                UserSettings.DataMigrationFailed = true;
+            }
         }
         else
         {

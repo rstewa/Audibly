@@ -93,37 +93,9 @@ public sealed partial class AppShell : Page
         {
             ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
 
-            // // check if user had v1 and was listening to an audiobook
-            // var currentAudiobookPath = ApplicationData.Current.LocalSettings.Values["CurrentAudiobookPath"]?.ToString();
-            // if (currentAudiobookPath != null)
-            // {
-            //     var result = await ShowYesNoDialogAsync("Welcome Back!",
-            //         "We've detected that you were listening to an audiobook in a previous version of Audibly. Would you like to continue listening?");
-            //     if (!result) return;
-            //
-            //     // get that audiobooks current position
-            //     var name = Path.GetFileNameWithoutExtension(currentAudiobookPath);
-            //     var currentPosition =
-            //         ApplicationData.Current.LocalSettings.Values[$"{name}:CurrentPosition"]?.ToDouble();
-            //
-            //     // import the audiobook
-            //     var importSuccess = await ViewModel.ImportAudiobookTest(currentAudiobookPath);
-            //     if (!importSuccess) return;
-            //
-            //     // set the current position
-            //     var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a. == currentAudiobookPath);
-            //     if (audiobook == null) return;
-            //
-            //     ViewModel.SelectedAudiobook = audiobook;
-            //     if (currentPosition != null)
-            //         audiobook.CurrentTimeMs = (int)currentPosition;
-            //     PlayerViewModel.OpenAudiobook(audiobook);
-            // }
-            // else
-            // {
             ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
                 "We're glad you're here. Let's get started by adding your first audiobook.");
-            // }
+            UserSettings.Version = Constants.Version;
         }
         else
         {

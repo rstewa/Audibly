@@ -3,6 +3,7 @@
 // Updated: 10/03/2024
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -17,9 +18,13 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
+using Audibly.Models;
+using Audibly.Models.v1;
 using Audibly.Repository.Interfaces;
 using Audibly.Repository.Sql;
 using CommunityToolkit.WinUI;
+using Dapper;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.UI.Xaml;
@@ -27,8 +32,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
-using Sharpener.Extensions;
 using WinRT.Interop;
+using Constants = Audibly.App.Helpers.Constants;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
@@ -67,6 +72,7 @@ public partial class App : Application
 
             options.ProfilesSampleRate = 1.0;
 
+            options.Environment = "development";
             // TODO:Any other Sentry options you need go here.
         });
 
@@ -100,17 +106,6 @@ public partial class App : Application
     ///     Gets the root frame of the app. This contains the nav view and the player page
     /// </summary>
     public static Frame? RootFrame { get; private set; }
-
-    public static string Version
-    {
-        get
-        {
-            var version = Assembly.GetEntryAssembly()?.GetName().Version;
-            return version != null
-                ? $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
-                : string.Empty;
-        }
-    }
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
@@ -283,7 +278,6 @@ public partial class App : Application
     private static void UseSqlite()
     {
         var dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db";
-
         var dbOptions = new DbContextOptionsBuilder<AudiblyContext>()
             .UseSqlite("Data Source=" + dbPath)
             .Options;
@@ -307,34 +301,40 @@ public partial class App : Application
             var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
             File.Copy(dbPath, dbCopyPath, true);
 
-            // need to apply the migrations first
-            using (var context = new AudiblyContext(dbOptions))
+            // NOTE: for manual testing: need to remove this line
+            // dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly_2015.db";
+
+            var baseConnectionString = "Data Source=" + dbPath;
+            var connectionString = new SqliteConnectionStringBuilder(baseConnectionString)
             {
-                var databaseFacade = new DatabaseFacade(context);
-                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+                Mode = SqliteOpenMode.ReadOnly
+            }.ToString();
+
+            List<Audiobooks> audiobooks;
+            using (var connection = new SqliteConnection(connectionString))
+            {
+                audiobooks = connection.Query<Audiobooks>("SELECT * FROM Audiobooks").ToList();
             }
 
-            Repository = new SqlAudiblyRepository(dbOptions);
-
-            // create audibly export file
-            var audiobooks = Repository.Audiobooks.GetAsync().GetAwaiter().GetResult().AsList();
-            var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a)).ToList();
-
-            // have to manually calculate the progress for each audiobook
-            foreach (var audiobookViewModel in audiobookViewModels)
+            var audiobookExport = new List<ImportedAudiobook>();
+            foreach (var audiobook in audiobooks)
             {
-                var currentPositionSeconds = audiobookViewModel.CurrentTimeMs.ToSeconds();
-                audiobookViewModel.Progress =
-                    Math.Ceiling(currentPositionSeconds / audiobookViewModel.CurrentSourceFile.Duration * 100);
-                audiobookViewModel.IsCompleted = audiobookViewModel.Progress >= 99.9;
+                var importedAudiobook = new ImportedAudiobook
+                {
+                    CurrentTimeMs = audiobook.CurrentTimeMs,
+                    CoverImagePath = audiobook.CoverImagePath,
+                    FilePath = audiobook.FilePath,
+                    CurrentChapterIndex = audiobook.CurrentChapterIndex,
+                    IsNowPlaying = audiobook.IsNowPlaying
+                };
+                var currentPositionSeconds = audiobook.CurrentTimeMs.ToSeconds();
+                importedAudiobook.Progress = Math.Ceiling(currentPositionSeconds / audiobook.Duration * 100);
+                importedAudiobook.IsCompleted = importedAudiobook.Progress >= 99.9;
+
+                audiobookExport.Add(importedAudiobook);
             }
 
-            var audiobooksExport = audiobookViewModels.Select(x => new
-            {
-                x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
-                x.CurrentChapterIndex, x.IsNowPlaying, x.IsCompleted
-            });
-            var json = JsonSerializer.Serialize(audiobooksExport);
+            var json = JsonSerializer.Serialize(audiobookExport);
 
             var folder = ApplicationData.Current.LocalFolder;
             var file = folder.CreateFileAsync("audibly_export.audibly", CreationCollisionOption.ReplaceExisting)
@@ -357,8 +357,7 @@ public partial class App : Application
                 if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
             }
 
-            // ViewModel.NeedToImportAudiblyExport = true;
-            Repository = new SqlAudiblyRepository(dbOptions); // do i need to set this again?
+            Repository = new SqlAudiblyRepository(dbOptions);
         }
         else
         {

@@ -6,16 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI;
-using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
-using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -82,16 +77,44 @@ public sealed partial class LibraryCardPage : Page
 
     private async void LibraryCardPage_Loaded(object sender, RoutedEventArgs e)
     {
+        // check if data migration already failed
+        if (UserSettings.ShowDataMigrationFailedDialog)
+        {
+            // show the failed data migration dialog
+            ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
+            UserSettings.NeedToImportAudiblyExport = false;
+            UserSettings.ShowDataMigrationFailedDialog = false;
+            return;
+        }
+
+        // check if we need to import the user's data from the old database
         if (!UserSettings.NeedToImportAudiblyExport) return;
 
         // let the user know that we need to migrate their data into the new database
-        // todo: re-word this message && change the width of the dialog
-        // todo: add try-catch block
-        ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
-            "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
-            "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
-            "during this process.",
-            async () => { await ViewModel.MigrateDatabase(); });
+        // todo: probably do not need this try/catch block but leaving it here for now
+        try
+        {
+            ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
+                "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
+                "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
+                "during this process.",
+                async () => { await ViewModel.MigrateDatabase(); });
+        }
+        catch (Exception exception)
+        {
+            UserSettings.NeedToImportAudiblyExport = false;
+            UserSettings.ShowDataMigrationFailedDialog = false;
+
+            // log the error
+            ViewModel.LoggingService.LogError(exception, true);
+
+            // notify user that we failed to import their audiobooks
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "Data Migration Failed",
+                Severity = InfoBarSeverity.Error
+            });
+        }
     }
 
     private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)
@@ -270,7 +293,8 @@ public sealed partial class LibraryCardPage : Page
 
     private void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+        // ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+        ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
     }
 
     private void InfoBar_OnClosed(InfoBar sender, InfoBarClosedEventArgs args)

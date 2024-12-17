@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Page
+    Background="Transparent"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.ControlPages.FailedDataMigrationContent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="0,0,0,12"
+            Style="{StaticResource TitleTextBlockStyle}"
+            Text="{x:Bind Title}" />
+
+        <RichTextBlock FontSize="18" Grid.Row="1">
+            <Paragraph Margin="0,0,0,4">
+                <Bold>Data migration failed. To re-attempt data migration, you can:</Bold>
+            </Paragraph>
+            <Paragraph TextIndent="16">
+                • Go to<Italic>Settings -&gt; Advanced Settings -&gt; Open App State Folder in File Explorer</Italic>
+            </Paragraph>
+            <Paragraph TextIndent="16">
+                • Import the<Italic>audibly_export.audibly</Italic>
+                file using the<Italic>Import audiobooks from an Audibly export file (.audibly)</Italic>
+                button</Paragraph>
+            <Paragraph>
+                <LineBreak />
+                Unfortunately, if this also fails, you will have to re-import your audiobooks manually. Going forward, we'll never have to do
+                this type of data migration again as I will be able to make database changes without needing to create a whole new database
+                (this one is due to inexperience and poor planning on my part). I'm really sorry for the inconvenience.</Paragraph>
+            <Paragraph Margin="0,0,0,4">
+                <LineBreak />
+                Please reach out to me via email at help@audibly.info if you would like help restoring your library and I will do my best to
+                assist you. If you decide to reach out, please attach the following files (these will all be found in the same folder as the<Italic>audibly_export.audibly</Italic>
+                file):</Paragraph>
+            <Paragraph TextIndent="16">
+                •<Italic>audibly_export.audibly</Italic>
+            </Paragraph>
+            <Paragraph TextIndent="16">
+                •<Italic>audibly.db.bak</Italic>
+            </Paragraph>
+            <Paragraph TextIndent="16">
+                •<Italic>Audibly.log</Italic>
+            </Paragraph>
+        </RichTextBlock>
+    </Grid>
+</Page>

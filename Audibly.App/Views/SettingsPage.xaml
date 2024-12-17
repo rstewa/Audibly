@@ -168,22 +168,22 @@
 
                 <!--  advanced settings  -->
                 <!--  TODO: only show this if data migration failed  -->
-                <!-- <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Advanced" /> -->
-                <!-- <toolkit:SettingsExpander Header="Advanced settings"> -->
-                <!--     <toolkit:SettingsExpander.HeaderIcon> -->
-                <!--         <FontIcon Glyph="&#xE713;" /> -->
-                <!--     </toolkit:SettingsExpander.HeaderIcon> -->
-                <!--     <toolkit:SettingsExpander.Items> -->
-                <!--  <toolkit:SettingsCard  -->
-                <!--  Click="ReAttemptDataMigration_OnClick"  -->
-                <!--  Header="Re-attempt Data Migration"  -->
-                <!--  IsClickEnabled="True">  -->
-                <!--             <toolkit:SettingsCard.ActionIcon> -->
-                <!--                 <FontIcon Glyph="&#xE777;" /> -->
-                <!--             </toolkit:SettingsCard.ActionIcon> -->
-                <!--         </toolkit:SettingsCard> -->
-                <!--     </toolkit:SettingsExpander.Items> -->
-                <!-- </toolkit:SettingsExpander> -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Advanced" />
+                <toolkit:SettingsExpander Header="Advanced settings">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard
+                            Click="ReAttemptDataMigration_OnClick"
+                            Header="Open App State Folder in File Explorer"
+                            IsClickEnabled="True">
+                            <toolkit:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE777;" />
+                            </toolkit:SettingsCard.ActionIcon>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
             </StackPanel>
         </ScrollViewer>
         <VisualStateManager.VisualStateGroups>

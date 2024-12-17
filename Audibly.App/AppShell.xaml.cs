@@ -39,6 +39,8 @@ public sealed partial class AppShell : Page
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
 
+    private ContentDialog? _dialog;
+
     private ContentDialog? _importDialog;
 
     private ContentDialog? _progressDialog;
@@ -64,6 +66,7 @@ public sealed partial class AppShell : Page
         ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
         App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
         App.ViewModel.ProgressDialogCompleted += HideProgressDialog;
+        App.ViewModel.ClearDialogQueue += OnClearDialogQueue;
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
@@ -83,6 +86,12 @@ public sealed partial class AppShell : Page
     ///     Gets the navigation frame instance.
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
+
+    private void OnClearDialogQueue()
+    {
+        _dialogQueue.Clear();
+        if (_dialog != null) _dialog.Hide();
+    }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -239,6 +248,20 @@ public sealed partial class AppShell : Page
         return dialog;
     }
 
+    private ContentDialog CreateFailedDataMigrationDialog()
+    {
+        var dialogContent = new FailedDataMigrationContent();
+        var dialog = new ContentDialog
+        {
+            Content = dialogContent,
+            CloseButtonText = "Close",
+            DefaultButton = ContentDialogButton.Close,
+            RequestedTheme = ThemeHelper.ActualTheme
+        };
+
+        return dialog;
+    }
+
     private ContentDialog CreateChangelogDialog(string changelogText)
     {
         var dialogContent = new ChangelogDialogContent(changelogText);
@@ -294,6 +317,7 @@ public sealed partial class AppShell : Page
             DialogType.Import => CreateImportDialog(title),
             DialogType.Progress => CreateProgressDialog(title),
             DialogType.Confirmation => CreateConfirmationDialog(title, content, onConfirm),
+            DialogType.FailedDataMigration => CreateFailedDataMigrationDialog(),
             _ => null
         };
 
@@ -310,18 +334,18 @@ public sealed partial class AppShell : Page
         {
             while (XamlRoot != null && _dialogQueue.Count > 0)
             {
-                var dialog = _dialogQueue.Dequeue();
-                dialog.XamlRoot = XamlRoot;
+                _dialog = _dialogQueue.Dequeue();
+                _dialog.XamlRoot = XamlRoot;
 
                 await _dispatcherQueue.EnqueueAsync(async () =>
                 {
                     try
                     {
-                        await dialog.ShowAsync();
+                        await _dialog.ShowAsync();
                     }
                     catch (Exception e)
                     {
-                        ViewModel.LoggingService.LogError(e);
+                        ViewModel.LoggingService.LogError(e, true);
                         SentrySdk.CaptureException(e);
                     }
                 });
@@ -329,11 +353,13 @@ public sealed partial class AppShell : Page
         }
         catch (Exception e)
         {
-            ViewModel.LoggingService.LogError(e);
+            ViewModel.LoggingService.LogError(e, true);
             SentrySdk.CaptureException(e);
         }
         finally
         {
+            // todo: decide on this
+            // OnClearDialogQueue();
             _dialogQueueLock.Release();
         }
     }

@@ -13,5 +13,6 @@ public enum DialogType
     Import,
     Progress,
     Confirmation,
+    FailedDataMigration,
     SelectFiles
 }

@@ -9,5 +9,5 @@ namespace Audibly.App.Services.Interfaces;
 public interface IloggingService
 {
     void Log(string message);
-    void LogError(Exception e);
+    void LogError(Exception e, bool logToSentry = false);
 }

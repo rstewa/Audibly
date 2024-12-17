@@ -73,7 +73,7 @@ public class AppDataService : IAppDataService
         }
         catch (Exception e)
         {
-            App.ViewModel.LoggingService.LogError(e);
+            App.ViewModel.LoggingService.LogError(e, true);
         }
     }
 
@@ -120,7 +120,7 @@ public class AppDataService : IAppDataService
         }
         catch (Exception e)
         {
-            App.ViewModel.LoggingService.LogError(e);
+            App.ViewModel.LoggingService.LogError(e, true);
             return false;
         }
     }

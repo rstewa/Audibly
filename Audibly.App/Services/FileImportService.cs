@@ -85,7 +85,7 @@ public class FileImportService : IImportFiles
         if (string.IsNullOrEmpty(json))
         {
             // log the error
-            App.ViewModel.LoggingService.LogError(new Exception("Failed to read the json file"));
+            App.ViewModel.LoggingService.LogError(new Exception("Failed to read the json file"), true);
             ImportCompleted?.Invoke();
             return;
         }
@@ -96,7 +96,7 @@ public class FileImportService : IImportFiles
         if (importedAudiobooks == null)
         {
             // log the error
-            App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"));
+            App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"), true);
             return;
         }
 
@@ -318,7 +318,7 @@ public class FileImportService : IImportFiles
         catch (Exception e)
         {
             // log the error
-            App.ViewModel.LoggingService.LogError(e);
+            App.ViewModel.LoggingService.LogError(e, true);
             return null;
         }
     }
@@ -422,7 +422,7 @@ public class FileImportService : IImportFiles
         catch (Exception e)
         {
             // log the error
-            App.ViewModel.LoggingService.LogError(e);
+            App.ViewModel.LoggingService.LogError(e, true);
             return null;
         }
     }

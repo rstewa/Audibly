@@ -10,7 +10,7 @@ namespace Audibly.App.Helpers;
 
 public static class UserSettings
 {
-    public static bool DataMigrationFailed
+    public static bool ShowDataMigrationFailedDialog
     {
         get
         {

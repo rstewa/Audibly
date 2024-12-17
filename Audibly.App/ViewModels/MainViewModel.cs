@@ -35,6 +35,8 @@ public class MainViewModel : BindableBase
 {
     #region Delegates
 
+    public delegate void ClearDialogQueueHandler();
+
     public delegate void ProgressDialogCompletedHandler();
 
     public delegate void ResetFiltersHandler();
@@ -234,6 +236,13 @@ public class MainViewModel : BindableBase
     public void OnProgressDialogCompleted()
     {
         ProgressDialogCompleted?.Invoke();
+    }
+
+    public event ClearDialogQueueHandler? ClearDialogQueue;
+
+    public void OnClearDialogQueue()
+    {
+        ClearDialogQueue?.Invoke();
     }
 
     /// <summary>
@@ -848,7 +857,7 @@ public class MainViewModel : BindableBase
             if (importedAudiobooks == null)
             {
                 // log the error
-                App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"));
+                App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"), true);
                 return;
             }
 
@@ -938,24 +947,37 @@ public class MainViewModel : BindableBase
             });
 
             NeedToImportAudiblyExport = false;
-
-            await GetAudiobookListAsync(true);
-
-            UserSettings.NeedToImportAudiblyExport = false;
         }
         catch (Exception exception)
         {
-            // DataMigrationFailed = true;
+            UserSettings.ShowDataMigrationFailedDialog = true;
 
             // log the error
-            LoggingService.LogError(exception);
+            LoggingService.LogError(exception, true);
 
             // notify user that we failed to import their audiobooks
             EnqueueNotification(new Notification
             {
-                Message = "Failed to import audiobooks",
+                Message = "Data Migration Failed",
                 Severity = InfoBarSeverity.Error
             });
+        }
+        finally
+        {
+            UserSettings.NeedToImportAudiblyExport = false;
+
+            transaction.Finish();
+
+            // clear the dialog queue
+            OnClearDialogQueue();
+
+            if (UserSettings.ShowDataMigrationFailedDialog)
+            {
+                UserSettings.ShowDataMigrationFailedDialog = false;
+                MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
+            }
+
+            await GetAudiobookListAsync(true);
         }
 
         transaction.Finish();

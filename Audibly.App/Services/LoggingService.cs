@@ -19,9 +19,10 @@ public class LoggingService(string logFilePath) : IloggingService
         File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
     }
 
-    public void LogError(Exception e)
+    public void LogError(Exception e, bool logToSentry = false)
     {
-        SentrySdk.CaptureException(e);
+        if (logToSentry) SentrySdk.CaptureException(e);
+
         var logMessage = $"ERROR: {DateTime.Now}: {e.Message}";
         File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
     }

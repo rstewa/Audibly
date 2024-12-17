@@ -61,7 +61,7 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.1.3] - 12-3-24
+        ///   Looks up a localized string similar to ## [2.1.5] - 12-17-24
         ///
         ///### Added
         ///
@@ -71,7 +71,7 @@ namespace Audibly.App {
         ///  - Will mark an audiobook as finished when the progress is at 100% by default
         ///  - This is indicated by a new icon (a checkmark) on the audiobook tile in place of the progress icon
         ///- Added data migration feature to migrate user data to the new database
-        ///- Added database migrations so that u [rest of string was truncated]&quot;;.
+        ///- Added database migrations so that  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

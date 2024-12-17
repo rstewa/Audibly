@@ -26,11 +26,11 @@
                 <Bold>Data migration failed. To re-attempt data migration, you can:</Bold>
             </Paragraph>
             <Paragraph TextIndent="16">
-                • Go to<Italic>Settings -&gt; Advanced Settings -&gt; Open App State Folder in File Explorer</Italic>
+                • Go to <Italic>Settings -&gt; Advanced Settings -&gt; Open App State Folder in File Explorer</Italic>
             </Paragraph>
             <Paragraph TextIndent="16">
-                • Import the<Italic>audibly_export.audibly</Italic>
-                file using the<Italic>Import audiobooks from an Audibly export file (.audibly)</Italic>
+                • Import the <Italic>audibly_export.audibly</Italic>
+                file using the <Italic>Import audiobooks from an Audibly export file (.audibly)</Italic>
                 button</Paragraph>
             <Paragraph>
                 <LineBreak />
@@ -40,16 +40,16 @@
             <Paragraph Margin="0,0,0,4">
                 <LineBreak />
                 Please reach out to me via email at help@audibly.info if you would like help restoring your library and I will do my best to
-                assist you. If you decide to reach out, please attach the following files (these will all be found in the same folder as the<Italic>audibly_export.audibly</Italic>
+                assist you. If you decide to reach out, please attach the following files (these will all be found in the same folder as the <Italic>audibly_export.audibly</Italic>
                 file):</Paragraph>
             <Paragraph TextIndent="16">
-                •<Italic>audibly_export.audibly</Italic>
+                • <Italic>audibly_export.audibly</Italic>
             </Paragraph>
             <Paragraph TextIndent="16">
-                •<Italic>audibly.db.bak</Italic>
+                • <Italic>audibly.db.bak</Italic>
             </Paragraph>
             <Paragraph TextIndent="16">
-                •<Italic>Audibly.log</Italic>
+                • <Italic>Audibly.log</Italic>
             </Paragraph>
         </RichTextBlock>
     </Grid>

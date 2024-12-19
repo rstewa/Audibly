@@ -61,7 +61,7 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.1.6] - 12-17-24
+        ///   Looks up a localized string similar to ## [2.1.7] - 12-18-24
         ///
         ///### Added
         ///

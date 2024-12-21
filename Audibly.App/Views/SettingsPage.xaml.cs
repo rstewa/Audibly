@@ -11,6 +11,8 @@ using Audibly.App.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Diagnostics;
+using Windows.Storage;
 
 namespace Audibly.App.Views;
 
@@ -107,8 +109,12 @@ public sealed partial class SettingsPage : Page
         Task.Delay(1000).ContinueWith(_ => DispatcherQueue.TryEnqueue(() => CopyIcon.Glyph = "\uE8C8"));
     }
 
-    private void ReAttemptDataMigration_OnClick(object sender, RoutedEventArgs e)
+    private void OpenAppStateFolderInFileExplorer_Click(object sender, RoutedEventArgs e)
     {
-        throw new NotImplementedException();
+        var filePath = ApplicationData.Current.LocalFolder.Path;
+        Process p = new();
+        p.StartInfo.FileName = "explorer.exe";
+        p.StartInfo.Arguments = $"/open, \"{filePath}\"";
+        p.Start();
     }
 }

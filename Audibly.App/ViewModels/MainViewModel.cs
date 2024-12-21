@@ -255,44 +255,59 @@ public class MainViewModel : BindableBase
     /// </summary>
     public async Task GetAudiobookListAsync(bool firstRun = false)
     {
-        ResetFilters?.Invoke();
-
-        await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
-
-        var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
-
-        await _dispatcherQueue.EnqueueAsync(() =>
+        try
         {
-            ShowStartPanel = audiobooks.Count == 0;
+            ResetFilters?.Invoke();
 
-            Audiobooks.Clear();
-            AudiobooksForFilter.Clear();
-            foreach (var audiobookViewModel in audiobooks.Select(c => new AudiobookViewModel(c)))
+            await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+
+            var audiobooks = (await App.Repository.Audiobooks.GetAsync()).AsList();
+
+            await _dispatcherQueue.EnqueueAsync(() =>
             {
-                Audiobooks.Add(audiobookViewModel);
-                AudiobooksForFilter.Add(audiobookViewModel);
-            }
+                ShowStartPanel = audiobooks.Count == 0;
 
-            if (firstRun)
-            {
-                var nowPlaying = Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
-                if (nowPlaying != null)
-                    _ = App.PlayerViewModel.OpenAudiobook(nowPlaying);
-
-                // in the background check if there are any other audiobook records where IsNowPlaying is true and set them to false
-                Task.Run(async () =>
+                Audiobooks.Clear();
+                AudiobooksForFilter.Clear();
+                foreach (var audiobookViewModel in audiobooks.Select(c => new AudiobookViewModel(c)))
                 {
-                    var otherNowPlaying = Audiobooks.Where(x => x.IsNowPlaying && x != nowPlaying).ToList();
-                    foreach (var audiobook in otherNowPlaying)
-                    {
-                        audiobook.IsNowPlaying = false;
-                        await App.Repository.Audiobooks.UpsertAsync(audiobook.Model);
-                    }
-                });
-            }
+                    Audiobooks.Add(audiobookViewModel);
+                    AudiobooksForFilter.Add(audiobookViewModel);
+                }
 
-            IsLoading = false;
-        });
+                if (firstRun)
+                {
+                    var nowPlaying = Audiobooks.FirstOrDefault(x => x.IsNowPlaying);
+                    if (nowPlaying != null)
+                        _ = App.PlayerViewModel.OpenAudiobook(nowPlaying);
+
+                    // in the background check if there are any other audiobook records where IsNowPlaying is true and set them to false
+                    Task.Run(async () =>
+                    {
+                        var otherNowPlaying = Audiobooks.Where(x => x.IsNowPlaying && x != nowPlaying).ToList();
+                        foreach (var audiobook in otherNowPlaying)
+                        {
+                            audiobook.IsNowPlaying = false;
+                            await App.Repository.Audiobooks.UpsertAsync(audiobook.Model);
+                        }
+                    }).ContinueWith(t =>
+                    {
+                        if (t.Exception != null)
+                        {
+                            // Handle the exception
+                            LoggingService.LogError(t.Exception, true);
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+
+                IsLoading = false;
+            });
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception
+            LoggingService.LogError(ex, true);
+        }
     }
 
     /// <summary>

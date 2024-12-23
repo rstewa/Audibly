@@ -293,7 +293,7 @@ public sealed partial class LibraryCardPage : Page
 
     private void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
-        // ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+        ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
         ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
     }
 

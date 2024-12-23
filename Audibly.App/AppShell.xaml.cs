@@ -196,22 +196,42 @@ public sealed partial class AppShell : Page
         });
     }
 
-    private ContentDialog CreateDeleteDialog(string title, string content)
+    private ContentDialog CreateDeleteDialog(string title, string content, bool showPrimaryButton)
     {
         var dialog = new ContentDialog
         {
             Title = title,
             Content = content,
-            PrimaryButtonText = "Remove from Library",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close,
             RequestedTheme = ThemeHelper.ActualTheme
         };
 
+        if (showPrimaryButton)
+        {
+            dialog.PrimaryButtonText = "Remove from Library";
+        }
+
         dialog.PrimaryButtonClick += async (_, _) =>
         {
-            await ViewModel.DeleteAudiobookAsync();
-            await ViewModel.GetAudiobookListAsync();
+            try
+            {
+                await ViewModel.DeleteAudiobookAsync();
+                await ViewModel.GetAudiobookListAsync();
+            }
+            catch (Exception ex)
+            {
+                ViewModel.LoggingService.LogError(ex, true);
+                SentrySdk.CaptureException(ex);
+
+                // notify user with toast notification
+                var notification = new Notification
+                {
+                    Message = $"Failed to delete audiobook: {ex.Message}",
+                    Severity = InfoBarSeverity.Error
+                };
+                ViewModel.EnqueueNotification(notification);
+            }
         };
 
         return dialog;
@@ -310,7 +330,8 @@ public sealed partial class AppShell : Page
     {
         var dialog = type switch
         {
-            DialogType.Error => CreateDeleteDialog(title, content),
+            DialogType.ErrorNoDelete => CreateDeleteDialog(title, content, false),
+            DialogType.Error => CreateDeleteDialog(title, content, true),
             DialogType.Info => CreateOkDialog(title, content),
             DialogType.Restart => CreateRestartDialog(title, content),
             DialogType.Changelog => CreateChangelogDialog(content),
@@ -342,6 +363,7 @@ public sealed partial class AppShell : Page
                     try
                     {
                         await _dialog.ShowAsync();
+                        _dialog.Hide();
                     }
                     catch (Exception e)
                     {
@@ -354,7 +376,7 @@ public sealed partial class AppShell : Page
         catch (Exception e)
         {
             ViewModel.LoggingService.LogError(e, true);
-            SentrySdk.CaptureException(e);
+            // SentrySdk.CaptureException(e);
         }
         finally
         {

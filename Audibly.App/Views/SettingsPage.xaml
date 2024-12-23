@@ -169,13 +169,13 @@
                 <!--  advanced settings  -->
                 <!--  TODO: only show this if data migration failed  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Advanced" />
-                <toolkit:SettingsExpander Header="Advanced settings">
+                <toolkit:SettingsExpander Header="Advanced settings" Padding="0, 0, 0, 16">
                     <toolkit:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE713;" />
                     </toolkit:SettingsExpander.HeaderIcon>
                     <toolkit:SettingsExpander.Items>
                         <toolkit:SettingsCard
-                            Click="ReAttemptDataMigration_OnClick"
+                            Click="OpenAppStateFolderInFileExplorer_Click"
                             Header="Open App State Folder in File Explorer"
                             IsClickEnabled="True">
                             <toolkit:SettingsCard.ActionIcon>
@@ -184,6 +184,7 @@
                         </toolkit:SettingsCard>
                     </toolkit:SettingsExpander.Items>
                 </toolkit:SettingsExpander>
+                <Border Height="24" Background="Transparent" />
             </StackPanel>
         </ScrollViewer>
         <VisualStateManager.VisualStateGroups>

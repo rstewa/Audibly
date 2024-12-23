@@ -59,7 +59,9 @@ public partial class App : Application
         SentrySdk.Init(options =>
         {
             // Tells which project in Sentry to send events to:
-            options.Dsn = Helpers.Sentry.Dsn;
+            // options.Dsn = Helpers.Sentry.Dsn;
+            // TODO: don't commit this
+            options.Dsn = string.Empty;
 
             options.AutoSessionTracking = true;
 
@@ -73,7 +75,7 @@ public partial class App : Application
             options.ProfilesSampleRate = 1.0;
 
             // note: only for running locally
-            // options.Environment = "development";
+            options.Environment = "development";
         });
 
         InitializeComponent();
@@ -187,38 +189,47 @@ public partial class App : Application
             return;
         }
 
-        // check the database for the audiobook
-        var audiobook = await Repository.Audiobooks.GetByFilePathAsync(storageFile.Path);
-
-        // if filepath doesn't match, then we need its metadata to check if it's in the database
-        if (audiobook == null)
+        try
         {
-            var metadata = storageFile.GetAudiobookSearchParameters();
-            audiobook = await Repository.Audiobooks.GetByTitleAuthorComposerAsync(metadata.Title, metadata.Author,
-                metadata.Composer);
+            // check the database for the audiobook
+            var audiobook = await Repository.Audiobooks.GetByFilePathAsync(storageFile.Path);
 
-            // if the audiobook is not in the database, then we need to import it
+            // if filepath doesn't match, then we need its metadata to check if it's in the database
             if (audiobook == null)
             {
-                await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
-                return;
+                var metadata = storageFile.GetAudiobookSearchParameters();
+                audiobook = await Repository.Audiobooks.GetByTitleAuthorComposerAsync(metadata.Title, metadata.Author,
+                    metadata.Composer);
+
+                // if the audiobook is not in the database, then we need to import it
+                if (audiobook == null)
+                {
+                    await ViewModel.ImportAudiobookFromFileActivationAsync(storageFile.Path, false);
+                    return;
+                }
             }
+
+            // if the audiobook is already playing, then we don't need to do anything
+            if (audiobook.IsNowPlaying) return;
+
+            // we need to get the currently playing audiobook and set it to not playing
+            var nowPlayingAudiobook = await Repository.Audiobooks.GetNowPlayingAsync();
+            if (nowPlayingAudiobook != null)
+            {
+                nowPlayingAudiobook.IsNowPlaying = false;
+                await Repository.Audiobooks.UpsertAsync(nowPlayingAudiobook);
+            }
+
+            // set file activated audiobook to now playing
+            audiobook.IsNowPlaying = true;
+            await Repository.Audiobooks.UpsertAsync(audiobook);
         }
-
-        // if the audiobook is already playing, then we don't need to do anything
-        if (audiobook.IsNowPlaying) return;
-
-        // we need to get the currently playing audiobook and set it to not playing
-        var nowPlayingAudiobook = await Repository.Audiobooks.GetNowPlayingAsync();
-        if (nowPlayingAudiobook != null)
+        catch (Exception e)
         {
-            nowPlayingAudiobook.IsNowPlaying = false;
-            await Repository.Audiobooks.UpsertAsync(nowPlayingAudiobook);
+            ViewModel.OnClearDialogQueue();
+            ViewModel.MessageService.ShowDialog(DialogType.ErrorNoDelete, "Error: Unable to Open Audiobook", e.Message);
+            ViewModel.LoggingService.LogError(e, true);
         }
-
-        // set file activated audiobook to now playing
-        audiobook.IsNowPlaying = true;
-        await Repository.Audiobooks.UpsertAsync(audiobook);
     }
 
     private async void HandleFileActivationOnAppInstanceActivated(IStorageFile storageFile)
@@ -391,14 +402,22 @@ public partial class App : Application
         }
         else
         {
-            // create the db context
-            using (var context = new AudiblyContext(dbOptions))
+            try
             {
-                var databaseFacade = new DatabaseFacade(context);
-                if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
-            }
+                // create the db context
+                using (var context = new AudiblyContext(dbOptions))
+                {
+                    var databaseFacade = new DatabaseFacade(context);
+                    if (databaseFacade.GetPendingMigrations().Any()) databaseFacade.Migrate();
+                }
 
-            Repository = new SqlAudiblyRepository(dbOptions);
+                Repository = new SqlAudiblyRepository(dbOptions);
+            }
+            catch (Exception e)
+            {
+                ViewModel.LoggingService.LogError(e, true);
+                Repository = new SqlAudiblyRepository(dbOptions);
+            }
         }
     }
 

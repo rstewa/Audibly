@@ -118,7 +118,17 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.1.7] - 12-18-24
+    <value>## [2.1.8] - 12-21-24
+
+### Fixed
+
+- Fixed advanced settings button crashing the app when clicked
+- Fixed file activation where the app would crash if the file was being used by another process
+- Fixed bug where exceptions were unhandled if ResetFilters?.Invoke() threw an exception in GetAudiobookListAsync()
+- Fixed bug in App.xaml.cs UseSqlite() method where the database was not being created correctly
+- Fixed bug in Delete dialog where exceptions weren't handled
+
+## [2.1.7] - 12-18-24
 
 ### Added
 

@@ -61,17 +61,19 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.1.7] - 12-18-24
+        ///   Looks up a localized string similar to ## [2.1.8] - 12-21-24
         ///
-        ///### Added
+        ///### Fixed
         ///
-        ///- Added support for .mp3 files
-        ///- Added support for audiobooks that consist of multiple files (.mp3 &amp; .m4b only)
-        ///- Added feature that allows users to mark an audiobook as finished
-        ///  - Will mark an audiobook as finished when the progress is at 100% by default
-        ///  - This is indicated by a new icon (a checkmark) on the audiobook tile in place of the progress icon
-        ///- Added data migration feature to migrate user data to the new database
-        ///- Added database migrations so that  [rest of string was truncated]&quot;;.
+        ///- Fixed advanced settings button crashing the app when clicked
+        ///- Fixed file activation where the app would crash if the file was being used by another process
+        ///- Fixed bug where exceptions were unhandled if ResetFilters?.Invoke() threw an exception in GetAudiobookListAsync()
+        ///- Fixed bug in App.xaml.cs UseSqlite() method where the database was not being created correctly
+        ///- Fixed bug in Delete dialog where exceptions weren&apos;t handled
+        ///
+        ///## [2.1.7] - 12-18-24
+        ///
+        ///### Adde [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

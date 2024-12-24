@@ -18,6 +18,7 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+[![Version][version-shield]][version-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -225,6 +226,8 @@ Project Link: [https://github.com/rstewa/Audibly](https://github.com/rstewa/Audi
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[version-shield]: https://img.shields.io/github/v/release/rstewa/audibly?style=for-the-badge
+[version-url]: https://github.com/rstewa/audibly/releases/latest
 [contributors-shield]: https://img.shields.io/github/contributors/rstewa/Audibly.svg?style=for-the-badge
 [contributors-url]: https://github.com/rstewa/Audibly/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/rstewa/Audibly.svg?style=for-the-badge

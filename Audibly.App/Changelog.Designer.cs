@@ -61,7 +61,13 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.1.8] - 12-21-24
+        ///   Looks up a localized string similar to ## [2.1.9] - 12-23-24
+        ///
+        ///### Fixed
+        ///
+        ///- Fixed Sentry logging
+        ///
+        ///## [2.1.8] - 12-21-24
         ///
         ///### Fixed
         ///
@@ -69,11 +75,7 @@ namespace Audibly.App {
         ///- Fixed file activation where the app would crash if the file was being used by another process
         ///- Fixed bug where exceptions were unhandled if ResetFilters?.Invoke() threw an exception in GetAudiobookListAsync()
         ///- Fixed bug in App.xaml.cs UseSqlite() method where the database was not being created correctly
-        ///- Fixed bug in Delete dialog where exceptions weren&apos;t handled
-        ///
-        ///## [2.1.7] - 12-18-24
-        ///
-        ///### Adde [rest of string was truncated]&quot;;.
+        ///- Fixed bug in Delete dialog where [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

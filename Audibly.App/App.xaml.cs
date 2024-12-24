@@ -59,9 +59,7 @@ public partial class App : Application
         SentrySdk.Init(options =>
         {
             // Tells which project in Sentry to send events to:
-            // options.Dsn = Helpers.Sentry.Dsn;
-            // TODO: don't commit this
-            options.Dsn = string.Empty;
+            options.Dsn = Helpers.Sentry.Dsn;
 
             options.AutoSessionTracking = true;
 
@@ -74,8 +72,7 @@ public partial class App : Application
 
             options.ProfilesSampleRate = 1.0;
 
-            // note: only for running locally
-            options.Environment = "development";
+            options.Environment = "production";
         });
 
         InitializeComponent();

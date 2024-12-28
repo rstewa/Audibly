@@ -12,6 +12,7 @@ using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
+using Audibly.App.Views.ContentDialogs;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
@@ -95,6 +96,14 @@ public sealed partial class AppShell : Page
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
+        // get sidebar state
+        if (UserSettings.IsSidebarCollapsed)
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                NavView.IsPaneOpen = false;
+                NavView.CompactModeThresholdWidth = 0;
+            });
+
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
             ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
@@ -102,8 +111,19 @@ public sealed partial class AppShell : Page
         {
             ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
 
-            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
-                "We're glad you're here. Let's get started by adding your first audiobook.");
+            // show onboarding dialog
+            var dialog = new ContentDialog
+            {
+                Title = "Welcome to Audibly!",
+                Content = "We're glad you're here. Let's get started by adding your first audiobook.",
+                CloseButtonText = "Ok",
+                DefaultButton = ContentDialogButton.Close,
+                RequestedTheme = ThemeHelper.ActualTheme,
+                XamlRoot = App.Window.Content.XamlRoot
+            };
+
+            await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
+
             UserSettings.Version = Constants.Version;
         }
         else
@@ -113,17 +133,12 @@ public sealed partial class AppShell : Page
             if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
             {
                 UserSettings.Version = Constants.Version;
-                ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+                var dialog = new ChangelogContentDialog
+                {
+                    XamlRoot = App.Window.Content.XamlRoot
+                };
+                await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
             }
-        }
-
-        await ProcessDialogQueue();
-
-        // get sidebar state
-        if (UserSettings.IsSidebarCollapsed)
-        {
-            NavView.IsPaneOpen = false;
-            NavView.CompactModeThresholdWidth = 0;
         }
     }
 
@@ -207,10 +222,7 @@ public sealed partial class AppShell : Page
             RequestedTheme = ThemeHelper.ActualTheme
         };
 
-        if (showPrimaryButton)
-        {
-            dialog.PrimaryButtonText = "Remove from Library";
-        }
+        if (showPrimaryButton) dialog.PrimaryButtonText = "Remove from Library";
 
         dialog.PrimaryButtonClick += async (_, _) =>
         {
@@ -222,7 +234,6 @@ public sealed partial class AppShell : Page
             catch (Exception ex)
             {
                 ViewModel.LoggingService.LogError(ex, true);
-                SentrySdk.CaptureException(ex);
 
                 // notify user with toast notification
                 var notification = new Notification

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <ContentDialog
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -20,12 +20,11 @@
         <Style BasedOn="{StaticResource DefaultContentDialogStyle}" TargetType="local:ProgressContentDialog" />
         <Style TargetType="RichTextBlock" x:Key="RichTextBlockMessageDialogContentStyle">
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="Gray" />
-            <Setter Property="Margin" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}" />
         </Style>
         <Style TargetType="TextBlock" x:Key="TextBlockMessageDialogContentStyle">
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Foreground" Value="{StaticResource TextFillColorSecondaryBrush}" />
         </Style>
     </ContentDialog.Resources>
 
@@ -37,11 +36,15 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <RichTextBlock TextWrapping="WrapWholeWords" Width="400">
+            <RichTextBlock
+                Style="{StaticResource RichTextBlockMessageDialogContentStyle}"
+                TextWrapping="WrapWholeWords"
+                Width="400">
                 <Paragraph>
                     <Run Text="{x:Bind ViewModel.ProgressDialogPrefix, Mode=OneWay}" />
                     <Run FontStyle="Italic" Text="{x:Bind ViewModel.ProgressDialogText, Mode=OneWay}" />
-                    ...</Paragraph>
+                    ...
+                </Paragraph>
             </RichTextBlock>
 
             <ProgressBar
@@ -59,7 +62,6 @@
             <TextBlock
                 Grid.Row="2"
                 HorizontalAlignment="Right"
-                Margin="0,0,0,10"
                 Style="{StaticResource TextBlockMessageDialogContentStyle}"
                 Text="{x:Bind ViewModel.ProgressDialogTotalText, Mode=OneWay}" />
         </Grid>

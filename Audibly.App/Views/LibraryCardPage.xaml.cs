@@ -12,6 +12,7 @@ using Windows.UI;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views.ContentDialogs;
+using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -82,9 +83,18 @@ public sealed partial class LibraryCardPage : Page
         if (UserSettings.ShowDataMigrationFailedDialog)
         {
             // show the failed data migration dialog
-            ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
+            var dialog = new ErrorContentDialog
+            {
+                Title = "Data Migration Failed",
+                XamlRoot = App.Window.Content.XamlRoot,
+                Content = new FailedDataMigrationContent()
+            };
+
+            await _dispatcherQueue.EnqueueAsync(() => dialog.ShowAsync());
+
             UserSettings.NeedToImportAudiblyExport = false;
             UserSettings.ShowDataMigrationFailedDialog = false;
+
             return;
         }
 
@@ -95,11 +105,21 @@ public sealed partial class LibraryCardPage : Page
         // todo: probably do not need this try/catch block but leaving it here for now
         try
         {
-            ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
-                "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
-                "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
-                "during this process.",
-                async () => { await ViewModel.MigrateDatabase(); });
+            var dialog = new ContentDialog
+            {
+                Title = "Data Migration Required",
+                Content =
+                    "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
+                    "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
+                    "during this process.",
+                DefaultButton = ContentDialogButton.Primary,
+                PrimaryButtonText = "Migrate Data",
+                XamlRoot = App.Window.Content.XamlRoot
+            };
+
+            dialog.PrimaryButtonClick += async (_, _) => { await ViewModel.MigrateDatabase(); };
+
+            await _dispatcherQueue.EnqueueAsync(() => dialog.ShowAsync());
         }
         catch (Exception exception)
         {
@@ -294,12 +314,18 @@ public sealed partial class LibraryCardPage : Page
 
     private async void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.ProgressDialogPrefix = "Importing";
-        ViewModel.ProgressDialogText = "A Clash of Kings";
-
-        var dialog = new ProgressContentDialog();
-        dialog.XamlRoot = App.Window.Content.XamlRoot;
+        var dialog = new ChangelogContentDialog
+        {
+            XamlRoot = App.Window.Content.XamlRoot
+        };
         await dialog.ShowAsync();
+
+        // ViewModel.ProgressDialogPrefix = "Importing";
+        // ViewModel.ProgressDialogText = "A Clash of Kings";
+        //
+        // var dialog = new ProgressContentDialog();
+        // dialog.XamlRoot = App.Window.Content.XamlRoot;
+        // await dialog.ShowAsync();
         // ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
         // ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
     }

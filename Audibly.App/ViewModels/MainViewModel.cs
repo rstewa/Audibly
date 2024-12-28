@@ -490,6 +490,7 @@ public class MainViewModel : BindableBase
             {
                 // log the error
                 App.ViewModel.LoggingService.LogError(new Exception("Failed to deserialize the json file"), true);
+                UserSettings.ShowDataMigrationFailedDialog = true;
                 return;
             }
 
@@ -504,7 +505,7 @@ public class MainViewModel : BindableBase
 
             UpdateProgressDialogProperties(ProgressDialogPrefix = "Deleting audiobooks from old database");
 
-            dialog.ShowAsync();
+            await _dispatcherQueue.EnqueueAsync(() => { dialog.ShowAsync(); });
 
             // check if the user has any audiobooks in the database (data migration was stopped midway)
             var audiobooks = await App.Repository.Audiobooks.GetAsync();
@@ -613,7 +614,7 @@ public class MainViewModel : BindableBase
                     Content = new FailedDataMigrationContent()
                 };
 
-                await dialog.ShowAsync();
+                await _dispatcherQueue.EnqueueAsync(() => dialog.ShowAsync());
             }
 
             await GetAudiobookListAsync(true);
@@ -1045,6 +1046,8 @@ public class MainViewModel : BindableBase
             });
             LoggingService.LogError(e, true);
         }
+
+        dialog.Hide();
 
         if (failedBooks > 0)
             EnqueueNotification(new Notification

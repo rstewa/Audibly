@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
@@ -41,5 +42,30 @@ public sealed partial class ErrorContentDialog : ContentDialog
     private void ConfirmCancel_Closed(object sender, object e)
     {
         // Handle flyout closed event if needed
+    }
+
+    private async void ErrorContentDialog_OnPrimaryButtonClick(ContentDialog sender,
+        ContentDialogButtonClickEventArgs args)
+    {
+        try
+        {
+            await ViewModel.DeleteAudiobookAsync();
+        }
+        catch (Exception ex)
+        {
+            ViewModel.LoggingService.LogError(ex, true);
+
+            // notify user with toast notification
+            var notification = new Notification
+            {
+                Message = $"Failed to delete audiobook: {ex.Message}",
+                Severity = InfoBarSeverity.Error
+            };
+            ViewModel.EnqueueNotification(notification);
+        }
+        finally
+        {
+            await ViewModel.GetAudiobookListAsync();
+        }
     }
 }

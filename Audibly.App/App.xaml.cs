@@ -18,6 +18,7 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
+using Audibly.App.Views.ContentDialogs;
 using Audibly.Models;
 using Audibly.Models.v1;
 using Audibly.Repository.Interfaces;
@@ -223,8 +224,16 @@ public partial class App : Application
         }
         catch (Exception e)
         {
-            ViewModel.OnClearDialogQueue();
-            ViewModel.MessageService.ShowDialog(DialogType.ErrorNoDelete, "Error: Unable to Open Audiobook", e.Message);
+            var dialog = new ErrorContentDialog
+            {
+                Title = "Error: Unable to Open Audiobook",
+                Content = e.Message,
+                XamlRoot = Window.Content.XamlRoot,
+                PrimaryButtonText = string.Empty
+            };
+
+            await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
+
             ViewModel.LoggingService.LogError(e, true);
         }
     }
@@ -304,19 +313,16 @@ public partial class App : Application
         if (userCurrentVersion != null &&
             Constants.CompareVersions(userCurrentVersion, Constants.DatabaseMigrationVersion) == -1 &&
             !dataMigrationFailed)
-        {
             try
             {
                 // if the user's version is less than v2.1, then we need to update the database to the current version
                 // this is a breaking change, so we need to reset the database and then re-import their data
-
                 // make a copy of the current database
                 var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
                 File.Copy(dbPath, dbCopyPath, true);
 
                 // NOTE: for manual testing: need to remove this line
                 // dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly_2015.db";
-
                 var baseConnectionString = "Data Source=" + dbPath;
                 var connectionString = new SqliteConnectionStringBuilder(baseConnectionString)
                 {
@@ -396,9 +402,7 @@ public partial class App : Application
                 UserSettings.NeedToImportAudiblyExport = false;
                 UserSettings.ShowDataMigrationFailedDialog = true;
             }
-        }
         else
-        {
             try
             {
                 // create the db context
@@ -415,7 +419,6 @@ public partial class App : Application
                 ViewModel.LoggingService.LogError(e, true);
                 Repository = new SqlAudiblyRepository(dbOptions);
             }
-        }
     }
 
     public static void RestartApp()

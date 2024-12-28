@@ -11,6 +11,7 @@ using Windows.Storage;
 using Windows.UI;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
+using Audibly.App.Views.ContentDialogs;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -291,10 +292,16 @@ public sealed partial class LibraryCardPage : Page
 
     #region debug button
 
-    private void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
+    private async void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
-        ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
+        ViewModel.ProgressDialogPrefix = "Importing";
+        ViewModel.ProgressDialogText = "A Clash of Kings";
+
+        var dialog = new ProgressContentDialog();
+        dialog.XamlRoot = App.Window.Content.XamlRoot;
+        await dialog.ShowAsync();
+        // ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+        // ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
     }
 
     private void InfoBar_OnClosed(InfoBar sender, InfoBarClosedEventArgs args)

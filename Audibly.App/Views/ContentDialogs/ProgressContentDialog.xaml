@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentDialog
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    CloseButtonClick="ProgressContentDialog_OnCloseButtonClick"
+    CloseButtonText="Cancel"
+    DefaultButton="Close"
+    Title="Importing Audiobooks"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.ContentDialogs.ProgressContentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Audibly.App.Views.ContentDialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
+
+    <ContentDialog.Resources>
+        <!--  Uncomment this Style if using WinUI 2.2 or later.  -->
+        <Style BasedOn="{StaticResource DefaultContentDialogStyle}" TargetType="local:ProgressContentDialog" />
+        <Style TargetType="RichTextBlock" x:Key="RichTextBlockMessageDialogContentStyle">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Margin" Value="10" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="TextBlockMessageDialogContentStyle">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="Gray" />
+        </Style>
+    </ContentDialog.Resources>
+
+    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid Margin="0,10,0,0" RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <RichTextBlock TextWrapping="WrapWholeWords" Width="400">
+                <Paragraph>
+                    <Run Text="{x:Bind ViewModel.ProgressDialogPrefix, Mode=OneWay}" />
+                    <Run FontStyle="Italic" Text="{x:Bind ViewModel.ProgressDialogText, Mode=OneWay}" />
+                    ...</Paragraph>
+            </RichTextBlock>
+
+            <ProgressBar
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                IsIndeterminate="False"
+                Margin="0"
+                Maximum="100"
+                Value="{x:Bind ViewModel.ProgressDialogProgress, Mode=OneWay}"
+                VerticalAlignment="Bottom"
+                Width="400"
+                x:Name="ProgressBar" />
+
+            <!--  place the progress under the progress bar aligned to the right in the format currentIndex/total  -->
+            <TextBlock
+                Grid.Row="2"
+                HorizontalAlignment="Right"
+                Margin="0,0,0,10"
+                Style="{StaticResource TextBlockMessageDialogContentStyle}"
+                Text="{x:Bind ViewModel.ProgressDialogTotalText, Mode=OneWay}" />
+        </Grid>
+
+        <!--  ~1~  Content body  @1@  -->
+        <!--  <TextBlock  -->
+        <!--  Name="body"  -->
+        <!--  Style="{StaticResource MessageDialogContentStyle}"  -->
+        <!--  TextWrapping="Wrap">  -->
+        <!--     <TextBlock.Text> -->
+        <!--  Lorem ipsum dolor sit amet, consectetur adipisicing elit,  -->
+        <!--  sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.  -->
+        <!--     </TextBlock.Text> -->
+        <!-- </TextBlock> -->
+    </StackPanel>
+</ContentDialog>

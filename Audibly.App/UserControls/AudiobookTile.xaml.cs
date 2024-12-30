@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Audibly.App.Services;
 using Audibly.App.ViewModels;
+using Audibly.App.Views.ControlPages;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
@@ -24,6 +24,13 @@ namespace Audibly.App.UserControls;
 
 public sealed partial class AudiobookTile : UserControl
 {
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+    public AudiobookTile()
+    {
+        InitializeComponent();
+    }
+
     /// <summary>
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
@@ -34,129 +41,11 @@ public sealed partial class AudiobookTile : UserControl
     /// </summary>
     private static MainViewModel ViewModel => App.ViewModel;
 
-    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-    #region dependency properties
-
-    public Guid Id
-    {
-        get => (Guid)GetValue(IdProperty);
-        set => SetValue(IdProperty, value);
-    }
-
-    public static readonly DependencyProperty IdProperty =
-        DependencyProperty.Register(nameof(Id), typeof(Guid), typeof(AudiobookTile),
-            new PropertyMetadata(Guid.Empty));
-
-    public string Title
-    {
-        get => (string)GetValue(TitleProperty);
-        set => SetValue(TitleProperty, value);
-    }
-
-    public static readonly DependencyProperty TitleProperty =
-        DependencyProperty.Register(nameof(Title), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
-
-    public string Author
-    {
-        get => (string)GetValue(AuthorProperty);
-        set => SetValue(AuthorProperty, value);
-    }
-
-    public static readonly DependencyProperty AuthorProperty =
-        DependencyProperty.Register(nameof(Author), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
-
-    public object Source
-    {
-        get => GetValue(SourceProperty);
-        set => SetValue(SourceProperty, value);
-    }
-
-    public static readonly DependencyProperty SourceProperty =
-        DependencyProperty.Register(nameof(Source), typeof(object), typeof(AudiobookTile), new PropertyMetadata(null));
-
-    public double Progress
-    {
-        get => (double)GetValue(ProgressProperty);
-        set => SetValue(ProgressProperty, value);
-    }
-
-    public static readonly DependencyProperty ProgressProperty =
-        DependencyProperty.Register(nameof(Progress), typeof(double), typeof(AudiobookTile),
-            new PropertyMetadata(0.0, ProgressPropertyChangedCallback));
-    
-    private static void ProgressPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is not AudiobookTile audiobookTile) return;
-        
-        var isCompleted = (bool)audiobookTile.GetValue(IsCompletedProperty);
-        if (isCompleted) return;
-        
-        audiobookTile.ProgressGrid.Visibility = (double)e.NewValue < 1 ? Visibility.Collapsed : Visibility.Visible;
-        // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
-    }
-
-    public bool IsCompleted
-    {
-        get => (bool)GetValue(IsCompletedProperty);
-        set => SetValue(IsCompletedProperty, value);
-    }
-    
-    public static readonly DependencyProperty IsCompletedProperty =
-        DependencyProperty.Register(nameof(IsCompleted), typeof(bool), typeof(AudiobookTile),
-            new PropertyMetadata(false, IsCompletedPropertyChangedCallback));
-
-    private static void IsCompletedPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is not AudiobookTile audiobookTile) return;
-        var isCompleted = (bool)e.NewValue;
-        audiobookTile.ProgressGrid.Visibility = isCompleted ? Visibility.Collapsed : Visibility.Visible;
-        audiobookTile.CompletedGrid.Visibility = isCompleted ? Visibility.Visible : Visibility.Collapsed;
-        audiobookTile.MarkAsCompletedButton.Visibility = isCompleted ? Visibility.Collapsed : Visibility.Visible;
-        audiobookTile.MarkAsIncompleteButton.Visibility = isCompleted ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    public int SourcePathsCount
-    {
-        get => (int)GetValue(SourcePathsCountProperty);
-        set => SetValue(SourcePathsCountProperty, value);
-    }
-
-    public static readonly DependencyProperty SourcePathsCountProperty =
-        DependencyProperty.Register(nameof(SourcePathsCount), typeof(int), typeof(AudiobookTile),
-            new PropertyMetadata(0));
-
-    public List<SourceFile> SourcePaths
-    {
-        get => (List<SourceFile>)GetValue(SourcePathsProperty);
-        set => SetValue(SourcePathsProperty, value);
-    }
-
-    public static readonly DependencyProperty SourcePathsProperty =
-        DependencyProperty.Register(nameof(SourcePaths), typeof(List<SourceFile>), typeof(AudiobookTile),
-            new PropertyMetadata(null));
-
-    public string FilePath
-    {
-        get => (string)GetValue(FilePathProperty);
-        set => SetValue(FilePathProperty, value);
-    }
-
-    public static readonly DependencyProperty FilePathProperty =
-        DependencyProperty.Register(nameof(FilePath), typeof(string), typeof(AudiobookTile),
-            new PropertyMetadata(null));
-
-    #endregion
-
-    public AudiobookTile()
-    {
-        InitializeComponent();
-    }
-
     private void AudiobookTile_OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         BlackOverlayGrid.Visibility = Visibility.Visible;
-        ButtonTile.Background = new SolidColorBrush(ColorHelper.ToColor("#393939")); // Change background to indicate hover
+        ButtonTile.Background =
+            new SolidColorBrush(ColorHelper.ToColor("#393939")); // Change background to indicate hover
     }
 
     private void AudiobookTile_OnPointerExited(object sender, PointerRoutedEventArgs e)
@@ -234,7 +123,19 @@ public sealed partial class AudiobookTile : UserControl
 
         // CommandBarFlyout.Hide();
         MenuFlyout.Hide();
-        await element.ShowMoreInfoDialogAsync(audiobook);
+
+        var moreInfoDialog = new MoreInfoDialogContent(audiobook);
+
+        var contentDialog = new ContentDialog
+        {
+            Title = "More Info",
+            Content = moreInfoDialog,
+            CloseButtonText = "Close",
+            XamlRoot = element.XamlRoot,
+            MinWidth = moreInfoDialog.ActualWidth
+        };
+
+        await _dispatcherQueue.EnqueueAsync(async () => await contentDialog.ShowAsync());
     }
 
     private async void MarkAsCompleted_OnClick(object sender, RoutedEventArgs e)
@@ -252,4 +153,116 @@ public sealed partial class AudiobookTile : UserControl
         audiobook.IsCompleted = false;
         await audiobook.SaveAsync();
     }
+
+    #region dependency properties
+
+    public Guid Id
+    {
+        get => (Guid)GetValue(IdProperty);
+        set => SetValue(IdProperty, value);
+    }
+
+    public static readonly DependencyProperty IdProperty =
+        DependencyProperty.Register(nameof(Id), typeof(Guid), typeof(AudiobookTile),
+            new PropertyMetadata(Guid.Empty));
+
+    public string Title
+    {
+        get => (string)GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+
+    public static readonly DependencyProperty TitleProperty =
+        DependencyProperty.Register(nameof(Title), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
+
+    public string Author
+    {
+        get => (string)GetValue(AuthorProperty);
+        set => SetValue(AuthorProperty, value);
+    }
+
+    public static readonly DependencyProperty AuthorProperty =
+        DependencyProperty.Register(nameof(Author), typeof(string), typeof(AudiobookTile), new PropertyMetadata(null));
+
+    public object Source
+    {
+        get => GetValue(SourceProperty);
+        set => SetValue(SourceProperty, value);
+    }
+
+    public static readonly DependencyProperty SourceProperty =
+        DependencyProperty.Register(nameof(Source), typeof(object), typeof(AudiobookTile), new PropertyMetadata(null));
+
+    public double Progress
+    {
+        get => (double)GetValue(ProgressProperty);
+        set => SetValue(ProgressProperty, value);
+    }
+
+    public static readonly DependencyProperty ProgressProperty =
+        DependencyProperty.Register(nameof(Progress), typeof(double), typeof(AudiobookTile),
+            new PropertyMetadata(0.0, ProgressPropertyChangedCallback));
+
+    private static void ProgressPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not AudiobookTile audiobookTile) return;
+
+        var isCompleted = (bool)audiobookTile.GetValue(IsCompletedProperty);
+        if (isCompleted) return;
+
+        audiobookTile.ProgressGrid.Visibility = (double)e.NewValue < 1 ? Visibility.Collapsed : Visibility.Visible;
+        // audiobookTile.ProgressTextBlock.Text = $"{(double)e.NewValue:P0}";
+    }
+
+    public bool IsCompleted
+    {
+        get => (bool)GetValue(IsCompletedProperty);
+        set => SetValue(IsCompletedProperty, value);
+    }
+
+    public static readonly DependencyProperty IsCompletedProperty =
+        DependencyProperty.Register(nameof(IsCompleted), typeof(bool), typeof(AudiobookTile),
+            new PropertyMetadata(false, IsCompletedPropertyChangedCallback));
+
+    private static void IsCompletedPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not AudiobookTile audiobookTile) return;
+        var isCompleted = (bool)e.NewValue;
+        audiobookTile.ProgressGrid.Visibility = isCompleted ? Visibility.Collapsed : Visibility.Visible;
+        audiobookTile.CompletedGrid.Visibility = isCompleted ? Visibility.Visible : Visibility.Collapsed;
+        audiobookTile.MarkAsCompletedButton.Visibility = isCompleted ? Visibility.Collapsed : Visibility.Visible;
+        audiobookTile.MarkAsIncompleteButton.Visibility = isCompleted ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public int SourcePathsCount
+    {
+        get => (int)GetValue(SourcePathsCountProperty);
+        set => SetValue(SourcePathsCountProperty, value);
+    }
+
+    public static readonly DependencyProperty SourcePathsCountProperty =
+        DependencyProperty.Register(nameof(SourcePathsCount), typeof(int), typeof(AudiobookTile),
+            new PropertyMetadata(0));
+
+    public List<SourceFile> SourcePaths
+    {
+        get => (List<SourceFile>)GetValue(SourcePathsProperty);
+        set => SetValue(SourcePathsProperty, value);
+    }
+
+    public static readonly DependencyProperty SourcePathsProperty =
+        DependencyProperty.Register(nameof(SourcePaths), typeof(List<SourceFile>), typeof(AudiobookTile),
+            new PropertyMetadata(null));
+
+    public string FilePath
+    {
+        get => (string)GetValue(FilePathProperty);
+        set => SetValue(FilePathProperty, value);
+    }
+
+    public static readonly DependencyProperty FilePathProperty =
+        DependencyProperty.Register(nameof(FilePath), typeof(string), typeof(AudiobookTile),
+            new PropertyMetadata(null));
+
+    #endregion
 }

@@ -3,21 +3,25 @@
 // Updated: 4/9/2024
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Diagnostics;
-using Windows.Storage;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Audibly.App.Views;
 
 public sealed partial class SettingsPage : Page
 {
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
     public SettingsPage()
     {
         InitializeComponent();
@@ -48,7 +52,7 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    private void themeMode_SelectionChanged(object sender, RoutedEventArgs e)
+    private async void themeMode_SelectionChanged(object sender, RoutedEventArgs e)
     {
         var selectedTheme = ((ComboBoxItem)themeMode.SelectedItem)?.Tag?.ToString();
         var window = WindowHelper.GetWindowForElement(this);
@@ -61,14 +65,23 @@ public sealed partial class SettingsPage : Page
             }
             else if (selectedTheme == "Light")
             {
+                var dialog = new ContentDialog
+                {
+                    Title = "Light Theme Warning",
+                    Content =
+                        "The light theme is in beta and may not be fully supported. Please report any issues you encounter.",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close
+                };
+
                 // warn user that the light theme is in beta and may not be fully supported
-                App.ViewModel.MessageService.ShowDialog(DialogType.Info, "Light Theme Warning",
-                    "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
+                await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
 
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
             }
             else
             {
+                // todo: don't think i need the conditional here
                 _ = TitleBarHelper.ApplySystemThemeToCaptionButtons(window) == Colors.White ? "Dark" : "Light";
             }
         }

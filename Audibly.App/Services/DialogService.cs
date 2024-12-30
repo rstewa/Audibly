@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views.ControlPages;
+using CommunityToolkit.WinUI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -14,6 +16,8 @@ namespace Audibly.App.Services;
 
 public static class DialogService
 {
+    private static readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    
     public static async Task<ContentDialogResult> ShowSelectFilesDialogAsync(this FrameworkElement element)
     {
         var selectFilesDialog = new SelectFilesDialog();
@@ -27,9 +31,15 @@ public static class DialogService
             XamlRoot = element.XamlRoot,
             MinWidth = selectFilesDialog.ActualWidth
         };
-
-        // Set the dialog result to the result of the dialog
-        return await contentDialog.ShowAsync();
+        
+        var result = ContentDialogResult.None;
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            // Set the dialog result to the result of the dialog
+            result = await contentDialog.ShowAsync();
+        });
+        
+        return result;
     }
 
     public static async Task ShowMoreInfoDialogAsync(this FrameworkElement element,

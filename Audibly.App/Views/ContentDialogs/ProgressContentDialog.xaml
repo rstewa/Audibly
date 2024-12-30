@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <ContentDialog
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -43,8 +43,7 @@
                 <Paragraph>
                     <Run Text="{x:Bind ViewModel.ProgressDialogPrefix, Mode=OneWay}" />
                     <Run FontStyle="Italic" Text="{x:Bind ViewModel.ProgressDialogText, Mode=OneWay}" />
-                    ...
-                </Paragraph>
+                    ...</Paragraph>
             </RichTextBlock>
 
             <ProgressBar

@@ -54,8 +54,6 @@ public class MainViewModel : BindableBase
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-    private string _errorDialogMessage = string.Empty;
-
     private bool _isImporting;
 
     private bool _isLoading;
@@ -105,11 +103,6 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks to be used for filtering.
     /// </summary>
     public List<AudiobookViewModel> AudiobooksForFilter { get; } = [];
-
-    /// <summary>
-    ///     Gets or sets a value indicating whether the app needs to import the audibly export file.
-    /// </summary>
-    public bool NeedToImportAudiblyExport { get; set; }
 
     /// <summary>
     ///     Gets or sets the selected audiobook, or null if no audiobook is selected.
@@ -193,15 +186,6 @@ public class MainViewModel : BindableBase
     {
         get => _progressDialogTotalText;
         set => Set(ref _progressDialogTotalText, value);
-    }
-
-    /// <summary>
-    ///     Gets or sets the message to display in the error dialog.
-    /// </summary>
-    public string ErrorDialogMessage
-    {
-        get => _errorDialogMessage;
-        set => Set(ref _errorDialogMessage, value);
     }
 
     // TODO: the following 2 properties are not needed anymore (unless the library list page is put back)
@@ -505,7 +489,8 @@ public class MainViewModel : BindableBase
 
             UpdateProgressDialogProperties(ProgressDialogPrefix = "Deleting audiobooks from old database");
 
-            await _dispatcherQueue.EnqueueAsync(() => { dialog.ShowAsync(); });
+            // yes, I'm intentionally not awaiting this
+            _dispatcherQueue.EnqueueAsync(() => { dialog.ShowAsync(); });
 
             // check if the user has any audiobooks in the database (data migration was stopped midway)
             var audiobooks = await App.Repository.Audiobooks.GetAsync();
@@ -565,15 +550,7 @@ public class MainViewModel : BindableBase
                     });
                 });
 
-            OnProgressDialogCompleted();
-
-            await _dispatcherQueue.EnqueueAsync(() =>
-            {
-                ProgressDialogPrefix = string.Empty;
-                ProgressDialogText = string.Empty;
-                ProgressDialogProgress = 0;
-                IsLoading = false;
-            });
+            UpdateProgressDialogProperties();
 
             // notify user that we successfully imported their audiobooks
             EnqueueNotification(new Notification
@@ -581,8 +558,6 @@ public class MainViewModel : BindableBase
                 Message = "Data migration completed successfully",
                 Severity = InfoBarSeverity.Success
             });
-
-            NeedToImportAudiblyExport = false;
         }
         catch (Exception exception)
         {
@@ -662,7 +637,7 @@ public class MainViewModel : BindableBase
 
         UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
 
-        dialog.ShowAsync();
+        await _dispatcherQueue.EnqueueAsync(() => dialog.ShowAsync());
 
         await ImportFileAsync(file, dialog, token);
     }
@@ -791,7 +766,7 @@ public class MainViewModel : BindableBase
         stopwatch.Start();
         try
         {
-            dialog.ShowAsync();
+            _dispatcherQueue.EnqueueAsync(() => { dialog.ShowAsync(); });
 
             async Task ProgressCallback(int progress, int total, string title, bool didFail)
             {
@@ -1072,7 +1047,7 @@ public class MainViewModel : BindableBase
 
 public class Notification
 {
-    public string Message { get; set; }
-    public InfoBarSeverity Severity { get; set; }
-    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(20); // Default duration of 10 seconds
+    public string Message { get; init; }
+    public InfoBarSeverity Severity { get; init; }
+    public TimeSpan Duration { get; } = TimeSpan.FromSeconds(20); // Default duration of 10 seconds
 }

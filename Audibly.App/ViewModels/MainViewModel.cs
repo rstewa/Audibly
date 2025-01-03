@@ -17,8 +17,6 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
-using Audibly.App.Views.ContentDialogs;
-using Audibly.App.Views.ControlPages;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -93,6 +91,8 @@ public class MainViewModel : BindableBase
         LoggingService = loggingService;
         Task.Run(() => GetAudiobookListAsync(true));
     }
+
+    public string FileActivationError { get; set; } = string.Empty;
 
     /// <summary>
     ///     The collection of audiobooks in the list.
@@ -321,6 +321,7 @@ public class MainViewModel : BindableBase
     /// </summary>
     public async Task DeleteAudiobookAsync()
     {
+        // todo: add a try-catch block here
         if (SelectedAudiobook == null) return;
 
         if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
@@ -460,12 +461,15 @@ public class MainViewModel : BindableBase
     public async Task MigrateDatabase()
     {
         var transaction = SentrySdk.StartTransaction("Data Migration", "Data Migration");
-
         try
         {
             var file = await ApplicationData.Current.LocalFolder.GetFileAsync("audibly_export.audibly");
 
-            if (file == null) return;
+            if (file == null)
+            {
+                UserSettings.ShowDataMigrationFailedDialog = true;
+                return;
+            }
 
             var json = await FileIO.ReadTextAsync(file);
             var importedAudiobooks = JsonSerializer.Deserialize<List<ImportedAudiobook>>(json);
@@ -481,16 +485,11 @@ public class MainViewModel : BindableBase
             // delete the old audiobooks from the database
             await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
-            var dialog = new ProgressContentDialog(_cancellationTokenSource)
-            {
-                Title = "Data Migration",
-                XamlRoot = App.Window.Content.XamlRoot
-            };
-
             UpdateProgressDialogProperties(ProgressDialogPrefix = "Deleting audiobooks from old database");
 
             // yes, I'm intentionally not awaiting this
-            _dispatcherQueue.EnqueueAsync(() => { dialog.ShowAsync(); });
+            // note: content dialog
+            await DialogService.ShowProgressDialogAsync("Data Migration", _cancellationTokenSource, false);
 
             // check if the user has any audiobooks in the database (data migration was stopped midway)
             var audiobooks = await App.Repository.Audiobooks.GetAsync();
@@ -499,14 +498,10 @@ public class MainViewModel : BindableBase
                 {
                     // delete the cover image directory
                     await App.ViewModel.AppDataService.DeleteCoverImageAsync(coverImagePath);
-
-                    await _dispatcherQueue.EnqueueAsync(() =>
-                    {
-                        ProgressDialogProgress = ((double)i / count * 100).ToInt();
-                        ProgressDialogPrefix = $"Deleting {title}:";
-                        ProgressDialogText = $"{i} of {count}";
-                        ProgressDialogTotalText = $"{i} of {count}";
-                    });
+                    UpdateProgressDialogProperties(progressDialogProgress: (int)((double)i / count * 100),
+                        progressDialogPrefix: $"Deleting {title}:",
+                        progressDialogText: $"{i} of {count}",
+                        progressDialogTotalText: $"{i} of {count}");
                 });
 
             UpdateProgressDialogProperties(ProgressDialogPrefix = "Starting cover image deletion");
@@ -524,12 +519,7 @@ public class MainViewModel : BindableBase
                     });
                 });
 
-            await _dispatcherQueue.EnqueueAsync(() =>
-            {
-                ProgressDialogPrefix = "Starting audiobook import";
-                ProgressDialogText = string.Empty;
-                ProgressDialogProgress = 0;
-            });
+            UpdateProgressDialogProperties(ProgressDialogPrefix = "Starting audiobook import");
 
             // notify user that we successfully deleted the old cover images
             EnqueueNotification(new Notification
@@ -547,6 +537,7 @@ public class MainViewModel : BindableBase
                         ProgressDialogProgress = ((double)i / count * 100).ToInt();
                         ProgressDialogPrefix = "Importing";
                         ProgressDialogText = $"{title}";
+                        ProgressDialogTotalText = $"{i} of {count}";
                     });
                 });
 
@@ -575,6 +566,8 @@ public class MainViewModel : BindableBase
         }
         finally
         {
+            await DialogService.CloseProgressDialogAsync();
+
             UserSettings.NeedToImportAudiblyExport = false;
 
             transaction.Finish();
@@ -582,24 +575,19 @@ public class MainViewModel : BindableBase
             if (UserSettings.ShowDataMigrationFailedDialog)
             {
                 UserSettings.ShowDataMigrationFailedDialog = false;
-                var dialog = new ErrorContentDialog
-                {
-                    Title = "Data Migration Failed",
-                    XamlRoot = App.Window.Content.XamlRoot,
-                    Content = new FailedDataMigrationContent()
-                };
 
-                await _dispatcherQueue.EnqueueAsync(() => dialog.ShowAsync());
+                // note: content dialog
+                await DialogService.ShowDataMigrationFailedDialogAsync();
             }
 
             await GetAudiobookListAsync(true);
         }
     }
 
-    private void UpdateProgressDialogProperties(string progressDialogText = "", int progressDialogProgress = 0,
+    private async void UpdateProgressDialogProperties(string progressDialogText = "", int progressDialogProgress = 0,
         string progressDialogPrefix = "", string progressDialogTotalText = "")
     {
-        _dispatcherQueue.TryEnqueue(() =>
+        await _dispatcherQueue.EnqueueAsync(() =>
         {
             ProgressDialogText = progressDialogText;
             ProgressDialogProgress = progressDialogProgress;
@@ -629,17 +617,12 @@ public class MainViewModel : BindableBase
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        var dialog = new ProgressContentDialog(_cancellationTokenSource)
-        {
-            Title = "Importing Audiobook",
-            XamlRoot = window.Content.XamlRoot
-        };
-
         UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
 
-        await _dispatcherQueue.EnqueueAsync(() => dialog.ShowAsync());
+        // note: content dialog
+        await DialogService.ShowProgressDialogAsync("Importing Audiobook", _cancellationTokenSource);
 
-        await ImportFileAsync(file, dialog, token);
+        await ImportFileAsync(file, token);
     }
 
     public async Task ImportAudiobookFromFileActivationAsync(string path, bool showImportDialog = true)
@@ -652,23 +635,18 @@ public class MainViewModel : BindableBase
         ContentDialog? importDialog = null;
         if (showImportDialog)
         {
-            importDialog = new ProgressContentDialog(_cancellationTokenSource)
-            {
-                Title = "Importing Audiobook",
-                XamlRoot = App.Window.Content.XamlRoot
-            };
-
             UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
 
-            importDialog.ShowAsync();
+            // note: content dialog
+            await DialogService.ShowProgressDialogAsync("Importing Audiobook", _cancellationTokenSource);
         }
 
         var file = await StorageFile.GetFileFromPathAsync(path);
 
-        await ImportFileAsync(file, importDialog, token);
+        await ImportFileAsync(file, token);
     }
 
-    private async Task ImportFileAsync(StorageFile file, ContentDialog? dialog, CancellationToken token)
+    private async Task ImportFileAsync(StorageFile file, CancellationToken token)
     {
         var importFailed = false;
         try
@@ -713,7 +691,7 @@ public class MainViewModel : BindableBase
             LoggingService.Log(e.Message);
         }
 
-        dialog?.Hide();
+        await DialogService.CloseProgressDialogAsync();
 
         if (!importFailed)
             EnqueueNotification(new Notification
@@ -752,12 +730,6 @@ public class MainViewModel : BindableBase
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        var dialog = new ProgressContentDialog(_cancellationTokenSource)
-        {
-            Title = "Importing Audiobooks",
-            XamlRoot = window.Content.XamlRoot
-        };
-
         UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
 
         var totalBooks = 0;
@@ -766,7 +738,8 @@ public class MainViewModel : BindableBase
         stopwatch.Start();
         try
         {
-            _dispatcherQueue.EnqueueAsync(() => { dialog.ShowAsync(); });
+            // note: content dialog
+            await DialogService.ShowProgressDialogAsync("Importing Audiobooks", _cancellationTokenSource);
 
             async Task ProgressCallback(int progress, int total, string title, bool didFail)
             {
@@ -805,7 +778,7 @@ public class MainViewModel : BindableBase
             LoggingService.LogError(e, true);
         }
 
-        dialog.Hide();
+        await DialogService.CloseProgressDialogAsync();
 
         await _dispatcherQueue.EnqueueAsync(() =>
         {
@@ -848,7 +821,8 @@ public class MainViewModel : BindableBase
         var element = sender as FrameworkElement;
         if (element == null) return;
 
-        var result = await element.ShowSelectFilesDialogAsync();
+        // note: content dialog
+        var result = await DialogService.ShowSelectFilesDialogAsync();
         if (result == ContentDialogResult.None)
         {
             SelectedFiles.Clear();
@@ -859,12 +833,6 @@ public class MainViewModel : BindableBase
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        var dialog = new ProgressContentDialog(_cancellationTokenSource)
-        {
-            Title = "Importing Audiobooks",
-            XamlRoot = window.Content.XamlRoot
-        };
-
         UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
 
         var totalBooks = 0;
@@ -874,7 +842,8 @@ public class MainViewModel : BindableBase
         stopwatch.Start();
         try
         {
-            dialog.ShowAsync();
+            // note: content dialog
+            await DialogService.ShowProgressDialogAsync("Importing Audiobooks", _cancellationTokenSource);
 
             var filesArray = SelectedFiles.Select(file => file.FilePath).ToArray();
 
@@ -921,7 +890,7 @@ public class MainViewModel : BindableBase
             SelectedFiles.Clear();
         }
 
-        dialog.Hide();
+        await DialogService.CloseProgressDialogAsync();
 
         if (failedBooks == 0)
             EnqueueNotification(new Notification
@@ -967,12 +936,6 @@ public class MainViewModel : BindableBase
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        var dialog = new ProgressContentDialog(_cancellationTokenSource)
-        {
-            Title = "Importing Audiobooks",
-            XamlRoot = App.Window.Content.XamlRoot
-        };
-
         UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
 
         var totalBooks = 0;
@@ -982,7 +945,8 @@ public class MainViewModel : BindableBase
         stopwatch.Start();
         try
         {
-            dialog.ShowAsync();
+            // note: content dialog
+            await DialogService.ShowProgressDialogAsync("Importing Audiobooks", _cancellationTokenSource);
 
             async Task ProgressCallback(int progress, int total, string title, bool didFail)
             {
@@ -1022,7 +986,7 @@ public class MainViewModel : BindableBase
             LoggingService.LogError(e, true);
         }
 
-        dialog.Hide();
+        await DialogService.CloseProgressDialogAsync();
 
         if (failedBooks > 0)
             EnqueueNotification(new Notification

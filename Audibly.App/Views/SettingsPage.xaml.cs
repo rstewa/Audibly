@@ -9,8 +9,8 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.System;
 using Audibly.App.Helpers;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
-using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -54,6 +54,7 @@ public sealed partial class SettingsPage : Page
 
     private async void themeMode_SelectionChanged(object sender, RoutedEventArgs e)
     {
+        var currentTheme = ThemeHelper.RootTheme;
         var selectedTheme = ((ComboBoxItem)themeMode.SelectedItem)?.Tag?.ToString();
         var window = WindowHelper.GetWindowForElement(this);
         if (selectedTheme != null)
@@ -63,19 +64,10 @@ public sealed partial class SettingsPage : Page
             {
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.White);
             }
-            else if (selectedTheme == "Light")
+            else if (selectedTheme == "Light" && currentTheme != ElementTheme.Light)
             {
-                var dialog = new ContentDialog
-                {
-                    Title = "Light Theme Warning",
-                    Content =
-                        "The light theme is in beta and may not be fully supported. Please report any issues you encounter.",
-                    CloseButtonText = "OK",
-                    DefaultButton = ContentDialogButton.Close
-                };
-
-                // warn user that the light theme is in beta and may not be fully supported
-                await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
+                await DialogService.ShowOkDialogAsync("Light Theme Warning",
+                    "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
 
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
             }

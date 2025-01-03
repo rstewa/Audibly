@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
-using Audibly.App.Views.ControlPages;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
@@ -119,23 +119,11 @@ public sealed partial class AudiobookTile : UserControl
         var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
         if (audiobook == null) return;
 
-        var element = (FrameworkElement)sender;
-
         // CommandBarFlyout.Hide();
         MenuFlyout.Hide();
 
-        var moreInfoDialog = new MoreInfoDialogContent(audiobook);
-
-        var contentDialog = new ContentDialog
-        {
-            Title = "More Info",
-            Content = moreInfoDialog,
-            CloseButtonText = "Close",
-            XamlRoot = element.XamlRoot,
-            MinWidth = moreInfoDialog.ActualWidth
-        };
-
-        await _dispatcherQueue.EnqueueAsync(async () => await contentDialog.ShowAsync());
+        // note: content dialog
+        await DialogService.ShowMoreInfoDialogAsync(audiobook);
     }
 
     private async void MarkAsCompleted_OnClick(object sender, RoutedEventArgs e)

@@ -3,8 +3,6 @@
 <ContentDialog
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     CloseButtonClick="ProgressContentDialog_OnCloseButtonClick"
-    CloseButtonText="Cancel"
-    DefaultButton="Close"
     Title="Importing Audiobooks"
     mc:Ignorable="d"
     x:Class="Audibly.App.Views.ContentDialogs.ProgressContentDialog"

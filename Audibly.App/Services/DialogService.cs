@@ -1,15 +1,16 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 09/29/2024
-// Updated: 10/17/2024
+// Created: 12/17/2024
+// Updated: 01/01/2025
 
-using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
+using Audibly.App.Views.ContentDialogs;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Services;
@@ -17,80 +18,186 @@ namespace Audibly.App.Services;
 public static class DialogService
 {
     private static readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    
-    public static async Task<ContentDialogResult> ShowSelectFilesDialogAsync(this FrameworkElement element)
-    {
-        var selectFilesDialog = new SelectFilesDialog();
 
-        var contentDialog = new ContentDialog
+    private static ContentDialog? _progressDialog;
+
+    /// <summary>
+    ///     Gets the app-wide ViewModel instance.
+    /// </summary>
+    public static MainViewModel ViewModel => App.ViewModel;
+
+    internal static async Task ShowErrorDialogAsync(string title, string content)
+    {
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            Title = "Put Selected Files in Order (Drag and Drop)",
-            Content = selectFilesDialog,
-            PrimaryButtonText = "OK",
-            CloseButtonText = "Cancel",
-            XamlRoot = element.XamlRoot,
-            MinWidth = selectFilesDialog.ActualWidth
-        };
-        
+            var errorDialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                XamlRoot = App.Window.Content.XamlRoot
+            }.SetPrimaryButton("OK");
+            await errorDialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task ShowOkDialogAsync(string title, string content)
+    {
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                RequestedTheme = ThemeHelper.ActualTheme,
+                XamlRoot = App.Window.Content.XamlRoot
+            }.SetPrimaryButton("OK");
+            await dialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task ShowOnboardingDialogAsync()
+    {
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            // show onboarding dialog
+            var dialog = new ContentDialog
+            {
+                Title = "Welcome to Audibly!",
+                Content = "We're glad you're here. Let's get started by adding your first audiobook.",
+                CloseButtonText = "Ok",
+                DefaultButton = ContentDialogButton.Close,
+                RequestedTheme = ThemeHelper.ActualTheme,
+                XamlRoot = App.Window.Content.XamlRoot
+            };
+            await dialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task ShowChangelogDialogAsync()
+    {
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            // show changelog dialog
+            var dialog = new ChangelogContentDialog
+            {
+                XamlRoot = App.Window.Content.XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
+            };
+
+            await dialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task<ContentDialogResult> ShowSelectFilesDialogAsync()
+    {
         var result = ContentDialogResult.None;
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            // Set the dialog result to the result of the dialog
-            result = await contentDialog.ShowAsync();
+            var selectFilesDialog = new SelectFilesDialog();
+
+            var contentDialog = new ContentDialog
+            {
+                Title = "Put Selected Files in Order (Drag and Drop)",
+                Content = selectFilesDialog,
+                PrimaryButtonText = "OK",
+                CloseButtonText = "Cancel",
+                XamlRoot = App.Window.Content.XamlRoot,
+                MinWidth = selectFilesDialog.ActualWidth
+            };
+
+            result = await contentDialog.ShowOneAtATimeAsync();
         });
-        
+
         return result;
     }
 
-    public static async Task ShowMoreInfoDialogAsync(this FrameworkElement element,
-        AudiobookViewModel audiobookViewModel)
+    internal static async Task ShowDataMigrationRequiredDialogAsync()
     {
-        var moreInfoDialog = new MoreInfoDialogContent(audiobookViewModel);
-
-        var contentDialog = new ContentDialog
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            Title = "More Info",
-            Content = moreInfoDialog,
-            CloseButtonText = "Close",
-            XamlRoot = element.XamlRoot,
-            MinWidth = moreInfoDialog.ActualWidth
-        };
-
-        await contentDialog.ShowAsync();
+            var dialog = new ContentDialog
+            {
+                Title = "Data Migration Required",
+                Content =
+                    "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
+                    "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
+                    "during this process.",
+                DefaultButton = ContentDialogButton.Primary,
+                PrimaryButtonText = "Migrate Data",
+                XamlRoot = App.Window.Content.XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
+            }.SetPrimaryButton("Migrate Data", async (_, _) => await ViewModel.MigrateDatabase());
+            await dialog.ShowOneAtATimeAsync();
+        });
     }
 
-    public static async Task ShowConfirmDialogAsync(this FrameworkElement element, string title, string content,
-        Action onConfirm)
+    internal static async Task ShowDataMigrationFailedDialogAsync()
     {
-        var dialog = new ContentDialog
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            Title = title,
-            Content = content,
-            CloseButtonText = "Okay",
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = element.XamlRoot
-        };
-
-        dialog.CloseButtonClick += (sender, args) => onConfirm.Invoke();
-
-        await dialog.ShowAsync();
+            var dialog = new ContentDialog
+            {
+                Title = "Data Migration Failed",
+                Content =
+                    "We were unable to migrate your data from the previous version of Audibly. Please contact support for assistance.",
+                CloseButtonText = "Ok",
+                DefaultButton = ContentDialogButton.Close,
+                RequestedTheme = ThemeHelper.ActualTheme,
+                XamlRoot = App.Window.Content.XamlRoot
+            };
+            await dialog.ShowOneAtATimeAsync();
+        });
     }
 
-    // function to show progress dialog
-    public static async Task ShowProgressDialogAsync(this FrameworkElement element, string title)
+    internal static async Task ShowMoreInfoDialogAsync(AudiobookViewModel audiobookViewModel)
     {
-        var progressDialog = new ProgressDialogContent();
-
-        var contentDialog = new ContentDialog
+        await _dispatcherQueue.EnqueueAsync(async () =>
         {
-            Title = title,
-            Content = progressDialog,
-            XamlRoot = element.XamlRoot,
-            MinWidth = progressDialog.ActualWidth
-        };
+            var moreInfoDialog = new MoreInfoDialogContent(audiobookViewModel);
 
-        App.ViewModel.ProgressDialogCompleted += () => { contentDialog.Hide(); };
+            var contentDialog = new ContentDialog
+            {
+                Title = "More Info",
+                Content = moreInfoDialog,
+                CloseButtonText = "Close",
+                XamlRoot = App.Window.Content.XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
+            };
 
-        await contentDialog.ShowAsync();
+            await contentDialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task ShowProgressDialogAsync(string title, CancellationTokenSource? cts,
+        bool showCancelButton = true)
+    {
+        // yes, I'm intentionally not awaiting this
+        _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            _progressDialog = new ProgressContentDialog(cts)
+            {
+                Title = title,
+                XamlRoot = App.Window.Content.XamlRoot
+            };
+
+            if (showCancelButton)
+            {
+                _progressDialog.DefaultButton = ContentDialogButton.Close;
+                _progressDialog.SetCloseButton("Cancel");
+            }
+
+            // todo: should i pass cts to ShowOneAtATimeAsync?
+            await _progressDialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task CloseProgressDialogAsync()
+    {
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            if (_progressDialog == null) return;
+            _progressDialog.Hide();
+            _progressDialog = null;
+        });
     }
 }

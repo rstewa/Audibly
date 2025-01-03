@@ -10,7 +10,7 @@ using Windows.Media.Core;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
-using Audibly.App.Views.ContentDialogs;
+using Audibly.App.Services;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -257,14 +257,9 @@ public class PlayerViewModel : BindableBase
 
         if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
         {
-            var dialog = new ErrorContentDialog
-            {
-                XamlRoot = App.Window.Content.XamlRoot,
-                Content =
-                    $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved."
-            };
-
-            await _dispatcherQueue.EnqueueAsync(async () => { await dialog.ShowAsync(); });
+            // note: content dialog
+            await DialogService.ShowErrorDialogAsync("Error",
+                $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved.");
 
             return;
         }
@@ -308,13 +303,10 @@ public class PlayerViewModel : BindableBase
             {
                 NowPlaying = null;
 
-                var dialog = new ErrorContentDialog
-                {
-                    XamlRoot = App.Window.Content.XamlRoot,
-                    Content = "An error occurred while trying to open the selected audiobook. " +
-                              "The chapters could not be loaded. Please try importing the audiobook again."
-                };
-                await dialog.ShowAsync();
+                // note: content dialog
+                await DialogService.ShowErrorDialogAsync("Error",
+                    "An error occurred while trying to open the selected audiobook. " +
+                    "The chapters could not be loaded. Please try importing the audiobook again.");
 
                 return;
             }
@@ -348,14 +340,10 @@ public class PlayerViewModel : BindableBase
     {
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
 
-        var dialog = new ErrorContentDialog
-        {
-            XamlRoot = App.Window.Content.XamlRoot,
-            Content = "An error occurred while trying to play the selected audiobook. " +
-                      "Please verify that the file is not corrupted and try again."
-        };
-
-        await _dispatcherQueue.EnqueueAsync(async () => { await dialog.ShowAsync(); });
+        // note: content dialog
+        await DialogService.ShowErrorDialogAsync("Error",
+            "An error occurred while trying to play the selected audiobook. " +
+            "Please verify that the file is not corrupted and try again.");
     }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)

@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
 using Audibly.App.Helpers;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
-using Audibly.App.Views.ContentDialogs;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
@@ -112,17 +112,8 @@ public sealed partial class AppShell : Page
             ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
 
             // show onboarding dialog
-            var dialog = new ContentDialog
-            {
-                Title = "Welcome to Audibly!",
-                Content = "We're glad you're here. Let's get started by adding your first audiobook.",
-                CloseButtonText = "Ok",
-                DefaultButton = ContentDialogButton.Close,
-                RequestedTheme = ThemeHelper.ActualTheme,
-                XamlRoot = App.Window.Content.XamlRoot
-            };
-
-            await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
+            // note: content dialog
+            await DialogService.ShowOnboardingDialogAsync();
 
             UserSettings.Version = Constants.Version;
         }
@@ -133,12 +124,19 @@ public sealed partial class AppShell : Page
             if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
             {
                 UserSettings.Version = Constants.Version;
-                var dialog = new ChangelogContentDialog
-                {
-                    XamlRoot = App.Window.Content.XamlRoot
-                };
-                await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
+
+                // show changelog dialog
+                // note: content dialog
+                await DialogService.ShowChangelogDialogAsync();
             }
+        }
+
+        // check for file activation error
+        if (ViewModel.FileActivationError != string.Empty)
+        {
+            // note: content dialog
+            await DialogService.ShowErrorDialogAsync("File Activation Error", ViewModel.FileActivationError);
+            ViewModel.FileActivationError = string.Empty;
         }
     }
 

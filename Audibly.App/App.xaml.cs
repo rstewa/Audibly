@@ -18,7 +18,6 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
-using Audibly.App.Views.ContentDialogs;
 using Audibly.Models;
 using Audibly.Models.v1;
 using Audibly.Repository.Interfaces;
@@ -180,15 +179,15 @@ public partial class App : Application
     {
         ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
 
-        if (onAppInstanceActivated)
-        {
-            // if the app is already running and a file is opened, then we need to handle it differently
-            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivationOnAppInstanceActivated(storageFile));
-            return;
-        }
-
         try
         {
+            if (onAppInstanceActivated)
+            {
+                // if the app is already running and a file is opened, then we need to handle it differently
+                await _dispatcherQueue.EnqueueAsync(() => HandleFileActivationOnAppInstanceActivated(storageFile));
+                return;
+            }
+
             // check the database for the audiobook
             var audiobook = await Repository.Audiobooks.GetByFilePathAsync(storageFile.Path);
 
@@ -224,17 +223,17 @@ public partial class App : Application
         }
         catch (Exception e)
         {
-            var dialog = new ErrorContentDialog
+            ViewModel.EnqueueNotification(new Notification
             {
-                Title = "Error: Unable to Open Audiobook",
-                Content = e.Message,
-                XamlRoot = Window.Content.XamlRoot,
-                PrimaryButtonText = string.Empty
-            };
-
-            await _dispatcherQueue.EnqueueAsync(async () => await dialog.ShowAsync());
-
+                Message = "An error occurred while trying to open the file.",
+                Severity = InfoBarSeverity.Error
+            });
             ViewModel.LoggingService.LogError(e, true);
+
+            if (onAppInstanceActivated)
+                await DialogService.ShowErrorDialogAsync("File Activation Error", e.Message);
+            else
+                ViewModel.FileActivationError = e.Message;
         }
     }
 

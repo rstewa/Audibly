@@ -269,6 +269,8 @@ public class PlayerViewModel : BindableBase
             NowPlaying = audiobook;
             NowPlaying.IsNowPlaying = true;
             NowPlaying.DateLastPlayed = DateTime.Now;
+            
+            ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
 
             await NowPlaying.SaveAsync();
         });

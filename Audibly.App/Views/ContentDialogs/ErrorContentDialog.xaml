@@ -2,7 +2,6 @@
 
 <ContentDialog
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    CloseButtonClick="ProgressContentDialog_OnCloseButtonClick"
     CloseButtonText="Cancel"
     DefaultButton="Close"
     PrimaryButtonClick="ErrorContentDialog_OnPrimaryButtonClick"

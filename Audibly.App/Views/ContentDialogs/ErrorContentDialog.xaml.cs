@@ -22,14 +22,6 @@ public sealed partial class ErrorContentDialog : ContentDialog
 
     public MainViewModel ViewModel => App.ViewModel;
 
-    private void ProgressContentDialog_OnCloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-    {
-        // Cancel the operation if the user clicks the close button
-        _cancellationTokenSource?.Cancel();
-        ViewModel.IsLoading = false;
-        ViewModel.Refresh();
-    }
-
     private void ConfirmCancel_Click(object sender, RoutedEventArgs e)
     {
         // Hide the flyout

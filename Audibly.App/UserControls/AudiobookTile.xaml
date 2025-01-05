@@ -115,10 +115,13 @@
                     BorderBrush="Transparent"
                     BorderThickness="0"
                     CornerRadius="15">
-                    <ContentPresenter
-                        Content="{x:Bind Source, Mode=OneWay}"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top" />
+                    <Grid>
+                        <Image Source="ms-appx:///Assets/DefaultCoverImage.png" Stretch="UniformToFill" />
+                        <ContentPresenter
+                            Content="{x:Bind Source, Mode=OneWay}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top" />
+                    </Grid>
                 </Border>
                 <winUi:Effects.Shadow>
                     <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />

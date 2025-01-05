@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Audibly.App.Services;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Extensions;
@@ -16,14 +15,21 @@ namespace Audibly.App.Extensions;
 
 public static class DialogExtensions
 {
-    private static readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
     internal static async Task<ContentDialogResult> ShowOneAtATimeAsync(
         this ContentDialog dialog,
         TimeSpan? timeout = null,
         CancellationToken? token = null)
     {
-        return await DialogManager.OneAtATimeAsync(async () => await dialog.ShowAsync(), timeout, token);
+        try
+        {
+            return await DialogManager.OneAtATimeAsync(async () => await dialog.ShowAsync(), timeout, token);
+        }
+        catch (Exception e)
+        {
+            // log the exception
+            App.ViewModel.LoggingService.LogError(e, true);
+            return ContentDialogResult.None;
+        }
     }
 
     internal static ContentDialog SetPrimaryButton(this ContentDialog dialog, string text)

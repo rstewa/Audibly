@@ -161,7 +161,8 @@ public static class DialogService
                 Content = moreInfoDialog,
                 CloseButtonText = "Close",
                 XamlRoot = App.Window.Content.XamlRoot,
-                RequestedTheme = ThemeHelper.ActualTheme
+                RequestedTheme = ThemeHelper.ActualTheme,
+                MinWidth = moreInfoDialog.ActualWidth
             };
 
             await contentDialog.ShowOneAtATimeAsync();

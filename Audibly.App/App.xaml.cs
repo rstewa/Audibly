@@ -88,7 +88,7 @@ public partial class App : Application
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
     public static MainViewModel ViewModel { get; } =
-        new(new FileImportService(), new AppDataService(), new MessageService(),
+        new(new FileImportService(), new AppDataService(),
             new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
 
     /// <summary>

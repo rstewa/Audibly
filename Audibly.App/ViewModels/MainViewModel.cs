@@ -35,10 +35,6 @@ public class MainViewModel : BindableBase
 {
     #region Delegates
 
-    public delegate void ClearDialogQueueHandler();
-
-    public delegate void ProgressDialogCompletedHandler();
-
     public delegate void ResetFiltersHandler();
 
     #endregion
@@ -48,7 +44,6 @@ public class MainViewModel : BindableBase
     public readonly IAppDataService AppDataService;
     public readonly IImportFiles FileImporter;
     public readonly IloggingService LoggingService;
-    public readonly MessageService MessageService;
 
     private CancellationTokenSource? _cancellationTokenSource;
 
@@ -82,12 +77,10 @@ public class MainViewModel : BindableBase
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
-    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, MessageService messageService,
-        IloggingService loggingService)
+    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, IloggingService loggingService)
     {
         FileImporter = fileImporter;
         AppDataService = appDataService;
-        MessageService = messageService;
         LoggingService = loggingService;
         Task.Run(() => GetAudiobookListAsync(true));
     }
@@ -220,23 +213,6 @@ public class MainViewModel : BindableBase
 
     public ObservableCollection<Notification> Notifications { get; } = [];
 
-    public event ProgressDialogCompletedHandler? ProgressDialogCompleted;
-
-    /// <summary>
-    ///     Invokes the ProgressDialogCompleted event.
-    /// </summary>
-    public void OnProgressDialogCompleted()
-    {
-        ProgressDialogCompleted?.Invoke();
-    }
-
-    public event ClearDialogQueueHandler? ClearDialogQueue;
-
-    public void OnClearDialogQueue()
-    {
-        ClearDialogQueue?.Invoke();
-    }
-
     /// <summary>
     ///     Invoked when we want to reset the filters in the LibraryCardPage.
     /// </summary>
@@ -322,30 +298,40 @@ public class MainViewModel : BindableBase
     public async Task DeleteAudiobookAsync()
     {
         // todo: add a try-catch block here
-        if (SelectedAudiobook == null) return;
-
-        if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                App.PlayerViewModel.MediaPlayer.Pause();
-                App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
-                App.PlayerViewModel.NowPlaying = null;
-            });
-
-        await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
-        await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
-
-        await GetAudiobookListAsync();
-
-        await _dispatcherQueue.EnqueueAsync(() =>
+        try
         {
-            SelectedAudiobook = null;
-            EnqueueNotification(new Notification
+            if (SelectedAudiobook == null) return;
+
+            if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    App.PlayerViewModel.MediaPlayer.Pause();
+                    App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
+                    App.PlayerViewModel.NowPlaying = null;
+                });
+
+            await App.Repository.Audiobooks.DeleteAsync(SelectedAudiobook.Id);
+            await App.ViewModel.AppDataService.DeleteCoverImageAsync(SelectedAudiobook.CoverImagePath);
+
+            await GetAudiobookListAsync();
+
+            await _dispatcherQueue.EnqueueAsync(() =>
             {
-                Message = "Audiobook deleted successfully!",
-                Severity = InfoBarSeverity.Success
+                SelectedAudiobook = null;
+                EnqueueNotification(new Notification
+                {
+                    Message = "Audiobook deleted successfully!",
+                    Severity = InfoBarSeverity.Success
+                });
             });
-        });
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception
+            LoggingService.LogError(ex, true);
+
+            await DialogService.ShowErrorDialogAsync("Failed to delete audiobook", ex.Message);
+        }
     }
 
     // todo: fix the bug here and add a confirmation dialog
@@ -632,7 +618,6 @@ public class MainViewModel : BindableBase
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
-        ContentDialog? importDialog = null;
         if (showImportDialog)
         {
             UpdateProgressDialogProperties(ProgressDialogPrefix = "Importing");
@@ -1013,5 +998,5 @@ public class Notification
 {
     public string Message { get; init; }
     public InfoBarSeverity Severity { get; init; }
-    public TimeSpan Duration { get; } = TimeSpan.FromSeconds(20); // Default duration of 10 seconds
+    public TimeSpan Duration { get; } = TimeSpan.FromSeconds(20);
 }

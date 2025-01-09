@@ -54,8 +54,6 @@ public partial class App : Application
     /// </summary>
     public App()
     {
-        // get dns from app.config
-
         SentrySdk.Init(options =>
         {
             options.Dsn = Helpers.Sentry.Dsn;

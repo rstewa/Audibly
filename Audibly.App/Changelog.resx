@@ -118,67 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.1.9] - 12-23-24
+    <value>## [2.1.10] - 1-8-24
 
 ### Fixed
 
-- Fixed Sentry logging
-
-## [2.1.8] - 12-21-24
-
-### Fixed
-
-- Fixed advanced settings button crashing the app when clicked
-- Fixed file activation where the app would crash if the file was being used by another process
-- Fixed bug where exceptions were unhandled if ResetFilters?.Invoke() threw an exception in GetAudiobookListAsync()
-- Fixed bug in App.xaml.cs UseSqlite() method where the database was not being created correctly
-- Fixed bug in Delete dialog where exceptions weren't handled
-
-## [2.1.7] - 12-18-24
-
-### Added
-
-- Added support for .mp3 files
-- Added support for audiobooks that consist of multiple files (.mp3 &amp; .m4b only)
-- Added feature that allows users to mark an audiobook as finished
-  - Will mark an audiobook as finished when the progress is at 100% by default
-  - This is indicated by a new icon (a checkmark) on the audiobook tile in place of the progress icon
-- Added data migration feature to migrate user data to the new database
-- Added database migrations so that updating the database going forward will be easier
-- Added filter button that allows users to filter their library by:
-  - In Progress
-  - Not Started
-  - Completed
-- Added export button to allow users to export their library to a .json file
-- Added import button to allow users to import a library from a .json file (has to be exported from Audibly)
-- Added "More Info" button to audiobook tile context menu in library card view
-  - Shows the audiobook's metadata
-- Added a powershell script that packages the .msix files into a .msixbundle file
-- Added warning when user switches to light theme that it is in beta and may not appear correctly
+- Updated all content dialog calls to use the new DialogService, ensuring only one dialog is shown at a time using a
+  semaphore. This is to fix the System.Runtime.InteropServices.COMException getting thrown from the old dialog queue.
+- Fixed a bug where a books position was being overwritten when the chapter combo box loaded
+- Fixed a bug where the app didn't handle when SixLabors was unable to recognize the image format
+- Added error handling to WriteCoverImageAsync to handle when access is denied
 
 ### Changed
 
-- Changed playback speed maximum to 2.0x
-- Made notifications disappear after 10 seconds
-- Improved now playing slider to be more responsive
-- Added warning that the light theme is in beta and may not appear correctly
-- Modified sidebar to remember its collapsed state on startup
-- Removed "Open" button from the library card view
-- Modified Player Control title to use Marquee text when the title is too long
-- Modified the changelog dialog to use the MarkdownTextBlock when rendering the changelog
-- Modified file activation code to open book even if the filepath doesn't match (assuming the title is already in the library)
-  - The match is made on the Title, Author, and Narrator
-
-### Fixed
-
-- Fixed a bug (#57) where:
-  - The icons would turn black on hover when the app was in dark mode but the system was in light mode
-- Fixed a bug (#58) where:
-  - Added a default cover image when the import operation was unable to get a cover image from the audiobook file
-- Fixed a bug where:
-  - The now playing book on startup would not update its progress when playing
-- Fixed a bug where:
-  - The progress icon on the audiobook wouldn't update when the audiobook was playing
-- Fixed a bug in the file activation code</value>
+- Changed AudiobookTile and PlayerControl to use default CoverImage if the actual cover image is inaccessible
+- Updated Sentry configuration</value>
   </data>
 </root>

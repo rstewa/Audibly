@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [2.1.10] - 1-8-24
 
 ### Fixed
 
@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   semaphore. This is to fix the System.Runtime.InteropServices.COMException getting thrown from the old dialog queue.
 - Fixed a bug where a books position was being overwritten when the chapter combo box loaded
 - Fixed a bug where the app didn't handle when SixLabors was unable to recognize the image format
+- Added error handling to WriteCoverImageAsync to handle when access is denied
+
+### Changed
+
+- Changed AudiobookTile and PlayerControl to use default CoverImage if the actual cover image is inaccessible
+- Updated Sentry configuration
 
 ## [2.1.9] - 12-23-24
 

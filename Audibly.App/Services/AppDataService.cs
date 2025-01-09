@@ -24,35 +24,43 @@ public class AppDataService : IAppDataService
 
     public async Task<Tuple<string, string>> WriteCoverImageAsync(string path, byte[]? imageBytes)
     {
-        string coverImagePath;
-        var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
-            CreationCollisionOption.OpenIfExists);
-
-        if (imageBytes == null)
+        try
         {
-            var coverImage = await AssetHelper.GetAssetFileAsync("DefaultCoverImage.png");
-            await coverImage.CopyAsync(bookAppdataDir, "CoverImage.png", NameCollisionOption.ReplaceExisting);
-            coverImagePath = coverImage.Path;
+            string coverImagePath;
+            var bookAppdataDir = await StorageFolder.CreateFolderAsync(path,
+                CreationCollisionOption.OpenIfExists);
+
+            if (imageBytes == null)
+            {
+                var coverImage = await AssetHelper.GetAssetFileAsync("DefaultCoverImage.png");
+                await coverImage.CopyAsync(bookAppdataDir, "CoverImage.png", NameCollisionOption.ReplaceExisting);
+                coverImagePath = coverImage.Path;
+            }
+            else
+            {
+                var coverImage =
+                    await bookAppdataDir.CreateFileAsync("CoverImage.png", CreationCollisionOption.ReplaceExisting);
+                await FileIO.WriteBytesAsync(coverImage, imageBytes);
+                coverImagePath = coverImage.Path;
+            }
+
+            // create 400x400 thumbnail
+            var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
+            var result = await ShrinkAndSaveAsync(coverImagePath, thumbnailPath, 400, 400);
+            if (!result) thumbnailPath = coverImagePath; // use full size image if thumbnail creation fails
+
+            // leaving this commented out for now because it increases the import time an absurd amount
+            // create .ico file
+            // var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
+            // FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
+
+            return new Tuple<string, string>(coverImagePath, thumbnailPath);
         }
-        else
+        catch (Exception e)
         {
-            var coverImage =
-                await bookAppdataDir.CreateFileAsync("CoverImage.png", CreationCollisionOption.ReplaceExisting);
-            await FileIO.WriteBytesAsync(coverImage, imageBytes);
-            coverImagePath = coverImage.Path;
+            App.ViewModel.LoggingService.LogError(e, true);
+            return new Tuple<string, string>(string.Empty, string.Empty);
         }
-
-        // create 400x400 thumbnail
-        var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
-        var result = await ShrinkAndSaveAsync(coverImagePath, thumbnailPath, 400, 400);
-        if (!result) thumbnailPath = coverImagePath; // use full size image if thumbnail creation fails
-
-        // leaving this commented out for now because it increases the import time an absurd amount
-        // create .ico file
-        // var coverImagePath = Path.Combine(bookAppdataDir.Path, "CoverImage.png");
-        // FolderIcon.SetFolderIcon(coverImagePath, bookAppdataDir.Path);
-
-        return new Tuple<string, string>(coverImagePath, thumbnailPath);
     }
 
     public async Task DeleteCoverImageAsync(string path)

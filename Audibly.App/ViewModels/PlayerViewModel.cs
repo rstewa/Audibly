@@ -10,6 +10,7 @@ using Windows.Media.Core;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
+using Audibly.App.Services;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -18,11 +19,6 @@ namespace Audibly.App.ViewModels;
 
 public class PlayerViewModel : BindableBase
 {
-    public PlayerViewModel()
-    {
-        InitializeAudioPlayer();
-    }
-
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
@@ -30,7 +26,36 @@ public class PlayerViewModel : BindableBase
     /// </summary>
     public readonly MediaPlayer MediaPlayer = new();
 
+    private int _chapterComboSelectedIndex;
+
+    private long _chapterDurationMs;
+
+    private string _chapterDurationText = "0:00:00";
+
+    private long _chapterPositionMs;
+
+    private string _chapterPositionText = "0:00:00";
+
+    private bool _isPlayerFullScreen;
+
+    private string _maximizeMinimizeGlyph = Constants.MaximizeGlyph;
+
+    private string _maximizeMinimizeTooltip = Constants.MaximizeTooltip;
+
     private AudiobookViewModel? _nowPlaying;
+
+    private double _playbackSpeed = 1.0;
+
+    private Symbol _playPauseIcon = Symbol.Play;
+
+    private double _volumeLevel;
+
+    private string _volumeLevelGlyph = Constants.VolumeGlyph3;
+
+    public PlayerViewModel()
+    {
+        InitializeAudioPlayer();
+    }
 
     /// <summary>
     ///     Gets or sets the currently playing audiobook.
@@ -41,9 +66,7 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _nowPlaying, value);
     }
 
-    private string _volumeLevelGlyph = Constants.VolumeGlyph3;
-
-    /// <summary> 
+    /// <summary>
     ///     Gets or sets the glyph for the volume level.
     /// </summary>
     public string VolumeLevelGlyph
@@ -51,8 +74,6 @@ public class PlayerViewModel : BindableBase
         get => _volumeLevelGlyph;
         set => Set(ref _volumeLevelGlyph, value);
     }
-
-    private double _volumeLevel;
 
     /// <summary>
     ///     Gets or sets the volume level.
@@ -63,8 +84,6 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _volumeLevel, value);
     }
 
-    private double _playbackSpeed = 1.0;
-
     /// <summary>
     ///     Gets or sets the playback speed.
     /// </summary>
@@ -73,8 +92,6 @@ public class PlayerViewModel : BindableBase
         get => _playbackSpeed;
         set => Set(ref _playbackSpeed, value);
     }
-
-    private string _chapterDurationText = "0:00:00";
 
     /// <summary>
     ///     Gets or sets the chapter duration text.
@@ -85,8 +102,6 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _chapterDurationText, value);
     }
 
-    private string _chapterPositionText = "0:00:00";
-
     /// <summary>
     ///     Gets or sets the chapter position text.
     /// </summary>
@@ -95,8 +110,6 @@ public class PlayerViewModel : BindableBase
         get => _chapterPositionText;
         set => Set(ref _chapterPositionText, value);
     }
-
-    private long _chapterPositionMs;
 
     /// <summary>
     ///     Gets or sets the chapter position in milliseconds.
@@ -111,8 +124,6 @@ public class PlayerViewModel : BindableBase
         }
     }
 
-    private long _chapterDurationMs;
-
     /// <summary>
     ///     Gets or sets the chapter duration in milliseconds.
     /// </summary>
@@ -126,8 +137,6 @@ public class PlayerViewModel : BindableBase
         }
     }
 
-    private bool _isPlayerFullScreen;
-
     /// <summary>
     ///     Gets or sets a value indicating whether the player is in full screen mode.
     /// </summary>
@@ -136,8 +145,6 @@ public class PlayerViewModel : BindableBase
         get => _isPlayerFullScreen;
         set => Set(ref _isPlayerFullScreen, value);
     }
-
-    private string _maximizeMinimizeGlyph = Constants.MaximizeGlyph;
 
     /// <summary>
     ///     Gets or sets the glyph for the maximize/minimize button.
@@ -148,8 +155,6 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _maximizeMinimizeGlyph, value);
     }
 
-    private string _maximizeMinimizeTooltip = Constants.MaximizeTooltip;
-
     /// <summary>
     ///     Gets or sets the tooltip for the maximize/minimize button.
     /// </summary>
@@ -159,8 +164,6 @@ public class PlayerViewModel : BindableBase
         set => Set(ref _maximizeMinimizeTooltip, value);
     }
 
-    private Symbol _playPauseIcon = Symbol.Play;
-
     /// <summary>
     ///     Gets or sets the play/pause icon.
     /// </summary>
@@ -169,8 +172,6 @@ public class PlayerViewModel : BindableBase
         get => _playPauseIcon;
         set => Set(ref _playPauseIcon, value);
     }
-
-    private int _chapterComboSelectedIndex;
 
     /// <summary>
     ///     Gets or sets the selected index of the chapter combo box.
@@ -249,24 +250,30 @@ public class PlayerViewModel : BindableBase
 
         MediaPlayer.Pause();
 
-        // todo: not sure setting selected audiobook is necessary
         App.ViewModel.SelectedAudiobook = audiobook;
 
         // verify that the file exists
         // if there are multiple source files, check them all
-        
+
         if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
         {
-            App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
-                $"Can't play Audiobook: {audiobook.Title}. One of its source files was deleted or moved.");
+            // note: content dialog
+            await DialogService.ShowErrorDialogAsync("Error",
+                $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved.");
+
             return;
         }
 
-        NowPlaying = audiobook;
-        NowPlaying.IsNowPlaying = true;
-        NowPlaying.DateLastPlayed = DateTime.Now;
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            NowPlaying = audiobook;
+            NowPlaying.IsNowPlaying = true;
+            NowPlaying.DateLastPlayed = DateTime.Now;
+            
+            ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
 
-        await NowPlaying.SaveAsync();
+            await NowPlaying.SaveAsync();
+        });
 
         MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
     }
@@ -284,22 +291,22 @@ public class PlayerViewModel : BindableBase
 
         MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
     }
-    
+
     # endregion
-    
+
     #region event handlers
 
     private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
     {
         if (NowPlaying == null) return;
-        _ = _dispatcherQueue.TryEnqueue(() =>
+        _dispatcherQueue.EnqueueAsync(async () =>
         {
             if (NowPlaying.Chapters.Count == 0)
             {
                 NowPlaying = null;
 
-                // todo: ask if they want to re-import the audiobook
-                App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
+                // note: content dialog
+                await DialogService.ShowErrorDialogAsync("Error",
                     "An error occurred while trying to open the selected audiobook. " +
                     "The chapters could not be loaded. Please try importing the audiobook again.");
 
@@ -314,7 +321,7 @@ public class PlayerViewModel : BindableBase
                 NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
                     ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
                     : 0;
-            
+
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
         });
     }
@@ -331,11 +338,12 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.Play();
     }
 
-    private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+    private async void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
 
-        App.ViewModel.MessageService.ShowDialog(DialogType.Error, "Error",
+        // note: content dialog
+        await DialogService.ShowErrorDialogAsync("Error",
             "An error occurred while trying to play the selected audiobook. " +
             "Please verify that the file is not corrupted and try again.");
     }
@@ -400,7 +408,7 @@ public class PlayerViewModel : BindableBase
             NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
             NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
         });
-        
+
         await NowPlaying.SaveAsync();
     }
 

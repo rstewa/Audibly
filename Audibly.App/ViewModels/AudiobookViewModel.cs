@@ -173,7 +173,6 @@ public class AudiobookViewModel : BindableBase
         }
     }
 
-    // todo: i don't think this is needed
     /// <summary>
     ///     Gets or sets the current chapter index of the audiobook.
     /// </summary>

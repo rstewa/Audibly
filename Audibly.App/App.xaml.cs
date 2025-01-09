@@ -58,20 +58,12 @@ public partial class App : Application
 
         SentrySdk.Init(options =>
         {
-            // Tells which project in Sentry to send events to:
             options.Dsn = Helpers.Sentry.Dsn;
-
             options.AutoSessionTracking = true;
-
-            // Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing.
-            // We recommend adjusting this value in production.
-            options.TracesSampleRate = 1.0;
-
-            // Enable Global Mode since this is a client app.
+            options.SampleRate = 0.25f;
+            options.TracesSampleRate = 0.25;
             options.IsGlobalModeEnabled = true;
-
-            options.ProfilesSampleRate = 1.0;
-
+            options.ProfilesSampleRate = 0.25;
             options.Environment = "production";
         });
 
@@ -88,7 +80,7 @@ public partial class App : Application
     ///     Gets the app-wide MainViewModel singleton instance.
     /// </summary>
     public static MainViewModel ViewModel { get; } =
-        new(new FileImportService(), new AppDataService(), new MessageService(),
+        new(new FileImportService(), new AppDataService(),
             new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
 
     /// <summary>
@@ -179,15 +171,15 @@ public partial class App : Application
     {
         ViewModel.LoggingService.Log($"File activated: {storageFile.Path}");
 
-        if (onAppInstanceActivated)
-        {
-            // if the app is already running and a file is opened, then we need to handle it differently
-            await _dispatcherQueue.EnqueueAsync(() => HandleFileActivationOnAppInstanceActivated(storageFile));
-            return;
-        }
-
         try
         {
+            if (onAppInstanceActivated)
+            {
+                // if the app is already running and a file is opened, then we need to handle it differently
+                await _dispatcherQueue.EnqueueAsync(() => HandleFileActivationOnAppInstanceActivated(storageFile));
+                return;
+            }
+
             // check the database for the audiobook
             var audiobook = await Repository.Audiobooks.GetByFilePathAsync(storageFile.Path);
 
@@ -223,9 +215,17 @@ public partial class App : Application
         }
         catch (Exception e)
         {
-            ViewModel.OnClearDialogQueue();
-            ViewModel.MessageService.ShowDialog(DialogType.ErrorNoDelete, "Error: Unable to Open Audiobook", e.Message);
+            ViewModel.EnqueueNotification(new Notification
+            {
+                Message = "An error occurred while trying to open the file.",
+                Severity = InfoBarSeverity.Error
+            });
             ViewModel.LoggingService.LogError(e, true);
+
+            if (onAppInstanceActivated)
+                await DialogService.ShowErrorDialogAsync("File Activation Error", e.Message);
+            else
+                ViewModel.FileActivationError = e.Message;
         }
     }
 
@@ -304,19 +304,16 @@ public partial class App : Application
         if (userCurrentVersion != null &&
             Constants.CompareVersions(userCurrentVersion, Constants.DatabaseMigrationVersion) == -1 &&
             !dataMigrationFailed)
-        {
             try
             {
                 // if the user's version is less than v2.1, then we need to update the database to the current version
                 // this is a breaking change, so we need to reset the database and then re-import their data
-
                 // make a copy of the current database
                 var dbCopyPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly.db.bak";
                 File.Copy(dbPath, dbCopyPath, true);
 
                 // NOTE: for manual testing: need to remove this line
                 // dbPath = ApplicationData.Current.LocalFolder.Path + @"\Audibly_2015.db";
-
                 var baseConnectionString = "Data Source=" + dbPath;
                 var connectionString = new SqliteConnectionStringBuilder(baseConnectionString)
                 {
@@ -396,9 +393,7 @@ public partial class App : Application
                 UserSettings.NeedToImportAudiblyExport = false;
                 UserSettings.ShowDataMigrationFailedDialog = true;
             }
-        }
         else
-        {
             try
             {
                 // create the db context
@@ -415,7 +410,6 @@ public partial class App : Application
                 ViewModel.LoggingService.LogError(e, true);
                 Repository = new SqlAudiblyRepository(dbOptions);
             }
-        }
     }
 
     public static void RestartApp()

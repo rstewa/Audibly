@@ -45,7 +45,7 @@ public class AppDataService : IAppDataService
         // create 400x400 thumbnail
         var thumbnailPath = Path.Combine(bookAppdataDir.Path, "Thumbnail.jpeg");
         var result = await ShrinkAndSaveAsync(coverImagePath, thumbnailPath, 400, 400);
-        if (!result) thumbnailPath = string.Empty; // return empty string if thumbnail creation failed
+        if (!result) thumbnailPath = coverImagePath; // use full size image if thumbnail creation fails
 
         // leaving this commented out for now because it increases the import time an absurd amount
         // create .ico file
@@ -84,8 +84,6 @@ public class AppDataService : IAppDataService
             await DeleteCoverImageAsync(paths[i]);
             await progressCallback(i, paths.Count, Path.GetFileName(paths[i]));
         }
-
-        ImportCompleted?.Invoke();
     }
 
     public async Task WriteMetadataAsync(string path, Track track)
@@ -99,8 +97,6 @@ public class AppDataService : IAppDataService
 
     #endregion
 
-    // todo: need a cleaner way to handle this
-    public event IImportFiles.ImportCompletedHandler? ImportCompleted;
 
     // from: https://stackoverflow.com/questions/26486671/how-to-resize-an-image-maintaining-the-aspect-ratio-in-c-sharp
     private async Task<bool> ShrinkAndSaveAsync(string path, string savePath, int maxHeight, int maxWidth)

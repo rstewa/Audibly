@@ -5,20 +5,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
 using Audibly.App.Helpers;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
-using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Sentry;
 using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -30,20 +28,11 @@ namespace Audibly.App;
 /// </summary>
 public sealed partial class AppShell : Page
 {
-    private readonly Queue<ContentDialog> _dialogQueue = new();
-
-    private readonly SemaphoreSlim _dialogQueueLock = new(1, 1);
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public readonly string AudiobookListLabel = "Audiobooks";
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
-
-    private ContentDialog? _dialog;
-
-    private ContentDialog? _importDialog;
-
-    private ContentDialog? _progressDialog;
 
     /// <summary>
     ///     Initializes a new instance of the AppShell, sets the static 'Current' reference,
@@ -62,11 +51,6 @@ public sealed partial class AppShell : Page
         AppShellFrame.Navigate(typeof(LibraryCardPage));
 
         Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
-
-        ViewModel.MessageService.ShowDialogRequested += OnShowDialogRequested;
-        App.ViewModel.FileImporter.ImportCompleted += HideImportDialog;
-        App.ViewModel.ProgressDialogCompleted += HideProgressDialog;
-        App.ViewModel.ClearDialogQueue += OnClearDialogQueue;
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
@@ -87,14 +71,16 @@ public sealed partial class AppShell : Page
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
 
-    private void OnClearDialogQueue()
-    {
-        _dialogQueue.Clear();
-        if (_dialog != null) _dialog.Hide();
-    }
-
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
+        // get sidebar state
+        if (UserSettings.IsSidebarCollapsed)
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                NavView.IsPaneOpen = false;
+                NavView.CompactModeThresholdWidth = 0;
+            });
+
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
             ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
@@ -102,8 +88,10 @@ public sealed partial class AppShell : Page
         {
             ApplicationData.Current.LocalSettings.Values["HasCompletedOnboarding"] = true;
 
-            ViewModel.MessageService.ShowDialog(DialogType.Info, "Welcome to Audibly!",
-                "We're glad you're here. Let's get started by adding your first audiobook.");
+            // show onboarding dialog
+            // note: content dialog
+            await DialogService.ShowOnboardingDialogAsync();
+
             UserSettings.Version = Constants.Version;
         }
         else
@@ -113,276 +101,19 @@ public sealed partial class AppShell : Page
             if (userCurrentVersion == null || userCurrentVersion != Constants.Version)
             {
                 UserSettings.Version = Constants.Version;
-                ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+
+                // show changelog dialog
+                // note: content dialog
+                await DialogService.ShowChangelogDialogAsync();
             }
         }
 
-        await ProcessDialogQueue();
-
-        // get sidebar state
-        if (UserSettings.IsSidebarCollapsed)
+        // check for file activation error
+        if (ViewModel.FileActivationError != string.Empty)
         {
-            NavView.IsPaneOpen = false;
-            NavView.CompactModeThresholdWidth = 0;
-        }
-    }
-
-    private async Task<bool> ShowYesNoDialogAsync(string title, string content)
-    {
-        var result = false;
-        await _dispatcherQueue.EnqueueAsync(async () =>
-        {
-            var dialog = new ContentDialog
-            {
-                Title = title,
-                Content = content,
-                PrimaryButtonText = "Yes",
-                CloseButtonText = "No",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = XamlRoot,
-                RequestedTheme = ThemeHelper.ActualTheme
-            };
-
-            dialog.PrimaryButtonClick += (_, _) => { result = true; };
-
-            dialog.CloseButtonClick += (_, _) => { result = false; };
-
-            await dialog.ShowAsync();
-        });
-        return result;
-    }
-
-    private ContentDialog CreateImportDialog(string title)
-    {
-        var importDialog = new ProgressDialogContent();
-        _importDialog = new ContentDialog
-        {
-            Title = title,
-            Content = importDialog,
-            DefaultButton = ContentDialogButton.Close,
-            CloseButtonText = "Cancel",
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        _importDialog.CloseButtonClick += (_, _) =>
-        {
-            ViewModel.MessageService.CancelDialog();
-            ViewModel.IsLoading = false;
-            ViewModel.Refresh();
-        };
-
-        return _importDialog;
-    }
-
-    private void HideImportDialog()
-    {
-        if (_importDialog == null) return;
-
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            _importDialog.Hide();
-            // _importDialog = null;
-        });
-    }
-
-    private void HideProgressDialog()
-    {
-        if (_progressDialog == null) return;
-
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            _progressDialog.Hide();
-            // _progressDialog = null;
-        });
-    }
-
-    private ContentDialog CreateDeleteDialog(string title, string content, bool showPrimaryButton)
-    {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = content,
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Close,
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        if (showPrimaryButton)
-        {
-            dialog.PrimaryButtonText = "Remove from Library";
-        }
-
-        dialog.PrimaryButtonClick += async (_, _) =>
-        {
-            try
-            {
-                await ViewModel.DeleteAudiobookAsync();
-                await ViewModel.GetAudiobookListAsync();
-            }
-            catch (Exception ex)
-            {
-                ViewModel.LoggingService.LogError(ex, true);
-                SentrySdk.CaptureException(ex);
-
-                // notify user with toast notification
-                var notification = new Notification
-                {
-                    Message = $"Failed to delete audiobook: {ex.Message}",
-                    Severity = InfoBarSeverity.Error
-                };
-                ViewModel.EnqueueNotification(notification);
-            }
-        };
-
-        return dialog;
-    }
-
-    private ContentDialog CreateOkDialog(string title, string content)
-    {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = content,
-            CloseButtonText = "Ok",
-            DefaultButton = ContentDialogButton.Close,
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        return dialog;
-    }
-
-    private ContentDialog CreateRestartDialog(string title, string content)
-    {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = content,
-            PrimaryButtonText = "Restart",
-            DefaultButton = ContentDialogButton.Primary,
-            CloseButtonText = "Not Now",
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        dialog.PrimaryButtonClick += (_, _) => { App.RestartApp(); };
-
-        return dialog;
-    }
-
-    private ContentDialog CreateFailedDataMigrationDialog()
-    {
-        var dialogContent = new FailedDataMigrationContent();
-        var dialog = new ContentDialog
-        {
-            Content = dialogContent,
-            CloseButtonText = "Close",
-            DefaultButton = ContentDialogButton.Close,
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        return dialog;
-    }
-
-    private ContentDialog CreateChangelogDialog(string changelogText)
-    {
-        var dialogContent = new ChangelogDialogContent(changelogText);
-        var dialog = new ContentDialog
-        {
-            Content = dialogContent,
-            CloseButtonText = "Close",
-            DefaultButton = ContentDialogButton.Close,
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        return dialog;
-    }
-
-    private ContentDialog CreateProgressDialog(string title)
-    {
-        var progressDialog = new ProgressDialogContent();
-        _progressDialog = new ContentDialog
-        {
-            Title = title,
-            Content = progressDialog,
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        return _progressDialog;
-    }
-
-    private ContentDialog CreateConfirmationDialog(string title, string content, Action? onConfirm)
-    {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = content,
-            CloseButtonText = "Okay",
-            DefaultButton = ContentDialogButton.Close,
-            RequestedTheme = ThemeHelper.ActualTheme
-        };
-
-        if (onConfirm != null)
-            dialog.CloseButtonClick += (_, _) => { onConfirm.Invoke(); };
-
-        return dialog;
-    }
-
-    private async void OnShowDialogRequested(DialogType type, string title, string content, Action? onConfirm)
-    {
-        var dialog = type switch
-        {
-            DialogType.ErrorNoDelete => CreateDeleteDialog(title, content, false),
-            DialogType.Error => CreateDeleteDialog(title, content, true),
-            DialogType.Info => CreateOkDialog(title, content),
-            DialogType.Restart => CreateRestartDialog(title, content),
-            DialogType.Changelog => CreateChangelogDialog(content),
-            DialogType.Import => CreateImportDialog(title),
-            DialogType.Progress => CreateProgressDialog(title),
-            DialogType.Confirmation => CreateConfirmationDialog(title, content, onConfirm),
-            DialogType.FailedDataMigration => CreateFailedDataMigrationDialog(),
-            _ => null
-        };
-
-        if (dialog == null) return;
-
-        _dialogQueue.Enqueue(dialog);
-        await ProcessDialogQueue();
-    }
-
-    private async Task ProcessDialogQueue()
-    {
-        await _dialogQueueLock.WaitAsync();
-        try
-        {
-            while (XamlRoot != null && _dialogQueue.Count > 0)
-            {
-                _dialog = _dialogQueue.Dequeue();
-                _dialog.XamlRoot = XamlRoot;
-
-                await _dispatcherQueue.EnqueueAsync(async () =>
-                {
-                    try
-                    {
-                        await _dialog.ShowAsync();
-                        _dialog.Hide();
-                    }
-                    catch (Exception e)
-                    {
-                        ViewModel.LoggingService.LogError(e, true);
-                        SentrySdk.CaptureException(e);
-                    }
-                });
-            }
-        }
-        catch (Exception e)
-        {
-            ViewModel.LoggingService.LogError(e, true);
-            // SentrySdk.CaptureException(e);
-        }
-        finally
-        {
-            // todo: decide on this
-            // OnClearDialogQueue();
-            _dialogQueueLock.Release();
+            // note: content dialog
+            await DialogService.ShowErrorDialogAsync("File Activation Error", ViewModel.FileActivationError);
+            ViewModel.FileActivationError = string.Empty;
         }
     }
 

@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI;
 using Audibly.App.Helpers;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
+using Audibly.App.Views.ContentDialogs;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -80,10 +82,12 @@ public sealed partial class LibraryCardPage : Page
         // check if data migration already failed
         if (UserSettings.ShowDataMigrationFailedDialog)
         {
-            // show the failed data migration dialog
-            ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
+            // note: content dialog
+            await DialogService.ShowDataMigrationFailedDialogAsync();
+
             UserSettings.NeedToImportAudiblyExport = false;
             UserSettings.ShowDataMigrationFailedDialog = false;
+
             return;
         }
 
@@ -94,11 +98,7 @@ public sealed partial class LibraryCardPage : Page
         // todo: probably do not need this try/catch block but leaving it here for now
         try
         {
-            ViewModel.MessageService.ShowDialog(DialogType.Confirmation, "Data Migration Required",
-                "To ensure compatibility with the latest update, we need to migrate your data to the new database " +
-                "format. This process may take a few minutes depending on the size of your library. Do not close the app " +
-                "during this process.",
-                async () => { await ViewModel.MigrateDatabase(); });
+            await DialogService.ShowDataMigrationRequiredDialogAsync();
         }
         catch (Exception exception)
         {
@@ -291,10 +291,22 @@ public sealed partial class LibraryCardPage : Page
 
     #region debug button
 
-    private void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
+    private async void TestContentDialogButton_OnClick(object sender, RoutedEventArgs e)
     {
-        ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
-        ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
+        var dialog = new ChangelogContentDialog
+        {
+            XamlRoot = App.Window.Content.XamlRoot
+        };
+        await dialog.ShowAsync();
+
+        // ViewModel.ProgressDialogPrefix = "Importing";
+        // ViewModel.ProgressDialogText = "A Clash of Kings";
+        //
+        // var dialog = new ProgressContentDialog();
+        // dialog.XamlRoot = App.Window.Content.XamlRoot;
+        // await dialog.ShowAsync();
+        // ViewModel.MessageService.ShowDialog(DialogType.Changelog, "What's New?", Changelog.Text);
+        // ViewModel.MessageService.ShowDialog(DialogType.FailedDataMigration, string.Empty, string.Empty);
     }
 
     private void InfoBar_OnClosed(InfoBar sender, InfoBarClosedEventArgs args)

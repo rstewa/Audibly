@@ -207,6 +207,14 @@
                     ToolTipService.ToolTip="Delete all audiobooks"
                     Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
                     x:Name="DeleteButton" />
+                <!--  data migration  -->
+                <AppBarButton
+                    Click="{x:Bind ViewModel.MigrateDatabase}"
+                    Icon="Sync"
+                    Label="Test Data Migration"
+                    ToolTipService.ToolTip="Test Data Migration"
+                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
+                    x:Name="MigrateDataButton" />
                 <AppBarButton
                     Click="{x:Bind OpenAppStateFolderButton_OnClick}"
                     Label="Open App State Folder"

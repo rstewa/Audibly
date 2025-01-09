@@ -58,20 +58,12 @@ public partial class App : Application
 
         SentrySdk.Init(options =>
         {
-            // Tells which project in Sentry to send events to:
             options.Dsn = Helpers.Sentry.Dsn;
-
             options.AutoSessionTracking = true;
-
-            // Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing.
-            // We recommend adjusting this value in production.
-            options.TracesSampleRate = 1.0;
-
-            // Enable Global Mode since this is a client app.
+            options.SampleRate = 0.25f;
+            options.TracesSampleRate = 0.25;
             options.IsGlobalModeEnabled = true;
-
-            options.ProfilesSampleRate = 1.0;
-
+            options.ProfilesSampleRate = 0.25;
             options.Environment = "production";
         });
 

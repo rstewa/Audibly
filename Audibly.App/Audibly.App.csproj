@@ -24,7 +24,33 @@
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
         <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
     </PropertyGroup>
-    <ItemGroup>
+
+	<!-- We recommend only using these features for release builds. -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+
+		<!-- Configure Sentry org and project -->
+		<SentryOrg>audibly</SentryOrg>
+		<SentryProject>audibly</SentryProject>
+
+		<!-- Automatically creates a release when building your application. -->
+		<SentryCreateRelease>true</SentryCreateRelease>
+
+		<!-- Automatically associates commits with the release. -->
+		<SentrySetCommits>true</SentrySetCommits>
+
+		<!-- Optionally provide explicit flags to the set-commits command -->
+		<SentrySetCommitOptions>--local</SentrySetCommitOptions>
+
+		<!-- Sends symbols to Sentry, enabling symbolication of stack traces. -->
+		<SentryUploadSymbols>true</SentryUploadSymbols>
+
+		<!-- Sends sources to Sentry, enabling display of source context. -->
+		<SentryUploadSources>true</SentryUploadSources>
+
+	</PropertyGroup>
+
+
+	<ItemGroup>
         <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml" />
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
         <None Remove="Views\ControlPages\FailedDataMigrationContent.xaml" />

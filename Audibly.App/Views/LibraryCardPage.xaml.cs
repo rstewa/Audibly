@@ -8,19 +8,21 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views.ContentDialogs;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Sentry;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Audibly.App.Views;
 
@@ -60,6 +62,7 @@ public sealed partial class LibraryCardPage : Page
         // subscribe to page loaded event
         Loaded += LibraryCardPage_Loaded;
         ViewModel.ResetFilters += ViewModelOnResetFilters;
+        // PointerWheelChanged += LibraryCardPage_PointerWheelChanged;
     }
 
     /// <summary>
@@ -71,6 +74,23 @@ public sealed partial class LibraryCardPage : Page
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    private void LibraryCardPage_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        var pointer = e.GetCurrentPoint(this);
+        if (pointer.Properties.IsHorizontalMouseWheel || pointer.Properties.MouseWheelDelta <= 0) return;
+
+        var coreWindow = CoreWindow.GetForCurrentThread();
+
+        if (!coreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down)) return;
+        
+        if (pointer.Properties.MouseWheelDelta > 0)
+            // Increase size
+            ViewModel.IncreaseAudiobookTileSize();
+        else if (pointer.Properties.MouseWheelDelta < 0)
+            // Decrease size
+            ViewModel.DecreaseAudiobookTileSize();
+    }
 
     private void ViewModelOnResetFilters()
     {

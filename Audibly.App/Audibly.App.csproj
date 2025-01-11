@@ -51,6 +51,7 @@
 
 
 	<ItemGroup>
+        <None Remove="UserControls\PlayerControlGrid.xaml" />
         <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml" />
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
         <None Remove="Views\ControlPages\FailedDataMigrationContent.xaml" />
@@ -171,6 +172,11 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Changelog.resx</DependentUpon>
         </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="UserControls\PlayerControlGrid.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
     <ItemGroup>
         <Page Update="Views\ControlPages\FailedDataMigrationContent.xaml">

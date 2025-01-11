@@ -104,7 +104,6 @@
                 RelativePanel.LeftOf="AudiobookSearchBox"
                 RelativePanel.RightOf="PageTitle"
                 x:Name="MainCommandBar">
-                <!--  todo: may implement this in the future  -->
                 <AppBarButton
                     Icon="Filter"
                     Label="Filter"
@@ -149,13 +148,6 @@
                     Label="Refresh"
                     ToolTipService.ToolTip="Refresh audiobooks" />
                 <AppBarSeparator />
-                <!--  <AppBarButton  -->
-                <!--  Click="{x:Bind ViewModel.ImportAudiobookAsync}"  -->
-                <!--  Icon="Add"  -->
-                <!--  Label="Open"  -->
-                <!--  ToolTipService.ToolTip="Open audiobook">  -->
-                <!--     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" /> -->
-                <!-- </AppBarButton> -->
                 <AppBarButton
                     Icon="Download"
                     Label="Import"
@@ -197,6 +189,21 @@
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
+                <AppBarSeparator />
+
+                <!--  increase audiobook tile size button  -->
+                <AppBarButton
+                    Click="{x:Bind ViewModel.IncreaseAudiobookTileSize}"
+                    Icon="ZoomIn"
+                    Label="Increase Tile Size"
+                    ToolTipService.ToolTip="Increase Audiobook Tile Size" />
+
+                <!--  decrease audiobook tile size button  -->
+                <AppBarButton
+                    Click="{x:Bind ViewModel.DecreaseAudiobookTileSize}"
+                    Icon="ZoomOut"
+                    Label="Decrease Tile Size"
+                    ToolTipService.ToolTip="Decrease Audiobook Tile Size" />
 
                 <!--  debug menu  -->
                 <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
@@ -301,8 +308,8 @@
                     <UniformGridLayout
                         ItemsJustification="Start"
                         ItemsStretch="Uniform"
-                        MinColumnSpacing="28"
-                        MinItemWidth="300" />
+                        MinColumnSpacing="4"
+                        MinRowSpacing="12" />
                 </ItemsRepeater.Layout>
 
             </ItemsRepeater>
@@ -334,7 +341,8 @@
             RelativePanel.AlignRightWithPanel="True"
             x:Name="Player">
 
-            <userControls:PlayerControl />
+            <!--<userControls:PlayerControl />-->
+            <userControls:PlayerControlGrid />
 
         </Grid>
 

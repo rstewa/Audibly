@@ -39,7 +39,7 @@ public sealed partial class AudiobookTile : UserControl
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
-    private static MainViewModel ViewModel => App.ViewModel;
+    private MainViewModel ViewModel => App.ViewModel;
 
     private void AudiobookTile_OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {

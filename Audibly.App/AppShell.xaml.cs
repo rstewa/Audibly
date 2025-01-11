@@ -46,14 +46,41 @@ public sealed partial class AppShell : Page
         // set the title bar
         var window = WindowHelper.GetMainWindow();
         if (window != null)
+        {
             window.SetTitleBar(AppTitleBar);
+            window.SizeChanged += Window_SizeChanged; // Subscribe to the SizeChanged event
+        }
 
         AppShellFrame.Navigate(typeof(LibraryCardPage));
 
         Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
+        PointerWheelChanged += (_, e) =>
+        {
+            // todo: check if library is the current page
+            if (e.KeyModifiers == VirtualKeyModifiers.Control)
+            {
+                if (e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0)
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                            ViewModel.IncreaseAudiobookTileSize();
+                    });
+                else
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                            ViewModel.DecreaseAudiobookTileSize();
+                    });
+            }
+        };
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
+    }
+    
+    private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
+    {
+        // Handle the window size change here
+        var newWidth = e.Size.Width;
+        var newHeight = e.Size.Height;
     }
 
     /// <summary>
@@ -74,12 +101,12 @@ public sealed partial class AppShell : Page
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
         // get sidebar state
-        if (UserSettings.IsSidebarCollapsed)
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                NavView.IsPaneOpen = false;
-                NavView.CompactModeThresholdWidth = 0;
-            });
+        //if (UserSettings.IsSidebarCollapsed)
+        //    _dispatcherQueue.TryEnqueue(() =>
+        //    {
+        //        NavView.IsPaneOpen = false;
+        //        NavView.CompactModeThresholdWidth = 0;
+        //    });
 
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
@@ -302,5 +329,17 @@ public sealed partial class AppShell : Page
             .Select(x => x.Author)
             .Distinct()
             .ToList();
+    }
+
+    private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+    {
+        if (args.DisplayMode == NavigationViewDisplayMode.Minimal)
+        {
+            VisualStateManager.GoToState(this, "Compact", true);
+        }
+        else
+        {
+            VisualStateManager.GoToState(this, "Default", true);
+        }
     }
 }

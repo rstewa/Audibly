@@ -135,7 +135,8 @@ public partial class App : Application
         };
 
         win32WindowHelper = new Win32WindowHelper(Window);
-        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1750, y = 700 });
+        // todo: uncomment this
+        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 640, y = 640 });
 
         UseSqlite();
 

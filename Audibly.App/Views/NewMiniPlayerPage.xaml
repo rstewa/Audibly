@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--  ReSharper disable once Xaml.InvalidResourceType  -->
+<Page
+    Background="{ThemeResource AudiblyBackgroundBrush}"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.NewMiniPlayerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Audibly.App.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:userControls="using:Audibly.App.UserControls"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+
+        <StackPanel
+            HorizontalAlignment="Stretch"
+            Orientation="Horizontal"
+            Padding="8"
+            Spacing="8"
+            VerticalAlignment="Center">
+            <userControls:CoverImageTile CoverImageRadius="6" CoverImageSize="50" />
+            <userControls:TitleArtistStack />
+        </StackPanel>
+
+        <Grid
+            Padding="16"
+            RowSpacing="16"
+            Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel
+                Grid.Row="0"
+                HorizontalAlignment="Left"
+                Orientation="Horizontal"
+                Spacing="16">
+
+                <!--  Cover Image  -->
+                <userControls:CoverImageTile />
+
+                <!--  Title & Artist  -->
+                <userControls:TitleArtistStack ArtistFontSize="18.0" TitleFontSize="22.0" />
+            </StackPanel>
+
+            <!--  play & skip buttons  -->
+            <userControls:PlaySkipButtonsStack Grid.Row="1" />
+
+            <!--  progress bar  -->
+            <userControls:NowPlayingBar Grid.Row="2" />
+        </Grid>
+
+    </Grid>
+</Page>

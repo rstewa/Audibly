@@ -40,6 +40,30 @@ public class MainViewModel : BindableBase
 
     #endregion
 
+    private const double _maximumTitleFontSize = 34.2;
+    private const double _maximumAuthorFontSize = 26.59;
+    private const double _maximumTitleMaxWidth = 380;
+    private const double _maximumPlayButtonHeightWidth = 133;
+    private const double _maximumProgressIndicatorTextFontSize = 38;
+    private const double _maximumProgressIndicatorFontSize = 76;
+    private const double _maximumAudiobookTileWidth = 570;
+
+    private const double _minimumTitleFontSize = 10.79;
+    private const double _minimumAuthorFontSize = 8.39;
+    private const double _minimumTitleMaxWidth = 120;
+    private const double _minimumPlayButtonHeightWidth = 42;
+    private const double _minimumProgressIndicatorTextFontSize = 12;
+    private const double _minimumProgressIndicatorFontSize = 24;
+    private const double _minimumAudiobookTileWidth = 180;
+
+    private const double _audiobookTileWidthIncrement = 30;
+    private const double _authorFontSizeIncrement = 1.4;
+    private const double _playButtonHeightWidthIncrement = 7;
+    private const double _progressIndicatorFontSizeIncrement = 4;
+    private const double _progressIndicatorTextFontSizeIncrement = 2;
+    private const double _titleFontSizeIncrement = 1.8;
+    private const double _titleMaxWidthIncrement = 20;
+
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public readonly IAppDataService AppDataService;
@@ -56,22 +80,6 @@ public class MainViewModel : BindableBase
 
     // todo: don't need this anymore
     private bool _isNotificationBarVisible;
-    
-    private const double _maximumTitleFontSize = 34.2;
-    private const double _maximumAuthorFontSize = 26.59;
-    private const double _maximumTitleMaxWidth = 380;
-    private const double _maximumPlayButtonHeightWidth = 133;
-    private const double _maximumProgressIndicatorTextFontSize = 38;
-    private const double _maximumProgressIndicatorFontSize = 76;
-    private const double _maximumAudiobookTileWidth = 570;
-    
-    private const double _minimumTitleFontSize = 10.79;
-    private const double _minimumAuthorFontSize = 8.39;
-    private const double _minimumTitleMaxWidth = 120;
-    private const double _minimumPlayButtonHeightWidth = 42;
-    private const double _minimumProgressIndicatorTextFontSize = 12;
-    private const double _minimumProgressIndicatorFontSize = 24;
-    private const double _minimumAudiobookTileWidth = 180;
 
     private InfoBarSeverity _notificationSeverity;
 
@@ -84,14 +92,6 @@ public class MainViewModel : BindableBase
     private string _progressDialogText = string.Empty;
 
     private string _progressDialogTotalText = string.Empty;
-    
-    private readonly double _audiobookTileWidthIncrement = 30;
-    private readonly double _authorFontSizeIncrement = 1.4;
-    private readonly double _playButtonHeightWidthIncrement = 7;
-    private readonly double _progressIndicatorFontSizeIncrement = 4;
-    private readonly double _progressIndicatorTextFontSizeIncrement = 2;
-    private readonly double _titleFontSizeIncrement = 1.8;
-    private readonly double _titleMaxWidthIncrement = 20;
 
     private AudiobookViewModel? _selectedAudiobook;
 
@@ -110,16 +110,8 @@ public class MainViewModel : BindableBase
         LoggingService = loggingService;
         Task.Run(() => GetAudiobookListAsync(true));
 
-        // todo: this is temporary
-        // TitleFontSize = 18;
-        // AuthorFontSize = 14;
-        // TitleMaxWidth = 200;
-        // PlayButtonHeightWidth = 70;
-        // ProgressIndicatorTextFontSize = 20; // todo
-        // ProgressIndicatorFontSize = 40;
-        // AudiobookTileWidth = 300;
-        // AudiobookTileMinColumnSpacing = 28;
-        
+
+        // todo: save this as a user setting
         TitleFontSize = 18; // 1.8
         AuthorFontSize = 14; // 1.4
         TitleMaxWidth = 200; // 20
@@ -690,7 +682,7 @@ public class MainViewModel : BindableBase
             ProgressIndicatorTextFontSize = newProgressIndicatorTextFontSize;
             ProgressIndicatorFontSize = newProgressIndicatorFontSize;
             AudiobookTileWidth = newAudiobookTileWidth;
-            
+
             // AnimateProperty(this, nameof(TitleFontSize), newTitleFontSize, 0.5);
             // AnimateProperty(this, nameof(AuthorFontSize), newAuthorFontSize, 0.5);
             // AnimateProperty(this, nameof(TitleMaxWidth), newTitleMaxWidth, 0.5);
@@ -699,7 +691,7 @@ public class MainViewModel : BindableBase
             // AnimateProperty(this, nameof(ProgressIndicatorFontSize), newProgressIndicatorFontSize, 0.5);
             // AnimateProperty(this, nameof(AudiobookTileWidth), newAudiobookTileWidth, 0.5);
         });
-        
+
         Debug.WriteLine($"TitleFontSize: {newTitleFontSize}");
         Debug.WriteLine($"AuthorFontSize: {newAuthorFontSize}");
         Debug.WriteLine($"TitleMaxWidth: {newTitleMaxWidth}");
@@ -751,7 +743,7 @@ public class MainViewModel : BindableBase
             ProgressIndicatorTextFontSize = newProgressIndicatorTextFontSize;
             ProgressIndicatorFontSize = newProgressIndicatorFontSize;
             AudiobookTileWidth = newAudiobookTileWidth;
-            
+
             // AnimateProperty(this, nameof(TitleFontSize), newTitleFontSize, 0.5);
             // AnimateProperty(this, nameof(AuthorFontSize), newAuthorFontSize, 0.5);
             // AnimateProperty(this, nameof(TitleMaxWidth), newTitleMaxWidth, 0.5);
@@ -760,7 +752,7 @@ public class MainViewModel : BindableBase
             // AnimateProperty(this, nameof(ProgressIndicatorFontSize), newProgressIndicatorFontSize, 0.5);
             // AnimateProperty(this, nameof(AudiobookTileWidth), newAudiobookTileWidth, 0.5);
         });
-        
+
         Debug.WriteLine($"TitleFontSize: {newTitleFontSize}");
         Debug.WriteLine($"AuthorFontSize: {newAuthorFontSize}");
         Debug.WriteLine($"TitleMaxWidth: {newTitleMaxWidth}");

@@ -111,6 +111,66 @@ public static class WindowExtensions
         presenter!.SetBorderAndTitleBar(true, true);
     }
 
+    public static void SetWindowOpacity(this Window window, int nOpacity, bool removeBorderAndTitleBar = false)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        if (removeBorderAndTitleBar)
+            presenter!.SetBorderAndTitleBar(false, false);
+
+        var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
+        SetLayeredWindowAttributes(hWnd, 0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
+        nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
+    }
+
+    public static int Width(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        return appWindow.Size.Width;
+    }
+
+    public static int Height(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        return appWindow.Size.Height;
+    }
+
+    #region Nested type: WINDOWPOS
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct WINDOWPOS
+    {
+        public IntPtr hwnd;
+        public IntPtr hwndInsertAfter;
+        public int x;
+        public int y;
+        public int cx;
+        public int cy;
+        public int flags;
+    }
+
+    #endregion
+
+    #region Nested type: WM
+
+    internal enum WM
+    {
+        WINDOWPOSCHANGING = 0x0046
+    }
+
+    #endregion
+
     #region PInvoke Stuff
 
     public const int WM_CREATE = 0x0001;
@@ -576,38 +636,49 @@ public static class WindowExtensions
 
     #endregion
 
-    public static void SetWindowOpacity(this Window window, int nOpacity, bool removeBorderAndTitleBar = false)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-        var presenter = appWindow.Presenter as OverlappedPresenter;
-
-        if (removeBorderAndTitleBar)
-            presenter!.SetBorderAndTitleBar(false, false);
-
-        var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
-        SetLayeredWindowAttributes(hWnd, 0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
-        nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
-    }
-
-    public static int Width(this Window window)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-
-        return appWindow.Size.Width;
-    }
-
-    public static int Height(this Window window)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-
-        return appWindow.Size.Height;
-    }
+    // private void Window_SourceInitialized(object sender, EventArgs ea)
+    // {
+    //     HwndSource hwndSource = (HwndSource)HwndSource.FromVisual((Window)sender);
+    //     hwndSource.AddHook(DragHook);
+    // }
+    //
+    // private static IntPtr DragHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handeled)
+    // {
+    //     switch ((WM)msg)
+    //     {
+    //         case WM.WINDOWPOSCHANGING:
+    //         {
+    //             WINDOWPOS pos = (WINDOWPOS)Marshal.PtrToStructure(lParam, typeof(WINDOWPOS));
+    //             if ((pos.flags & (int)SWP.NOMOVE) != 0)
+    //             {
+    //                 return IntPtr.Zero;
+    //             }
+    //
+    //             Window wnd = (Window)HwndSource.FromHwnd(hwnd).RootVisual;
+    //             if (wnd == null)
+    //             {
+    //                 return IntPtr.Zero;
+    //             }
+    //
+    //             bool changedPos = false;
+    //
+    //             // ***********************
+    //             // Here you check the values inside the pos structure
+    //             // if you want to override tehm just change the pos
+    //             // structure and set changedPos to true
+    //             // ***********************
+    //
+    //             if (!changedPos)
+    //             {
+    //                 return IntPtr.Zero;
+    //             }
+    //
+    //             Marshal.StructureToPtr(pos, lParam, true);
+    //             handeled = true;
+    //         }
+    //             break;
+    //     }
+    //
+    //     return IntPtr.Zero;
+    // }
 }

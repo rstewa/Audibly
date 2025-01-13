@@ -1,42 +1,35 @@
-// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/11/2024
-
 using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Audibly.App.Extensions;
-using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
-using Audibly.App.Views;
 using Audibly.Models;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Constants = Audibly.App.Helpers.Constants;
 
-namespace Audibly.App.UserControls;
+namespace Audibly.App.Views;
 
-public sealed partial class PlayerControlGrid : UserControl
+/// <summary>
+///     An empty page that can be used on its own or navigated to within a Frame.
+/// </summary>
+public sealed partial class MiniPlayerPage : Page
 {
-    private static Win32WindowHelper win32WindowHelper;
-
-    public static readonly DependencyProperty ShowCoverImageProperty =
-        DependencyProperty.Register(nameof(ShowCoverImage), typeof(bool), typeof(PlayerControl),
-            new PropertyMetadata(true));
-
     private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan _skipForwardButtonAmount = TimeSpan.FromSeconds(30);
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    public PlayerControlGrid()
+    public MiniPlayerPage()
     {
         InitializeComponent();
-        AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
-        TitleMarqueeText.MarqueeCompleted += TitleMarqueeText_MarqueeCompleted;
-        // TitleMarqueeText.Marquee
+
+        // Set the title bar for the current view
+        App.Window.ExtendsContentIntoTitleBar = true;
+        App.Window.SetTitleBar(NowPlayingAppTitleBar);
+
+        DataContext = App.PlayerViewModel;
+
+        // PointerEntered += OnPointerEntered;
+        // PointerExited += OnPointerExited;
     }
 
     /// <summary>
@@ -49,25 +42,26 @@ public sealed partial class PlayerControlGrid : UserControl
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
-    public bool ShowCoverImage
+    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
     {
-        get => (bool)GetValue(ShowCoverImageProperty);
-        set => SetValue(ShowCoverImageProperty, value);
+        OnHoverOverlay.Visibility = Visibility.Collapsed;
+        TitleArtistChapterSelectionGrid.Visibility = Visibility.Collapsed;
     }
 
-    private async void TitleMarqueeText_MarqueeCompleted(object? sender, EventArgs e)
+    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StopMarquee());
-        await Task.Delay(TimeSpan.FromSeconds(3)); // wait for 3 seconds
-        _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StartMarquee());
+        OnHoverOverlay.Visibility = Visibility.Visible;
+        TitleArtistChapterSelectionGrid.Visibility = Visibility.Visible;
     }
 
-    private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
+    private void BackButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (PlayerViewModel.PlayPauseIcon == Symbol.Play)
-            PlayerViewModel.MediaPlayer.Play();
-        else
-            PlayerViewModel.MediaPlayer.Pause();
+        if (Frame.CanGoBack)
+        {
+            Frame.GoBack();
+            PlayerViewModel.IsPlayerFullScreen = false;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
+        }
     }
 
     private async void ChapterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -98,6 +92,14 @@ public sealed partial class PlayerControlGrid : UserControl
         }
 
         await PlayerViewModel.NowPlaying.SaveAsync();
+    }
+
+    private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (PlayerViewModel.PlayPauseIcon == Symbol.Play)
+            PlayerViewModel.MediaPlayer.Play();
+        else
+            PlayerViewModel.MediaPlayer.Pause();
     }
 
     private async void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
@@ -169,18 +171,6 @@ public sealed partial class PlayerControlGrid : UserControl
         await PlayerViewModel.NowPlaying.SaveAsync();
     }
 
-    private async void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        var slider = sender as Slider;
-        if (slider != null && slider.Value != 0)
-        {
-            PlayerViewModel.CurrentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime + slider.Value);
-
-            await PlayerViewModel.NowPlaying.SaveAsync();
-        }
-    }
-
     private async void SkipBackButton_OnClick(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition - _skipBackButtonAmount > TimeSpan.Zero
@@ -199,104 +189,5 @@ public sealed partial class PlayerControlGrid : UserControl
             : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
 
         await PlayerViewModel.NowPlaying.SaveAsync();
-    }
-
-    private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        // check if there is already an instance of the mini player open and if so, bring it to the front
-        foreach (var window in WindowHelper.ActiveWindows)
-        {
-            if (window.Content is not NewMiniPlayerPage) continue;
-            window.Activate();
-            return;
-        }
-
-        var newWindow = WindowHelper.CreateWindow();
-
-        const int width = 400;
-        const int height = 75;
-
-        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
-
-        // var rootPage = new MiniPlayerPage
-        // {
-        //     DataContext = PlayerViewModel // Set the DataContext to PlayerViewModel
-        // };
-
-        // newWindow.SetTitleBar(DefaultApp);
-        // rootPage.RequestedTheme = ThemeHelper.RootTheme;
-        var rootPage = new NewMiniPlayerPage();
-        newWindow.Content = rootPage;
-        // newWindow.SizeChanged += (s, args) =>
-        // {
-        //     var window = s as Window;
-        //     if (window == null) return;
-        //
-        //     var newWidth = window.Bounds.Width;
-        //     var newHeight = window.Bounds.Height;
-        //     
-        //     window.Height()
-        // };
-        newWindow.Activate();
-    }
-
-    // TODO
-    private void Player_OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (PlayerViewModel.NowPlaying == null && ViewModel.Audiobooks.Any(a => a.IsNowPlaying))
-            PlayerViewModel.NowPlaying = ViewModel.Audiobooks.FirstOrDefault(a => a.IsNowPlaying);
-    }
-
-    private void MaximizePlayerButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (!PlayerViewModel.IsPlayerFullScreen)
-        {
-            PlayerViewModel.IsPlayerFullScreen = true;
-            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
-            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
-
-            if (App.RootFrame?.Content is not PlayerPage)
-                App.RootFrame?.Navigate(typeof(PlayerPage));
-
-            // App.Window.MakeWindowFullScreen();
-        }
-        else
-        {
-            PlayerViewModel.IsPlayerFullScreen = false;
-            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
-            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MaximizeTooltip;
-            if (App.RootFrame?.Content is PlayerPage)
-                App.RootFrame?.Navigate(typeof(AppShell));
-            // App.Window.RestoreWindow();
-        }
-    }
-
-    private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        var slider = sender as Slider;
-        if (slider == null || !IsLoaded) return;
-
-        PlayerViewModel.UpdateVolume(slider.Value);
-    }
-
-    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        var slider = sender as Slider;
-        if (slider == null || !IsLoaded) return;
-
-        PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
-    }
-
-    private void OpenInNewWindowButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        var newWindow = WindowHelper.CreateWindow();
-        // newWindow.Content = new DetachedPlayerPage();
-
-        const int width = 800;
-        const int height = 200;
-
-        newWindow.CustomizeWindow(width, height, true, false, true, false, false);
-
-        newWindow.Activate();
     }
 }

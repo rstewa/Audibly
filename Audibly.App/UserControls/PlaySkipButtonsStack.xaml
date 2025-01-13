@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    mc:Ignorable="d"
+    x:Class="Audibly.App.UserControls.PlaySkipButtonsStack"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Audibly.App.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Audibly.App.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
+
+    <!--#region play/pause buttons-->
+    <StackPanel
+        HorizontalAlignment="Center"
+        Orientation="Horizontal"
+        RelativePanel.AlignHorizontalCenterWithPanel="True"
+        VerticalAlignment="Center"
+        x:Name="PlayPauseControls">
+
+        <StackPanel.Resources>
+            <ResourceDictionary x:Key="ButtonResources">
+                <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+
+                <SolidColorBrush x:Key="RepeatButtonBackground">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="RepeatButtonBackgroundPressed">Transparent</SolidColorBrush>
+                <SolidColorBrush x:Key="RepeatButtonBackgroundDisabled">Transparent</SolidColorBrush>
+            </ResourceDictionary>
+        </StackPanel.Resources>
+
+        <Button
+            Background="Transparent"
+            BorderThickness="0"
+            Click="PreviousChapterButton_Click"
+            HorizontalAlignment="Left"
+            Margin="0,0,0,0"
+            ToolTipService.ToolTip="Previous Chapter"
+            VerticalAlignment="Center"
+            x:Name="PreviousChapterButton">
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="24"
+                Glyph="&#xE76B;" />
+        </Button>
+
+        <RepeatButton
+            BorderThickness="0"
+            Click="SkipBackButton_OnClick"
+            Delay="500"
+            Interval="100"
+            ToolTipService.ToolTip="Skip backward 10 seconds"
+            x:Name="SkipBackButton">
+            <RepeatButton.KeyboardAccelerators>
+                <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Left" />
+            </RepeatButton.KeyboardAccelerators>
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="24"
+                Glyph="&#xED3C;" />
+        </RepeatButton>
+
+        <Button
+            BorderThickness="0"
+            Click="PlayPauseButton_OnClick"
+            Tag="play"
+            ToolTipService.ToolTip="Play/Pause"
+            x:Name="PlayPauseButton">
+            <Viewbox MaxHeight="32" MaxWidth="32">
+                <SymbolIcon Symbol="{x:Bind PlayerViewModel.PlayPauseIcon, Mode=OneWay}" x:Name="PlayPauseIcon" />
+            </Viewbox>
+        </Button>
+
+        <RepeatButton
+            BorderThickness="0"
+            Click="SkipForwardButton_OnClick"
+            Delay="500"
+            Interval="100"
+            ToolTipService.ToolTip="Skip forward 30 seconds"
+            x:Name="SkipForwardButton">
+            <RepeatButton.KeyboardAccelerators>
+                <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Right" />
+            </RepeatButton.KeyboardAccelerators>
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="24"
+                Glyph="&#xED3D;" />
+        </RepeatButton>
+
+        <Button
+            Background="Transparent"
+            BorderThickness="0"
+            Click="NextChapterButton_Click"
+            HorizontalAlignment="Right"
+            Margin="0,0,0,0"
+            ToolTipService.ToolTip="Next Chapter"
+            VerticalAlignment="Center"
+            x:Name="NextChapterButton">
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="24"
+                Glyph="&#xE76C;" />
+        </Button>
+
+    </StackPanel>
+    <!--#endregion play/pause buttons-->
+</UserControl>

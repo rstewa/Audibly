@@ -3,11 +3,15 @@
 // Updated: 4/13/2024
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Windows.Graphics;
+using Audibly.App.Helpers;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Sharpener.Extensions;
 using WinRT.Interop;
 using static PInvoke.User32;
 
@@ -62,6 +66,45 @@ public static class WindowExtensions
         presenter!.IsMaximizable = isMaximizable;
         presenter!.IsMinimizable = isMinimizable;
     }
+    
+    public static void SetWindowAlwaysOnTop(this Window window, bool isAlwaysOnTop)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        if (presenter is not null)
+            presenter.IsAlwaysOnTop = isAlwaysOnTop;
+    }
+    
+    // TODO: fix this
+    public static void MoveWindowToTopRight(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+        
+        var test = Monitor.GetNearestFromWindow(hWnd);
+
+        var monitors = Monitor.All.AsArray();
+        if (monitors.Length > 1)
+        {
+            var thisMonitor = Monitor.FromWindow(hWnd);
+            var otherMonitor = monitors.First(m => m.DeviceName != thisMonitor.DeviceName);
+            // move to second display's upper left corner
+            window.AppWindow.Move(new PointInt32(otherMonitor.WorkingArea.X, otherMonitor.WorkingArea.Y));
+        }
+
+        // if (displayArea is not null)
+        // {
+        //     var x = displayArea.WorkArea.Width - appWindow.Size.Width;
+        //     var y = 0;
+        //
+        //     appWindow.Move(new PointInt32(x, y));
+        // }
+    }
 
     public static void CenterWindow(this Window window)
     {
@@ -111,21 +154,116 @@ public static class WindowExtensions
         presenter!.SetBorderAndTitleBar(true, true);
     }
 
-    public static void SetWindowOpacity(this Window window, int nOpacity, bool removeBorderAndTitleBar = false)
+    public static void SetWindowOpacity(this Window window, int nOpacity)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-        var presenter = appWindow.Presenter as OverlappedPresenter;
-
-        if (removeBorderAndTitleBar)
-            presenter!.SetBorderAndTitleBar(false, false);
 
         var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
         SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
         SetLayeredWindowAttributes(hWnd, 0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
         nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
         SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
+    }
+    
+    public static void RemoveWindowBorderAndTitleBar(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+        
+        presenter!.SetBorderAndTitleBar(true, false);
+
+        //Remove white border but rounded corner stops working
+        // var styleCurrentWindowStandard = NativeMethods.GetWindowLongPtr(hWnd, (int)NativeMethods.GWL.GWL_STYLE);
+        // var styleNewWindowStandard = styleCurrentWindowStandard.ToInt64() & ~((long)NativeMethods.WindowStyles.WS_THICKFRAME);
+        // if (NativeMethods.SetWindowLongPtr(new HandleRef(null, hWnd), (int)NativeMethods.GWL.GWL_STYLE, (IntPtr)styleNewWindowStandard) == IntPtr.Zero)
+        // {
+        //     //fail
+        // }
+
+
+        // if (IsWindows11_OrGreater)
+        // if (true)
+        // {
+        //     //Bring back win11 rounded corner
+        //     var attribute = NativeMethods.DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+        //     var preference = NativeMethods.DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+        //     NativeMethods.DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+        //
+        //
+        //     if (NativeMethods.GetCursorPos(out NativeMethods.POINT P))
+        //     {
+        //         //Force redraw and pos
+        //         NativeMethods.SetWindowPos(hWnd, -1, P.X + 25, P.Y + 25, 1, 1, (int)NativeMethods.SetWindowPosFlags.SWP_SHOWWINDOW);
+        //     }
+        // }
+    }
+    
+    // taken from: https://github.com/castorix/WinUI3_Transparent/blob/master/MainWindow.xaml.cs
+    // TODO: having these static could prove problematic if more than one window is created and then set draggable
+    private static bool _isMoving = false;
+    private static int _nX = 0, _nY = 0, _nXWindow = 0, _nYWindow = 0;
+    private static AppWindow _apw;
+    
+    public static void SetWindowDraggable(this Window window, bool isDraggable)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        _apw = AppWindow.GetFromWindowId(windowId);
+        
+        UIElement root = window.Content;
+        
+        if (isDraggable)
+        {
+            root.PointerMoved += RootOnPointerMoved;
+            root.PointerPressed += RootOnPointerPressed;
+            root.PointerReleased += RootOnPointerReleased;
+        }
+        else
+        {
+            root.PointerMoved -= RootOnPointerMoved;
+            root.PointerPressed -= RootOnPointerPressed;
+            root.PointerReleased -= RootOnPointerReleased;
+        }
+    }
+
+    private static void RootOnPointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        ((UIElement)sender).ReleasePointerCaptures();
+        _isMoving = false;    
+    }
+
+    private static void RootOnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        var properties = e.GetCurrentPoint((UIElement)sender).Properties;
+        if (properties.IsLeftButtonPressed)
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+            _nXWindow = _apw.Position.X;
+            _nYWindow = _apw.Position.Y;
+            GetCursorPos(out var pt);
+            _nX = pt.x;
+            _nY = pt.y;
+            _isMoving = true;
+        }
+        else if (properties.IsRightButtonPressed)
+        {
+            System.Threading.Thread.Sleep(200);
+            Application.Current.Exit();
+        }
+    }
+
+    private static void RootOnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        var properties = e.GetCurrentPoint((UIElement)sender).Properties;
+        if (!properties.IsLeftButtonPressed) return;
+        GetCursorPos(out var pt);
+        if (_isMoving)
+            _apw.Move(new Windows.Graphics.PointInt32(_nXWindow + (pt.x - _nX), _nYWindow + (pt.y - _nY)));
+        e.Handled = true;
     }
 
     public static int Width(this Window window)

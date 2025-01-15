@@ -126,16 +126,16 @@ public partial class App : Application
             return;
         }
 
-        Window = WindowHelper.CreateWindow();
+        Window = WindowHelper.CreateWindow("MainWindow");
 
         var appWindow = WindowHelper.GetAppWindow(Window);
         appWindow.Closing += async (_, _) =>
         {
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
+            WindowHelper.CloseAll();
         };
 
         win32WindowHelper = new Win32WindowHelper(Window);
-        // todo: uncomment this
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 640, y = 640 });
 
         UseSqlite();

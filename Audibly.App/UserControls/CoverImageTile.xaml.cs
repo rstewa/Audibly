@@ -18,6 +18,9 @@ public sealed partial class CoverImageTile : UserControl
         typeof(CoverImageTile),
         new PropertyMetadata(10));
 
+    public static readonly DependencyProperty ShowShadowProperty = DependencyProperty.Register(
+        nameof(ShowShadow), typeof(bool), typeof(CoverImageTile), new PropertyMetadata(true));
+
     public CoverImageTile()
     {
         InitializeComponent();
@@ -27,6 +30,13 @@ public sealed partial class CoverImageTile : UserControl
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    // show shadow dependency property
+    public bool ShowShadow
+    {
+        get => (bool)GetValue(ShowShadowProperty);
+        set => SetValue(ShowShadowProperty, value);
+    }
 
     public double CoverImageSize
     {

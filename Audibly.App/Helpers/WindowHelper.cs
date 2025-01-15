@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Audibly.App.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -22,25 +23,47 @@ namespace Audibly.App.Helpers;
 // windows.  In the future, we would like to support this in platform APIs.
 public class WindowHelper
 {
-    public static Window CreateWindow()
+    public static Window CreateWindow(string name)
     {
         // var newWindow = new Window
         // {
         //     SystemBackdrop = new MicaBackdrop()
         // };
         var newWindow = new Window();
-        TrackWindow(newWindow);
+        TrackWindow(name, newWindow);
         return newWindow;
     }
 
+    // TODO: having the names hardcoded is gross
     public static Window? GetMainWindow()
     {
-        return ActiveWindows.FirstOrDefault(w => w.Content is Frame);
+        ActiveWindows.TryGetValue("MainWindow", out Window? mainWindow);
+        return mainWindow;
+    }
+    
+    public static Window? GetMiniPlayerWindow()
+    {
+        ActiveWindows.TryGetValue("MiniPlayerWindow", out Window? miniPlayerWindow);
+        return miniPlayerWindow;
+    }
+    
+    public static void HideMiniPlayer()
+    {
+        ActiveWindows.TryGetValue("MiniPlayerWindow", out Window? miniPlayerWindow);
+        if (miniPlayerWindow == null) return;
+        (miniPlayerWindow.AppWindow.Presenter as OverlappedPresenter)?.Minimize();
+        miniPlayerWindow.AppWindow.IsShownInSwitchers = false;
+    }
+    
+    public static void CloseAll()
+    {
+        foreach (var window in ActiveWindows)
+            window.Value.Close();
     }
 
     public static void RestoreMainWindow()
     {
-        var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);
+        ActiveWindows.TryGetValue("MainWindow", out Window? mainWindow);
         if (mainWindow == null) return;
         (mainWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
         mainWindow.AppWindow.IsShownInSwitchers = true;
@@ -48,16 +71,16 @@ public class WindowHelper
 
     public static void HideMainWindow()
     {
-        var mainWindow = ActiveWindows.FirstOrDefault(w => w.Content is AppShell);
+        ActiveWindows.TryGetValue("MainWindow", out Window? mainWindow);
         if (mainWindow == null) return;
         (mainWindow.AppWindow.Presenter as OverlappedPresenter)?.Minimize();
         mainWindow.AppWindow.IsShownInSwitchers = false;
     }
 
-    public static void TrackWindow(Window window)
+    public static void TrackWindow(string name, Window window)
     {
-        window.Closed += (sender, args) => { ActiveWindows.Remove(window); };
-        ActiveWindows.Add(window);
+        window.Closed += (_, _) => { ActiveWindows.Remove(name); };
+        ActiveWindows[name] = window;
     }
 
     public static AppWindow GetAppWindow(Window window)
@@ -71,8 +94,8 @@ public class WindowHelper
     {
         if (element.XamlRoot != null)
             foreach (var window in ActiveWindows)
-                if (element.XamlRoot == window.Content.XamlRoot)
-                    return window;
+                if (element.XamlRoot == window.Value.Content.XamlRoot)
+                    return window.Value;
         return null;
     }
 
@@ -81,12 +104,13 @@ public class WindowHelper
     {
         if (element.XamlRoot != null)
             foreach (var window in ActiveWindows)
-                if (element.XamlRoot == window.Content.XamlRoot)
+                if (element.XamlRoot == window.Value.Content.XamlRoot)
                     return element.XamlRoot.RasterizationScale;
         return 0.0;
     }
 
-    public static List<Window> ActiveWindows { get; } = new();
+    // public static List<Window, string> ActiveWindows { get; } = new();
+    public static Dictionary<string, Window> ActiveWindows { get; } = new();
 
     public static StorageFolder GetAppLocalFolder()
     {

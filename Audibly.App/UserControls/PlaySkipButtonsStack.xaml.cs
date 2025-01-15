@@ -10,6 +10,9 @@ public sealed partial class PlaySkipButtonsStack : UserControl
     private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan _skipForwardButtonAmount = TimeSpan.FromSeconds(30);
 
+    public static readonly DependencyProperty SpacingProperty = DependencyProperty.Register(
+        nameof(Spacing), typeof(double), typeof(PlaySkipButtonsStack), new PropertyMetadata(0.0));
+
     public PlaySkipButtonsStack()
     {
         InitializeComponent();
@@ -24,6 +27,13 @@ public sealed partial class PlaySkipButtonsStack : UserControl
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    // spacing dependency property
+    public double Spacing
+    {
+        get => (double)GetValue(SpacingProperty);
+        set => SetValue(SpacingProperty, value);
+    }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
     {

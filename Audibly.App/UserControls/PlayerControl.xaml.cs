@@ -202,29 +202,29 @@ public sealed partial class PlayerControl : UserControl
         await PlayerViewModel.NowPlaying.SaveAsync();
     }
 
-    private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        // check if there is already an instance of the mini player open and if so, bring it to the front
-        foreach (var window in WindowHelper.ActiveWindows)
-        {
-            if (window.Content is not LegacyPlayerPage) continue;
-            window.Activate();
-            return;
-        }
-
-        var newWindow = WindowHelper.CreateWindow();
-
-        const int width = 315;
-        const int height = 420;
-
-        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
-
-        // newWindow.SetTitleBar(DefaultApp);
-        var rootPage = new LegacyPlayerPage();
-        // rootPage.RequestedTheme = ThemeHelper.RootTheme;
-        newWindow.Content = rootPage;
-        newWindow.Activate();
-    }
+    // private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
+    // {
+    //     // check if there is already an instance of the mini player open and if so, bring it to the front
+    //     foreach (var window in WindowHelper.ActiveWindows)
+    //     {
+    //         if (window.Content is not LegacyPlayerPage) continue;
+    //         window.Activate();
+    //         return;
+    //     }
+    //
+    //     var newWindow = WindowHelper.CreateWindow();
+    //
+    //     const int width = 315;
+    //     const int height = 420;
+    //
+    //     newWindow.CustomizeWindow(width, height, true, true, false, false, false);
+    //
+    //     // newWindow.SetTitleBar(DefaultApp);
+    //     var rootPage = new LegacyPlayerPage();
+    //     // rootPage.RequestedTheme = ThemeHelper.RootTheme;
+    //     newWindow.Content = rootPage;
+    //     newWindow.Activate();
+    // }
 
     // TODO
     private void Player_OnLoaded(object sender, RoutedEventArgs e)

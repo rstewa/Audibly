@@ -35,8 +35,6 @@ public sealed partial class PlayerControlGrid : UserControl
     {
         InitializeComponent();
         AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
-        TitleMarqueeText.MarqueeCompleted += TitleMarqueeText_MarqueeCompleted;
-        // TitleMarqueeText.Marquee
     }
 
     /// <summary>
@@ -53,13 +51,6 @@ public sealed partial class PlayerControlGrid : UserControl
     {
         get => (bool)GetValue(ShowCoverImageProperty);
         set => SetValue(ShowCoverImageProperty, value);
-    }
-
-    private async void TitleMarqueeText_MarqueeCompleted(object? sender, EventArgs e)
-    {
-        _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StopMarquee());
-        await Task.Delay(TimeSpan.FromSeconds(3)); // wait for 3 seconds
-        _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StartMarquee());
     }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
@@ -204,17 +195,19 @@ public sealed partial class PlayerControlGrid : UserControl
     private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
     {
         // check if there is already an instance of the mini player open and if so, bring it to the front
-        foreach (var window in WindowHelper.ActiveWindows)
+        var existingWindow = WindowHelper.GetMiniPlayerWindow();
+        if (existingWindow != null)
         {
-            if (window.Content is not NewMiniPlayerPage) continue;
-            window.Activate();
+            existingWindow.Activate();
+            WindowHelper.HideMainWindow();
             return;
         }
 
-        var newWindow = WindowHelper.CreateWindow();
+        var newWindow = WindowHelper.CreateWindow("MiniPlayerWindow");
 
-        const int width = 400;
-        const int height = 75;
+        // const int width = 504;
+        const int width = 536;
+        const int height = 88;
 
         newWindow.CustomizeWindow(width, height, true, true, false, false, false);
 
@@ -237,7 +230,12 @@ public sealed partial class PlayerControlGrid : UserControl
         //     
         //     window.Height()
         // };
+        // newWindow.SetWindowOpacity(95);
+        newWindow.SetWindowDraggable(true);
+        newWindow.RemoveWindowBorderAndTitleBar();
         newWindow.Activate();
+        
+        WindowHelper.HideMainWindow();
     }
 
     // TODO
@@ -285,18 +283,5 @@ public sealed partial class PlayerControlGrid : UserControl
         if (slider == null || !IsLoaded) return;
 
         PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
-    }
-
-    private void OpenInNewWindowButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        var newWindow = WindowHelper.CreateWindow();
-        // newWindow.Content = new DetachedPlayerPage();
-
-        const int width = 800;
-        const int height = 200;
-
-        newWindow.CustomizeWindow(width, height, true, false, true, false, false);
-
-        newWindow.Activate();
     }
 }

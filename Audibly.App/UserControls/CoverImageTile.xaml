@@ -7,6 +7,8 @@
     xmlns:converters="using:Audibly.App.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <UserControl.Resources>
@@ -27,8 +29,8 @@
                 <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
             </Border.Background>
         </Border>
-        <!-- <winUi:Effects.Shadow> -->
-        <!--     <media:AttachedCardShadow CornerRadius="{x:Bind CoverImageRadius}" Offset="4, 4" /> -->
-        <!-- </winUi:Effects.Shadow> -->
+        <winUi:Effects.Shadow>
+            <media:AttachedCardShadow CornerRadius="{x:Bind CoverImageRadius}" Offset="4, 4" />
+        </winUi:Effects.Shadow>
     </Border>
 </UserControl>

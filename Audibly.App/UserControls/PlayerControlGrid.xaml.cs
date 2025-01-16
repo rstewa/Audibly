@@ -3,6 +3,7 @@
 // Updated: 10/11/2024
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Audibly.App.Extensions;
@@ -206,18 +207,11 @@ public sealed partial class PlayerControlGrid : UserControl
         var newWindow = WindowHelper.CreateWindow("MiniPlayerWindow");
 
         // const int width = 504;
-        const int width = 512;
-        const int height = 88;
+        const int width = 536;
+        const int height = 86;
 
-        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
+        newWindow.CustomizeWindow(width, height, true, true, true, false, false);
 
-        // var rootPage = new MiniPlayerPage
-        // {
-        //     DataContext = PlayerViewModel // Set the DataContext to PlayerViewModel
-        // };
-
-        // newWindow.SetTitleBar(DefaultApp);
-        // rootPage.RequestedTheme = ThemeHelper.RootTheme;
         var rootPage = new NewMiniPlayerPage();
         newWindow.Content = rootPage;
         // newWindow.SizeChanged += (s, args) =>
@@ -228,7 +222,7 @@ public sealed partial class PlayerControlGrid : UserControl
         //     var newWidth = window.Bounds.Width;
         //     var newHeight = window.Bounds.Height;
         //     
-        //     window.Height()
+        //     Debug.WriteLine($"New Width: {newWidth}, New Height: {newHeight}");
         // };
         // newWindow.SetWindowOpacity(95);
         newWindow.SetWindowDraggable(true);

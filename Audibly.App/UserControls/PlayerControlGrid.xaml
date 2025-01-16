@@ -35,7 +35,7 @@
             Visibility="Collapsed"
             x:Name="AudioPlayer" />
 
-        <Grid ColumnSpacing="12">
+        <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -50,7 +50,7 @@
             <!--  Cover Image  -->
             <local:CoverImageTile
                 CoverImageRadius="10"
-                CoverImageSize="116"
+                CoverImageSize="112"
                 Grid.Column="0"
                 Grid.RowSpan="3"
                 Visibility="{x:Bind ShowCoverImage, Mode=OneWay}" />
@@ -133,6 +133,7 @@
                 <!--  volume, playback speed, and maximize/minimize buttons  -->
                 <StackPanel
                     Grid.Column="2"
+                    HorizontalAlignment="Right"
                     Orientation="Horizontal"
                     VerticalAlignment="Center">
 
@@ -237,8 +238,7 @@
                     </Button>
                     <!--#endregion Maximize/Minimize Button-->
 
-
-                    <!--  open in new window button  -->
+                    <!--  open mini-player button  -->
                     <Button
                         BorderThickness="0"
                         Click="OpenMiniPlayerButton_OnClick"

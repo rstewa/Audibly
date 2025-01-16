@@ -17,13 +17,27 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <!-- <RowDefinition Height="*" /> -->
         </Grid.RowDefinitions>
 
+        <!--  drag icon  -->
+        <FontIcon
+            FontFamily="{StaticResource AudiblyCustomFont}"
+            FontSize="24"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            Glyph="&#xe904;"
+            Margin="0,0,-8,8"
+            VerticalAlignment="Center" />
+
         <StackPanel
             Canvas.ZIndex="1"
+            Grid.Column="1"
             Grid.Row="0"
             HorizontalAlignment="Stretch"
             Margin="0,0,0,8"
@@ -104,7 +118,7 @@
                     <FontIcon
                         FontFamily="{StaticResource AudiblyCustomFont}"
                         FontSize="28"
-                        Glyph="&#xe903;" />
+                        Glyph="&#xe901;" />
                 </Button>
 
                 <!--  close button  -->
@@ -130,12 +144,9 @@
             </StackPanel>
         </StackPanel>
 
-        <!--  <ProgressBar  -->
-        <!--  Grid.Row="1"  -->
-        <!--  HorizontalAlignment="Stretch"  -->
-        <!--  Value="50" />  -->
         <Slider
             Canvas.ZIndex="0"
+            Grid.ColumnSpan="2"
             Grid.Row="0"
             HorizontalAlignment="Stretch"
             Margin="-8"
@@ -162,36 +173,6 @@
                 <StaticResource ResourceKey="ControlFillColorTransparentBrush" x:Key="SliderThumbBorderBrush" />
             </Slider.Resources>
         </Slider>
-
-        <!--  <Grid  -->
-        <!--  Padding="16"  -->
-        <!--  RowSpacing="16"  -->
-        <!--  Visibility="Collapsed">  -->
-        <!--     <Grid.RowDefinitions> -->
-        <!--         <RowDefinition Height="Auto" /> -->
-        <!--         <RowDefinition Height="Auto" /> -->
-        <!--         <RowDefinition Height="Auto" /> -->
-        <!--     </Grid.RowDefinitions> -->
-        <!--    -->
-        <!--  <StackPanel  -->
-        <!--  Grid.Row="0"  -->
-        <!--  HorizontalAlignment="Left"  -->
-        <!--  Orientation="Horizontal"  -->
-        <!--  Spacing="16">  -->
-        <!--    -->
-        <!--  ~1~  Cover Image  @1@  -->
-        <!--         <userControls:CoverImageTile /> -->
-        <!--    -->
-        <!--  ~1~  Title & Artist  @1@  -->
-        <!--         <userControls:TitleArtistStack ArtistFontSize="18.0" TitleFontSize="22.0" /> -->
-        <!--     </StackPanel> -->
-        <!--    -->
-        <!--  ~1~  play & skip buttons  @1@  -->
-        <!--     <userControls:PlaySkipButtonsStack Grid.Row="1" /> -->
-        <!--    -->
-        <!--  ~1~  progress bar  @1@  -->
-        <!--     <userControls:NowPlayingBar Grid.Row="2" /> -->
-        <!-- </Grid> -->
 
     </Grid>
 </Page>

@@ -92,6 +92,9 @@
         <Content Update="Assets\DefaultCoverImage.png">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Update="Assets\AudiblyCustom.ttf">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>

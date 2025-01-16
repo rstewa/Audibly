@@ -244,7 +244,10 @@
                         Click="OpenMiniPlayerButton_OnClick"
                         ToolTipService.ToolTip="Open Mini Player"
                         x:Name="OpenInNewWindowButton">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8A7;" />
+                        <FontIcon
+                            FontFamily="{StaticResource AudiblyCustomFont}"
+                            FontSize="30"
+                            Glyph="&#xe902;" />
                     </Button>
 
                 </StackPanel>

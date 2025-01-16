@@ -13,6 +13,7 @@
                     <XamlControlsResources.MergedDictionaries>
                         <!--  Other app resources here  -->
                         <ResourceDictionary>
+                            <FontFamily x:Key="AudiblyCustomFont" >/Assets/AudiblyCustom.ttf#AudiblyCustom</FontFamily>
                             <x:Double x:Key="ContentDialogMaxWidth">1000</x:Double>
                             <Style
                                 BasedOn="{StaticResource DefaultButtonStyle}"

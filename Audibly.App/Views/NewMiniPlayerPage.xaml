@@ -100,32 +100,33 @@
                         <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
                         <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
                     </Button.Resources>
+
                     <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="16"
-                        Glyph="&#xE72B;" />
+                        FontFamily="{StaticResource AudiblyCustomFont}"
+                        FontSize="28"
+                        Glyph="&#xe903;" />
                 </Button>
 
                 <!--  close button  -->
-                <Button
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Click="CloseButton_Click"
-                    HorizontalAlignment="Right"
-                    ToolTipService.ToolTip="Close Audibly"
-                    VerticalAlignment="Center"
-                    x:Name="CloseButton">
-                    <Button.Resources>
-                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-                    </Button.Resources>
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="16"
-                        Glyph="&#xE711;" />
-                </Button>
+                <!--  <Button  -->
+                <!--  Background="Transparent"  -->
+                <!--  BorderThickness="0"  -->
+                <!--  Click="CloseButton_Click"  -->
+                <!--  HorizontalAlignment="Right"  -->
+                <!--  ToolTipService.ToolTip="Close Audibly"  -->
+                <!--  VerticalAlignment="Center"  -->
+                <!--  x:Name="CloseButton">  -->
+                <!--     <Button.Resources> -->
+                <!--         <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush> -->
+                <!--         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush> -->
+                <!--         <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush> -->
+                <!--         <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush> -->
+                <!--     </Button.Resources> -->
+                <!--  <FontIcon  -->
+                <!--  FontFamily="Segoe MDL2 Assets"  -->
+                <!--  FontSize="16"  -->
+                <!--  Glyph="&#xE70D;" />  -->
+                <!-- </Button> -->
             </StackPanel>
         </StackPanel>
 

@@ -247,7 +247,7 @@
                         <FontIcon
                             FontFamily="{StaticResource AudiblyCustomFont}"
                             FontSize="30"
-                            Glyph="&#xe902;" />
+                            Glyph="&#xe900;" />
                     </Button>
 
                 </StackPanel>

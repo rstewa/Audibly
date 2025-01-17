@@ -51,6 +51,7 @@ public sealed partial class NewMiniPlayerPage : Page
         PinButton.Visibility = Visibility.Collapsed;
         UnpinButton.Visibility = Visibility.Visible;
         
+        window.SetWindowDraggable(false);
         window.SetWindowAlwaysOnTop(true);
     }
 
@@ -62,6 +63,7 @@ public sealed partial class NewMiniPlayerPage : Page
         UnpinButton.Visibility = Visibility.Collapsed;
         PinButton.Visibility = Visibility.Visible;
         
+        window.SetWindowDraggable(true);
         window.SetWindowAlwaysOnTop(false);
     }
 

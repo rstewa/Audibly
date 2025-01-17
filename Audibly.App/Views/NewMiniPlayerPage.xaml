@@ -32,7 +32,7 @@
             FontSize="24"
             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
             Glyph="&#xe904;"
-            Margin="0,0,-8,8"
+            Margin="8,0,0,8"
             VerticalAlignment="Center" />
 
         <StackPanel
@@ -45,13 +45,21 @@
             Padding="8"
             Spacing="8"
             VerticalAlignment="Center">
-            <userControls:CoverImageTile CoverImageRadius="6" CoverImageSize="60" />
-            <userControls:TitleArtistStack TitleMaxWidth="130" Width="130" />
+            <userControls:CoverImageTile
+                CoverImageRadius="6"
+                CoverImageSize="60"
+                Margin="0,0,4,0" />
+            <userControls:TitleArtistStack
+                ArtistFontSize="16"
+                Spacing="8"
+                TitleFontSize="18"
+                TitleMaxWidth="130"
+                Width="130" />
             <userControls:PlaySkipButtonsStack Spacing="-12" />
 
             <Border
                 Background="{ThemeResource AppBarSeparatorForeground}"
-                Height="30"
+                Height="40"
                 Width="1"
                 x:Name="Separator" />
 
@@ -117,7 +125,7 @@
 
                     <FontIcon
                         FontFamily="{StaticResource AudiblyCustomFont}"
-                        FontSize="28"
+                        FontSize="24"
                         Glyph="&#xe901;" />
                 </Button>
 
@@ -149,7 +157,7 @@
             Grid.ColumnSpan="2"
             Grid.Row="0"
             HorizontalAlignment="Stretch"
-            Margin="-8"
+            Margin="-8,8,-8,-8"
             Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
             PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
             ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}"

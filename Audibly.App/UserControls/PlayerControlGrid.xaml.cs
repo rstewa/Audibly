@@ -207,7 +207,7 @@ public sealed partial class PlayerControlGrid : UserControl
         var newWindow = WindowHelper.CreateWindow("MiniPlayerWindow");
 
         // const int width = 504;
-        const int width = 524;
+        const int width = 536;
         const int height = 91;
 
         newWindow.CustomizeWindow(width, height, true, true, true, false, false);

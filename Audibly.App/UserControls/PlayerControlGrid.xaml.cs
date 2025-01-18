@@ -210,7 +210,7 @@ public sealed partial class PlayerControlGrid : UserControl
         const int width = 536;
         const int height = 91;
 
-        newWindow.CustomizeWindow(width, height, true, true, true, false, false);
+        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         newWindow.Content = rootPage;

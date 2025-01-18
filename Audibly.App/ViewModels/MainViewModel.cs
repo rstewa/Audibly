@@ -158,6 +158,14 @@ public class MainViewModel : BindableBase
         set => Set(ref _showDebugMenu, value);
     }
 
+    private bool _showAlignmentGrids;
+
+    public bool ShowAlignmentGrids
+    {
+        get => _showAlignmentGrids;
+        set => Set(ref _showAlignmentGrids, value);
+    }
+
     /// <summary>
     ///     Gets or sets a value indicating whether the Audiobooks list is currently being updated.
     /// </summary>

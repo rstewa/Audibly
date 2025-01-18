@@ -12,6 +12,8 @@ public sealed partial class PlaySkipButtonsStack : UserControl
 
     public static readonly DependencyProperty SpacingProperty = DependencyProperty.Register(
         nameof(Spacing), typeof(double), typeof(PlaySkipButtonsStack), new PropertyMetadata(0.0));
+    public static readonly DependencyProperty PlayButtonSizeProperty = DependencyProperty.Register(
+        nameof(PlayButtonSize), typeof(double), typeof(PlaySkipButtonsStack), new PropertyMetadata(32.0));
 
     public PlaySkipButtonsStack()
     {
@@ -28,11 +30,16 @@ public sealed partial class PlaySkipButtonsStack : UserControl
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
-    // spacing dependency property
     public double Spacing
     {
         get => (double)GetValue(SpacingProperty);
         set => SetValue(SpacingProperty, value);
+    }
+
+    public double PlayButtonSize
+    {
+        get => (double)GetValue(PlayButtonSizeProperty);
+        set => SetValue(PlayButtonSizeProperty, value);
     }
 
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)

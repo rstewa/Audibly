@@ -22,18 +22,18 @@
             Direction="Left"
             FontSize="{x:Bind TitleFontSize, Mode=OneWay}"
             FontWeight="SemiBold"
-            MaxWidth="230"
+            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             Speed="20"
             Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
             x:Name="TitleMarqueeText" />
 
         <!--  Artist  -->
         <TextBlock
+            Width="{x:Bind TitleMaxWidth, Mode=OneWay}"
             FontSize="{x:Bind ArtistFontSize, Mode=OneWay}"
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}"
-            TextTrimming="WordEllipsis"
-            TextWrapping="WrapWholeWords"
+            TextTrimming="CharacterEllipsis"
             x:Name="ArtistTextBlock" />
     </StackPanel>
 </UserControl>

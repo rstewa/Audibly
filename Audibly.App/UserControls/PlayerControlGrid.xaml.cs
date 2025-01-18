@@ -207,23 +207,23 @@ public sealed partial class PlayerControlGrid : UserControl
         var newWindow = WindowHelper.CreateWindow("MiniPlayerWindow");
 
         // const int width = 504;
-        const int width = 552;
-        const int height = 88;
+        const int width = 524;
+        const int height = 91;
 
-        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
+        newWindow.CustomizeWindow(width, height, true, true, true, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         newWindow.Content = rootPage;
-        // newWindow.SizeChanged += (s, args) =>
-        // {
-        //     var window = s as Window;
-        //     if (window == null) return;
-        //
-        //     var newWidth = window.Bounds.Width;
-        //     var newHeight = window.Bounds.Height;
-        //     
-        //     Debug.WriteLine($"New Width: {newWidth}, New Height: {newHeight}");
-        // };
+        newWindow.SizeChanged += (s, args) =>
+        {
+            var window = s as Window;
+            if (window == null) return;
+
+            var newWidth = window.Bounds.Width;
+            var newHeight = window.Bounds.Height;
+
+            Debug.WriteLine($"New Width: {newWidth}, New Height: {newHeight}");
+        };
         // newWindow.SetWindowOpacity(95);
         newWindow.SetWindowDraggable(true);
         newWindow.RemoveWindowBorderAndTitleBar();

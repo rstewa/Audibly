@@ -54,7 +54,14 @@ public class WindowHelper
         (miniPlayerWindow.AppWindow.Presenter as OverlappedPresenter)?.Minimize();
         miniPlayerWindow.AppWindow.IsShownInSwitchers = false;
     }
-    
+
+    public static void CloseMiniPlayer()
+    {
+        ActiveWindows.TryGetValue("MiniPlayerWindow", out Window? miniPlayerWindow);
+        if (miniPlayerWindow == null) return;
+        miniPlayerWindow.Close();
+    }
+
     public static void CloseAll()
     {
         foreach (var window in ActiveWindows)

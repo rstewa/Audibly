@@ -29,8 +29,8 @@
 
         <!--  Artist  -->
         <TextBlock
-            Width="{x:Bind TitleMaxWidth, Mode=OneWay}"
             FontSize="{x:Bind ArtistFontSize, Mode=OneWay}"
+            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}"
             TextTrimming="CharacterEllipsis"

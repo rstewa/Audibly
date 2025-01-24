@@ -154,8 +154,11 @@
                     <TextBlock
                         FontSize="{x:Bind ViewModel.AuthorFontSize, Mode=OneWay}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Left"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind Author, Mode=OneWay}" />
+                        Text="{x:Bind Author, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                 </StackPanel>
 
                 <!--  progress  -->

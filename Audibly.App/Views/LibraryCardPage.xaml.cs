@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
@@ -55,6 +55,8 @@ public sealed partial class LibraryCardPage : Page
     private readonly HashSet<AudioBookFilter> _activeFilters = new();
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+    private CancellationTokenSource _hideFlyoutCts;
+
     public LibraryCardPage()
     {
         InitializeComponent();
@@ -62,7 +64,71 @@ public sealed partial class LibraryCardPage : Page
         // subscribe to page loaded event
         Loaded += LibraryCardPage_Loaded;
         ViewModel.ResetFilters += ViewModelOnResetFilters;
-        // PointerWheelChanged += LibraryCardPage_PointerWheelChanged;
+        // PointerWheelChanged += OnPointerWheelChangedEventHandler;
+
+        ZoomLevelUserControl.PointerEntered += ZoomLevelUserControl_PointerEntered;
+        ZoomLevelUserControl.PointerExited += ZoomLevelUserControl_PointerExited;
+    }
+
+    private void ZoomFlyout_OnOpened(object? sender, object e)
+    {
+        ;
+    }
+
+    private void OnPointerWheelChangedEventHandler(object _, PointerRoutedEventArgs e)
+    {
+        // if (e.KeyModifiers != VirtualKeyModifiers.Control) return;
+
+        if (e.KeyModifiers == VirtualKeyModifiers.Control)
+        {
+            if (e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0)
+            {
+                _dispatcherQueue.TryEnqueue(() => { ViewModel.IncreaseAudiobookTileSize(); });
+            }
+            else
+            {
+                _dispatcherQueue.TryEnqueue(() => { ViewModel.DecreaseAudiobookTileSize(); });
+            }
+
+            if (ViewModel.ZoomLevel is 50 or 200) return;
+            
+            if (ZoomFlyout.IsOpen) return;
+            
+            ZoomFlyout.ShowAt(ZoomButton);
+            // Task.Run(StartHideFlyoutTask);
+        }
+    }
+
+    private void StartHideFlyoutTask()
+    {
+        _hideFlyoutCts?.Cancel();
+        _hideFlyoutCts = new CancellationTokenSource();
+        var token = _hideFlyoutCts.Token;
+
+        Task.Delay(3000, token).ContinueWith(t =>
+        {
+            if (!t.IsCanceled)
+            {
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (ZoomFlyout.IsOpen)
+                    {
+                        ZoomFlyout.Hide();
+                    }
+                });
+            }
+        }, token);
+    }
+
+    private void ZoomLevelUserControl_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        _hideFlyoutCts?.Cancel();
+    }
+
+    // todo: check to see if the flyout is opened from the button or the keyboard shortcut
+    private void ZoomLevelUserControl_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        StartHideFlyoutTask();
     }
 
     /// <summary>
@@ -74,23 +140,6 @@ public sealed partial class LibraryCardPage : Page
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
-
-    private void LibraryCardPage_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
-    {
-        var pointer = e.GetCurrentPoint(this);
-        if (pointer.Properties.IsHorizontalMouseWheel || pointer.Properties.MouseWheelDelta <= 0) return;
-
-        var coreWindow = CoreWindow.GetForCurrentThread();
-
-        if (!coreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down)) return;
-        
-        if (pointer.Properties.MouseWheelDelta > 0)
-            // Increase size
-            ViewModel.IncreaseAudiobookTileSize();
-        else if (pointer.Properties.MouseWheelDelta < 0)
-            // Decrease size
-            ViewModel.DecreaseAudiobookTileSize();
-    }
 
     private void ViewModelOnResetFilters()
     {

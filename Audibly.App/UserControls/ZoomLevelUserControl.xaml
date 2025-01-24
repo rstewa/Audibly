@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<UserControl
+    mc:Ignorable="d"
+    x:Class="Audibly.App.UserControls.ZoomLevelUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:converters="using:Audibly.App.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Audibly.App.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
+
+    <UserControl.Resources>
+        <converters:PercentageToStringConverter x:Key="DoubleToStringConverter" />
+        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+        <!--  Zoom Out Button  -->
+        <Button
+            Background="Transparent"
+            BorderThickness="0"
+            Click="ZoomOutButton_Click"
+            HorizontalAlignment="Center"
+            IsEnabled="{x:Bind ZoomOutButtonIsEnabled, Mode=OneWay}"
+            VerticalAlignment="Center">
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="16"
+                Glyph="&#xE738;" />
+        </Button>
+
+        <!--  Zoom Level Text  -->
+        <TextBox
+            AllowFocusOnInteraction="False"
+            FontSize="16"
+            Foreground="{StaticResource ButtonForeground}"
+            HorizontalAlignment="Center"
+            Text="{x:Bind ViewModel.ZoomLevel, Mode=OneWay, Converter={StaticResource DoubleToStringConverter}}"
+            VerticalAlignment="Center" />
+
+        <!--<TextBlock
+            FontSize="16"
+            Foreground="{StaticResource ButtonForeground}"
+            HorizontalAlignment="Center"
+            Text="{x:Bind ViewModel.ZoomLevel, Mode=OneWay, Converter={StaticResource DoubleToStringConverter}}"
+            VerticalAlignment="Center" />-->
+
+        <!--  Zoom In Button  -->
+        <Button
+            Background="Transparent"
+            BorderThickness="0"
+            Click="ZoomInButton_Click"
+            HorizontalAlignment="Center"
+            IsEnabled="{x:Bind ZoomInButtonIsEnabled, Mode=OneWay}"
+            VerticalAlignment="Center">
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="16"
+                Glyph="&#xE710;" />
+        </Button>
+    </StackPanel>
+</UserControl>

@@ -22,7 +22,6 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
 using Sentry;
 using Sharpener.Extensions;
 using WinRT.Interop;
@@ -40,29 +39,29 @@ public class MainViewModel : BindableBase
 
     #endregion
 
-    private const double _maximumTitleFontSize = 34.2;
-    private const double _maximumAuthorFontSize = 26.59;
-    private const double _maximumTitleMaxWidth = 380;
-    private const double _maximumPlayButtonHeightWidth = 133;
-    private const double _maximumProgressIndicatorTextFontSize = 38;
-    private const double _maximumProgressIndicatorFontSize = 76;
-    private const double _maximumAudiobookTileWidth = 570;
+    private const double _maximumTitleFontSize = 36;
+    private const double _maximumAuthorFontSize = 28;
+    private const double _maximumTitleMaxWidth = 400;
+    private const double _maximumPlayButtonHeightWidth = 140;
+    private const double _maximumProgressIndicatorTextFontSize = 40;
+    private const double _maximumProgressIndicatorFontSize = 80;
+    private const double _maximumAudiobookTileWidth = 600;
 
-    private const double _minimumTitleFontSize = 10.79;
-    private const double _minimumAuthorFontSize = 8.39;
-    private const double _minimumTitleMaxWidth = 120;
-    private const double _minimumPlayButtonHeightWidth = 42;
-    private const double _minimumProgressIndicatorTextFontSize = 12;
-    private const double _minimumProgressIndicatorFontSize = 24;
-    private const double _minimumAudiobookTileWidth = 180;
+    private const double _minimumTitleFontSize = 4.5;
+    private const double _minimumAuthorFontSize = 3.5;
+    private const double _minimumTitleMaxWidth = 50;
+    private const double _minimumPlayButtonHeightWidth = 17.5;
+    private const double _minimumProgressIndicatorTextFontSize = 5;
+    private const double _minimumProgressIndicatorFontSize = 10;
+    private const double _minimumAudiobookTileWidth = 75;
 
-    private const double _audiobookTileWidthIncrement = 30;
-    private const double _authorFontSizeIncrement = 1.4;
-    private const double _playButtonHeightWidthIncrement = 7;
-    private const double _progressIndicatorFontSizeIncrement = 4;
-    private const double _progressIndicatorTextFontSizeIncrement = 2;
     private const double _titleFontSizeIncrement = 1.8;
+    private const double _authorFontSizeIncrement = 1.4;
     private const double _titleMaxWidthIncrement = 20;
+    private const double _playButtonHeightWidthIncrement = 7;
+    private const double _progressIndicatorTextFontSizeIncrement = 2;
+    private const double _progressIndicatorFontSizeIncrement = 4;
+    private const double _audiobookTileWidthIncrement = 30;
 
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -95,9 +94,13 @@ public class MainViewModel : BindableBase
 
     private AudiobookViewModel? _selectedAudiobook;
 
+    private bool _showAlignmentGrids;
+
     private bool _showDebugMenu;
 
     private bool _showStartPanel;
+
+    private double _zoomLevel;
 
 
     /// <summary>
@@ -120,6 +123,8 @@ public class MainViewModel : BindableBase
         ProgressIndicatorFontSize = 40; // 4
         AudiobookTileWidth = 300; // 30
         AudiobookTileMinColumnSpacing = 28; // 2.8
+
+        ZoomLevel = 100;
     }
 
     public string FileActivationError { get; set; } = string.Empty;
@@ -158,12 +163,32 @@ public class MainViewModel : BindableBase
         set => Set(ref _showDebugMenu, value);
     }
 
-    private bool _showAlignmentGrids;
-
     public bool ShowAlignmentGrids
     {
         get => _showAlignmentGrids;
         set => Set(ref _showAlignmentGrids, value);
+    }
+
+    public double ZoomLevel
+    {
+        get => _zoomLevel;
+        set => Set(ref _zoomLevel, value);
+    }
+
+    private bool _zoomInButtonIsEnabled = true;
+    
+    public bool ZoomInButtonIsEnabled
+    {
+        get => _zoomInButtonIsEnabled;
+        set => Set(ref _zoomInButtonIsEnabled, value);
+    }
+
+    private bool _zoomOutButtonIsEnabled = true;
+    
+    public bool ZoomOutButtonIsEnabled
+    {
+        get => _zoomOutButtonIsEnabled;
+        set => Set(ref _zoomOutButtonIsEnabled, value);
     }
 
     /// <summary>
@@ -627,29 +652,14 @@ public class MainViewModel : BindableBase
         });
     }
 
-    // private double _titleFontSizeIncrement = 2;
-    // private double _titleMaxWidthIncrement = 37.5;
-    // private double _playButtonHeightWidthIncrement = 10;
-    // private double _isCompleteCheckmarkFontSizeIncrement = 4;
-    // private double _audiobookTileWidthIncrement = 50;
-
-    private void AnimateProperty(DependencyObject target, string propertyPath, double toValue, double durationSeconds)
-    {
-        var storyboard = new Storyboard();
-        var animation = new DoubleAnimation
-        {
-            To = toValue,
-            Duration = new Duration(TimeSpan.FromSeconds(durationSeconds))
-        };
-
-        Storyboard.SetTarget(animation, target);
-        Storyboard.SetTargetProperty(animation, propertyPath);
-        storyboard.Children.Add(animation);
-        storyboard.Begin();
-    }
-
     public void IncreaseAudiobookTileSize()
     {
+        if (ZoomLevel >= 180) return;
+        
+        ZoomLevel += 10;
+        ZoomInButtonIsEnabled = ZoomLevel < 180;
+        ZoomOutButtonIsEnabled = ZoomLevel > 50;
+        
         var newTitleFontSize = TitleFontSize + _titleFontSizeIncrement > _maximumTitleFontSize
             ? _maximumTitleFontSize
             : TitleFontSize + _titleFontSizeIncrement;
@@ -711,6 +721,12 @@ public class MainViewModel : BindableBase
 
     public void DecreaseAudiobookTileSize()
     {
+        if (ZoomLevel <= 50) return;
+        
+        ZoomLevel -= 10; 
+        ZoomInButtonIsEnabled = ZoomLevel < 180;
+        ZoomOutButtonIsEnabled = ZoomLevel > 50;
+        
         var newTitleFontSize = TitleFontSize - _titleFontSizeIncrement < _minimumTitleFontSize
             ? _minimumTitleFontSize
             : TitleFontSize - _titleFontSizeIncrement;

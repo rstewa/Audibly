@@ -145,6 +145,9 @@
         <Page Update="Views\ControlPages\ChangelogDialogContent.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
+        <Page Update="UserControls\ZoomLevelUserControl.xaml">
+          <SubType>Designer</SubType>
+        </Page>
     </ItemGroup>
     <ItemGroup>
         <Page Update="UserControls\CustomHyperlinkButton.xaml">

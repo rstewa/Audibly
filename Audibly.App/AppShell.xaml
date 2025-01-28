@@ -11,6 +11,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -47,14 +48,14 @@
             AlwaysShowHeader="False"
             BackRequested="NavigationView_BackRequested"
             Canvas.ZIndex="0"
+            DisplayModeChanged="NavView_DisplayModeChanged"
             Grid.Column="1"
             Grid.Row="0"
             Grid.RowSpan="2"
             IsBackEnabled="{x:Bind AppAppShellFrame.CanGoBack, Mode=OneWay}"
             IsSettingsVisible="True"
-            IsTitleBarAutoPaddingEnabled="False"
+            IsTitleBarAutoPaddingEnabled="True"
             ItemInvoked="NavigationView_ItemInvoked"
-            PaneDisplayMode="Left"
             Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}"
             x:Name="NavView">
             <NavigationView.Resources>
@@ -68,15 +69,6 @@
             </NavigationView.Resources>
 
             <muxc:NavigationView.MenuItems>
-                <!--  <muxc:NavigationViewItem  -->
-                <!--  x:Name="AudiobookListMenuItem"  -->
-                <!--  Tag="LibraryPage"  -->
-                <!--  Content="{x:Bind AudiobookListLabel}"  -->
-                <!--  ToolTipService.ToolTip="{x:Bind AudiobookListLabel}">  -->
-                <!--     <muxc:NavigationViewItem.Icon> -->
-                <!--         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" /> -->
-                <!--     </muxc:NavigationViewItem.Icon> -->
-                <!-- </muxc:NavigationViewItem> -->
                 <muxc:NavigationViewItem
                     Content="{x:Bind LibraryLabel}"
                     Tag="LibraryPage"
@@ -155,11 +147,6 @@
                 <VisualState x:Name="Compact">
                     <VisualState.Setters>
                         <Setter Target="AppTitleBar.Margin" Value="96,0,0,0" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Top">
-                    <VisualState.Setters>
-                        <Setter Target="AppTitleBar.Margin" Value="16,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

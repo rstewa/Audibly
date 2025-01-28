@@ -1,6 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/17/2024
+// Updated: 01/26/2025
 
 using System;
 using System.Collections.Generic;
@@ -39,7 +38,7 @@ public sealed partial class AudiobookTile : UserControl
     /// <summary>
     ///     Gets the app-wide ViewModel instance.
     /// </summary>
-    private static MainViewModel ViewModel => App.ViewModel;
+    private MainViewModel ViewModel => App.ViewModel;
 
     private void AudiobookTile_OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
@@ -98,7 +97,6 @@ public sealed partial class AudiobookTile : UserControl
         {
             ShowMode = FlyoutShowMode.Transient
         };
-        // CommandBarFlyout.ShowAt(ButtonTile, myOption);
         MenuFlyout.ShowAt(ButtonTile, myOption);
     }
 
@@ -119,7 +117,6 @@ public sealed partial class AudiobookTile : UserControl
         var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
         if (audiobook == null) return;
 
-        // CommandBarFlyout.Hide();
         MenuFlyout.Hide();
 
         // note: content dialog

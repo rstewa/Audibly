@@ -96,191 +96,221 @@
                 Style="{StaticResource PageTitleTextBlockStyle}"
                 Text="Audiobook Library"
                 x:Name="PageTitle" />
-            <CommandBar
-                Background="Transparent"
-                DefaultLabelPosition="Right"
-                HorizontalAlignment="Left"
+            <StackPanel
                 Margin="4,0,0,0"
+                Orientation="Horizontal"
                 RelativePanel.LeftOf="AudiobookSearchBox"
-                RelativePanel.RightOf="PageTitle"
-                x:Name="MainCommandBar">
-                <!--  todo: may implement this in the future  -->
-                <AppBarButton
-                    Icon="Filter"
-                    Label="Filter"
-                    ToolTipService.ToolTip="Filter Audiobooks"
-                    x:Name="FilterButton">
-                    <Button.Flyout>
-                        <!--  create custom filter checkbox flyout  -->
-                        <Flyout Placement="BottomEdgeAlignedLeft">
-                            <StackPanel Orientation="Vertical">
-                                <CheckBox
-                                    Checked="SelectAllFiltersCheckBox_OnChecked"
-                                    Content="Select all"
-                                    Indeterminate="SelectAllFiltersCheckBox_OnIndeterminate"
-                                    IsThreeState="True"
-                                    Unchecked="SelectAllFiltersCheckBox_OnUnchecked"
-                                    x:Name="SelectAllFiltersCheckBox" />
-                                <CheckBox
-                                    Checked="InProgressFilterCheckBox_OnChecked"
-                                    Content="In Progress"
-                                    Margin="24,0,0,0"
-                                    Unchecked="InProgressFilterCheckBox_OnUnchecked"
-                                    x:Name="InProgressFilterCheckBox" />
-                                <CheckBox
-                                    Checked="NotStartedFilterCheckBox_OnChecked"
-                                    Content="Not Started"
-                                    Margin="24,0,0,0"
-                                    Unchecked="NotStartedFilterCheckBox_OnUnchecked"
-                                    x:Name="NotStartedFilterCheckBox" />
-                                <CheckBox
-                                    Checked="CompletedFilterCheckBox_OnChecked"
-                                    Content="Completed"
-                                    Margin="24,0,0,0"
-                                    Unchecked="CompletedFilterCheckBox_OnUnchecked"
-                                    x:Name="CompletedFilterCheckBox" />
-                            </StackPanel>
-                        </Flyout>
-                    </Button.Flyout>
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind RefreshButton_OnClick}"
-                    Icon="Refresh"
-                    Label="Refresh"
-                    ToolTipService.ToolTip="Refresh audiobooks" />
-                <AppBarSeparator />
-                <!--  <AppBarButton  -->
-                <!--  Click="{x:Bind ViewModel.ImportAudiobookAsync}"  -->
-                <!--  Icon="Add"  -->
-                <!--  Label="Open"  -->
-                <!--  ToolTipService.ToolTip="Open audiobook">  -->
-                <!--     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" /> -->
-                <!-- </AppBarButton> -->
-                <AppBarButton
-                    Icon="Download"
-                    Label="Import"
-                    ToolTipService.ToolTip="Import audiobooks">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                            <MenuFlyoutItem
-                                Click="{x:Bind ViewModel.ImportAudiobookAsync}"
-                                Icon="OpenFile"
-                                Text="{x:Bind views:LibraryCardPage.ImportAudiobookText}" />
-                            <MenuFlyoutItem
-                                Click="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
-                                Icon="Folder"
-                                Text="{x:Bind views:LibraryCardPage.ImportAudiobooksFromDirectoryText}" />
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}" Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE838;" />
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem
-                                Click="{x:Bind ViewModel.ImportFromUserSelectedJsonFileAsync}"
-                                Icon="Download"
-                                Text="{x:Bind views:LibraryCardPage.ImportFromJsonFileText}" />
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-                <AppBarButton Label="Export" ToolTipService.ToolTip="Export audiobooks">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEDE1;" />
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                            <MenuFlyoutItem Click="{x:Bind ViewModel.CreateExportFile}" Text="Export audiobooks in library to JSON file for later import">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xEDE1;" />
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
+                RelativePanel.RightOf="PageTitle">
 
-                <!--  debug menu  -->
-                <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
-                <AppBarButton
-                    Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
-                    Icon="Delete"
-                    Label="Delete All"
-                    ToolTipService.ToolTip="Delete all audiobooks"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="DeleteButton" />
-                <!--  data migration  -->
-                <AppBarButton
-                    Click="{x:Bind ViewModel.MigrateDatabase}"
-                    Icon="Sync"
-                    Label="Test Data Migration"
-                    ToolTipService.ToolTip="Test Data Migration"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="MigrateDataButton" />
-                <AppBarButton
-                    Click="{x:Bind OpenAppStateFolderButton_OnClick}"
-                    Label="Open App State Folder"
-                    ToolTipService.ToolTip="Open App State Folder"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="OpenAppStateFolderButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED25;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind OpenCurrentAudiobooksAppStateFolder_OnClick}"
-                    Label="Open Audiobook App State Folder"
-                    ToolTipService.ToolTip="Open Current Audiobooks App State Folder"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="OpenCurrentAudiobooksAppStateFolder">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED25;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind TestContentDialogButton_OnClick}"
-                    Label="Test Content Dialog"
-                    ToolTipService.ToolTip="Test Content Dialog"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="TestContentDialogButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FF;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind TestNotificationButton_OnClick}"
-                    Label="Test Notification"
-                    ToolTipService.ToolTip="Test Notification"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="TestNotificationButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7E7;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind ThrowExceptionButton_OnClick}"
-                    Label="Throw Exception"
-                    ToolTipService.ToolTip="Throw Exception"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="ThrowExceptionButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
-                </AppBarButton>
-                <!--  test sentry logging  -->
-                <AppBarButton
-                    Click="{x:Bind TestSentryLoggingButton_OnClick}"
-                    Label="Test Sentry Logging"
-                    ToolTipService.ToolTip="Test Sentry Logging"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="TestSentryLoggingButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind RestartAppButton_OnClick}"
-                    Label="Restart App"
-                    ToolTipService.ToolTip="Restart App"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="RestartAppButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF83E;" />
-                </AppBarButton>
-                <AppBarButton
-                    Click="{x:Bind HideNowPlayingBarButton_OnClick}"
-                    Label="Hide Now Playing Bar"
-                    ToolTipService.ToolTip="Hide Now Playing Bar"
-                    Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}"
-                    x:Name="HideNowPlayingBarButton">
-                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71A;" />
-                </AppBarButton>
-            </CommandBar>
+                <!--  TODO: tokenizing search box  -->
+                <!--  <controls:TokenizingTextBox  -->
+                <!--  PlaceholderText="Search audiobooks"  -->
+                <!--  QueryIcon="Find"  -->
+                <!--  QuerySubmitted="AudiobookSearchBox_OnQuerySubmitted"  -->
+                <!--  x:Name="AudiobookSearchBox" />  -->
+
+                <CommandBar
+                    Background="Transparent"
+                    DefaultLabelPosition="Right"
+                    HorizontalAlignment="Left"
+                    x:Name="MainCommandBar">
+                    <AppBarButton
+                        Icon="Filter"
+                        Label="Filter"
+                        ToolTipService.ToolTip="Filter Audiobooks"
+                        x:Name="FilterButton">
+                        <Button.Flyout>
+                            <!--  create custom filter checkbox flyout  -->
+                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                <StackPanel Orientation="Vertical">
+                                    <CheckBox
+                                        Checked="SelectAllFiltersCheckBox_OnChecked"
+                                        Content="Select all"
+                                        Indeterminate="SelectAllFiltersCheckBox_OnIndeterminate"
+                                        IsThreeState="True"
+                                        Unchecked="SelectAllFiltersCheckBox_OnUnchecked"
+                                        x:Name="SelectAllFiltersCheckBox" />
+                                    <CheckBox
+                                        Checked="InProgressFilterCheckBox_OnChecked"
+                                        Content="In Progress"
+                                        Margin="24,0,0,0"
+                                        Unchecked="InProgressFilterCheckBox_OnUnchecked"
+                                        x:Name="InProgressFilterCheckBox" />
+                                    <CheckBox
+                                        Checked="NotStartedFilterCheckBox_OnChecked"
+                                        Content="Not Started"
+                                        Margin="24,0,0,0"
+                                        Unchecked="NotStartedFilterCheckBox_OnUnchecked"
+                                        x:Name="NotStartedFilterCheckBox" />
+                                    <CheckBox
+                                        Checked="CompletedFilterCheckBox_OnChecked"
+                                        Content="Completed"
+                                        Margin="24,0,0,0"
+                                        Unchecked="CompletedFilterCheckBox_OnUnchecked"
+                                        x:Name="CompletedFilterCheckBox" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </AppBarButton>
+                    <AppBarButton
+                        Click="{x:Bind RefreshButton_OnClick}"
+                        Icon="Refresh"
+                        Label="Refresh"
+                        ToolTipService.ToolTip="Refresh audiobooks" />
+                    <AppBarSeparator />
+                    <AppBarButton
+                        Icon="Download"
+                        Label="Import"
+                        ToolTipService.ToolTip="Import audiobooks">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE838;" />
+                        <AppBarButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuFlyoutItem
+                                    Click="{x:Bind ViewModel.ImportAudiobookAsync}"
+                                    Icon="OpenFile"
+                                    Text="{x:Bind views:LibraryCardPage.ImportAudiobookText}" />
+                                <MenuFlyoutItem
+                                    Click="{x:Bind ViewModel.ImportAudiobooksFromDirectoryAsync}"
+                                    Icon="Folder"
+                                    Text="{x:Bind views:LibraryCardPage.ImportAudiobooksFromDirectoryText}" />
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem Click="{x:Bind ViewModel.ImportAudiobookWithMultipleFilesAsync}" Text="{x:Bind views:LibraryCardPage.ImportAudiobookWithMultipleFilesText}">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE838;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem
+                                    Click="{x:Bind ViewModel.ImportFromUserSelectedJsonFileAsync}"
+                                    Icon="Download"
+                                    Text="{x:Bind views:LibraryCardPage.ImportFromJsonFileText}" />
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarButton Label="Export" ToolTipService.ToolTip="Export audiobooks">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEDE1;" />
+                        <AppBarButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <MenuFlyoutItem Click="{x:Bind ViewModel.CreateExportFile}" Text="Export audiobooks in library to JSON file for later import">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xEDE1;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarSeparator />
+
+                    <!--  zoom drop down button  -->
+                    <AppBarButton
+                        Icon="Zoom"
+                        Label="Zoom"
+                        ToolTipService.ToolTip="Zoom"
+                        x:Name="ZoomButton">
+                        <AppBarButton.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedLeft" x:Name="ZoomFlyout">
+                                <userControls:ZoomLevelUserControl
+                                    ZoomInButtonIsEnabled="{x:Bind ViewModel.ZoomInButtonIsEnabled, Mode=OneWay}"
+                                    ZoomOutButtonIsEnabled="{x:Bind ViewModel.ZoomOutButtonIsEnabled, Mode=OneWay}"
+                                    x:Name="ZoomLevelUserControl" />
+                            </Flyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+
+                    <!--  debug menu  -->
+                    <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
+
+                    <AppBarButton
+                        Label="Debug Menu"
+                        ToolTipService.ToolTip="Debug Menu"
+                        Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <ToggleMenuFlyoutItem
+                                    Icon="AlignCenter"
+                                    IsChecked="{x:Bind ViewModel.ShowAlignmentGrids, Mode=TwoWay}"
+                                    Text="Show Alignment Grid"
+                                    ToolTipService.ToolTip="Show Alignment Grid" />
+                                <MenuFlyoutItem
+                                    Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
+                                    Icon="Delete"
+                                    Text="Delete All"
+                                    ToolTipService.ToolTip="Delete all audiobooks" />
+                                <MenuFlyoutItem
+                                    Click="{x:Bind ViewModel.MigrateDatabase}"
+                                    Icon="Sync"
+                                    Text="Test Data Migration"
+                                    ToolTipService.ToolTip="Test Data Migration" />
+                                <MenuFlyoutItem
+                                    Click="{x:Bind OpenAppStateFolderButton_OnClick}"
+                                    Text="Open App State Folder"
+                                    ToolTipService.ToolTip="Open App State Folder">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED25;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind OpenCurrentAudiobooksAppStateFolder_OnClick}"
+                                    Text="Open Audiobook App State Folder"
+                                    ToolTipService.ToolTip="Open Current Audiobooks App State Folder">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED25;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind TestContentDialogButton_OnClick}"
+                                    Text="Test Content Dialog"
+                                    ToolTipService.ToolTip="Test Content Dialog">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FF;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind TestNotificationButton_OnClick}"
+                                    Text="Test Notification"
+                                    ToolTipService.ToolTip="Test Notification">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7E7;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind ThrowExceptionButton_OnClick}"
+                                    Text="Throw Exception"
+                                    ToolTipService.ToolTip="Throw Exception">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind TestSentryLoggingButton_OnClick}"
+                                    Text="Test Sentry Logging"
+                                    ToolTipService.ToolTip="Test Sentry Logging">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE783;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind RestartAppButton_OnClick}"
+                                    Text="Restart App"
+                                    ToolTipService.ToolTip="Restart App">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xF83E;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Click="{x:Bind HideNowPlayingBarButton_OnClick}"
+                                    Text="Hide Now Playing Bar"
+                                    ToolTipService.ToolTip="Hide Now Playing Bar">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71A;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEBE8;" />
+                    </AppBarButton>
+                </CommandBar>
+            </StackPanel>
         </StackPanel>
 
         <!--  library card view  -->
@@ -301,8 +331,8 @@
                     <UniformGridLayout
                         ItemsJustification="Start"
                         ItemsStretch="Uniform"
-                        MinColumnSpacing="28"
-                        MinItemWidth="300" />
+                        MinColumnSpacing="4"
+                        MinRowSpacing="12" />
                 </ItemsRepeater.Layout>
 
             </ItemsRepeater>
@@ -334,7 +364,7 @@
             RelativePanel.AlignRightWithPanel="True"
             x:Name="Player">
 
-            <userControls:PlayerControl />
+            <userControls:PlayerControlGrid />
 
         </Grid>
 

@@ -1,6 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/14/2024
+// Updated: 01/28/2025
 
 using System;
 using System.Collections.Generic;
@@ -48,31 +47,19 @@ public class MainViewModel : BindableBase
     private CancellationTokenSource? _cancellationTokenSource;
 
     private bool _isImporting;
-
     private bool _isLoading;
-
     private bool _isNavigationViewVisible = true;
-
-    // todo: don't need this anymore
-    private bool _isNotificationBarVisible;
-
-    private InfoBarSeverity _notificationSeverity;
-
-    private string _notificationText = string.Empty;
-
     private string _progressDialogPrefix = string.Empty;
-
     private int _progressDialogProgress;
-
     private string _progressDialogText = string.Empty;
-
     private string _progressDialogTotalText = string.Empty;
-
     private AudiobookViewModel? _selectedAudiobook;
-
+    private bool _showAlignmentGrids;
     private bool _showDebugMenu;
-
     private bool _showStartPanel;
+    private bool _zoomInButtonIsEnabled = true;
+    private double _zoomLevel;
+    private bool _zoomOutButtonIsEnabled = true;
 
     /// <summary>
     ///     Creates a new MainViewModel.
@@ -83,6 +70,18 @@ public class MainViewModel : BindableBase
         AppDataService = appDataService;
         LoggingService = loggingService;
         Task.Run(() => GetAudiobookListAsync(true));
+
+        // todo: save this as a user setting
+        TitleFontSize = 18; // 1.8
+        AuthorFontSize = 14; // 1.4
+        TitleMaxWidth = 200; // 20
+        PlayButtonHeightWidth = 70; // 7
+        ProgressIndicatorTextFontSize = 20; // 2
+        ProgressIndicatorFontSize = 40; // 4
+        AudiobookTileWidth = 300; // 30
+        AudiobookTileMinColumnSpacing = 28; // 2.8
+
+        ZoomLevel = 100;
     }
 
     public string FileActivationError { get; set; } = string.Empty;
@@ -119,6 +118,30 @@ public class MainViewModel : BindableBase
     {
         get => _showDebugMenu;
         set => Set(ref _showDebugMenu, value);
+    }
+
+    public bool ShowAlignmentGrids
+    {
+        get => _showAlignmentGrids;
+        set => Set(ref _showAlignmentGrids, value);
+    }
+
+    public double ZoomLevel
+    {
+        get => _zoomLevel;
+        set => Set(ref _zoomLevel, value);
+    }
+
+    public bool ZoomInButtonIsEnabled
+    {
+        get => _zoomInButtonIsEnabled;
+        set => Set(ref _zoomInButtonIsEnabled, value);
+    }
+
+    public bool ZoomOutButtonIsEnabled
+    {
+        get => _zoomOutButtonIsEnabled;
+        set => Set(ref _zoomOutButtonIsEnabled, value);
     }
 
     /// <summary>
@@ -179,32 +202,6 @@ public class MainViewModel : BindableBase
     {
         get => _progressDialogTotalText;
         set => Set(ref _progressDialogTotalText, value);
-    }
-
-    // TODO: the following 2 properties are not needed anymore (unless the library list page is put back)
-
-    /// <summary>
-    ///     Gets or sets the text to display in the notification bar.
-    /// </summary>
-    public string NotificationText
-    {
-        get => _notificationText;
-        set => Set(ref _notificationText, value);
-    }
-
-    /// <summary>
-    ///     Gets or sets a value indicating whether the notification bar is visible.
-    /// </summary>
-    public bool IsNotificationBarVisible
-    {
-        get => _isNotificationBarVisible;
-        set => Set(ref _isNotificationBarVisible, value);
-    }
-
-    public InfoBarSeverity NotificationSeverity
-    {
-        get => _notificationSeverity;
-        set => Set(ref _notificationSeverity, value);
     }
 
     public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
@@ -582,6 +579,200 @@ public class MainViewModel : BindableBase
         });
     }
 
+    public void IncreaseAudiobookTileSize()
+    {
+        if (ZoomLevel >= 180) return;
+
+        ZoomLevel += 10;
+        ZoomInButtonIsEnabled = ZoomLevel < 180;
+        ZoomOutButtonIsEnabled = ZoomLevel > 50;
+
+        var newTitleFontSize = TitleFontSize + _titleFontSizeIncrement > _maximumTitleFontSize
+            ? _maximumTitleFontSize
+            : TitleFontSize + _titleFontSizeIncrement;
+
+        var newAuthorFontSize = AuthorFontSize + _authorFontSizeIncrement > _maximumAuthorFontSize
+            ? _maximumAuthorFontSize
+            : AuthorFontSize + _authorFontSizeIncrement;
+
+        var newTitleMaxWidth = TitleMaxWidth + _titleMaxWidthIncrement > _maximumTitleMaxWidth
+            ? _maximumTitleMaxWidth
+            : TitleMaxWidth + _titleMaxWidthIncrement;
+
+        var newPlayButtonHeightWidth =
+            PlayButtonHeightWidth + _playButtonHeightWidthIncrement > _maximumPlayButtonHeightWidth
+                ? _maximumPlayButtonHeightWidth
+                : PlayButtonHeightWidth + _playButtonHeightWidthIncrement;
+
+        var newProgressIndicatorTextFontSize = ProgressIndicatorTextFontSize + _progressIndicatorTextFontSizeIncrement >
+                                               _maximumProgressIndicatorTextFontSize
+            ? _maximumProgressIndicatorTextFontSize
+            : ProgressIndicatorTextFontSize + _progressIndicatorTextFontSizeIncrement;
+
+        var newProgressIndicatorFontSize = ProgressIndicatorFontSize + _progressIndicatorFontSizeIncrement >
+                                           _maximumProgressIndicatorFontSize
+            ? _maximumProgressIndicatorFontSize
+            : ProgressIndicatorFontSize + _progressIndicatorFontSizeIncrement;
+
+        var newAudiobookTileWidth = AudiobookTileWidth + _audiobookTileWidthIncrement > _maximumAudiobookTileWidth
+            ? _maximumAudiobookTileWidth
+            : AudiobookTileWidth + _audiobookTileWidthIncrement;
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            TitleFontSize = newTitleFontSize;
+            AuthorFontSize = newAuthorFontSize;
+            TitleMaxWidth = newTitleMaxWidth;
+            PlayButtonHeightWidth = newPlayButtonHeightWidth;
+            ProgressIndicatorTextFontSize = newProgressIndicatorTextFontSize;
+            ProgressIndicatorFontSize = newProgressIndicatorFontSize;
+            AudiobookTileWidth = newAudiobookTileWidth;
+        });
+    }
+
+    public void DecreaseAudiobookTileSize()
+    {
+        if (ZoomLevel <= 50) return;
+
+        ZoomLevel -= 10;
+        ZoomInButtonIsEnabled = ZoomLevel < 180;
+        ZoomOutButtonIsEnabled = ZoomLevel > 50;
+
+        var newTitleFontSize = TitleFontSize - _titleFontSizeIncrement < _minimumTitleFontSize
+            ? _minimumTitleFontSize
+            : TitleFontSize - _titleFontSizeIncrement;
+
+        var newAuthorFontSize = AuthorFontSize - _authorFontSizeIncrement < _minimumAuthorFontSize
+            ? _minimumAuthorFontSize
+            : AuthorFontSize - _authorFontSizeIncrement;
+
+        var newTitleMaxWidth = TitleMaxWidth - _titleMaxWidthIncrement < _minimumTitleMaxWidth
+            ? _minimumTitleMaxWidth
+            : TitleMaxWidth - _titleMaxWidthIncrement;
+
+        var newPlayButtonHeightWidth =
+            PlayButtonHeightWidth - _playButtonHeightWidthIncrement < _minimumPlayButtonHeightWidth
+                ? _minimumPlayButtonHeightWidth
+                : PlayButtonHeightWidth - _playButtonHeightWidthIncrement;
+
+        var newProgressIndicatorTextFontSize = ProgressIndicatorTextFontSize - _progressIndicatorTextFontSizeIncrement <
+                                               _minimumProgressIndicatorTextFontSize
+            ? _minimumProgressIndicatorTextFontSize
+            : ProgressIndicatorTextFontSize - _progressIndicatorTextFontSizeIncrement;
+
+        var newProgressIndicatorFontSize = ProgressIndicatorFontSize - _progressIndicatorFontSizeIncrement <
+                                           _minimumProgressIndicatorFontSize
+            ? _minimumProgressIndicatorFontSize
+            : ProgressIndicatorFontSize - _progressIndicatorFontSizeIncrement;
+
+        var newAudiobookTileWidth = AudiobookTileWidth - _audiobookTileWidthIncrement < _minimumAudiobookTileWidth
+            ? _minimumAudiobookTileWidth
+            : AudiobookTileWidth - _audiobookTileWidthIncrement;
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            TitleFontSize = newTitleFontSize;
+            AuthorFontSize = newAuthorFontSize;
+            TitleMaxWidth = newTitleMaxWidth;
+            PlayButtonHeightWidth = newPlayButtonHeightWidth;
+            ProgressIndicatorTextFontSize = newProgressIndicatorTextFontSize;
+            ProgressIndicatorFontSize = newProgressIndicatorFontSize;
+            AudiobookTileWidth = newAudiobookTileWidth;
+        });
+    }
+
+    #region Properties for resizing audiobook tiles
+
+    private const double _maximumTitleFontSize = 36;
+    private const double _maximumAuthorFontSize = 28;
+    private const double _maximumTitleMaxWidth = 400;
+    private const double _maximumPlayButtonHeightWidth = 140;
+    private const double _maximumProgressIndicatorTextFontSize = 40;
+    private const double _maximumProgressIndicatorFontSize = 80;
+    private const double _maximumAudiobookTileWidth = 600;
+
+    private const double _minimumTitleFontSize = 4.5;
+    private const double _minimumAuthorFontSize = 3.5;
+    private const double _minimumTitleMaxWidth = 50;
+    private const double _minimumPlayButtonHeightWidth = 17.5;
+    private const double _minimumProgressIndicatorTextFontSize = 5;
+    private const double _minimumProgressIndicatorFontSize = 10;
+    private const double _minimumAudiobookTileWidth = 75;
+
+    private const double _titleFontSizeIncrement = 1.8;
+    private const double _authorFontSizeIncrement = 1.4;
+    private const double _titleMaxWidthIncrement = 20;
+    private const double _playButtonHeightWidthIncrement = 7;
+    private const double _progressIndicatorTextFontSizeIncrement = 2;
+    private const double _progressIndicatorFontSizeIncrement = 4;
+    private const double _audiobookTileWidthIncrement = 30;
+
+    private double _titleFontSize;
+
+    public double TitleFontSize
+    {
+        get => _titleFontSize;
+        set => Set(ref _titleFontSize, value);
+    }
+
+    private double _authorFontSize;
+
+    public double AuthorFontSize
+    {
+        get => _authorFontSize;
+        set => Set(ref _authorFontSize, value);
+    }
+
+    private double _titleMaxWidth;
+
+    public double TitleMaxWidth
+    {
+        get => _titleMaxWidth;
+        set => Set(ref _titleMaxWidth, value);
+    }
+
+    private double _playButtonHeightWidth;
+
+    public double PlayButtonHeightWidth
+    {
+        get => _playButtonHeightWidth;
+        set => Set(ref _playButtonHeightWidth, value);
+    }
+
+    private double _progressIndicatorTextFontSize;
+
+    public double ProgressIndicatorTextFontSize
+    {
+        get => _progressIndicatorTextFontSize;
+        set => Set(ref _progressIndicatorTextFontSize, value);
+    }
+
+    private double _progressIndicatorFontSize;
+
+    public double ProgressIndicatorFontSize
+    {
+        get => _progressIndicatorFontSize;
+        set => Set(ref _progressIndicatorFontSize, value);
+    }
+
+    private double _audiobookTileMinWidth;
+
+    public double AudiobookTileWidth
+    {
+        get => _audiobookTileMinWidth;
+        set => Set(ref _audiobookTileMinWidth, value);
+    }
+
+    private double _audiobookTileMinColumnSpacing;
+
+    public double AudiobookTileMinColumnSpacing
+    {
+        get => _audiobookTileMinColumnSpacing;
+        set => Set(ref _audiobookTileMinColumnSpacing, value);
+    }
+
+    #endregion
+
     # region File Import Operations
 
     public async void ImportAudiobookAsync()
@@ -914,7 +1105,7 @@ public class MainViewModel : BindableBase
     ///     Imports audiobooks from a JSON file.
     /// </summary>
     /// <param name="file"></param>
-    public async Task ImportFromJsonFileAsync(StorageFile file)
+    private async Task ImportFromJsonFileAsync(StorageFile file)
     {
         await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 

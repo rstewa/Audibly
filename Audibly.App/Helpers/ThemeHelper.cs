@@ -1,6 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 4/9/2024
-// Updated: 4/9/2024
+// Updated: 01/26/2025
 
 using Windows.Storage;
 using Microsoft.UI.Xaml;
@@ -23,7 +22,7 @@ public static class ThemeHelper
         get
         {
             foreach (var window in WindowHelper.ActiveWindows)
-                if (window.Content is FrameworkElement rootElement)
+                if (window.Value.Content is FrameworkElement rootElement)
                     if (rootElement.RequestedTheme != ElementTheme.Default)
                         return rootElement.RequestedTheme;
 
@@ -39,7 +38,7 @@ public static class ThemeHelper
         get
         {
             foreach (var window in WindowHelper.ActiveWindows)
-                if (window.Content is FrameworkElement rootElement)
+                if (window.Value.Content is FrameworkElement rootElement)
                     return rootElement.RequestedTheme;
 
             return ElementTheme.Default;
@@ -47,7 +46,7 @@ public static class ThemeHelper
         set
         {
             foreach (var window in WindowHelper.ActiveWindows)
-                if (window.Content is FrameworkElement rootElement)
+                if (window.Value.Content is FrameworkElement rootElement)
                     rootElement.RequestedTheme = value;
 
             if (NativeHelper.IsAppPackaged)
@@ -61,7 +60,10 @@ public static class ThemeHelper
         {
             var savedTheme = ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey]?.ToString();
 
-            if (savedTheme != null) RootTheme = App.GetEnum<ElementTheme>(savedTheme);
+            if (savedTheme != null)
+            {
+                RootTheme = App.GetEnum<ElementTheme>(savedTheme);
+            }
             else
             {
                 ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey] = ElementTheme.Dark.ToString();

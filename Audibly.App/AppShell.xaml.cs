@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 01/28/2025
+// Updated: 02/14/2025
 
 using System;
 using System.Collections.Generic;
@@ -54,13 +54,14 @@ public sealed partial class AppShell : Page
         Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
         PointerWheelChanged += (_, e) =>
         {
+            // wait 1 second before resetting the zoom buttons
             // todo: check if library is the current page
             if (e.KeyModifiers == VirtualKeyModifiers.Control)
             {
                 if (e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0)
-                    _dispatcherQueue.TryEnqueue(() => { ViewModel.IncreaseAudiobookTileSize(); });
+                    ViewModel.IncreaseAudiobookTileSize();
                 else
-                    _dispatcherQueue.TryEnqueue(() => { ViewModel.DecreaseAudiobookTileSize(); });
+                    ViewModel.DecreaseAudiobookTileSize();
             }
         };
 

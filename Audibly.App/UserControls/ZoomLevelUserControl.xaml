@@ -23,7 +23,7 @@
         <Button
             Background="Transparent"
             BorderThickness="0"
-            Click="ZoomOutButton_Click"
+            Click="{x:Bind ViewModel.DecreaseAudiobookTileSize}"
             HorizontalAlignment="Center"
             IsEnabled="{x:Bind ZoomOutButtonIsEnabled, Mode=OneWay}"
             VerticalAlignment="Center">
@@ -46,7 +46,7 @@
         <Button
             Background="Transparent"
             BorderThickness="0"
-            Click="ZoomInButton_Click"
+            Click="{x:Bind ViewModel.IncreaseAudiobookTileSize}"
             HorizontalAlignment="Center"
             IsEnabled="{x:Bind ZoomInButtonIsEnabled, Mode=OneWay}"
             VerticalAlignment="Center">

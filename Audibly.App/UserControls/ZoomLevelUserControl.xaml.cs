@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 01/28/2025
+// Updated: 02/14/2025
 
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
@@ -36,15 +36,5 @@ public sealed partial class ZoomLevelUserControl : UserControl
     {
         get => (bool)GetValue(ZoomOutButtonIsEnabledProperty);
         set => SetValue(ZoomOutButtonIsEnabledProperty, value);
-    }
-
-    private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.DecreaseAudiobookTileSize();
-    }
-
-    private void ZoomInButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.IncreaseAudiobookTileSize();
     }
 }

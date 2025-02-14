@@ -97,7 +97,7 @@
                 <!--  player controls  -->
                 <userControls:PlayerControlGrid
                     HorizontalAlignment="Stretch"
-                    Margin="0,20,20,20"
+                    Margin="4,20,20,20"
                     RelativePanel.AlignBottomWithPanel="True"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"

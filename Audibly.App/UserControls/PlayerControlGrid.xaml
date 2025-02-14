@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Audibly.Models"
     xmlns:vm="using:Audibly.App.ViewModels"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
 
@@ -44,9 +45,9 @@
             VerticalAlignment="Stretch"
             Visibility="{x:Bind ViewModel.ShowAlignmentGrids, Mode=OneWay}" />
 
-        <Grid ColumnSpacing="16">
+        <Grid ColumnSpacing="16" x:Name="ControlsGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" x:Name="Column0" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -62,28 +63,8 @@
                 CoverImageSize="112"
                 Grid.Column="0"
                 Grid.RowSpan="3"
-                Visibility="{x:Bind ShowCoverImage, Mode=OneWay}" />
-            <!--  <Border  -->
-            <!--  BorderThickness="0"  -->
-            <!--  Grid.Column="0"  -->
-            <!--  Grid.RowSpan="3"  -->
-            <!--  Height="116"  -->
-            <!--  VerticalAlignment="Center"  -->
-            <!--  Visibility="{x:Bind ShowCoverImage, Mode=OneWay}"  -->
-            <!--  Width="116">  -->
-            <!--  <Border  -->
-            <!--  BorderBrush="Transparent"  -->
-            <!--  BorderThickness="0"  -->
-            <!--  CornerRadius="10">  -->
-            <!--         <Border.Background> -->
-            <!--             <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay}" Stretch="Uniform" /> -->
-            <!--         </Border.Background> -->
-            <!--     </Border> -->
-            <!--     <winUi:Effects.Shadow> -->
-            <!--         <media:AttachedCardShadow CornerRadius="10" Offset="4, 4" /> -->
-            <!--     </winUi:Effects.Shadow> -->
-            <!-- </Border> -->
-
+                Visibility="{x:Bind ShowCoverImage, Mode=OneWay}"
+                x:Name="CoverImageTile" />
 
             <!--  player controls  -->
             <Grid
@@ -102,7 +83,7 @@
                 <StackPanel
                     Grid.Column="0"
                     Orientation="Horizontal"
-                    VerticalAlignment="Center">
+                    VerticalAlignment="Top">
 
                     <local:TitleArtistStack TitleMaxWidth="230" />
 
@@ -111,7 +92,7 @@
                         <Border
                             Background="{ThemeResource AppBarSeparatorForeground}"
                             Height="40"
-                            Margin="16,0,0,0"
+                            Margin="16,0,16,0"
                             Width="1"
                             x:Name="Separator" />
 
@@ -126,6 +107,7 @@
                             SelectedIndex="{x:Bind PlayerViewModel.ChapterComboSelectedIndex, Mode=TwoWay}"
                             SelectionChanged="ChapterCombo_SelectionChanged"
                             ToolTipService.ToolTip="Chapter Selection"
+                            VerticalAlignment="Top"
                             x:Name="ChapterCombo">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:ChapterInfo">
@@ -143,9 +125,9 @@
                 <StackPanel
                     Grid.Column="1"
                     HorizontalAlignment="Right"
-                    Margin="0,0,-12,0"
+                    Margin="0,-8,-12,0"
                     Orientation="Horizontal"
-                    VerticalAlignment="Center">
+                    VerticalAlignment="Top">
 
                     <!--#region VolumeLevelButton-->
                     <Button
@@ -278,4 +260,17 @@
                 VerticalAlignment="Bottom" />
         </Grid>
     </Grid>
+    <!-- <VisualStateManager.VisualStateGroups> -->
+    <!--     <VisualStateGroup x:Name="CoverImageStates"> -->
+    <!--         <VisualState x:Name="HideCoverImage"> -->
+    <!--             <VisualState.StateTriggers> -->
+    <!--                 <winUi:IsEqualStateTrigger To="true" Value="{x:Bind ShowCoverImage.ToString(), Mode=OneWay}" /> -->
+    <!--             </VisualState.StateTriggers> -->
+    <!--             <VisualState.Setters> -->
+    <!--                 <Setter Target="Column0.Width" Value="0" /> -->
+    <!--                 <Setter Target="CoverImageTile.Visibility" Value="Collapsed" /> -->
+    <!--             </VisualState.Setters> -->
+    <!--         </VisualState> -->
+    <!--     </VisualStateGroup> -->
+    <!-- </VisualStateManager.VisualStateGroups> -->
 </UserControl>

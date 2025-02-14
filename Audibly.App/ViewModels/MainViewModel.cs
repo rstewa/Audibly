@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 01/28/2025
+// Updated: 02/14/2025
 
 using System;
 using System.Collections.Generic;
@@ -37,6 +37,8 @@ public class MainViewModel : BindableBase
     public delegate void ResetFiltersHandler();
 
     #endregion
+
+    private readonly SemaphoreSlim _audiobookTileSizeSemaphore = new(1, 1);
 
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -82,6 +84,8 @@ public class MainViewModel : BindableBase
         AudiobookTileMinColumnSpacing = 28; // 2.8
 
         ZoomLevel = 100;
+
+        InitializeZoomLevelToTileSizeDictionary();
     }
 
     public string FileActivationError { get; set; } = string.Empty;
@@ -579,133 +583,298 @@ public class MainViewModel : BindableBase
         });
     }
 
+    public void ResizeAudiobookTile(double size)
+    {
+        _audiobookTileSizeSemaphore.Wait();
+
+        try
+        {
+            ZoomLevel = size;
+            if (_zoomLevelToTileSize.TryGetValue((int)ZoomLevel, out var tileSize))
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    TitleFontSize = tileSize.TitleFontSize;
+                    AuthorFontSize = tileSize.AuthorFontSize;
+                    TitleMaxWidth = tileSize.TitleMaxWidth;
+                    PlayButtonHeightWidth = tileSize.PlayButtonHeightWidth;
+                    ProgressIndicatorTextFontSize = tileSize.ProgressIndicatorTextFontSize;
+                    ProgressIndicatorFontSize = tileSize.ProgressIndicatorFontSize;
+                    AudiobookTileWidth = tileSize.AudiobookTileWidth;
+                    AudiobookTileMinColumnSpacing = tileSize.AudiobookTileMinColumnSpacing;
+                });
+        }
+        finally
+        {
+            _audiobookTileSizeSemaphore.Release();
+        }
+    }
+
     public void IncreaseAudiobookTileSize()
     {
-        if (ZoomLevel >= 180) return;
+        if (ZoomLevel >= 180)
+        {
+            ZoomLevel = 180;
+            return;
+        }
 
         ZoomLevel += 10;
         ZoomInButtonIsEnabled = ZoomLevel < 180;
         ZoomOutButtonIsEnabled = ZoomLevel > 50;
 
-        var newTitleFontSize = TitleFontSize + _titleFontSizeIncrement > _maximumTitleFontSize
-            ? _maximumTitleFontSize
-            : TitleFontSize + _titleFontSizeIncrement;
-
-        var newAuthorFontSize = AuthorFontSize + _authorFontSizeIncrement > _maximumAuthorFontSize
-            ? _maximumAuthorFontSize
-            : AuthorFontSize + _authorFontSizeIncrement;
-
-        var newTitleMaxWidth = TitleMaxWidth + _titleMaxWidthIncrement > _maximumTitleMaxWidth
-            ? _maximumTitleMaxWidth
-            : TitleMaxWidth + _titleMaxWidthIncrement;
-
-        var newPlayButtonHeightWidth =
-            PlayButtonHeightWidth + _playButtonHeightWidthIncrement > _maximumPlayButtonHeightWidth
-                ? _maximumPlayButtonHeightWidth
-                : PlayButtonHeightWidth + _playButtonHeightWidthIncrement;
-
-        var newProgressIndicatorTextFontSize = ProgressIndicatorTextFontSize + _progressIndicatorTextFontSizeIncrement >
-                                               _maximumProgressIndicatorTextFontSize
-            ? _maximumProgressIndicatorTextFontSize
-            : ProgressIndicatorTextFontSize + _progressIndicatorTextFontSizeIncrement;
-
-        var newProgressIndicatorFontSize = ProgressIndicatorFontSize + _progressIndicatorFontSizeIncrement >
-                                           _maximumProgressIndicatorFontSize
-            ? _maximumProgressIndicatorFontSize
-            : ProgressIndicatorFontSize + _progressIndicatorFontSizeIncrement;
-
-        var newAudiobookTileWidth = AudiobookTileWidth + _audiobookTileWidthIncrement > _maximumAudiobookTileWidth
-            ? _maximumAudiobookTileWidth
-            : AudiobookTileWidth + _audiobookTileWidthIncrement;
-
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            TitleFontSize = newTitleFontSize;
-            AuthorFontSize = newAuthorFontSize;
-            TitleMaxWidth = newTitleMaxWidth;
-            PlayButtonHeightWidth = newPlayButtonHeightWidth;
-            ProgressIndicatorTextFontSize = newProgressIndicatorTextFontSize;
-            ProgressIndicatorFontSize = newProgressIndicatorFontSize;
-            AudiobookTileWidth = newAudiobookTileWidth;
-        });
+        ResizeAudiobookTile(ZoomLevel);
     }
 
     public void DecreaseAudiobookTileSize()
     {
-        if (ZoomLevel <= 50) return;
+        if (ZoomLevel <= 50)
+        {
+            ZoomLevel = 50;
+            return;
+        }
 
         ZoomLevel -= 10;
         ZoomInButtonIsEnabled = ZoomLevel < 180;
         ZoomOutButtonIsEnabled = ZoomLevel > 50;
 
-        var newTitleFontSize = TitleFontSize - _titleFontSizeIncrement < _minimumTitleFontSize
-            ? _minimumTitleFontSize
-            : TitleFontSize - _titleFontSizeIncrement;
-
-        var newAuthorFontSize = AuthorFontSize - _authorFontSizeIncrement < _minimumAuthorFontSize
-            ? _minimumAuthorFontSize
-            : AuthorFontSize - _authorFontSizeIncrement;
-
-        var newTitleMaxWidth = TitleMaxWidth - _titleMaxWidthIncrement < _minimumTitleMaxWidth
-            ? _minimumTitleMaxWidth
-            : TitleMaxWidth - _titleMaxWidthIncrement;
-
-        var newPlayButtonHeightWidth =
-            PlayButtonHeightWidth - _playButtonHeightWidthIncrement < _minimumPlayButtonHeightWidth
-                ? _minimumPlayButtonHeightWidth
-                : PlayButtonHeightWidth - _playButtonHeightWidthIncrement;
-
-        var newProgressIndicatorTextFontSize = ProgressIndicatorTextFontSize - _progressIndicatorTextFontSizeIncrement <
-                                               _minimumProgressIndicatorTextFontSize
-            ? _minimumProgressIndicatorTextFontSize
-            : ProgressIndicatorTextFontSize - _progressIndicatorTextFontSizeIncrement;
-
-        var newProgressIndicatorFontSize = ProgressIndicatorFontSize - _progressIndicatorFontSizeIncrement <
-                                           _minimumProgressIndicatorFontSize
-            ? _minimumProgressIndicatorFontSize
-            : ProgressIndicatorFontSize - _progressIndicatorFontSizeIncrement;
-
-        var newAudiobookTileWidth = AudiobookTileWidth - _audiobookTileWidthIncrement < _minimumAudiobookTileWidth
-            ? _minimumAudiobookTileWidth
-            : AudiobookTileWidth - _audiobookTileWidthIncrement;
-
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            TitleFontSize = newTitleFontSize;
-            AuthorFontSize = newAuthorFontSize;
-            TitleMaxWidth = newTitleMaxWidth;
-            PlayButtonHeightWidth = newPlayButtonHeightWidth;
-            ProgressIndicatorTextFontSize = newProgressIndicatorTextFontSize;
-            ProgressIndicatorFontSize = newProgressIndicatorFontSize;
-            AudiobookTileWidth = newAudiobookTileWidth;
-        });
+        ResizeAudiobookTile(ZoomLevel);
     }
 
     #region Properties for resizing audiobook tiles
 
-    private const double _maximumTitleFontSize = 36;
-    private const double _maximumAuthorFontSize = 28;
-    private const double _maximumTitleMaxWidth = 400;
-    private const double _maximumPlayButtonHeightWidth = 140;
-    private const double _maximumProgressIndicatorTextFontSize = 40;
-    private const double _maximumProgressIndicatorFontSize = 80;
-    private const double _maximumAudiobookTileWidth = 600;
+    private Dictionary<int, AudiobookTileSize> _zoomLevelToTileSize;
 
-    private const double _minimumTitleFontSize = 4.5;
-    private const double _minimumAuthorFontSize = 3.5;
-    private const double _minimumTitleMaxWidth = 50;
-    private const double _minimumPlayButtonHeightWidth = 17.5;
-    private const double _minimumProgressIndicatorTextFontSize = 5;
-    private const double _minimumProgressIndicatorFontSize = 10;
-    private const double _minimumAudiobookTileWidth = 75;
+    private void InitializeZoomLevelToTileSizeDictionary()
+    {
+        _zoomLevelToTileSize = new Dictionary<int, AudiobookTileSize>
+        {
+            {
+                50,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 9,
+                    AuthorFontSize = 7,
+                    TitleMaxWidth = 100,
+                    PlayButtonHeightWidth = 35,
+                    ProgressIndicatorTextFontSize = 10,
+                    ProgressIndicatorFontSize = 20,
+                    AudiobookTileWidth = 150,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                60,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 10.8,
+                    AuthorFontSize = 8.4,
+                    TitleMaxWidth = 120,
+                    PlayButtonHeightWidth = 42,
+                    ProgressIndicatorTextFontSize = 12,
+                    ProgressIndicatorFontSize = 24,
+                    AudiobookTileWidth = 180,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                70,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 12.6,
+                    AuthorFontSize = 9.8,
+                    TitleMaxWidth = 140,
+                    PlayButtonHeightWidth = 49,
+                    ProgressIndicatorTextFontSize = 14,
+                    ProgressIndicatorFontSize = 28,
+                    AudiobookTileWidth = 210,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                80,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 14.4,
+                    AuthorFontSize = 11.2,
+                    TitleMaxWidth = 160,
+                    PlayButtonHeightWidth = 56,
+                    ProgressIndicatorTextFontSize = 16,
+                    ProgressIndicatorFontSize = 32,
+                    AudiobookTileWidth = 240,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                90,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 16.2,
+                    AuthorFontSize = 12.6,
+                    TitleMaxWidth = 180,
+                    PlayButtonHeightWidth = 63,
+                    ProgressIndicatorTextFontSize = 18,
+                    ProgressIndicatorFontSize = 36,
+                    AudiobookTileWidth = 270,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                100,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 18,
+                    AuthorFontSize = 14,
+                    TitleMaxWidth = 200,
+                    PlayButtonHeightWidth = 70,
+                    ProgressIndicatorTextFontSize = 20,
+                    ProgressIndicatorFontSize = 40,
+                    AudiobookTileWidth = 300,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                110,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 19.8,
+                    AuthorFontSize = 15.4,
+                    TitleMaxWidth = 220,
+                    PlayButtonHeightWidth = 77,
+                    ProgressIndicatorTextFontSize = 22,
+                    ProgressIndicatorFontSize = 44,
+                    AudiobookTileWidth = 330,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                120,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 21.6,
+                    AuthorFontSize = 16.8,
+                    TitleMaxWidth = 240,
+                    PlayButtonHeightWidth = 84,
+                    ProgressIndicatorTextFontSize = 24,
+                    ProgressIndicatorFontSize = 48,
+                    AudiobookTileWidth = 360,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                130,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 23.4,
+                    AuthorFontSize = 18.2,
+                    TitleMaxWidth = 260,
+                    PlayButtonHeightWidth = 91,
+                    ProgressIndicatorTextFontSize = 26,
+                    ProgressIndicatorFontSize = 52,
+                    AudiobookTileWidth = 390,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                140,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 25.2,
+                    AuthorFontSize = 19.6,
+                    TitleMaxWidth = 280,
+                    PlayButtonHeightWidth = 98,
+                    ProgressIndicatorTextFontSize = 28,
+                    ProgressIndicatorFontSize = 56,
+                    AudiobookTileWidth = 420,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                150,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 27,
+                    AuthorFontSize = 21,
+                    TitleMaxWidth = 300,
+                    PlayButtonHeightWidth = 105,
+                    ProgressIndicatorTextFontSize = 30,
+                    ProgressIndicatorFontSize = 60,
+                    AudiobookTileWidth = 450,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                160,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 28.8,
+                    AuthorFontSize = 22.4,
+                    TitleMaxWidth = 320,
+                    PlayButtonHeightWidth = 112,
+                    ProgressIndicatorTextFontSize = 32,
+                    ProgressIndicatorFontSize = 64,
+                    AudiobookTileWidth = 480,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                170,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 30.6,
+                    AuthorFontSize = 23.8,
+                    TitleMaxWidth = 340,
+                    PlayButtonHeightWidth = 119,
+                    ProgressIndicatorTextFontSize = 34,
+                    ProgressIndicatorFontSize = 68,
+                    AudiobookTileWidth = 510,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                180,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 32.4,
+                    AuthorFontSize = 25.2,
+                    TitleMaxWidth = 360,
+                    PlayButtonHeightWidth = 126,
+                    ProgressIndicatorTextFontSize = 36,
+                    ProgressIndicatorFontSize = 72,
+                    AudiobookTileWidth = 540,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                190,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 34.2,
+                    AuthorFontSize = 26.6,
+                    TitleMaxWidth = 380,
+                    PlayButtonHeightWidth = 133,
+                    ProgressIndicatorTextFontSize = 38,
+                    ProgressIndicatorFontSize = 76,
+                    AudiobookTileWidth = 570,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            },
+            {
+                200,
+                new AudiobookTileSize
+                {
+                    TitleFontSize = 36,
+                    AuthorFontSize = 28,
+                    TitleMaxWidth = 400,
+                    PlayButtonHeightWidth = 140,
+                    ProgressIndicatorTextFontSize = 40,
+                    ProgressIndicatorFontSize = 80,
+                    AudiobookTileWidth = 600,
+                    AudiobookTileMinColumnSpacing = 2.8
+                }
+            }
+        };
 
-    private const double _titleFontSizeIncrement = 1.8;
-    private const double _authorFontSizeIncrement = 1.4;
-    private const double _titleMaxWidthIncrement = 20;
-    private const double _playButtonHeightWidthIncrement = 7;
-    private const double _progressIndicatorTextFontSizeIncrement = 2;
-    private const double _progressIndicatorFontSizeIncrement = 4;
-    private const double _audiobookTileWidthIncrement = 30;
+        ResizeAudiobookTile(100);
+    }
 
     private double _titleFontSize;
 
@@ -1190,4 +1359,16 @@ public class Notification
     public string Message { get; init; }
     public InfoBarSeverity Severity { get; init; }
     public TimeSpan Duration { get; } = TimeSpan.FromSeconds(20);
+}
+
+public class AudiobookTileSize
+{
+    public double TitleFontSize { get; set; }
+    public double AuthorFontSize { get; set; }
+    public double TitleMaxWidth { get; set; }
+    public double PlayButtonHeightWidth { get; set; }
+    public double ProgressIndicatorTextFontSize { get; set; }
+    public double ProgressIndicatorFontSize { get; set; }
+    public double AudiobookTileWidth { get; set; }
+    public double AudiobookTileMinColumnSpacing { get; set; }
 }

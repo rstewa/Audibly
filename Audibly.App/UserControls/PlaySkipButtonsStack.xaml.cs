@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 01/28/2025
+// Updated: 02/14/2025
 
 using System;
 using Audibly.App.ViewModels;
@@ -78,6 +78,8 @@ public sealed partial class PlaySkipButtonsStack : UserControl
 
         // PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
+        PlayerViewModel.NowPlaying.CurrentChapterTitle =
+            PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex].Title;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
         PlayerViewModel.ChapterDurationMs =
             (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
@@ -113,6 +115,8 @@ public sealed partial class PlaySkipButtonsStack : UserControl
 
         // PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
         PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
+        PlayerViewModel.NowPlaying.CurrentChapterTitle =
+            PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex].Title;
         PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
         PlayerViewModel.ChapterDurationMs =
             (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -

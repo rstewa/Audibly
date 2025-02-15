@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/11/2024
+// Updated: 02/14/2025
 
 using System;
 using System.IO;
@@ -269,8 +268,9 @@ public class PlayerViewModel : BindableBase
             NowPlaying = audiobook;
             NowPlaying.IsNowPlaying = true;
             NowPlaying.DateLastPlayed = DateTime.Now;
-            
+
             ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
+            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
 
             await NowPlaying.SaveAsync();
         });
@@ -286,6 +286,7 @@ public class PlayerViewModel : BindableBase
         NowPlaying.CurrentTimeMs = 0;
         NowPlaying.CurrentSourceFileIndex = index;
         NowPlaying.CurrentChapterIndex = chapterIndex;
+        NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
 
         await NowPlaying.SaveAsync();
 
@@ -386,6 +387,7 @@ public class PlayerViewModel : BindableBase
                 _ = _dispatcherQueue.EnqueueAsync(() =>
                 {
                     NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
+                    NowPlaying.CurrentChapterTitle = newChapter.Title;
                     ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
                 });
         }

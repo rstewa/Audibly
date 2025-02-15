@@ -23,7 +23,7 @@
             FontSize="{x:Bind TitleFontSize, Mode=OneWay}"
             FontWeight="SemiBold"
             MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
-            Speed="20"
+            Speed="15"
             Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
             x:Name="TitleMarqueeText" />
 
@@ -34,6 +34,24 @@
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}"
             TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
             x:Name="ArtistTextBlock" />
+
+        <labs:MarqueeText
+            Behavior="Looping"
+            Direction="Left"
+            FontSize="{x:Bind ArtistFontSize, Mode=OneWay}"
+            FontStyle="Italic"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            Margin="0,4,0,0"
+            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
+            PointerEntered="CurrentChapterTitleTextBlock_OnPointerEntered"
+            PointerExited="CurrentChapterTitleMarqueeText_OnPointerExited"
+            Speed="15"
+            Text="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"
+            VerticalAlignment="Bottom"
+            Visibility="{x:Bind ShowChapterTitle, Mode=OneWay}"
+            x:Name="CurrentChapterTitleMarqueeText" />
     </StackPanel>
 </UserControl>

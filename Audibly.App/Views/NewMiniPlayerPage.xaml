@@ -71,13 +71,15 @@
                 CoverImageSize="60"
                 Grid.Column="1"
                 HorizontalAlignment="Center"
+                ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.CurrentChapter.Title, Mode=OneWay}"
                 VerticalAlignment="Center" />
 
             <userControls:TitleArtistStack
                 ArtistFontSize="12"
                 Grid.Column="2"
                 HorizontalAlignment="Center"
-                Margin="8,-2,0,0"
+                Margin="8,0,0,0"
+                ShowChapterTitle="True"
                 Spacing="4"
                 TitleFontSize="16"
                 TitleMaxWidth="125"

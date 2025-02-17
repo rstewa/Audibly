@@ -104,18 +104,30 @@ This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b`
 
 ## Screenshots
 
-<p align="middle">
-  <img src="images/v2.0.16/super-hero-art.png" />
-</p> 
+[//]: # (<p align="middle">)
+
+[//]: # (  <img src="images/v2.1.11/audibly_home_page.png" />)
+
+[//]: # (</p> )
 
 ### Home/Library
 <p align="middle">
-  <img src="images/v2.0.16/home-library-page-sidebar-collapsed-75-percent.PNG" />
+  <img src="images/v2.1.11/audibly_home_page.png" />
 </p> 
 
 ### Expanded Player
 <p align="middle">
-  <img src="images/v2.0.16/now-playing-page-75-percent.PNG" />
+  <img src="images/v2.1.11/audibly_player_page.png" />
+</p> 
+
+### More Info Dialog
+<p align="middle">
+  <img src="images/v2.1.11/audibly_more_info.png" />
+</p> 
+
+### Mini-player
+<p align="middle">
+  <img src="images/v2.1.11/audibly_mini_player.png" />
 </p> 
 
 ### Import audiobook consisting of multiple files dialog

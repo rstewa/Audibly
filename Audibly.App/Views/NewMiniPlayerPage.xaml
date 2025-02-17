@@ -2,7 +2,6 @@
 
 <!--  ReSharper disable once Xaml.InvalidResourceType  -->
 <Page
-    Background="{ThemeResource AudiblyBackgroundBrush}"
     mc:Ignorable="d"
     x:Class="Audibly.App.Views.NewMiniPlayerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -71,7 +70,7 @@
                 CoverImageSize="60"
                 Grid.Column="1"
                 HorizontalAlignment="Center"
-                ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.CurrentChapter.Title, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
                 VerticalAlignment="Center" />
 
             <userControls:TitleArtistStack

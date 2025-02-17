@@ -1,6 +1,5 @@
 ﻿<!--  ReSharper disable once Xaml.InvalidResourceType  -->
 <Page
-    Background="{ThemeResource AudiblyBackgroundBrush}"
     Loaded="AppShell_OnLoaded"
     TabNavigation="Cycle"
     mc:Ignorable="d"

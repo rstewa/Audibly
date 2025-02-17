@@ -8,9 +8,11 @@ using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using Audibly.Models;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using Constants = Audibly.App.Helpers.Constants;
 
 namespace Audibly.App.UserControls;
@@ -88,7 +90,7 @@ public sealed partial class PlayerControlGrid : UserControl
 
         // const int width = 504;
         const int width = 536;
-        const int height = 91;
+        const int height = 96;
 
         newWindow.CustomizeWindow(width, height, true, true, false, false, false);
 

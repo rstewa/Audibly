@@ -26,9 +26,9 @@ public static class WindowHelper
     {
         // var newWindow = new Window
         // {
-        //     SystemBackdrop = new MicaBackdrop()
+        //     SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop()
         // };
-        var newWindow = new Window();
+        var newWindow = new MainWindow(); // Window();
         TrackWindow(name, newWindow);
         return newWindow;
     }

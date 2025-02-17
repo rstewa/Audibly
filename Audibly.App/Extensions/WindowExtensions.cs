@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Input;
 using Sharpener.Extensions;
 using WinRT.Interop;
 using static PInvoke.User32;
-using Monitor = Audibly.App.Helpers.Monitor;
+// using Monitor = Audibly.App.Helpers.Monitor;
 
 namespace Audibly.App.Extensions;
 
@@ -85,32 +85,32 @@ public static class WindowExtensions
     }
 
     // TODO: fix this
-    public static void MoveWindowToTopRight(this Window window)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-        var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+    //public static void MoveWindowToTopRight(this Window window)
+    //{
+    //    var hWnd = WindowNative.GetWindowHandle(window);
+    //    var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+    //    var appWindow = AppWindow.GetFromWindowId(windowId);
+    //    var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
 
-        var test = Monitor.GetNearestFromWindow(hWnd);
+    //    var test = Monitor.GetNearestFromWindow(hWnd);
 
-        var monitors = Monitor.All.AsArray();
-        if (monitors.Length > 1)
-        {
-            var thisMonitor = Monitor.FromWindow(hWnd);
-            var otherMonitor = monitors.First(m => m.DeviceName != thisMonitor.DeviceName);
-            // move to second display's upper left corner
-            window.AppWindow.Move(new PointInt32(otherMonitor.WorkingArea.X, otherMonitor.WorkingArea.Y));
-        }
+    //    var monitors = Monitor.All.AsArray();
+    //    if (monitors.Length > 1)
+    //    {
+    //        var thisMonitor = Monitor.FromWindow(hWnd);
+    //        var otherMonitor = monitors.First(m => m.DeviceName != thisMonitor.DeviceName);
+    //        // move to second display's upper left corner
+    //        window.AppWindow.Move(new PointInt32(otherMonitor.WorkingArea.X, otherMonitor.WorkingArea.Y));
+    //    }
 
-        // if (displayArea is not null)
-        // {
-        //     var x = displayArea.WorkArea.Width - appWindow.Size.Width;
-        //     var y = 0;
-        //
-        //     appWindow.Move(new PointInt32(x, y));
-        // }
-    }
+    //    // if (displayArea is not null)
+    //    // {
+    //    //     var x = displayArea.WorkArea.Width - appWindow.Size.Width;
+    //    //     var y = 0;
+    //    //
+    //    //     appWindow.Move(new PointInt32(x, y));
+    //    // }
+    //}
 
     public static void CenterWindow(this Window window)
     {

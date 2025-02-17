@@ -36,6 +36,8 @@ using Constants = Audibly.App.Helpers.Constants;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Xaml.Media;
 
 namespace Audibly.App;
 
@@ -147,7 +149,14 @@ public partial class App : Application
             Window.Content = RootFrame;
         }
 
-        if (RootFrame.Content == null) RootFrame.Navigate(typeof(AppShell), args.Arguments);
+        if (RootFrame.Content == null)
+        {
+            RootFrame.Navigate(typeof(AppShell), args.Arguments);
+            if (!MicaController.IsSupported() && RootFrame.Content is Page appShellPage)
+            {
+                appShellPage.Background = (Brush)Application.Current.Resources["AudiblyBackgroundBrush"];
+            }
+        }
 
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 

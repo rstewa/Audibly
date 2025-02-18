@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 01/28/2025
+// Updated: 02/18/2025
 
 using System;
 using System.Collections.Generic;
@@ -26,8 +26,10 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
@@ -36,8 +38,6 @@ using Constants = Audibly.App.Helpers.Constants;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
-using Microsoft.UI.Composition.SystemBackdrops;
-using Microsoft.UI.Xaml.Media;
 
 namespace Audibly.App;
 
@@ -153,9 +153,7 @@ public partial class App : Application
         {
             RootFrame.Navigate(typeof(AppShell), args.Arguments);
             if (!MicaController.IsSupported() && RootFrame.Content is Page appShellPage)
-            {
-                appShellPage.Background = (Brush)Application.Current.Resources["AudiblyBackgroundBrush"];
-            }
+                appShellPage.Background = (Brush)Current.Resources["AudiblyBackgroundBrush"];
         }
 
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);

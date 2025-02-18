@@ -1,8 +1,7 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 01/27/2025
+// Updated: 02/18/2025
 
 using System;
-using System.Diagnostics;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -12,7 +11,6 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
 using Constants = Audibly.App.Helpers.Constants;
 
 namespace Audibly.App.UserControls;
@@ -89,24 +87,13 @@ public sealed partial class PlayerControlGrid : UserControl
         var newWindow = WindowHelper.CreateWindow("MiniPlayerWindow");
 
         // const int width = 504;
-        const int width = 536;
-        const int height = 96;
 
-        newWindow.CustomizeWindow(width, height, true, true, false, false, false);
+        // check if we're on win 10 or 11
+        newWindow.CustomizeWindow(536, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         newWindow.Content = rootPage;
-        newWindow.SizeChanged += (s, args) =>
-        {
-            var window = s as Window;
-            if (window == null) return;
 
-            var newWidth = window.Bounds.Width;
-            var newHeight = window.Bounds.Height;
-
-            Debug.WriteLine($"New Width: {newWidth}, New Height: {newHeight}");
-        };
-        // newWindow.SetWindowOpacity(95);
         newWindow.SetWindowDraggable(true);
         newWindow.RemoveWindowBorderAndTitleBar();
         newWindow.Activate();

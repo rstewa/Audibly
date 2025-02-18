@@ -33,7 +33,7 @@
             <Border
                 BorderBrush="Transparent"
                 BorderThickness="0"
-                CornerRadius="15">
+                CornerRadius="{StaticResource OverlayCornerRadius}">
                 <Image
                     HorizontalAlignment="Center"
                     Source="{x:Bind AudiobookViewModel.CoverImagePath, Mode=OneWay}"
@@ -41,7 +41,7 @@
                     VerticalAlignment="Top" />
             </Border>
             <winUi:Effects.Shadow>
-                <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
+                <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
             </winUi:Effects.Shadow>
         </Border>
         <StackPanel

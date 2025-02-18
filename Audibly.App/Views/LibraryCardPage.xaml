@@ -355,7 +355,7 @@
             BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
             Canvas.ZIndex="2"
-            CornerRadius="8"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
             Margin="-36,0,-26,12"
             MaxHeight="250"
             Padding="12"

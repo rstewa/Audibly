@@ -17,7 +17,7 @@
 
     <!--  this dialog will show users the selected files and allow them to put them in order  -->
     <Grid HorizontalAlignment="Stretch">
-        <Border Background="{ThemeResource ControlOnImageFillColorDefaultBrush}" CornerRadius="5">
+        <Border Background="{ThemeResource ControlOnImageFillColorDefaultBrush}" CornerRadius="4">
             <ScrollView>
                 <ListView
                     AllowDrop="True"

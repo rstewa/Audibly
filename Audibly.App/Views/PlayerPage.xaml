@@ -84,13 +84,13 @@
                     <Border
                         BorderBrush="Transparent"
                         BorderThickness="0"
-                        CornerRadius="10">
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
                         <Border.Background>
                             <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
                         </Border.Background>
                     </Border>
                     <winUi:Effects.Shadow>
-                        <media:AttachedCardShadow CornerRadius="10" Offset="4, 4" />
+                        <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
                     </winUi:Effects.Shadow>
                 </Border>
 

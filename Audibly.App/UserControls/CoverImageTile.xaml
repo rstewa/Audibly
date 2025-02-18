@@ -24,14 +24,15 @@
         <Border
             BorderBrush="Transparent"
             BorderThickness="0"
-            CornerRadius="{x:Bind CoverImageRadius, Converter={StaticResource CornerRadiusConverter}}">
+            CornerRadius="{StaticResource OverlayCornerRadius}">
+            <!--  CornerRadius="{x:Bind CoverImageRadius, Converter={StaticResource CornerRadiusConverter}}">  -->
             <Grid>
                 <Image Source="ms-appx:///Assets/DefaultCoverImage.png" Stretch="UniformToFill" />
                 <Image Source="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay}" Stretch="UniformToFill" />
             </Grid>
         </Border>
         <winUi:Effects.Shadow>
-            <media:AttachedCardShadow CornerRadius="{x:Bind CoverImageRadius}" Offset="4, 4" />
+            <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
         </winUi:Effects.Shadow>
     </Border>
 </UserControl>

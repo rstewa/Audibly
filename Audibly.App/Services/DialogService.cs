@@ -164,7 +164,10 @@ public static class DialogService
                 RequestedTheme = ThemeHelper.ActualTheme,
                 MinWidth = moreInfoDialog.ActualWidth
             };
-
+            
+            // todo: decide if I want to use this
+            // contentDialog.Background = (Brush)Application.Current.Resources["AcrylicBackgroundFillColorBaseBrush"];
+            
             await contentDialog.ShowOneAtATimeAsync();
         });
     }

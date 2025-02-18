@@ -146,7 +146,7 @@
                                         <Setter Property="MinWidth" Value="30" />
                                         <Setter Property="MaxWidth" Value="30" />
                                         <Setter Property="MinHeight" Value="125" />
-                                        <Setter Property="CornerRadius" Value="5" />
+                                        <Setter Property="CornerRadius" Value="4" />
                                         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
                                         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
                                         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
@@ -189,7 +189,7 @@
                                         <Setter Property="MinWidth" Value="30" />
                                         <Setter Property="MaxWidth" Value="30" />
                                         <Setter Property="MinHeight" Value="125" />
-                                        <Setter Property="CornerRadius" Value="5" />
+                                        <Setter Property="CornerRadius" Value="4" />
                                         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
                                         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
                                         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />

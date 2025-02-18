@@ -76,7 +76,7 @@
                 <Border
                     BorderBrush="Transparent"
                     BorderThickness="0"
-                    CornerRadius="15">
+                    CornerRadius="{StaticResource OverlayCornerRadius}">
                     <Grid>
                         <Image Source="ms-appx:///Assets/DefaultCoverImage.png" Stretch="UniformToFill" />
                         <ContentPresenter
@@ -86,7 +86,7 @@
                     </Grid>
                 </Border>
                 <winUi:Effects.Shadow>
-                    <media:AttachedCardShadow CornerRadius="15" Offset="4, 4" />
+                    <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
                 </winUi:Effects.Shadow>
             </Border>
 
@@ -103,7 +103,7 @@
                 </Grid.Resources>
                 <Grid
                     Background="Black"
-                    CornerRadius="15"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     Opacity="0.55" />
                 <Button
                     BorderThickness="0"

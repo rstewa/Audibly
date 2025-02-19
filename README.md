@@ -1,23 +1,8 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
 
 
 
 <!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 [![Version][version-shield]][version-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
@@ -104,48 +89,25 @@ This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b`
 
 ## Screenshots
 
-[//]: # (<p align="middle">)
-
-[//]: # (  <img src="images/v2.1.11/audibly_home_page.png" />)
-
-[//]: # (</p> )
-
 ### Home/Library
 <p align="middle">
-  <img src="images/v2.1.11/audibly_home_page.png" />
+  <img src="images/v2.2.0/audibly_home_page.png" />
 </p> 
 
 ### Expanded Player
 <p align="middle">
-  <img src="images/v2.1.11/audibly_player_page.png" />
-</p> 
-
-### More Info Dialog
-<p align="middle">
-  <img src="images/v2.1.11/audibly_more_info.png" />
+  <img src="images/v2.2.0/audibly_player_page.png" />
 </p> 
 
 ### Mini-player
 <p align="middle">
-  <img src="images/v2.1.11/audibly_mini_player.png" />
+  <img src="images/v2.2.0/audibly_mini_player.png" />
 </p> 
 
-### Import audiobook consisting of multiple files dialog
+### More Info Dialog
 <p align="middle">
-  <img src="images/v2.0.16/home-library-page-import-audiobooks-with-multiple-files-75-percent.PNG" />
-</p>
-
-<details>
-  <summary>Additional Screenshots</summary>
-    <p align="middle">
-        <img src="images/v2.0.16/home-library-page-while-importing-75-percent.PNG" />
-    </p>
-    <p align="middle">
-        <img src="images/v2.0.16/home-library-page-no-audiobooks-75-percent.PNG" />
-    </p>
-
-
-</details>
+  <img src="images/v2.2.0/audibly_more_info.png" />
+</p> 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

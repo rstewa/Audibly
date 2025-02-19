@@ -124,7 +124,7 @@
                 <!--  About  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="About" />
                 <toolkit:SettingsExpander
-                    Description="© 2024. All rights reserved."
+                    Description="© 2025. All rights reserved."
                     Header="Audibly"
                     HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.scale-400.png}">
                     <TextBlock
@@ -169,7 +169,7 @@
                 <!--  advanced settings  -->
                 <!--  TODO: only show this if data migration failed  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Advanced" />
-                <toolkit:SettingsExpander Header="Advanced settings" Padding="0, 0, 0, 16">
+                <toolkit:SettingsExpander Header="Advanced settings" Padding="0,0,0,16">
                     <toolkit:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xE713;" />
                     </toolkit:SettingsExpander.HeaderIcon>
@@ -184,7 +184,7 @@
                         </toolkit:SettingsCard>
                     </toolkit:SettingsExpander.Items>
                 </toolkit:SettingsExpander>
-                <Border Height="24" Background="Transparent" />
+                <Border Background="Transparent" Height="24" />
             </StackPanel>
         </ScrollViewer>
         <VisualStateManager.VisualStateGroups>

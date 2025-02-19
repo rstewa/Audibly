@@ -109,7 +109,7 @@
                     BorderThickness="0"
                     Click="PinButton_Click"
                     HorizontalAlignment="Right"
-                    ToolTipService.ToolTip="Pin Mini Player"
+                    ToolTipService.ToolTip="Pin Mini-Player"
                     VerticalAlignment="Center"
                     x:Name="PinButton">
                     <Button.Resources>

@@ -32,6 +32,7 @@ public sealed partial class NewMiniPlayerPage : Page
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
+    // todo: fix the bug where this is getting triggered even when the user hasn't clicked the slider
     private async void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
     {
         var slider = sender as Slider;

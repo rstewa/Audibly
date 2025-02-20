@@ -37,9 +37,6 @@
   </p>
 </div>
 
-> [!IMPORTANT]  
-> Audibly v2 is **NOW** in the Microsoft Store!
-> Update that addes support for `.mp3` files and audiobooks that consist of multiple files will be published to the store soon!
 
 <!-- link to store page -->
 <a href="https://apps.microsoft.com/detail/9p6r1m1gg9jr?mode=direct">
@@ -81,7 +78,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b` and `.mp3` files. It also supports audiobooks that consist of multiple files.
+This desktop audiobook player for Windows 10/11 supports playing .m4b and .mp3 files, including audiobooks composed of multiple files.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -134,7 +131,7 @@ This is a desktop audiobook player for Windows 10/11. It supports playing `.m4b`
 
 - [x] Add `.mp3` file support
 - [x] Add support for multiple files in an audiobook
-- [ ] Add mini-player from v1 to v2
+- [x] Add mini-player
 
 See the [open issues](https://github.com/rstewa/Audibly/issues) for a full list of proposed features (and known issues).
 

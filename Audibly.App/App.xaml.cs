@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 02/18/2025
+// Updated: 02/20/2025
 
 using System;
 using System.Collections.Generic;
@@ -26,10 +26,8 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
@@ -149,12 +147,7 @@ public partial class App : Application
             Window.Content = RootFrame;
         }
 
-        if (RootFrame.Content == null)
-        {
-            RootFrame.Navigate(typeof(AppShell), args.Arguments);
-            if (!MicaController.IsSupported() && RootFrame.Content is Page appShellPage)
-                appShellPage.Background = (Brush)Current.Resources["AudiblyBackgroundBrush"];
-        }
+        if (RootFrame.Content == null) RootFrame.Navigate(typeof(AppShell), args.Arguments);
 
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 

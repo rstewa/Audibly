@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 02/14/2025
+// Updated: 02/20/2025
 
 using System;
 using System.Collections.Generic;
@@ -12,9 +12,11 @@ using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using CommunityToolkit.WinUI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -67,6 +69,8 @@ public sealed partial class AppShell : Page
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
+
+        if (!MicaController.IsSupported()) Background = (Brush)Application.Current.Resources["AudiblyBackgroundBrush"];
     }
 
     /// <summary>

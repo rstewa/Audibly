@@ -68,24 +68,6 @@
                     </ComboBox>
                 </toolkit:SettingsCard>
 
-                <!--  Resources  -->
-                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Resources" />
-                <toolkit:SettingsCard
-                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                    Click="libationCard_Click"
-                    Description="Libation is a free, open-source and cross-platform Audible audiobook manager that allows you to backup your Audible library (and convert them to .M4B files)."
-                    Header="Libation"
-                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/libation_icon.png}"
-                    IsClickEnabled="True" />
-
-                <toolkit:SettingsCard
-                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                    Click="openAudibleCard_Click"
-                    Description="OpenAudible is a cross-platform audiobook manager designed for Audible users. It allows you view/manage your library as well as convert your audiobooks to .M4B files."
-                    Header="OpenAudible"
-                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/openaudible-icon.png}"
-                    IsClickEnabled="True" />
-
                 <!--  Donate  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Donate" />
 
@@ -169,6 +151,25 @@
                         </toolkit:SettingsCard>
                     </toolkit:SettingsExpander.Items>
                 </toolkit:SettingsExpander>
+
+                <!--  Resources  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Resources" />
+                <toolkit:SettingsCard
+                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                    Click="libationCard_Click"
+                    Description="Libation is a free, open-source and cross-platform Audible audiobook manager that allows you to backup your Audible library (and convert them to .M4B files)."
+                    Header="Libation"
+                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/libation_icon.png}"
+                    IsClickEnabled="True" />
+
+                <toolkit:SettingsCard
+                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                    Click="openAudibleCard_Click"
+                    Description="OpenAudible is a cross-platform audiobook manager designed for Audible users. It allows you view/manage your library as well as convert your audiobooks to .M4B files."
+                    Header="OpenAudible"
+                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/openaudible-icon.png}"
+                    IsClickEnabled="True" />
+
 
                 <!--  advanced settings  -->
                 <!--  TODO: only show this if data migration failed  -->

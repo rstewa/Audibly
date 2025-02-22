@@ -1,20 +1,30 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/13/2024
+// Updated: 01/26/2025
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Windows.Graphics;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Sharpener.Extensions;
 using WinRT.Interop;
 using static PInvoke.User32;
+// using Monitor = Audibly.App.Helpers.Monitor;
 
 namespace Audibly.App.Extensions;
 
 public static class WindowExtensions
 {
+    // taken from: https://github.com/castorix/WinUI3_Transparent/blob/master/MainWindow.xaml.cs
+    // TODO: having these static could prove problematic if more than one window is created and then set draggable
+    private static bool _isMoving;
+    private static int _nX, _nY, _nXWindow, _nYWindow;
+    private static AppWindow _apw;
+
     public static void CustomizeWindow(this Window window, int width, int height, bool centerWindow,
         bool extendsContentIntoTitleBar, bool isResizable, bool isMinimizable, bool isMaximizable,
         bool getSizeFromDisplay = false)
@@ -63,6 +73,45 @@ public static class WindowExtensions
         presenter!.IsMinimizable = isMinimizable;
     }
 
+    public static void SetWindowAlwaysOnTop(this Window window, bool isAlwaysOnTop)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        if (presenter is not null)
+            presenter.IsAlwaysOnTop = isAlwaysOnTop;
+    }
+
+    // TODO: fix this
+    //public static void MoveWindowToTopRight(this Window window)
+    //{
+    //    var hWnd = WindowNative.GetWindowHandle(window);
+    //    var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+    //    var appWindow = AppWindow.GetFromWindowId(windowId);
+    //    var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+
+    //    var test = Monitor.GetNearestFromWindow(hWnd);
+
+    //    var monitors = Monitor.All.AsArray();
+    //    if (monitors.Length > 1)
+    //    {
+    //        var thisMonitor = Monitor.FromWindow(hWnd);
+    //        var otherMonitor = monitors.First(m => m.DeviceName != thisMonitor.DeviceName);
+    //        // move to second display's upper left corner
+    //        window.AppWindow.Move(new PointInt32(otherMonitor.WorkingArea.X, otherMonitor.WorkingArea.Y));
+    //    }
+
+    //    // if (displayArea is not null)
+    //    // {
+    //    //     var x = displayArea.WorkArea.Width - appWindow.Size.Width;
+    //    //     var y = 0;
+    //    //
+    //    //     appWindow.Move(new PointInt32(x, y));
+    //    // }
+    //}
+
     public static void CenterWindow(this Window window)
     {
         var hWnd = WindowNative.GetWindowHandle(window);
@@ -110,6 +159,130 @@ public static class WindowExtensions
         appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
         presenter!.SetBorderAndTitleBar(true, true);
     }
+
+    public static void SetWindowOpacity(this Window window, int nOpacity)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
+        SetLayeredWindowAttributes(hWnd, 0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
+        nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
+    }
+
+    public static void RemoveWindowBorderAndTitleBar(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        var presenter = appWindow.Presenter as OverlappedPresenter;
+
+        presenter!.SetBorderAndTitleBar(true, false);
+    }
+
+    public static void SetWindowDraggable(this Window window, bool isDraggable)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        _apw = AppWindow.GetFromWindowId(windowId);
+
+        var root = window.Content;
+
+        if (isDraggable)
+        {
+            root.PointerMoved += RootOnPointerMoved;
+            root.PointerPressed += RootOnPointerPressed;
+            root.PointerReleased += RootOnPointerReleased;
+        }
+        else
+        {
+            root.PointerMoved -= RootOnPointerMoved;
+            root.PointerPressed -= RootOnPointerPressed;
+            root.PointerReleased -= RootOnPointerReleased;
+        }
+    }
+
+    private static void RootOnPointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        ((UIElement)sender).ReleasePointerCaptures();
+        _isMoving = false;
+    }
+
+    private static void RootOnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        var properties = e.GetCurrentPoint((UIElement)sender).Properties;
+        if (properties.IsLeftButtonPressed)
+        {
+            ((UIElement)sender).CapturePointer(e.Pointer);
+            _nXWindow = _apw.Position.X;
+            _nYWindow = _apw.Position.Y;
+            GetCursorPos(out var pt);
+            _nX = pt.x;
+            _nY = pt.y;
+            _isMoving = true;
+        }
+        else if (properties.IsRightButtonPressed)
+        {
+            Thread.Sleep(200);
+            Application.Current.Exit();
+        }
+    }
+
+    private static void RootOnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        var properties = e.GetCurrentPoint((UIElement)sender).Properties;
+        if (!properties.IsLeftButtonPressed) return;
+        GetCursorPos(out var pt);
+        if (_isMoving)
+            _apw.Move(new PointInt32(_nXWindow + (pt.x - _nX), _nYWindow + (pt.y - _nY)));
+        e.Handled = true;
+    }
+
+    public static int Width(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        return appWindow.Size.Width;
+    }
+
+    public static int Height(this Window window)
+    {
+        var hWnd = WindowNative.GetWindowHandle(window);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+
+        return appWindow.Size.Height;
+    }
+
+    #region Nested type: WINDOWPOS
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct WINDOWPOS
+    {
+        public IntPtr hwnd;
+        public IntPtr hwndInsertAfter;
+        public int x;
+        public int y;
+        public int cx;
+        public int cy;
+        public int flags;
+    }
+
+    #endregion
+
+    #region Nested type: WM
+
+    internal enum WM
+    {
+        WINDOWPOSCHANGING = 0x0046
+    }
+
+    #endregion
 
     #region PInvoke Stuff
 
@@ -575,39 +748,4 @@ public static class WindowExtensions
     public static extern IntPtr GetModuleHandle(string modName);
 
     #endregion
-
-    public static void SetWindowOpacity(this Window window, int nOpacity, bool removeBorderAndTitleBar = false)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-        var presenter = appWindow.Presenter as OverlappedPresenter;
-
-        if (removeBorderAndTitleBar)
-            presenter!.SetBorderAndTitleBar(false, false);
-
-        var nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_LAYERED));
-        SetLayeredWindowAttributes(hWnd, 0, (byte)(255 * nOpacity / 100), LWA_ALPHA);
-        nExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-        SetWindowLong(hWnd, GWL_EXSTYLE, (IntPtr)(nExStyle | WS_EX_APPWINDOW));
-    }
-
-    public static int Width(this Window window)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-
-        return appWindow.Size.Width;
-    }
-
-    public static int Height(this Window window)
-    {
-        var hWnd = WindowNative.GetWindowHandle(window);
-        var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-
-        return appWindow.Size.Height;
-    }
 }

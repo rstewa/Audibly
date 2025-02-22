@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/17/2024
+// Updated: 02/14/2025
 
 using System;
 using System.Collections.Generic;
@@ -17,6 +16,8 @@ namespace Audibly.App.ViewModels;
 /// </summary>
 public class AudiobookViewModel : BindableBase
 {
+    private string _volumeGlyph;
+
     /// <summary>
     ///     Initializes a new instance of the CustomerViewModel class that wraps a Customer object.
     /// </summary>
@@ -28,7 +29,7 @@ public class AudiobookViewModel : BindableBase
 
         Chapters.Clear();
         foreach (var chapter in model.Chapters) Chapters.Add(chapter);
-        
+
         // CurrentTimeMs = model.SourcePaths[model.CurrentSourceFileIndex].CurrentTimeMs;
     }
 
@@ -36,6 +37,51 @@ public class AudiobookViewModel : BindableBase
     ///     Gets the chapters of the audiobook.
     /// </summary>
     public ObservableCollection<ChapterInfo> Chapters { get; set; } = [];
+
+    /// <summary>
+    ///     Gets or sets the volume glyph of the audiobook.
+    /// </summary>
+    public string VolumeGlyph
+    {
+        get => _volumeGlyph;
+        set => Set(ref _volumeGlyph, value);
+    }
+
+    /// <summary>
+    ///     Gets or sets a value that indicates whether the underlying model has been modified.
+    /// </summary>
+    /// <remarks>
+    ///     Used when sync'ing with the server to reduce load and only upload the models that have changed.
+    /// </remarks>
+    public bool IsModified { get; set; }
+
+    // private bool _isNewAudiobook;
+    //
+    // /// <summary>
+    // ///     Gets or sets a value that indicates whether this is a new audiobook.
+    // /// </summary>
+    // public bool IsNewAudiobook
+    // {
+    //     get => _isNewAudiobook;
+    //     set => Set(ref _isNewAudiobook, value);
+    // }
+
+    /// <summary>
+    ///     Saves audiobook data that has been edited.
+    /// </summary>
+    public async Task SaveAsync()
+    {
+        // if (IsNewAudiobook)
+        // {
+        //     IsNewAudiobook = false;
+        //     App.ViewModel.Audiobooks.Add(this);
+        // }
+
+        if (IsModified)
+            await App.Repository.Audiobooks.UpsertAsync(Model);
+
+        IsModified = false;
+    }
 
 
     #region model database properties
@@ -79,7 +125,7 @@ public class AudiobookViewModel : BindableBase
     }
 
     // private int _currentTimeMs;
-    
+
     /// <summary>
     ///     Gets or sets the current time in milliseconds of the audiobook.
     /// </summary>
@@ -95,7 +141,7 @@ public class AudiobookViewModel : BindableBase
                 CurrentSourceFile.CurrentTimeMs = value;
                 IsModified = true;
                 OnPropertyChanged();
-        
+
                 // Task.Run(SaveAsync); // todo: should this be done here?
             }
         }
@@ -216,7 +262,7 @@ public class AudiobookViewModel : BindableBase
     }
 
     #region read-only
-    
+
     /// <summary>
     ///     Gets the unique identifier for the audiobook.
     /// </summary>
@@ -273,6 +319,17 @@ public class AudiobookViewModel : BindableBase
     /// </summary>
     public ChapterInfo CurrentChapter => Chapters[CurrentChapterIndex ?? 0];
 
+    private string _currentChapterTitle;
+
+    /// <summary>
+    ///     Gets or sets the current chapter title of the audiobook.
+    /// </summary>
+    public string CurrentChapterTitle
+    {
+        get => _currentChapterTitle;
+        set => Set(ref _currentChapterTitle, value);
+    }
+
     /// <summary>
     ///     Gets the current source file of the audiobook.
     /// </summary>
@@ -286,51 +343,4 @@ public class AudiobookViewModel : BindableBase
     #endregion
 
     #endregion
-
-    private string _volumeGlyph;
-
-    /// <summary>
-    ///     Gets or sets the volume glyph of the audiobook.
-    /// </summary>
-    public string VolumeGlyph
-    {
-        get => _volumeGlyph;
-        set => Set(ref _volumeGlyph, value);
-    }
-
-    /// <summary>
-    ///     Gets or sets a value that indicates whether the underlying model has been modified.
-    /// </summary>
-    /// <remarks>
-    ///     Used when sync'ing with the server to reduce load and only upload the models that have changed.
-    /// </remarks>
-    public bool IsModified { get; set; }
-
-    // private bool _isNewAudiobook;
-    //
-    // /// <summary>
-    // ///     Gets or sets a value that indicates whether this is a new audiobook.
-    // /// </summary>
-    // public bool IsNewAudiobook
-    // {
-    //     get => _isNewAudiobook;
-    //     set => Set(ref _isNewAudiobook, value);
-    // }
-
-    /// <summary>
-    ///     Saves audiobook data that has been edited.
-    /// </summary>
-    public async Task SaveAsync()
-    {
-        // if (IsNewAudiobook)
-        // {
-        //     IsNewAudiobook = false;
-        //     App.ViewModel.Audiobooks.Add(this);
-        // }
-
-        if (IsModified)
-            await App.Repository.Audiobooks.UpsertAsync(Model);
-
-        IsModified = false;
-    }
 }

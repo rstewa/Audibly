@@ -1,6 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/16/2024
+// Updated: 01/28/2025
 
 using System;
 using System.Collections.Generic;
@@ -15,12 +14,12 @@ using Audibly.App.ViewModels;
 using Audibly.App.Views.ContentDialogs;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Sentry;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Audibly.App.Views;
 
@@ -119,10 +118,6 @@ public sealed partial class LibraryCardPage : Page
 
     private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)
     {
-        // unchecked all the filter flyout items
-        // InProgressFilterCheckBox.IsChecked =
-        //     NotStartedFilterCheckBox.IsChecked = CompletedFilterCheckBox.IsChecked = false;
-
         await ViewModel.GetAudiobookListAsync();
     }
 

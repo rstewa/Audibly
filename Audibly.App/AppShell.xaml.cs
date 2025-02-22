@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 02/20/2025
 
 using System;
 using System.Collections.Generic;
@@ -13,9 +12,11 @@ using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using CommunityToolkit.WinUI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -30,7 +31,6 @@ public sealed partial class AppShell : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    public readonly string AudiobookListLabel = "Audiobooks";
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
 
@@ -46,14 +46,31 @@ public sealed partial class AppShell : Page
         // set the title bar
         var window = WindowHelper.GetMainWindow();
         if (window != null)
+        {
             window.SetTitleBar(AppTitleBar);
+            window.SizeChanged += Window_SizeChanged; // Subscribe to the SizeChanged event
+        }
 
         AppShellFrame.Navigate(typeof(LibraryCardPage));
 
         Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
+        PointerWheelChanged += (_, e) =>
+        {
+            // wait 1 second before resetting the zoom buttons
+            // todo: check if library is the current page
+            if (e.KeyModifiers == VirtualKeyModifiers.Control)
+            {
+                if (e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0)
+                    ViewModel.IncreaseAudiobookTileSize();
+                else
+                    ViewModel.DecreaseAudiobookTileSize();
+            }
+        };
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
+
+        if (!MicaController.IsSupported()) Background = (Brush)Application.Current.Resources["AudiblyBackgroundBrush"];
     }
 
     /// <summary>
@@ -71,16 +88,15 @@ public sealed partial class AppShell : Page
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
 
+    private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
+    {
+        // Handle the window size change here
+        var newWidth = e.Size.Width;
+        var newHeight = e.Size.Height;
+    }
+
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {
-        // get sidebar state
-        if (UserSettings.IsSidebarCollapsed)
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                NavView.IsPaneOpen = false;
-                NavView.CompactModeThresholdWidth = 0;
-            });
-
         // Check to see if this is the first time the app is being launched
         var hasCompletedOnboarding =
             ApplicationData.Current.LocalSettings.Values.FirstOrDefault(x => x.Key == "HasCompletedOnboarding");
@@ -127,10 +143,6 @@ public sealed partial class AppShell : Page
         // check if the item is already the current page
         // if (item == (NavigationViewItem)NavView.SelectedItem) return;
 
-        // if (item == AudiobookListMenuItem)
-        // {
-        //     AppFrame.Navigate(typeof(LibraryPage));
-        // }
         if (item == LibraryCardMenuItem)
         {
             if (AppAppShellFrame.Content is LibraryCardPage) return;
@@ -302,5 +314,13 @@ public sealed partial class AppShell : Page
             .Select(x => x.Author)
             .Distinct()
             .ToList();
+    }
+
+    private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+    {
+        if (args.DisplayMode == NavigationViewDisplayMode.Minimal)
+            VisualStateManager.GoToState(this, "Compact", true);
+        else
+            VisualStateManager.GoToState(this, "Default", true);
     }
 }

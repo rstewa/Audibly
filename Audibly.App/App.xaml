@@ -13,6 +13,7 @@
                     <XamlControlsResources.MergedDictionaries>
                         <!--  Other app resources here  -->
                         <ResourceDictionary>
+                            <FontFamily x:Key="AudiblyCustomFont">/Assets/AudiblyCustom.ttf#AudiblyCustom</FontFamily>
                             <x:Double x:Key="ContentDialogMaxWidth">1000</x:Double>
                             <Style
                                 BasedOn="{StaticResource DefaultButtonStyle}"
@@ -21,7 +22,9 @@
                                 <Setter Property="Background" Value="Red" />
                                 <Setter Property="Foreground" Value="White" />
                             </Style>
+                            <x:Double x:Key="OverlayCornerRadiusDouble">8</x:Double>
                         </ResourceDictionary>
+
                         <ResourceDictionary>
                             <ResourceDictionary.ThemeDictionaries>
                                 <ResourceDictionary x:Key="Light">

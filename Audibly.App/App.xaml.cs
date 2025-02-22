@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 02/20/2025
 
 using System;
 using System.Collections.Generic;
@@ -99,7 +98,6 @@ public partial class App : Application
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         ViewModel.LoggingService.LogError(e.Exception, true);
-        // RestartApp();
     }
 
     /// <summary>
@@ -126,16 +124,17 @@ public partial class App : Application
             return;
         }
 
-        Window = WindowHelper.CreateWindow();
+        Window = WindowHelper.CreateWindow("MainWindow");
 
         var appWindow = WindowHelper.GetAppWindow(Window);
         appWindow.Closing += async (_, _) =>
         {
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
+            WindowHelper.CloseAll();
         };
 
         win32WindowHelper = new Win32WindowHelper(Window);
-        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 1750, y = 700 });
+        win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 940, y = 640 });
 
         UseSqlite();
 

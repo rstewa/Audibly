@@ -58,9 +58,13 @@
                         AutomationProperties.AutomationId="themeModeComboBox"
                         SelectionChanged="themeMode_SelectionChanged"
                         x:Name="themeMode">
-                        <ComboBoxItem Content="Light" Tag="Light" />
+                        <ComboBoxItem
+                            Content="Light (Coming Soon)"
+                            IsEnabled="False"
+                            Tag="Light" />
                         <ComboBoxItem Content="Dark" Tag="Dark" />
-                        <ComboBoxItem Content="Use system setting" Tag="Default" />
+                        <!--  todo: re-enable when light theme is implemented  -->
+                        <!-- <ComboBoxItem Content="Use system setting" Tag="Default" /> -->
                     </ComboBox>
                 </toolkit:SettingsCard>
 

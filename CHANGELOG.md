@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added zoom option for main library page
   - Added mica background for Win11 users
   - Changes to allow window size to be much smaller
+  - Disabled light theme until it can be completed at a future date
   - Several other small UI improvements
 - Updated nuget packages
 

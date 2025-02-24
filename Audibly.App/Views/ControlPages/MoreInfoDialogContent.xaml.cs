@@ -2,6 +2,9 @@
 // Created: 10/16/2024
 // Updated: 10/17/2024
 
+using System;
+using System.Linq;
+using Audibly.App.Extensions;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 
@@ -16,10 +19,11 @@ namespace Audibly.App.Views.ControlPages;
 public sealed partial class MoreInfoDialogContent : Page
 {
     public AudiobookViewModel AudiobookViewModel { get; set; }
-
+    public string Description { get; set; }
     public MoreInfoDialogContent(AudiobookViewModel audiobookViewModel)
     {
         AudiobookViewModel = audiobookViewModel;
+        Description = audiobookViewModel.Description.FormatText();
         InitializeComponent();
     }
 }

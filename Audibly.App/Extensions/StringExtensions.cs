@@ -10,6 +10,10 @@ namespace Audibly.App.Extensions;
 
 public static class StringExtensions
 {
+    public static string FormatText(this string str, params object[] args)
+    {
+        return str.Replace("\\n", "\r\n\r\n").Replace("\\", "");
+    }
     public static string GetSha256Hash(this string str)
     {
         using var sha256 = SHA256.Create();

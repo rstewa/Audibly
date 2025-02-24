@@ -144,7 +144,7 @@
                     TextWrapping="Wrap"
                     x:Name="DescriptionText">
                     <Run FontWeight="Bold">Description:</Run>
-                    <Run Text="{x:Bind AudiobookViewModel.Description}" />
+                    <Run Text="{x:Bind Description}" />
                 </TextBlock>
             </StackPanel>
         </ScrollViewer>

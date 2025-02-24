@@ -25,8 +25,8 @@ using System.Runtime.Versioning;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 // Note: package version and assembly version must be kept in sync
-[assembly: AssemblyVersion("2.1.10.0")]
-[assembly: AssemblyFileVersion("2.1.10.0")]
+[assembly: AssemblyVersion("2.2.0.0")]
+[assembly: AssemblyFileVersion("2.2.0.0")]
 [assembly: TargetPlatform("Windows10.0.19041.0")]
 [assembly: SupportedOSPlatform("Windows10.0.17763.0")]
 [assembly: ComVisible(false)]

@@ -17,7 +17,7 @@
         <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
         <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
         <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-        <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+        <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
         <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
         <GenerateTestArtifacts>True</GenerateTestArtifacts>
         <AppxBundle>Always</AppxBundle>
@@ -28,7 +28,9 @@
     <!-- We recommend only using these features for release builds. -->
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
 
-        <!-- Configure Sentry org and project -->
+		<SENTRY_RELEASE>2.2.0.0</SENTRY_RELEASE>
+
+		<!-- Configure Sentry org and project -->
         <SentryOrg>audibly</SentryOrg>
         <SentryProject>audibly</SentryProject>
 
@@ -51,29 +53,29 @@
 
 
     <ItemGroup>
-        <None Remove="UserControls\CoverImageTile.xaml"/>
-        <None Remove="UserControls\NowPlayingBar.xaml"/>
-        <None Remove="UserControls\PlayerControlGrid.xaml"/>
-        <None Remove="UserControls\PlaySkipButtonsStack.xaml"/>
-        <None Remove="UserControls\TitleArtistStack.xaml"/>
-        <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml"/>
-        <None Remove="Views\ControlPages\ChangelogDialogContent.xaml"/>
-        <None Remove="Views\ControlPages\FailedDataMigrationContent.xaml"/>
-        <None Remove="Views\ControlPages\MoreInfoDialogContent.xaml"/>
-        <None Remove="Views\ControlPages\OnBoardingDialogContent.xaml"/>
-        <None Remove="Views\ControlPages\SelectedFilesDialog.xaml"/>
-        <None Remove="Views\MiniPlayerPage.xaml"/>
-        <None Remove="Views\NewMiniPlayerPage.xaml"/>
-        <None Remove="Views\ResizableContentDialog.xaml"/>
+        <None Remove="UserControls\CoverImageTile.xaml" />
+        <None Remove="UserControls\NowPlayingBar.xaml" />
+        <None Remove="UserControls\PlayerControlGrid.xaml" />
+        <None Remove="UserControls\PlaySkipButtonsStack.xaml" />
+        <None Remove="UserControls\TitleArtistStack.xaml" />
+        <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml" />
+        <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
+        <None Remove="Views\ControlPages\FailedDataMigrationContent.xaml" />
+        <None Remove="Views\ControlPages\MoreInfoDialogContent.xaml" />
+        <None Remove="Views\ControlPages\OnBoardingDialogContent.xaml" />
+        <None Remove="Views\ControlPages\SelectedFilesDialog.xaml" />
+        <None Remove="Views\MiniPlayerPage.xaml" />
+        <None Remove="Views\NewMiniPlayerPage.xaml" />
+        <None Remove="Views\ResizableContentDialog.xaml" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Assets\SplashScreen.scale-200.png"/>
-        <Content Include="Assets\LockScreenLogo.scale-200.png"/>
-        <Content Include="Assets\Square150x150Logo.scale-200.png"/>
-        <Content Include="Assets\Square44x44Logo.scale-200.png"/>
-        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png"/>
-        <Content Include="Assets\Wide310x150Logo.scale-200.png"/>
+        <Content Include="Assets\SplashScreen.scale-200.png" />
+        <Content Include="Assets\LockScreenLogo.scale-200.png" />
+        <Content Include="Assets\Square150x150Logo.scale-200.png" />
+        <Content Include="Assets\Square44x44Logo.scale-200.png" />
+        <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+        <Content Include="Assets\Wide310x150Logo.scale-200.png" />
         <Content Update="Assets\PayPal_Monogram_Full_Color_RGB.png">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
@@ -121,10 +123,10 @@
         </PackageReference>
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
-        <Manifest Include="$(ApplicationManifest)"/>
-        <PackageReference Include="PInvoke.User32" Version="0.7.124"/>
+        <Manifest Include="$(ApplicationManifest)" />
+        <PackageReference Include="PInvoke.User32" Version="0.7.124" />
         <PackageReference Include="Sentry" Version="5.1.1" />
-        <PackageReference Include="Sharpener" Version="0.2.4"/>
+        <PackageReference Include="Sharpener" Version="0.2.4" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
         <PackageReference Include="z440.atl.core" Version="6.17.0" />
     </ItemGroup>
@@ -135,11 +137,11 @@
       package has not yet been restored.
     -->
     <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-        <ProjectCapability Include="Msix"/>
+        <ProjectCapability Include="Msix" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj"/>
-        <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj"/>
+        <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
+        <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Page Update="Views\ControlPages\ChangelogDialogContent.xaml">

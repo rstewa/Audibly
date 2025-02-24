@@ -118,19 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.1.10] - 1-8-24
+    <value>## [2.2.0] - 2-21-25
 
-### Fixed
+### Added/Changed
 
-- Updated all content dialog calls to use the new DialogService, ensuring only one dialog is shown at a time using a
-  semaphore. This is to fix the System.Runtime.InteropServices.COMException getting thrown from the old dialog queue.
-- Fixed a bug where a books position was being overwritten when the chapter combo box loaded
-- Fixed a bug where the app didn't handle when SixLabors was unable to recognize the image format
-- Added error handling to WriteCoverImageAsync to handle when access is denied
-
-### Changed
-
-- Changed AudiobookTile and PlayerControl to use default CoverImage if the actual cover image is inaccessible
-- Updated Sentry configuration</value>
+- UI Changes:
+  - Added Mini-player
+  - Changed the corner radius for all cover image tiles
+  - Added zoom option for main library page
+  - Added mica background for Win11 users
+  - Changes to allow window size to be much smaller
+  - Disabled light theme until it can be completed at a future date
+  - Several other small UI improvements
+</value>
   </data>
 </root>

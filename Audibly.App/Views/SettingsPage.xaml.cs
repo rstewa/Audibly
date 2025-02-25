@@ -37,19 +37,20 @@ public sealed partial class SettingsPage : Page
 
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
-        var currentTheme = ThemeHelper.RootTheme;
-        switch (currentTheme)
-        {
-            case ElementTheme.Light:
-                themeMode.SelectedIndex = 0;
-                break;
-            case ElementTheme.Dark:
-                themeMode.SelectedIndex = 1;
-                break;
-            case ElementTheme.Default:
-                themeMode.SelectedIndex = 2;
-                break;
-        }
+        themeMode.SelectedIndex = 1;
+        // var currentTheme = ThemeHelper.RootTheme;
+        // switch (currentTheme)
+        // {
+        //     case ElementTheme.Light:
+        //         themeMode.SelectedIndex = 0;
+        //         break;
+        //     case ElementTheme.Dark:
+        //         themeMode.SelectedIndex = 1;
+        //         break;
+        //     case ElementTheme.Default:
+        //         themeMode.SelectedIndex = 2;
+        //         break;
+        // }
     }
 
     private async void themeMode_SelectionChanged(object sender, RoutedEventArgs e)

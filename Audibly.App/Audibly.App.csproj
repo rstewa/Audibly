@@ -17,7 +17,7 @@
         <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
         <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
         <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-        <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+        <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
         <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
         <GenerateTestArtifacts>True</GenerateTestArtifacts>
         <AppxBundle>Always</AppxBundle>
@@ -27,15 +27,12 @@
 
     <!-- We recommend only using these features for release builds. -->
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-
-		<SENTRY_RELEASE>2.2.0.0</SENTRY_RELEASE>
-
 		<!-- Configure Sentry org and project -->
         <SentryOrg>audibly</SentryOrg>
         <SentryProject>audibly</SentryProject>
 
         <!-- Automatically creates a release when building your application. -->
-        <SentryCreateRelease>true</SentryCreateRelease>
+        <SentryCreateRelease>false</SentryCreateRelease>
 
         <!-- Automatically associates commits with the release. -->
         <SentrySetCommits>true</SentrySetCommits>

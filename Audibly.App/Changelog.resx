@@ -118,7 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.0] - 2-21-25
+    <value>## [2.2.1] - 2-24-25
+
+### Fixed
+
+- Fixed bug in the settings page where the app would crash if the current theme was set to default
+
+## [2.2.0] - 2-21-25
 
 ### Added/Changed
 

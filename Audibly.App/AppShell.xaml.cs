@@ -48,7 +48,7 @@ public sealed partial class AppShell : Page
         if (window != null)
         {
             window.SetTitleBar(AppTitleBar);
-            window.SizeChanged += Window_SizeChanged; // Subscribe to the SizeChanged event
+            //window.SizeChanged += Window_SizeChanged; // Subscribe to the SizeChanged event
         }
 
         AppShellFrame.Navigate(typeof(LibraryCardPage));
@@ -88,12 +88,12 @@ public sealed partial class AppShell : Page
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
 
-    private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
-    {
-        // Handle the window size change here
-        var newWidth = e.Size.Width;
-        var newHeight = e.Size.Height;
-    }
+    //private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
+    //{
+    //    // Handle the window size change here
+    //    var newWidth = e.Size.Width;
+    //    var newHeight = e.Size.Height;
+    //}
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {

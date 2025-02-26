@@ -231,6 +231,12 @@
                                     IsChecked="{x:Bind ViewModel.ShowAlignmentGrids, Mode=TwoWay}"
                                     Text="Show Alignment Grid"
                                     ToolTipService.ToolTip="Show Alignment Grid" />
+                                <!-- show loading progress bar -->
+                                <ToggleMenuFlyoutItem Icon="Refresh"
+                                    IsChecked="{x:Bind ViewModel.IsLoading, Mode=TwoWay}"
+                                                      Text="Toggle Loading Progress Bar"
+                                                      ToolTipService.ToolTip="Toggle Loading Progress Bar" />
+
                                 <MenuFlyoutItem
                                     Click="{x:Bind ViewModel.DeleteAudiobooksAsync}"
                                     Icon="Delete"

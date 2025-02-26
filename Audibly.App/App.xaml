@@ -30,10 +30,10 @@
                                 <ResourceDictionary x:Key="Light">
                                     <!--<SolidColorBrush x:Key="AppShellBackgroundBrush"
                                                      Color="Transparent" />-->
-                                    
+
                                     <StaticResource x:Key="AppShellBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
 
-                                    
+
                                     <SolidColorBrush x:Key="HomePageBackgroundBrush" Color="Transparent" />
                                     <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
                                     <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
@@ -55,8 +55,8 @@
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="Dark">
                                     <StaticResource x:Key="AppShellBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
-                                    
-                                    
+
+
                                     <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
                                     <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
                                     <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />
@@ -76,10 +76,9 @@
                                     <StaticResource x:Key="RepeatButtonForegroundDisabled" ResourceKey="MyTextFillColorDisabledBrush" />
                                 </ResourceDictionary>
                                 <ResourceDictionary x:Key="HighContrast">
-                                    <StaticResource x:Key="AppShellBackgroundBrush"
-                                                    ResourceKey="SystemColorWindowColor" />
+                                    <StaticResource x:Key="AppShellBackgroundBrush" ResourceKey="SystemColorWindowColor" />
 
-                                    
+
                                     <StaticResource x:Key="AudiblyBackgroundBrush" ResourceKey="SolidBackgroundFillColorBaseBrush" />
                                     <StaticResource x:Key="AudiblyBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
                                     <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#121212" />

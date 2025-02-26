@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.3] - 2-26-25
+
+### Fixed
+
+- Fixed light theme
+
+## [2.2.2] - 2-25-25
+
+### Fixed
+
+- Re-enabled sentry (after accidentally disabling it in v2.2.1)
+
+## [2.2.1] - 2-24-25
+
+### Fixed
+
+- Fixed bug in the settings page where the app would crash if the current theme was set to default
+- Updated More Info dialog to parse newlines correctly
+
 ## [2.2.1] - 2-24-25
 
 ### Fixed

@@ -1,7 +1,7 @@
 # TODO
 # MSBuild.exe .\Audibly.sln /t:Rebuild /p:Configuration=Release /p:AppxPackageDir="Packages" /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxBundle= /p:GenerateAppxPackageOnBuild=true
 
-$version = "2.2.1.0"
+$version = "2.2.2.0"
 $targetFramework = "net8.0-windows10.0.19041.0"
 
 $packagesDirectory = ".\Packages"

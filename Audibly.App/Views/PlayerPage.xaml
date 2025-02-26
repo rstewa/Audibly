@@ -66,6 +66,7 @@
             <RelativePanel HorizontalAlignment="Stretch">
                 <!--  Back button  -->
                 <Button
+                    RequestedTheme="Dark"
                     Click="BackButton_OnClick"
                     IsEnabled="{x:Bind Frame.CanGoBack, Mode=OneWay}"
                     RelativePanel.AlignLeftWithPanel="True"
@@ -96,6 +97,7 @@
 
                 <!--  player controls  -->
                 <userControls:PlayerControlGrid
+                    RequestedTheme="Dark"
                     HorizontalAlignment="Stretch"
                     Margin="4,20,20,20"
                     RelativePanel.AlignBottomWithPanel="True"

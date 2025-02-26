@@ -50,7 +50,23 @@ public static class ThemeHelper
                     rootElement.RequestedTheme = value;
 
             if (NativeHelper.IsAppPackaged)
-                ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey] = value.ToString();
+            {
+                ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey] = value.ToString(); 
+                //var test = value.ToString();
+                //ApplicationData.Current.LocalSettings.Values[SelectedAppThemeKey] = test;
+                //switch (test)
+                //{
+                //    case "Light":
+                //        Application.Current.RequestedTheme = ApplicationTheme.Light;
+                //        break;
+                //    case "Dark":
+                //        TitleBarHelper.SetCaptionButtonColors(window, Colors.White);
+                //        break;
+                //    case "Default":
+                //        Application.Current.RequestedTheme = ApplicationTheme.Default;
+                //        break;
+                //}
+            }
         }
     }
 
@@ -77,4 +93,10 @@ public static class ThemeHelper
         if (RootTheme == ElementTheme.Default) return Application.Current.RequestedTheme == ApplicationTheme.Dark;
         return RootTheme == ElementTheme.Dark;
     }
+
+    // public static bool IsHighContrast()
+    // {
+    //     if (RootTheme == ElementTheme.Default) return Application.Current.RequestedTheme == ApplicationTheme.HighContrast;
+    //     return RootTheme == ElementTheme.HighContrast;
+    // }
 }

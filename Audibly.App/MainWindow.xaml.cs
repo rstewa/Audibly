@@ -21,11 +21,9 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        TrySetSystemBackdrop();
     }
 
-    bool TrySetSystemBackdrop()
+    public bool TrySetSystemBackdrop()
     {
         if (MicaController.IsSupported())
         {
@@ -37,11 +35,11 @@ public sealed partial class MainWindow : Window
             this.Activated += Window_Activated;
             this.Closed += Window_Closed;
             // todo: figure out if i need this
-            // ((FrameworkElement)this.Content).ActualThemeChanged += Window_ThemeChanged;
+            ((FrameworkElement)this.Content).ActualThemeChanged += Window_ThemeChanged;
 
             // Initial configuration state.
             m_configurationSource.IsInputActive = true;
-            // SetConfigurationSourceTheme();
+            SetConfigurationSourceTheme();
 
             m_backdropController = new Microsoft.UI.Composition.SystemBackdrops.MicaController();
 

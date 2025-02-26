@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 02/20/2025
+// Updated: 02/26/2025
 
 using System;
 using System.Collections.Generic;
@@ -26,8 +26,11 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.AppLifecycle;
 using Sentry;
@@ -124,6 +127,9 @@ public partial class App : Application
             return;
         }
 
+        if (MicaController.IsSupported())
+            Current.Resources["AppShellBackgroundBrush"] = new SolidColorBrush(Colors.Transparent);
+
         Window = WindowHelper.CreateWindow("MainWindow");
 
         var appWindow = WindowHelper.GetAppWindow(Window);
@@ -148,6 +154,8 @@ public partial class App : Application
         }
 
         if (RootFrame.Content == null) RootFrame.Navigate(typeof(AppShell), args.Arguments);
+
+        (Window as MainWindow)?.TrySetSystemBackdrop();
 
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 

@@ -34,7 +34,8 @@ public static class DialogService
             {
                 Title = title,
                 Content = content,
-                XamlRoot = App.Window.Content.XamlRoot
+                XamlRoot = App.Window.Content.XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
             }.SetPrimaryButton("OK");
             await errorDialog.ShowOneAtATimeAsync();
         });
@@ -102,7 +103,8 @@ public static class DialogService
                 PrimaryButtonText = "OK",
                 CloseButtonText = "Cancel",
                 XamlRoot = App.Window.Content.XamlRoot,
-                MinWidth = selectFilesDialog.ActualWidth
+                MinWidth = selectFilesDialog.ActualWidth,
+                RequestedTheme = ThemeHelper.ActualTheme,
             };
 
             result = await contentDialog.ShowOneAtATimeAsync();
@@ -181,6 +183,7 @@ public static class DialogService
             _progressDialog = new ProgressContentDialog(cts)
             {
                 Title = title,
+                RequestedTheme = ThemeHelper.ActualTheme,
                 XamlRoot = App.Window.Content.XamlRoot
             };
 

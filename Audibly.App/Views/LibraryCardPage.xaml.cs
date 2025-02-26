@@ -386,5 +386,10 @@ public sealed partial class LibraryCardPage : Page
         });
     }
 
+    private void ToggleLoadingProgressBar_OnClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.IsLoading = !ViewModel.IsLoading;
+    }
+
     #endregion
 }

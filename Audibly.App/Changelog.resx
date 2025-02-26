@@ -118,7 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.1] - 2-24-25
+    <value>## [2.2.3] - 2-26-25
+
+### Fixed
+
+- Fixed light theme
+
+## [2.2.1] - 2-24-25
 
 ### Fixed
 
@@ -135,7 +141,6 @@
   - Added mica background for Win11 users
   - Changes to allow window size to be much smaller
   - Disabled light theme until it can be completed at a future date
-  - Several other small UI improvements
-</value>
+  - Several other small UI improvements</value>
   </data>
 </root>

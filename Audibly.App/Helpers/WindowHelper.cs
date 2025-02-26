@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Audibly.App.Extensions;
+using Audibly.App.Views;
 using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using WinRT.Interop;
@@ -24,15 +27,11 @@ public static class WindowHelper
 
     public static Window CreateWindow(string name)
     {
-        // var newWindow = new Window
-        // {
-        //     SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop()
-        // };
-        var newWindow = new MainWindow(); // Window();
+        var newWindow = new MainWindow();
         TrackWindow(name, newWindow);
         return newWindow;
     }
-
+    
     // TODO: having the names hardcoded is gross
     public static Window? GetMainWindow()
     {
@@ -44,6 +43,36 @@ public static class WindowHelper
     {
         ActiveWindows.TryGetValue("MiniPlayerWindow", out var miniPlayerWindow);
         return miniPlayerWindow;
+    }
+    
+    public static void ShowMiniPlayer()
+    {
+        ActiveWindows.TryGetValue("MiniPlayerWindow", out var miniPlayerWindow);
+        if (miniPlayerWindow != null)
+        {
+            (miniPlayerWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
+            miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
+            
+            HideMainWindow();
+            return;
+        }
+        
+        miniPlayerWindow = CreateWindow("MiniPlayerWindow");
+        miniPlayerWindow.CustomizeWindow(536, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
+
+        var rootPage = new NewMiniPlayerPage();
+        miniPlayerWindow.Content = rootPage;
+
+        ThemeHelper.Initialize();
+        
+        (miniPlayerWindow as MainWindow)?.TrySetSystemBackdrop();
+
+        miniPlayerWindow.SetWindowDraggable(true);
+        miniPlayerWindow.RemoveWindowBorderAndTitleBar();
+        
+        miniPlayerWindow.Activate();
+        miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
+        HideMainWindow();
     }
 
     public static void HideMiniPlayer()

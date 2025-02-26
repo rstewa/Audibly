@@ -75,30 +75,7 @@ public sealed partial class PlayerControlGrid : UserControl
 
     private void OpenMiniPlayerButton_OnClick(object sender, RoutedEventArgs e)
     {
-        // check if there is already an instance of the mini player open and if so, bring it to the front
-        var existingWindow = WindowHelper.GetMiniPlayerWindow();
-        if (existingWindow != null)
-        {
-            existingWindow.Activate();
-            WindowHelper.HideMainWindow();
-            return;
-        }
-
-        var newWindow = WindowHelper.CreateWindow("MiniPlayerWindow");
-
-        // const int width = 504;
-
-        // check if we're on win 10 or 11
-        newWindow.CustomizeWindow(536, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
-
-        var rootPage = new NewMiniPlayerPage();
-        newWindow.Content = rootPage;
-
-        newWindow.SetWindowDraggable(true);
-        newWindow.RemoveWindowBorderAndTitleBar();
-        newWindow.Activate();
-
-        WindowHelper.HideMainWindow();
+        WindowHelper.ShowMiniPlayer();
     }
 
     private void MaximizePlayerButton_OnClick(object sender, RoutedEventArgs e)

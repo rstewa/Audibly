@@ -63,6 +63,8 @@ public static class WindowHelper
         var rootPage = new NewMiniPlayerPage();
         miniPlayerWindow.Content = rootPage;
 
+        ThemeHelper.Initialize();
+        
         (miniPlayerWindow as MainWindow)?.TrySetSystemBackdrop();
 
         miniPlayerWindow.SetWindowDraggable(true);

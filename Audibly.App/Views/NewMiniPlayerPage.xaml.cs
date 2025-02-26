@@ -74,7 +74,6 @@ public sealed partial class NewMiniPlayerPage : Page
     private void BackToLibraryButton_Click(object sender, RoutedEventArgs e)
     {
         WindowHelper.RestoreMainWindow();
-        // WindowHelper.HideMiniPlayer();
-        WindowHelper.CloseMiniPlayer();
+        WindowHelper.HideMiniPlayer();
     }
 }

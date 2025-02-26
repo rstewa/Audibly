@@ -66,9 +66,6 @@ public sealed partial class SettingsPage : Page
             }
             else if (selectedTheme == "Light" && currentTheme != ElementTheme.Light)
             {
-                // await DialogService.ShowOkDialogAsync("Light Theme Warning",
-                //     "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
-
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
             }
             else

@@ -37,20 +37,19 @@ public sealed partial class SettingsPage : Page
 
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
-        themeMode.SelectedIndex = 1;
-        // var currentTheme = ThemeHelper.RootTheme;
-        // switch (currentTheme)
-        // {
-        //     case ElementTheme.Light:
-        //         themeMode.SelectedIndex = 0;
-        //         break;
-        //     case ElementTheme.Dark:
-        //         themeMode.SelectedIndex = 1;
-        //         break;
-        //     case ElementTheme.Default:
-        //         themeMode.SelectedIndex = 2;
-        //         break;
-        // }
+        var currentTheme = ThemeHelper.RootTheme;
+        switch (currentTheme)
+        {
+            case ElementTheme.Light:
+                themeMode.SelectedIndex = 0;
+                break;
+            case ElementTheme.Dark:
+                themeMode.SelectedIndex = 1;
+                break;
+            case ElementTheme.Default:
+                themeMode.SelectedIndex = 2;
+                break;
+        }
     }
 
     private async void themeMode_SelectionChanged(object sender, RoutedEventArgs e)
@@ -67,8 +66,8 @@ public sealed partial class SettingsPage : Page
             }
             else if (selectedTheme == "Light" && currentTheme != ElementTheme.Light)
             {
-                await DialogService.ShowOkDialogAsync("Light Theme Warning",
-                    "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
+                // await DialogService.ShowOkDialogAsync("Light Theme Warning",
+                //     "The light theme is in beta and may not be fully supported. Please report any issues you encounter.");
 
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
             }

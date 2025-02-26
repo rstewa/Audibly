@@ -70,7 +70,7 @@ public sealed partial class AppShell : Page
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
 
-        if (!MicaController.IsSupported()) Background = (Brush)Application.Current.Resources["AudiblyBackgroundBrush"];
+        // if (!MicaController.IsSupported()) Background = (Brush)Application.Current.Resources["AppShellBackgroundBrush"];
     }
 
     /// <summary>

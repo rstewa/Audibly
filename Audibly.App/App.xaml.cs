@@ -36,6 +36,9 @@ using Constants = Audibly.App.Helpers.Constants;
 using UnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using LaunchActivatedEventArgs = Microsoft.UI.Xaml.LaunchActivatedEventArgs;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI;
 
 namespace Audibly.App;
 
@@ -136,6 +139,9 @@ public partial class App : Application
         win32WindowHelper = new Win32WindowHelper(Window);
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 940, y = 640 });
 
+        // todo: testing this here
+        ThemeHelper.Initialize();
+
         UseSqlite();
 
         RootFrame = Window.Content as Frame;
@@ -147,11 +153,24 @@ public partial class App : Application
             Window.Content = RootFrame;
         }
 
-        if (RootFrame.Content == null) RootFrame.Navigate(typeof(AppShell), args.Arguments);
+        if (RootFrame.Content == null)
+        {
+            RootFrame.Navigate(typeof(AppShell), args.Arguments);
+            if (RootFrame.Content == null)
+            {
+                RootFrame.Navigate(typeof(AppShell), args.Arguments);
+                var appShell = RootFrame.Content as AppShell;
+                if (appShell != null)
+                {
+                    if (MicaController.IsSupported()) 
+                        appShell.Background = new SolidColorBrush(Colors.Transparent); // Current.Resources["AppShellBackgroundBrush"] as Brush;
+                }
+            }
+        }
 
         Window.CustomizeWindow(-1, -1, true, true, true, true, true, true);
 
-        ThemeHelper.Initialize();
+        // ThemeHelper.Initialize();
 
         // handle file activation
         // got this from Andrew KeepCoding's answer here: https://stackoverflow.com/questions/76650127/how-to-handle-activation-through-files-in-winui-3-packaged

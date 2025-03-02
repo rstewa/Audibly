@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed #92 where an unhandled exception occurs in the LibraryCardPage if an AudiobookTile tries to load an invalid
   image
+- Fixed #94 where DialogService.ShowErrorDialogAsync() was throwing an unhandled exception because xamlroot wasn't
+  initialized yet
+    - Updated all methods in the DialogService to check if xamlroot is null before using it
 
 ## [2.2.3] - 2-26-25
 

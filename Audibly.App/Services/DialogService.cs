@@ -1,12 +1,9 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 12/17/2024
-// Updated: 01/01/2025
+// Updated: 03/02/2025
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
-using Windows.UI.Core;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -42,12 +39,12 @@ public static class DialogService
             return null;
         }
     }
-    
+
     internal static async Task ShowErrorDialogAsync(string title, string content)
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var errorDialog = new ContentDialog
@@ -65,7 +62,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var dialog = new ContentDialog
@@ -83,7 +80,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             // show onboarding dialog
@@ -104,7 +101,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             // show changelog dialog
@@ -122,7 +119,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return ContentDialogResult.None;
-        
+
         var result = ContentDialogResult.None;
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
@@ -136,7 +133,7 @@ public static class DialogService
                 CloseButtonText = "Cancel",
                 XamlRoot = App.Window.Content.XamlRoot,
                 MinWidth = selectFilesDialog.ActualWidth,
-                RequestedTheme = ThemeHelper.ActualTheme,
+                RequestedTheme = ThemeHelper.ActualTheme
             };
 
             result = await contentDialog.ShowOneAtATimeAsync();
@@ -149,7 +146,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var dialog = new ContentDialog
@@ -172,7 +169,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var dialog = new ContentDialog
@@ -193,7 +190,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var moreInfoDialog = new MoreInfoDialogContent(audiobookViewModel);
@@ -207,10 +204,10 @@ public static class DialogService
                 RequestedTheme = ThemeHelper.ActualTheme,
                 MinWidth = moreInfoDialog.ActualWidth
             };
-            
+
             // todo: decide if I want to use this
             // contentDialog.Background = (Brush)Application.Current.Resources["AcrylicBackgroundFillColorBaseBrush"];
-            
+
             await contentDialog.ShowOneAtATimeAsync();
         });
     }
@@ -220,7 +217,7 @@ public static class DialogService
     {
         var xamlRoot = GetXamlRoot();
         if (xamlRoot == null) return;
-        
+
         // yes, I'm intentionally not awaiting this
         _dispatcherQueue.EnqueueAsync(async () =>
         {

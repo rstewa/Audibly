@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 02/14/2025
+// Updated: 03/02/2025
 
 using System;
 using System.IO;
@@ -346,7 +346,8 @@ public class PlayerViewModel : BindableBase
         // note: content dialog
         App.ViewModel.EnqueueNotification(new Notification
         {
-            Message = "Unable to open the audiobook: media failed. Please verify that the file is not corrupted and try again.",
+            Message =
+                "Unable to open the audiobook: media failed. Please verify that the file is not corrupted and try again.",
             Severity = InfoBarSeverity.Error
         });
     }

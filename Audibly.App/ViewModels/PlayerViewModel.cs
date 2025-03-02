@@ -339,14 +339,16 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.Play();
     }
 
-    private async void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+    private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
 
         // note: content dialog
-        await DialogService.ShowErrorDialogAsync("Error",
-            "An error occurred while trying to play the selected audiobook. " +
-            "Please verify that the file is not corrupted and try again.");
+        App.ViewModel.EnqueueNotification(new Notification
+        {
+            Message = "Unable to open the audiobook: media failed. Please verify that the file is not corrupted and try again.",
+            Severity = InfoBarSeverity.Error
+        });
     }
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)

@@ -2,8 +2,11 @@
 // Created: 12/17/2024
 // Updated: 01/01/2025
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
@@ -11,6 +14,7 @@ using Audibly.App.Views.ContentDialogs;
 using Audibly.App.Views.ControlPages;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Services;
@@ -26,8 +30,24 @@ public static class DialogService
     /// </summary>
     public static MainViewModel ViewModel => App.ViewModel;
 
+    private static XamlRoot? GetXamlRoot()
+    {
+        try
+        {
+            return App.Window?.Content?.XamlRoot;
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e, true);
+            return null;
+        }
+    }
+    
     internal static async Task ShowErrorDialogAsync(string title, string content)
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var errorDialog = new ContentDialog
@@ -43,6 +63,9 @@ public static class DialogService
 
     internal static async Task ShowOkDialogAsync(string title, string content)
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var dialog = new ContentDialog
@@ -58,6 +81,9 @@ public static class DialogService
 
     internal static async Task ShowOnboardingDialogAsync()
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             // show onboarding dialog
@@ -76,6 +102,9 @@ public static class DialogService
 
     internal static async Task ShowChangelogDialogAsync()
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             // show changelog dialog
@@ -91,6 +120,9 @@ public static class DialogService
 
     internal static async Task<ContentDialogResult> ShowSelectFilesDialogAsync()
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return ContentDialogResult.None;
+        
         var result = ContentDialogResult.None;
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
@@ -115,6 +147,9 @@ public static class DialogService
 
     internal static async Task ShowDataMigrationRequiredDialogAsync()
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var dialog = new ContentDialog
@@ -135,6 +170,9 @@ public static class DialogService
 
     internal static async Task ShowDataMigrationFailedDialogAsync()
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var dialog = new ContentDialog
@@ -153,6 +191,9 @@ public static class DialogService
 
     internal static async Task ShowMoreInfoDialogAsync(AudiobookViewModel audiobookViewModel)
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             var moreInfoDialog = new MoreInfoDialogContent(audiobookViewModel);
@@ -177,6 +218,9 @@ public static class DialogService
     internal static async Task ShowProgressDialogAsync(string title, CancellationTokenSource? cts,
         bool showCancelButton = true)
     {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+        
         // yes, I'm intentionally not awaiting this
         _dispatcherQueue.EnqueueAsync(async () =>
         {

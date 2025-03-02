@@ -69,8 +69,6 @@ public sealed partial class AppShell : Page
 
         NavView.PaneClosed += (_, _) => { UserSettings.IsSidebarCollapsed = true; };
         NavView.PaneOpened += (_, _) => { UserSettings.IsSidebarCollapsed = false; };
-
-        // if (!MicaController.IsSupported()) Background = (Brush)Application.Current.Resources["AppShellBackgroundBrush"];
     }
 
     /// <summary>
@@ -87,13 +85,6 @@ public sealed partial class AppShell : Page
     ///     Gets the navigation frame instance.
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
-
-    //private void Window_SizeChanged(object sender, WindowSizeChangedEventArgs e)
-    //{
-    //    // Handle the window size change here
-    //    var newWidth = e.Size.Width;
-    //    var newHeight = e.Size.Height;
-    //}
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {

@@ -67,8 +67,8 @@ public partial class App : Application
             options.Environment = "production";
         });
 
-        InitializeComponent();
         UnhandledException += OnUnhandledException;
+        InitializeComponent();
     }
 
     /// <summary>

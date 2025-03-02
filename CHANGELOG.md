@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- Fixed #92 where an unhandled exception occurs in the LibraryCardPage if an AudiobookTile tries to load an invalid
+  image
+
 ## [2.2.3] - 2-26-25
 
 ### Fixed
@@ -35,13 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added/Changed
 
 - UI Changes:
-  - Added Mini-player
-  - Changed the corner radius for all cover image tiles
-  - Added zoom option for main library page
-  - Added mica background for Win11 users
-  - Changes to allow window size to be much smaller
-  - Disabled light theme until it can be completed at a future date
-  - Several other small UI improvements
+    - Added Mini-player
+    - Changed the corner radius for all cover image tiles
+    - Added zoom option for main library page
+    - Added mica background for Win11 users
+    - Changes to allow window size to be much smaller
+    - Disabled light theme until it can be completed at a future date
+    - Several other small UI improvements
 - Updated nuget packages
 
 ## [2.1.10] - 1-8-25

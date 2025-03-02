@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <Page
+    Background="Transparent"
+    KeyboardAcceleratorPlacementMode="Hidden"
+    mc:Ignorable="d"
     x:Class="Audibly.App.Views.LibraryCardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Audibly.App.Helpers.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
     xmlns:views="using:Audibly.App.Views"
     xmlns:winUi="using:CommunityToolkit.WinUI"
-    Background="Transparent"
-    KeyboardAcceleratorPlacementMode="Hidden"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Page.Resources>
-        <DataTemplate x:Key="AudiobookTemplate" x:DataType="viewModels:AudiobookViewModel">
+        <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
+        <DataTemplate x:DataType="viewModels:AudiobookViewModel" x:Key="AudiobookTemplate">
             <userControls:AudiobookTile
-                Title="{x:Bind Title, Mode=OneWay}"
                 Author="{x:Bind Author, Mode=OneWay}"
                 FilePath="{x:Bind CurrentSourceFile.FilePath, Mode=OneWay}"
                 Id="{x:Bind Id, Mode=OneWay}"
                 IsCompleted="{x:Bind IsCompleted, Mode=OneWay}"
                 Progress="{x:Bind Progress, Mode=OneWay}"
                 SourcePaths="{x:Bind SourcePaths, Mode=OneWay}"
-                SourcePathsCount="{x:Bind SourcePaths.Count, Mode=OneWay}">
+                SourcePathsCount="{x:Bind SourcePaths.Count, Mode=OneWay}"
+                Title="{x:Bind Title, Mode=OneWay}">
                 <userControls:AudiobookTile.Source>
-                    <Image Source="{x:Bind ThumbnailPath, Mode=OneWay}" Stretch="Uniform" />
+                    <Image Source="{x:Bind ThumbnailPath, Mode=OneWay, Converter={StaticResource StringToImageSourceConverter}}" Stretch="Uniform" />
                 </userControls:AudiobookTile.Source>
             </userControls:AudiobookTile>
         </DataTemplate>
@@ -34,31 +36,31 @@
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator
-            Key="F12"
             Invoked="DebugMenuKeyboardAccelerator_OnInvoked"
+            Key="F12"
             Modifiers="Control,Shift" />
     </Page.KeyboardAccelerators>
 
-    <RelativePanel x:Name="LayoutRoot" Padding="36,36,36,0">
+    <RelativePanel Padding="36,36,36,0" x:Name="LayoutRoot">
         <!--  start panel (shown when no audiobooks have been imported yet)  -->
         <StackPanel
-            x:Name="StartPanel"
             Orientation="Vertical"
             RelativePanel.AlignHorizontalCenterWithPanel="True"
             RelativePanel.AlignVerticalCenterWithPanel="True"
-            Visibility="{x:Bind ViewModel.ShowStartPanel, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ShowStartPanel, Mode=OneWay}"
+            x:Name="StartPanel">
 
             <TextBlock
-                Margin="0,0,0,16"
                 FontSize="36"
+                Margin="0,0,0,16"
                 Opacity="0.8"
                 Style="{StaticResource TitleTextBlockStyle}"
                 Text="Audibly"
                 TextAlignment="Left" />
 
             <TextBlock
-                Margin="0,0,0,8"
                 FontSize="24"
+                Margin="0,0,0,8"
                 Opacity="0.6"
                 Style="{StaticResource SubtitleTextBlockStyle}"
                 Text="Start"
@@ -88,14 +90,14 @@
 
         <!--  title and command bar  -->
         <StackPanel
-            x:Name="TitleAndCommandBarPanel"
             HorizontalAlignment="Left"
-            Orientation="Vertical">
+            Orientation="Vertical"
+            x:Name="TitleAndCommandBarPanel">
             <TextBlock
-                x:Name="PageTitle"
                 Margin="20,8,6,0"
                 Style="{StaticResource PageTitleTextBlockStyle}"
-                Text="Audiobook Library" />
+                Text="Audiobook Library"
+                x:Name="PageTitle" />
             <StackPanel
                 Margin="4,0,0,0"
                 Orientation="Horizontal"
@@ -110,44 +112,44 @@
                 <!--  x:Name="AudiobookSearchBox" />  -->
 
                 <CommandBar
-                    x:Name="MainCommandBar"
-                    HorizontalAlignment="Left"
                     Background="Transparent"
-                    DefaultLabelPosition="Right">
+                    DefaultLabelPosition="Right"
+                    HorizontalAlignment="Left"
+                    x:Name="MainCommandBar">
                     <AppBarButton
-                        x:Name="FilterButton"
                         Icon="Filter"
                         Label="Filter"
-                        ToolTipService.ToolTip="Filter Audiobooks">
+                        ToolTipService.ToolTip="Filter Audiobooks"
+                        x:Name="FilterButton">
                         <Button.Flyout>
                             <!--  create custom filter checkbox flyout  -->
                             <Flyout Placement="BottomEdgeAlignedLeft">
                                 <StackPanel Orientation="Vertical">
                                     <CheckBox
-                                        x:Name="SelectAllFiltersCheckBox"
                                         Checked="SelectAllFiltersCheckBox_OnChecked"
                                         Content="Select all"
                                         Indeterminate="SelectAllFiltersCheckBox_OnIndeterminate"
                                         IsThreeState="True"
-                                        Unchecked="SelectAllFiltersCheckBox_OnUnchecked" />
+                                        Unchecked="SelectAllFiltersCheckBox_OnUnchecked"
+                                        x:Name="SelectAllFiltersCheckBox" />
                                     <CheckBox
-                                        x:Name="InProgressFilterCheckBox"
-                                        Margin="24,0,0,0"
                                         Checked="InProgressFilterCheckBox_OnChecked"
                                         Content="In Progress"
-                                        Unchecked="InProgressFilterCheckBox_OnUnchecked" />
-                                    <CheckBox
-                                        x:Name="NotStartedFilterCheckBox"
                                         Margin="24,0,0,0"
+                                        Unchecked="InProgressFilterCheckBox_OnUnchecked"
+                                        x:Name="InProgressFilterCheckBox" />
+                                    <CheckBox
                                         Checked="NotStartedFilterCheckBox_OnChecked"
                                         Content="Not Started"
-                                        Unchecked="NotStartedFilterCheckBox_OnUnchecked" />
-                                    <CheckBox
-                                        x:Name="CompletedFilterCheckBox"
                                         Margin="24,0,0,0"
+                                        Unchecked="NotStartedFilterCheckBox_OnUnchecked"
+                                        x:Name="NotStartedFilterCheckBox" />
+                                    <CheckBox
                                         Checked="CompletedFilterCheckBox_OnChecked"
                                         Content="Completed"
-                                        Unchecked="CompletedFilterCheckBox_OnUnchecked" />
+                                        Margin="24,0,0,0"
+                                        Unchecked="CompletedFilterCheckBox_OnUnchecked"
+                                        x:Name="CompletedFilterCheckBox" />
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>
@@ -203,22 +205,22 @@
 
                     <!--  zoom drop down button  -->
                     <AppBarButton
-                        x:Name="ZoomButton"
                         Icon="Zoom"
                         Label="Zoom"
-                        ToolTipService.ToolTip="Zoom">
+                        ToolTipService.ToolTip="Zoom"
+                        x:Name="ZoomButton">
                         <AppBarButton.Flyout>
-                            <Flyout x:Name="ZoomFlyout" Placement="BottomEdgeAlignedLeft">
+                            <Flyout Placement="BottomEdgeAlignedLeft" x:Name="ZoomFlyout">
                                 <userControls:ZoomLevelUserControl
-                                    x:Name="ZoomLevelUserControl"
                                     ZoomInButtonIsEnabled="{x:Bind ViewModel.ZoomInButtonIsEnabled, Mode=OneWay}"
-                                    ZoomOutButtonIsEnabled="{x:Bind ViewModel.ZoomOutButtonIsEnabled, Mode=OneWay}" />
+                                    ZoomOutButtonIsEnabled="{x:Bind ViewModel.ZoomOutButtonIsEnabled, Mode=OneWay}"
+                                    x:Name="ZoomLevelUserControl" />
                             </Flyout>
                         </AppBarButton.Flyout>
                     </AppBarButton>
 
                     <!--  debug menu  -->
-                    <AppBarSeparator x:Name="DebugMenuSeparator" Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" />
+                    <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
 
                     <AppBarButton
                         Label="Debug Menu"
@@ -320,17 +322,17 @@
 
         <!--  library card view  -->
         <ScrollViewer
-            x:Name="LibraryCardScrollView"
-            Padding="0,8,0,8"
             IsVerticalScrollChainingEnabled="False"
+            Padding="0,8,0,8"
             RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
-            RelativePanel.Below="TitleAndCommandBarPanel">
+            RelativePanel.Below="TitleAndCommandBarPanel"
+            x:Name="LibraryCardScrollView">
             <ItemsRepeater
-                x:Name="LibraryCardView"
                 ItemTemplate="{StaticResource AudiobookTemplate}"
-                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}">
+                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
+                x:Name="LibraryCardView">
 
                 <ItemsRepeater.Layout>
                     <UniformGridLayout
@@ -345,9 +347,9 @@
 
         <!--  progress bar for when library view is loading  -->
         <userControls:ProgressBarCard
-            Margin="25,0,50,0"
             Canvas.ZIndex="10"
             IsIndeterminate="True"
+            Margin="25,0,50,0"
             RelativePanel.AlignHorizontalCenterWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
             RelativePanel.AlignRightWithPanel="True"
@@ -356,18 +358,18 @@
 
         <!--  player  -->
         <Grid
-            x:Name="Player"
-            MaxHeight="250"
-            Margin="-36,0,-26,12"
-            Padding="12"
             Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
             BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
             Canvas.ZIndex="2"
             CornerRadius="{StaticResource OverlayCornerRadius}"
+            Margin="-36,0,-26,12"
+            MaxHeight="250"
+            Padding="12"
             RelativePanel.AlignBottomWithPanel="True"
             RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignRightWithPanel="True">
+            RelativePanel.AlignRightWithPanel="True"
+            x:Name="Player">
 
             <userControls:PlayerControlGrid />
 
@@ -375,8 +377,8 @@
 
         <!--  notifications  -->
         <ScrollViewer
-            Margin="0,0,-26,12"
             Canvas.ZIndex="2"
+            Margin="0,0,-26,12"
             RelativePanel.Above="Player"
             RelativePanel.AlignRightWithPanel="True">
             <StackPanel>
@@ -385,8 +387,8 @@
                         <DataTemplate x:DataType="viewModels:Notification">
                             <Grid>
                                 <InfoBar
-                                    HorizontalAlignment="Right"
                                     Closed="InfoBar_OnClosed"
+                                    HorizontalAlignment="Right"
                                     IsClosable="True"
                                     IsIconVisible="True"
                                     IsOpen="True"
@@ -404,7 +406,7 @@
                 <!--  when no audiobooks have been imported yet  -->
                 <VisualState x:Name="NoAudiobooksState">
                     <VisualState.StateTriggers>
-                        <winUi:IsEqualStateTrigger Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}" To="true" />
+                        <winUi:IsEqualStateTrigger To="true" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
                         <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind ViewModel.Audiobooks, Mode=OneWay}" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>

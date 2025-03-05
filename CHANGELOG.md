@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed #94 where DialogService.ShowErrorDialogAsync() was throwing an unhandled exception because xamlroot wasn't
   initialized yet
     - Updated all methods in the DialogService to check if xamlroot is null before using it
+- Fixed #97 where the description for an .mp3 audiobook wasn't getting grabbed on import
 
 ## [2.2.3] - 2-26-25
 

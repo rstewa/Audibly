@@ -253,9 +253,12 @@ public class FileImportService : IImportFiles
                     audiobook.Title = track.Title;
                     audiobook.Composer = track.Composer;
                     audiobook.Author = track.Artist;
-                    audiobook.Description = track.AdditionalFields.TryGetValue("\u00A9des", out var value)
-                        ? value
-                        : track.Comment;
+                    audiobook.Description =
+                        track.Description.IsNullOrEmpty()
+                            ? track.Comment.IsNullOrEmpty()
+                                ? track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment
+                                : track.Comment
+                            : track.Description;
                     audiobook.ReleaseDate = track.Date;
                 }
 
@@ -363,7 +366,11 @@ public class FileImportService : IImportFiles
                 Duration = track.Duration,
                 Author = track.Artist,
                 Description =
-                    track.Description, // track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment,
+                    track.Description.IsNullOrEmpty()
+                        ? track.Comment.IsNullOrEmpty()
+                            ? track.AdditionalFields.TryGetValue("\u00A9des", out var value) ? value : track.Comment
+                            : track.Comment
+                        : track.Description,
                 PlaybackSpeed = 1.0,
                 Progress = importedAudiobook?.Progress ?? 0,
                 ReleaseDate = track.Date,

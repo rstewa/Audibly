@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/03/2024
+// Updated: 03/11/2025
 
 using Audibly.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +18,13 @@ public class SqlAudiblyRepository : IAudiblyRepository
         // db.Database.EnsureCreated();
     }
 
+    #region IAudiblyRepository Members
+
     public IAudiobookRepository Audiobooks => new SqlAudiobookRepository(
         new AudiblyContext(_dbContextOptions));
+
+    public IFolderRepository Folders => new SqlFolderRepository(
+        new AudiblyContext(_dbContextOptions));
+
+    #endregion
 }

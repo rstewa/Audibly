@@ -169,7 +169,7 @@
                 <!--  notifications  -->
                 <ScrollViewer
                     Canvas.ZIndex="2"
-                    Margin="0,0,-24,12"
+                    Margin="0,0,12,12"
                     RelativePanel.Above="Player"
                     RelativePanel.AlignRightWithPanel="True">
                     <StackPanel>

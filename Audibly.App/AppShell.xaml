@@ -83,6 +83,16 @@
                         <InfoBadge Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" x:Name="infoBadge1" />
                     </NavigationViewItem.InfoBadge>
                 </muxc:NavigationViewItem>
+                <!--  folder  -->
+                <muxc:NavigationViewItem
+                    Content="{x:Bind FoldersLabel}"
+                    Tag="FoldersPage"
+                    ToolTipService.ToolTip="{x:Bind FoldersLabel}"
+                    x:Name="FoldersMenuItem">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B7;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem
                     Content="{x:Bind NowPlayingLabel}"
                     Tag="NowPlayingPage"
@@ -116,7 +126,7 @@
             </muxc:NavigationView.PaneFooter>
 
             <!--  Content  -->
-            <RelativePanel Padding="36,36,36,0">
+            <RelativePanel>
                 <!--  In OnNavigatingToPage, we synchronize the selected item in the NavigationView with the current page.  -->
                 <Frame
                     Margin="12,0,0,0"
@@ -144,7 +154,7 @@
                     BorderThickness="1"
                     Canvas.ZIndex="2"
                     CornerRadius="{StaticResource OverlayCornerRadius}"
-                    Margin="-24,0,-24,12"
+                    Margin="12,0,12,12"
                     MaxHeight="250"
                     Padding="12"
                     RelativePanel.AlignBottomWithPanel="True"

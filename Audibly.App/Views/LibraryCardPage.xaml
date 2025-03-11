@@ -41,7 +41,7 @@
             Modifiers="Control,Shift" />
     </Page.KeyboardAccelerators>
 
-    <RelativePanel Padding="36,36,36,0" x:Name="LayoutRoot">
+    <RelativePanel Padding="36,36,48,0" x:Name="LayoutRoot">
         <!--  start panel (shown when no audiobooks have been imported yet)  -->
         <StackPanel
             Orientation="Vertical"

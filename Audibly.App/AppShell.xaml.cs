@@ -29,6 +29,7 @@ public sealed partial class AppShell : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+    public readonly string FoldersLabel = "Folders";
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
 
@@ -139,6 +140,11 @@ public sealed partial class AppShell : Page
         {
             if (AppAppShellFrame.Content is LibraryCardPage) return;
             AppAppShellFrame.Navigate(typeof(LibraryCardPage));
+        }
+        else if (item == FoldersMenuItem)
+        {
+            if (AppAppShellFrame.Content is FoldersPage) return;
+            AppAppShellFrame.Navigate(typeof(FoldersPage));
         }
         else if (item == NowPlayingMenuItem)
         {

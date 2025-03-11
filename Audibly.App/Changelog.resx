@@ -118,7 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.3] - 2-26-25
+    <value>## [2.2.4] - 3-4-25
+
+### Fixed
+
+- Fixed #92 where an unhandled exception occurs in the LibraryCardPage if an AudiobookTile tries to load an invalid
+  image
+- Fixed #94 where DialogService.ShowErrorDialogAsync() was throwing an unhandled exception because xamlroot wasn't
+  initialized yet
+    - Updated all methods in the DialogService to check if xamlroot is null before using it
+- Fixed #97 where the description for an .mp3 audiobook wasn't getting grabbed on import
+
+## [2.2.3] - 2-26-25
 
 ### Fixed
 

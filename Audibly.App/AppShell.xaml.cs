@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/02/2025
+// Updated: 03/11/2025
 
 using System;
 using System.Collections.Generic;
@@ -116,6 +116,13 @@ public sealed partial class AppShell : Page
             await DialogService.ShowErrorDialogAsync("File Activation Error", ViewModel.FileActivationError);
             ViewModel.FileActivationError = string.Empty;
         }
+    }
+
+    private void InfoBar_OnClosed(InfoBar sender, InfoBarClosedEventArgs args)
+    {
+        // get the notification object
+        if (sender.DataContext is not Notification notification) return;
+        ViewModel.OnNotificationClosed(notification);
     }
 
     /// <summary>

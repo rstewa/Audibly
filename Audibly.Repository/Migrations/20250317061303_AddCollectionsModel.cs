@@ -6,13 +6,19 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Audibly.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class AddFolderTable : Migration
+    public partial class AddCollectionsModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<Guid>(
-                name: "FolderId",
+                name: "CollectionId",
+                table: "Audiobooks",
+                type: "TEXT",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "ParentId",
                 table: "Audiobooks",
                 type: "TEXT",
                 nullable: true);
@@ -31,9 +37,9 @@ namespace Audibly.Repository.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Audiobooks_FolderId",
+                name: "IX_Audiobooks_CollectionId",
                 table: "Audiobooks",
-                column: "FolderId");
+                column: "CollectionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Folders_Name_ParentFolderId",
@@ -42,9 +48,9 @@ namespace Audibly.Repository.Migrations
                 unique: true);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Audiobooks_Folders_FolderId",
+                name: "FK_Audiobooks_Folders_CollectionId",
                 table: "Audiobooks",
-                column: "FolderId",
+                column: "CollectionId",
                 principalTable: "Folders",
                 principalColumn: "Id");
         }
@@ -53,18 +59,22 @@ namespace Audibly.Repository.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Audiobooks_Folders_FolderId",
+                name: "FK_Audiobooks_Folders_CollectionId",
                 table: "Audiobooks");
 
             migrationBuilder.DropTable(
                 name: "Folders");
 
             migrationBuilder.DropIndex(
-                name: "IX_Audiobooks_FolderId",
+                name: "IX_Audiobooks_CollectionId",
                 table: "Audiobooks");
 
             migrationBuilder.DropColumn(
-                name: "FolderId",
+                name: "CollectionId",
+                table: "Audiobooks");
+
+            migrationBuilder.DropColumn(
+                name: "ParentId",
                 table: "Audiobooks");
         }
     }

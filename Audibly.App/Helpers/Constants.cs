@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/1/2024
+// Updated: 03/17/2025
 
 using System;
 using System.Reflection;
@@ -21,6 +20,8 @@ public static class Constants
     public const string MinimizeTooltip = "Minimize";
 
     public const string DatabaseMigrationVersion = "2.1.0.0";
+
+    public static readonly Guid DefaultFolderId = new("00000000-0000-0000-0000-000000000000");
 
     // public const string ChangeLog
     public static string Version

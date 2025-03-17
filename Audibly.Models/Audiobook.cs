@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/11/2024
+// Updated: 03/17/2025
 
 namespace Audibly.Models;
 
@@ -25,6 +24,7 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public bool IsNowPlaying { get; set; }
     public double PlaybackSpeed { get; set; }
     public double Progress { get; set; }
+    public Guid? ParentId { get; set; } // Used for grouping
     public DateTime? ReleaseDate { get; set; }
     public string Title { get; set; }
     public double Volume { get; set; }
@@ -33,6 +33,8 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
 
     public List<ChapterInfo> Chapters { get; set; } = [];
 
+    #region IEquatable<Audiobook> Members
+
     public bool Equals(Audiobook? other)
     {
         if (ReferenceEquals(null, other)) return false;
@@ -40,6 +42,8 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
         return string.Equals(Author, other.Author, StringComparison.OrdinalIgnoreCase) &&
                string.Equals(Title, other.Title, StringComparison.OrdinalIgnoreCase);
     }
+
+    #endregion
 
     public override bool Equals(object? obj)
     {

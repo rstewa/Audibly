@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 02/14/2025
+// Updated: 03/17/2025
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
+using Audibly.App.ViewModels.Interfaces;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -24,6 +25,7 @@ using Microsoft.UI.Xaml.Controls;
 using Sentry;
 using Sharpener.Extensions;
 using WinRT.Interop;
+using Constants = Audibly.App.Helpers.Constants;
 
 namespace Audibly.App.ViewModels;
 
@@ -71,7 +73,8 @@ public class MainViewModel : BindableBase
         FileImporter = fileImporter;
         AppDataService = appDataService;
         LoggingService = loggingService;
-        Task.Run(() => GetAudiobookListAsync(true));
+        // Task.Run(() => GetAudiobookListAsync(true));
+        // Task.Run(GetFileSystemItemsAsync);
 
         // todo: save this as a user setting
         TitleFontSize = 18; // 1.8
@@ -94,6 +97,12 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
+
+
+    /// <summary>
+    ///     The collection of folders and audiobooks for the collections page.
+    /// </summary>
+    public ObservableCollection<IFileSystemItem> FileSystemItems { get; } = [];
 
     /// <summary>
     ///     The collection of audiobooks to be used for filtering.
@@ -214,10 +223,27 @@ public class MainViewModel : BindableBase
 
     public ObservableCollection<Notification> Notifications { get; } = [];
 
+    public Guid CurrentFolderId { get; set; }
+
     /// <summary>
     ///     Invoked when we want to reset the filters in the LibraryCardPage.
     /// </summary>
     public event ResetFiltersHandler? ResetFilters;
+
+    public async Task GetFileSystemItemsAsync()
+    {
+        var collections = await App.Repository.Collections.GetAllChildrenAsync(Constants.DefaultFolderId);
+        var collectionViewModels = collections.Select(f => new CollectionViewModel(f));
+
+        // Load audiobooks (replace with your actual logic)
+        var audiobooks = await App.Repository.Audiobooks.GetAsync();
+        var audiobookViewModels = audiobooks.Select(a => new AudiobookViewModel(a));
+
+        // Combine collections and audiobooks into a single collection
+        FileSystemItems.Clear();
+        foreach (var folder in collectionViewModels) FileSystemItems.Add(folder);
+        foreach (var audiobook in audiobookViewModels) FileSystemItems.Add(audiobook);
+    }
 
     /// <summary>
     ///     Gets the complete list of audiobooks from the database.
@@ -638,6 +664,39 @@ public class MainViewModel : BindableBase
 
         ResizeAudiobookTile(ZoomLevel);
     }
+
+    #region Folder Operations
+
+    public async void CreateCollectionAsync(string name, Guid? parentFolderId = null)
+    {
+        try
+        {
+            var folder = new Collection
+            {
+                Name = name,
+                ParentFolderId = parentFolderId ?? Constants.DefaultFolderId
+            };
+
+            await App.Repository.Collections.UpsertAsync(folder);
+
+            EnqueueNotification(new Notification
+            {
+                Message = "Folder created successfully!",
+                Severity = InfoBarSeverity.Success
+            });
+        }
+        catch (Exception e)
+        {
+            LoggingService.LogError(e, true);
+            EnqueueNotification(new Notification
+            {
+                Message = "Failed to create folder!",
+                Severity = InfoBarSeverity.Error
+            });
+        }
+    }
+
+    #endregion
 
     #region Properties for resizing audiobook tiles
 

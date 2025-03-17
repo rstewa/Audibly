@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/11/2025
+// Updated: 03/17/2025
 
 namespace Audibly.Repository.Interfaces;
 
@@ -13,5 +13,5 @@ public interface IAudiblyRepository
     /// </summary>
     IAudiobookRepository Audiobooks { get; }
 
-    IFolderRepository Folders { get; }
+    ICollectionRepository Collections { get; }
 }

@@ -1,11 +1,12 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 02/14/2025
+// Updated: 03/17/2025
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Audibly.App.Extensions;
+using Audibly.App.ViewModels.Interfaces;
 using Audibly.Models;
 using ChapterInfo = Audibly.Models.ChapterInfo;
 
@@ -14,7 +15,7 @@ namespace Audibly.App.ViewModels;
 /// <summary>
 ///     Provides a bindable wrapper for the Customer model class, encapsulating various services for access by the UI.
 /// </summary>
-public class AudiobookViewModel : BindableBase
+public class AudiobookViewModel : BindableBase, IFileSystemItem
 {
     private string _volumeGlyph;
 
@@ -54,6 +55,12 @@ public class AudiobookViewModel : BindableBase
     ///     Used when sync'ing with the server to reduce load and only upload the models that have changed.
     /// </remarks>
     public bool IsModified { get; set; }
+
+    #region IFileSystemItem Members
+
+    public string Name => Model.Title;
+
+    #endregion
 
     // private bool _isNewAudiobook;
     //

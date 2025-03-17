@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/02/2025
+// Updated: 03/17/2025
 
 using System;
 using System.Collections.Generic;
@@ -143,6 +143,10 @@ public partial class App : Application
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 940, y = 640 });
 
         UseSqlite();
+
+        // TODO: testing this here instead of in MainViewModel constructor
+        await ViewModel.GetAudiobookListAsync();
+        await ViewModel.GetFileSystemItemsAsync();
 
         RootFrame = Window.Content as Frame;
 

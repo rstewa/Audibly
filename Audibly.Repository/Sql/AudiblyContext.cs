@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/11/2025
+// Updated: 03/17/2025
 
 using Audibly.Models;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +25,7 @@ public class AudiblyContext : DbContext
 
     public DbSet<SourceFile> SourceFiles { get; set; }
 
-    public DbSet<Folder> Folders { get; set; }
+    public DbSet<Collection> Folders { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -55,6 +55,6 @@ public class AudiblyContext : DbContext
             .HasIndex(a => new { a.Author, a.Title })
             .IsUnique();
 
-        modelBuilder.Entity<Folder>();
+        modelBuilder.Entity<Collection>();
     }
 }

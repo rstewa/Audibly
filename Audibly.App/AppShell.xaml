@@ -85,10 +85,10 @@
                 </muxc:NavigationViewItem>
                 <!--  folder  -->
                 <muxc:NavigationViewItem
-                    Content="{x:Bind FoldersLabel}"
-                    Tag="FoldersPage"
-                    ToolTipService.ToolTip="{x:Bind FoldersLabel}"
-                    x:Name="FoldersMenuItem">
+                    Content="{x:Bind CollectionsLabel}"
+                    Tag="CollectionsPage"
+                    ToolTipService.ToolTip="{x:Bind CollectionsLabel}"
+                    x:Name="CollectionsMenuItem">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B7;" />
                     </muxc:NavigationViewItem.Icon>

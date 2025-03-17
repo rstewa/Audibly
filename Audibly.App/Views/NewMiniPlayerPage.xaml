@@ -27,7 +27,6 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-
         <!--  TODO: remove this  -->
         <developerTools:AlignmentGrid
             Grid.ColumnSpan="2"

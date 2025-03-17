@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 03/02/2025
+// Updated: 03/17/2025
 
 using System;
 using System.Threading;
@@ -55,6 +55,36 @@ public static class DialogService
                 RequestedTheme = ThemeHelper.ActualTheme
             }.SetPrimaryButton("OK");
             await errorDialog.ShowOneAtATimeAsync();
+        });
+    }
+
+    internal static async Task ShowCreateCollectionDialogAsync()
+    {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return;
+
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            var collectionNameTextBox = new TextBox
+            {
+                Header = "Collection Name",
+                PlaceholderText = "Enter collection name",
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+
+            var contentDialog = new ContentDialog
+            {
+                Title = "Create Collection",
+                Content = collectionNameTextBox,
+                PrimaryButtonText = "Create",
+                CloseButtonText = "Cancel",
+                XamlRoot = App.Window.Content.XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme,
+                DefaultButton = ContentDialogButton.Primary
+            };
+
+            var result = await contentDialog.ShowOneAtATimeAsync();
+            if (result == ContentDialogResult.Primary) ViewModel.CreateCollectionAsync(collectionNameTextBox.Text);
         });
     }
 

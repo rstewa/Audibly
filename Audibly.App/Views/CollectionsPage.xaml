@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    Background="Transparent"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.CollectionsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Audibly.App.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Page.Resources>
+        <helpers:FileSystemItemTemplateSelector x:Key="FileSystemItemTemplateSelector">
+            <helpers:FileSystemItemTemplateSelector.FolderTemplate>
+                <DataTemplate x:DataType="viewModels:CollectionViewModel">
+                    <Grid Margin="12,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <SymbolIcon Grid.Column="0" Symbol="Folder" />
+
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center">
+                            <TextBlock FontSize="16" Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </helpers:FileSystemItemTemplateSelector.FolderTemplate>
+            <helpers:FileSystemItemTemplateSelector.AudiobookTemplate>
+                <DataTemplate x:DataType="viewModels:AudiobookViewModel">
+                    <Grid Margin="12,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <SymbolIcon Grid.Column="0" Symbol="Audio" />
+
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center">
+                            <TextBlock FontSize="16" Text="{x:Bind Name}" />
+                            <TextBlock Text="{x:Bind Author}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </helpers:FileSystemItemTemplateSelector.AudiobookTemplate>
+        </helpers:FileSystemItemTemplateSelector>
+    </Page.Resources>
+
+    <Grid Padding="36,36,48,0">
+        <!--  Title and CommandBar  -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="12,8,0,0"
+            Style="{StaticResource PageTitleTextBlockStyle}"
+            Text="Collections"
+            VerticalAlignment="Center"
+            x:Name="Title" />
+
+        <CommandBar
+            Background="Transparent"
+            DefaultLabelPosition="Right"
+            Grid.Row="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top">
+            <AppBarButton
+                Click="AddCollection_Click"
+                Icon="Add"
+                Label="Add Collection" />
+        </CommandBar>
+
+        <ListView
+            Grid.Row="2"
+            ItemClick="Folder_Click"
+            ItemTemplateSelector="{StaticResource FileSystemItemTemplateSelector}"
+            ItemsSource="{x:Bind ViewModel.FileSystemItems, Mode=OneWay}"
+            SelectionMode="Extended" />
+        <!--  Folders List  -->
+        <!--  <ListView  -->
+        <!--  Grid.Row="2"  -->
+        <!--  ItemClick="Folder_Click"  -->
+        <!--  ItemsSource="{x:Bind ViewModel.Folders, Mode=OneWay}"  -->
+        <!--  SelectionMode="None">  -->
+        <!--     <ListView.ItemTemplate> -->
+        <!--         <DataTemplate x:DataType="viewModels:FolderViewModel"> -->
+        <!--             <Grid Margin="12,8"> -->
+        <!--                 <Grid.ColumnDefinitions> -->
+        <!--                     <ColumnDefinition Width="Auto" /> -->
+        <!--                     <ColumnDefinition Width="*" /> -->
+        <!--                 </Grid.ColumnDefinitions> -->
+        <!--    -->
+        <!--                 <SymbolIcon Grid.Column="0" Symbol="Folder" /> -->
+        <!--    -->
+        <!--  <StackPanel  -->
+        <!--  Grid.Column="1"  -->
+        <!--  Margin="12,0,0,0"  -->
+        <!--  VerticalAlignment="Center">  -->
+        <!--                     <TextBlock FontSize="16" Text="{x:Bind Name}" /> -->
+        <!--  ~1~  <TextBlock  @1@  -->
+        <!--  ~1~  FontSize="12"  @1@  -->
+        <!--  ~1~  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"  @1@  -->
+        <!--  ~1~  Text="{x:Bind Description}" />  @1@  -->
+        <!--                 </StackPanel> -->
+        <!--             </Grid> -->
+        <!--         </DataTemplate> -->
+        <!--     </ListView.ItemTemplate> -->
+        <!-- </ListView> -->
+
+    </Grid>
+</Page>

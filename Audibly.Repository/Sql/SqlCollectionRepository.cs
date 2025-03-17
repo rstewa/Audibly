@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 03/11/2025
+// Updated: 03/17/2025
 
 using Audibly.Models;
 using Audibly.Repository.Interfaces;
@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Audibly.Repository.Sql;
 
-public class SqlFolderRepository(AudiblyContext db) : IFolderRepository
+public class SqlCollectionRepository(AudiblyContext db) : ICollectionRepository
 {
-    #region IFolderRepository Members
+    #region ICollectionRepository Members
 
-    public async Task<IEnumerable<Folder>> GetAsync()
+    public async Task<IEnumerable<Collection>> GetAsync()
     {
         return await db.Folders
             .Include(x => x.Audiobooks)
@@ -19,27 +19,35 @@ public class SqlFolderRepository(AudiblyContext db) : IFolderRepository
             .ToListAsync();
     }
 
-    public async Task<Folder?> GetAsync(Guid id)
+    public async Task<IEnumerable<Collection>> GetAllChildrenAsync(Guid? parentId)
+    {
+        return await db.Folders
+            .Include(x => x.Audiobooks)
+            .Where(folder => folder.ParentFolderId == parentId)
+            .ToListAsync();
+    }
+
+    public async Task<Collection?> GetAsync(Guid id)
     {
         return await db.Folders
             .Include(x => x.Audiobooks)
             .FirstOrDefaultAsync(folder => folder.Id == id);
     }
 
-    public async Task<Folder?> UpsertAsync(Folder folder)
+    public async Task<Collection?> UpsertAsync(Collection collection)
     {
         var existingFolder = await db.Folders
             .Include(x => x.Audiobooks)
-            .FirstOrDefaultAsync(x => x.Id == folder.Id);
+            .FirstOrDefaultAsync(x => x.Id == collection.Id);
 
         if (existingFolder == null)
-            db.Folders.Add(folder);
+            db.Folders.Add(collection);
         else
-            db.Entry(existingFolder).CurrentValues.SetValues(folder);
+            db.Entry(existingFolder).CurrentValues.SetValues(collection);
 
         await db.SaveChangesAsync();
 
-        return folder;
+        return collection;
     }
 
     public async Task DeleteAsync(Guid folderId)

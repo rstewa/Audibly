@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/11/2025
+// Updated: 03/17/2025
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ public sealed partial class AppShell : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    public readonly string FoldersLabel = "Folders";
+    public readonly string CollectionsLabel = "Collections";
     public readonly string LibraryLabel = "Library";
     public readonly string NowPlayingLabel = "Now Playing";
 
@@ -141,10 +141,10 @@ public sealed partial class AppShell : Page
             if (AppAppShellFrame.Content is LibraryCardPage) return;
             AppAppShellFrame.Navigate(typeof(LibraryCardPage));
         }
-        else if (item == FoldersMenuItem)
+        else if (item == CollectionsMenuItem)
         {
-            if (AppAppShellFrame.Content is FoldersPage) return;
-            AppAppShellFrame.Navigate(typeof(FoldersPage));
+            if (AppAppShellFrame.Content is CollectionsPage) return;
+            AppAppShellFrame.Navigate(typeof(CollectionsPage));
         }
         else if (item == NowPlayingMenuItem)
         {

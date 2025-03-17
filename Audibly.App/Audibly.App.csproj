@@ -96,7 +96,7 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Update="Assets\logo.png">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
@@ -191,7 +191,7 @@
         </Compile>
     </ItemGroup>
     <ItemGroup>
-        <Page Update="Views\FoldersPage.xaml">
+        <Page Update="Views\CollectionsPage.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
     </ItemGroup>

@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 04/15/2024
-// Updated: 10/17/2024
+// Updated: 03/17/2025
 
 using System;
 using System.Collections.Generic;
@@ -393,7 +392,7 @@ public class FileImportService : IImportFiles
 
             // write the metadata to a json file
             // todo: is this killing the import time?
-            // await App.ViewModel.AppDataService.WriteMetadataAsync(hash, track);
+            await App.ViewModel.AppDataService.WriteMetadataAsync(hash, track);
 
             (audiobook.CoverImagePath, audiobook.ThumbnailPath) =
                 await App.ViewModel.AppDataService.WriteCoverImageAsync(hash, imageBytes);

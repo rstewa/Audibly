@@ -41,6 +41,8 @@ public sealed partial class AppShell : Page
     public AppShell()
     {
         InitializeComponent();
+        LoadMenuItems();
+        ViewModel.FileSystemItems.CollectionChanged += (_, _) => { LoadMenuItems(); };
 
         // set the title bar
         var window = WindowHelper.GetMainWindow();
@@ -80,6 +82,26 @@ public sealed partial class AppShell : Page
     ///     Gets the navigation frame instance.
     /// </summary>
     public Frame AppAppShellFrame => AppShellFrame;
+
+    // TODO: need to call this anytime a collection is created inside the base collection
+    private void LoadMenuItems()
+    {
+        CollectionsMenuItem.MenuItems.Clear();
+        foreach (var file in ViewModel.FileSystemItems)
+        {
+            var subMenuItem = new NavigationViewItem
+            {
+                Content = file.Name,
+                Tag = file.Name,
+                Icon = new FontIcon
+                {
+                    FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"),
+                    Glyph = "\uE8B7"
+                }
+            };
+            CollectionsMenuItem.MenuItems.Add(subMenuItem);
+        }
+    }
 
     private async void AppShell_OnLoaded(object sender, RoutedEventArgs e)
     {

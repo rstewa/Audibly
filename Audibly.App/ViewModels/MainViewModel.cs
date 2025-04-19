@@ -73,6 +73,7 @@ public class MainViewModel : BindableBase
         FileImporter = fileImporter;
         AppDataService = appDataService;
         LoggingService = loggingService;
+        // FileSystemItems.CollectionChanged
         // Task.Run(() => GetAudiobookListAsync(true));
         // Task.Run(GetFileSystemItemsAsync);
 
@@ -97,8 +98,7 @@ public class MainViewModel : BindableBase
     ///     The collection of audiobooks in the list.
     /// </summary>
     public ObservableCollection<AudiobookViewModel> Audiobooks { get; } = [];
-
-
+    
     /// <summary>
     ///     The collection of folders and audiobooks for the collections page.
     /// </summary>

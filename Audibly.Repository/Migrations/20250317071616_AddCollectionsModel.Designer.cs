@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Audibly.Repository.Migrations
 {
     [DbContext(typeof(AudiblyContext))]
-    [Migration("20250317061303_AddCollectionsModel")]
+    [Migration("20250317071616_AddCollectionsModel")]
     partial class AddCollectionsModel
     {
         /// <inheritdoc />
@@ -163,7 +163,7 @@ namespace Audibly.Repository.Migrations
                     b.HasIndex("Name", "ParentFolderId")
                         .IsUnique();
 
-                    b.ToTable("Folders");
+                    b.ToTable("Collections");
                 });
 
             modelBuilder.Entity("Audibly.Models.SourceFile", b =>

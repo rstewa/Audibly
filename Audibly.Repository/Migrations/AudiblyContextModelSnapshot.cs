@@ -160,7 +160,7 @@ namespace Audibly.Repository.Migrations
                     b.HasIndex("Name", "ParentFolderId")
                         .IsUnique();
 
-                    b.ToTable("Folders");
+                    b.ToTable("Collections");
                 });
 
             modelBuilder.Entity("Audibly.Models.SourceFile", b =>

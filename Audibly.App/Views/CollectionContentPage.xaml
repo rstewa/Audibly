@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    Background="Transparent"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.Views.CollectionContentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="36,36,48,0">
+        <TextBlock
+            Style="{StaticResource TitleTextBlockStyle}"
+            Text="Folder Contents"
+            x:Name="FolderNameTextBlock" />
+        <!--  Add a ListView or ItemsRepeater to display the contents of the folder  -->
+    </Grid>
+</Page>

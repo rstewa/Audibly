@@ -13,7 +13,7 @@ public class SqlCollectionRepository(AudiblyContext db) : ICollectionRepository
 
     public async Task<IEnumerable<Collection>> GetAsync()
     {
-        return await db.Folders
+        return await db.Collections
             .Include(x => x.Audiobooks)
             .OrderBy(folder => folder.Name)
             .ToListAsync();
@@ -21,7 +21,7 @@ public class SqlCollectionRepository(AudiblyContext db) : ICollectionRepository
 
     public async Task<IEnumerable<Collection>> GetAllChildrenAsync(Guid? parentId)
     {
-        return await db.Folders
+        return await db.Collections
             .Include(x => x.Audiobooks)
             .Where(folder => folder.ParentFolderId == parentId)
             .ToListAsync();
@@ -29,19 +29,19 @@ public class SqlCollectionRepository(AudiblyContext db) : ICollectionRepository
 
     public async Task<Collection?> GetAsync(Guid id)
     {
-        return await db.Folders
+        return await db.Collections
             .Include(x => x.Audiobooks)
             .FirstOrDefaultAsync(folder => folder.Id == id);
     }
 
     public async Task<Collection?> UpsertAsync(Collection collection)
     {
-        var existingFolder = await db.Folders
+        var existingFolder = await db.Collections
             .Include(x => x.Audiobooks)
             .FirstOrDefaultAsync(x => x.Id == collection.Id);
 
         if (existingFolder == null)
-            db.Folders.Add(collection);
+            db.Collections.Add(collection);
         else
             db.Entry(existingFolder).CurrentValues.SetValues(collection);
 
@@ -52,13 +52,13 @@ public class SqlCollectionRepository(AudiblyContext db) : ICollectionRepository
 
     public async Task DeleteAsync(Guid folderId)
     {
-        var folder = await db.Folders
+        var folder = await db.Collections
             .Include(x => x.Audiobooks)
             .FirstOrDefaultAsync(x => x.Id == folderId);
 
         if (folder != null)
         {
-            db.Folders.Remove(folder);
+            db.Collections.Remove(folder);
             await db.SaveChangesAsync();
         }
     }

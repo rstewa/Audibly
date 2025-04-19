@@ -17,6 +17,8 @@ public class CollectionViewModel : BindableBase, IFileSystemItem
     {
         Model = model ?? new Collection { Name = "New Folder" };
     }
+    
+    public Guid Id => Model.Id;
 
     public Collection Model
     {

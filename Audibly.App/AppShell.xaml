@@ -60,15 +60,6 @@
             ItemInvoked="NavigationView_ItemInvoked"
             Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}"
             x:Name="NavView">
-            <NavigationView.Resources>
-                <!--  ReSharper disable all Xaml.RedundantResource  -->
-                <!--  This top margin is the height of the custom titleBar  -->
-                <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
-                <Thickness x:Key="NavigationViewMinimalContentMargin">0,48,0,0</Thickness>
-                <Thickness x:Key="NavigationViewContentGridBorderThickness">0,0,0,0</Thickness>
-                <!--  This is the rounded corner on the Top left of the L Pattern  -->
-                <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
-            </NavigationView.Resources>
 
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem
@@ -79,18 +70,15 @@
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
-                    <NavigationViewItem.InfoBadge>
-                        <InfoBadge Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" x:Name="infoBadge1" />
-                    </NavigationViewItem.InfoBadge>
                 </muxc:NavigationViewItem>
-                <!--  folder  -->
+
                 <muxc:NavigationViewItem
                     Content="{x:Bind CollectionsLabel}"
                     Tag="CollectionsPage"
                     ToolTipService.ToolTip="{x:Bind CollectionsLabel}"
                     x:Name="CollectionsMenuItem">
                     <muxc:NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B7;" />
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xED25;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem

@@ -25,7 +25,7 @@ public class AudiblyContext : DbContext
 
     public DbSet<SourceFile> SourceFiles { get; set; }
 
-    public DbSet<Collection> Folders { get; set; }
+    public DbSet<Collection> Collections { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

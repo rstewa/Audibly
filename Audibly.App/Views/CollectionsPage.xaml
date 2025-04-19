@@ -7,7 +7,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Audibly.App.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Page.Resources>
@@ -54,70 +56,120 @@
         </helpers:FileSystemItemTemplateSelector>
     </Page.Resources>
 
-    <Grid Padding="36,36,48,0">
-        <!--  Title and CommandBar  -->
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <TextBlock
-            Grid.Row="0"
-            Margin="12,8,0,0"
-            Style="{StaticResource PageTitleTextBlockStyle}"
-            Text="Collections"
-            VerticalAlignment="Center"
-            x:Name="Title" />
-
-        <CommandBar
-            Background="Transparent"
-            DefaultLabelPosition="Right"
-            Grid.Row="1"
+    <RelativePanel Padding="36,36,48,0" x:Name="LayoutRoot">
+        <!--  title and command bar  -->
+        <StackPanel
             HorizontalAlignment="Left"
-            VerticalAlignment="Top">
-            <AppBarButton
-                Click="AddCollection_Click"
-                Icon="Add"
-                Label="Add Collection" />
-        </CommandBar>
+            Orientation="Vertical"
+            x:Name="TitleAndCommandBarPanel">
+            <TextBlock
+                Margin="20,8,6,0"
+                Style="{StaticResource PageTitleTextBlockStyle}"
+                Text="Audiobook Collections"
+                x:Name="PageTitle" />
+            <StackPanel
+                Margin="4,0,0,0"
+                Orientation="Horizontal"
+                RelativePanel.LeftOf="AudiobookSearchBox"
+                RelativePanel.RightOf="PageTitle">
+
+                <CommandBar
+                    Background="Transparent"
+                    DefaultLabelPosition="Right"
+                    HorizontalAlignment="Left"
+                    x:Name="MainCommandBar">
+                    <AppBarButton
+                        Click="AddCollection_Click"
+                        Icon="Add"
+                        Label="Create Collection"
+                        ToolTipService.ToolTip="Create Collection" />
+                    <!--  delete button  -->
+                    <AppBarButton
+                        Click="DeleteCollection_Click"
+                        Icon="Delete"
+                        Label="Delete Collection"
+                        ToolTipService.ToolTip="Delete Collection" />
+                    <AppBarButton
+                        Click="{x:Bind RefreshButton_OnClick}"
+                        Icon="Refresh"
+                        Label="Refresh"
+                        ToolTipService.ToolTip="Refresh audiobooks" />
+                    <AppBarSeparator />
+
+                    <!--  zoom drop down button  -->
+                    <AppBarButton
+                        Icon="Zoom"
+                        Label="Zoom"
+                        ToolTipService.ToolTip="Zoom"
+                        x:Name="ZoomButton">
+                        <AppBarButton.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedLeft" x:Name="ZoomFlyout">
+                                <userControls:ZoomLevelUserControl
+                                    ZoomInButtonIsEnabled="{x:Bind ViewModel.ZoomInButtonIsEnabled, Mode=OneWay}"
+                                    ZoomOutButtonIsEnabled="{x:Bind ViewModel.ZoomOutButtonIsEnabled, Mode=OneWay}"
+                                    x:Name="ZoomLevelUserControl" />
+                            </Flyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+
+                    <!--  debug menu  -->
+                    <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
+
+                    <AppBarButton
+                        Label="Debug Menu"
+                        ToolTipService.ToolTip="Debug Menu"
+                        Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                <ToggleMenuFlyoutItem
+                                    Icon="AlignCenter"
+                                    IsChecked="{x:Bind ViewModel.ShowAlignmentGrids, Mode=TwoWay}"
+                                    Text="Show Alignment Grid"
+                                    ToolTipService.ToolTip="Show Alignment Grid" />
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEBE8;" />
+                    </AppBarButton>
+                </CommandBar>
+            </StackPanel>
+        </StackPanel>
 
         <ListView
-            Grid.Row="2"
             ItemClick="Folder_Click"
             ItemTemplateSelector="{StaticResource FileSystemItemTemplateSelector}"
             ItemsSource="{x:Bind ViewModel.FileSystemItems, Mode=OneWay}"
-            SelectionMode="Extended" />
-        <!--  Folders List  -->
-        <!--  <ListView  -->
-        <!--  Grid.Row="2"  -->
-        <!--  ItemClick="Folder_Click"  -->
-        <!--  ItemsSource="{x:Bind ViewModel.Folders, Mode=OneWay}"  -->
-        <!--  SelectionMode="None">  -->
-        <!--     <ListView.ItemTemplate> -->
-        <!--         <DataTemplate x:DataType="viewModels:FolderViewModel"> -->
-        <!--             <Grid Margin="12,8"> -->
-        <!--                 <Grid.ColumnDefinitions> -->
-        <!--                     <ColumnDefinition Width="Auto" /> -->
-        <!--                     <ColumnDefinition Width="*" /> -->
-        <!--                 </Grid.ColumnDefinitions> -->
-        <!--    -->
-        <!--                 <SymbolIcon Grid.Column="0" Symbol="Folder" /> -->
-        <!--    -->
-        <!--  <StackPanel  -->
-        <!--  Grid.Column="1"  -->
-        <!--  Margin="12,0,0,0"  -->
-        <!--  VerticalAlignment="Center">  -->
-        <!--                     <TextBlock FontSize="16" Text="{x:Bind Name}" /> -->
-        <!--  ~1~  <TextBlock  @1@  -->
-        <!--  ~1~  FontSize="12"  @1@  -->
-        <!--  ~1~  Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"  @1@  -->
-        <!--  ~1~  Text="{x:Bind Description}" />  @1@  -->
-        <!--                 </StackPanel> -->
-        <!--             </Grid> -->
-        <!--         </DataTemplate> -->
-        <!--     </ListView.ItemTemplate> -->
-        <!-- </ListView> -->
+            Padding="0,8,0,8"
+            RelativePanel.AlignBottomWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.Below="TitleAndCommandBarPanel"
+            DoubleTapped="CollectionsListView_OnDoubleTapped"
+            SelectionMode="Extended"
+            x:Name="CollectionsListView" />
 
-    </Grid>
+        <!--  progress bar for when library view is loading  -->
+        <userControls:ProgressBarCard
+            Canvas.ZIndex="10"
+            IsIndeterminate="True"
+            Margin="25,0,50,0"
+            RelativePanel.AlignHorizontalCenterWithPanel="True"
+            RelativePanel.AlignLeftWithPanel="True"
+            RelativePanel.AlignRightWithPanel="True"
+            RelativePanel.AlignVerticalCenterWithPanel="True"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LibraryCardViewVisibility">
+                <!--  when no audiobooks have been imported yet  -->
+                <VisualState x:Name="NoCollectionsState">
+                    <VisualState.StateTriggers>
+                        <winUi:IsEqualStateTrigger To="true" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CollectionsListView.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </RelativePanel>
 </Page>

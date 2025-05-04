@@ -1,0 +1,150 @@
+<UserControl
+    Width="{x:Bind ViewModel.AudiobookTileWidth, Mode=OneWay}"
+    mc:Ignorable="d"
+    x:Class="Audibly.App.UserControls.AudiobookCollection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  ReSharper disable all Xaml.RedundantResource  -->
+    <Button
+        Background="Transparent"
+        BorderBrush="Transparent"
+        CornerRadius="8"
+        Padding="16"
+        x:Name="ButtonTile">
+        <Grid RowSpacing="16" VerticalAlignment="Stretch">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border BorderThickness="0" Grid.Row="0">
+                <Border
+                    BorderBrush="{StaticResource TextFillColorPrimaryBrush}"
+                    BorderThickness="0"
+                    CornerRadius="{StaticResource OverlayCornerRadius}">
+                    <Grid>
+                        <!-- <Image Source="ms-appx:///Assets/DefaultCoverImage.png" Stretch="UniformToFill" /> -->
+                        <!--  <ContentPresenter  -->
+                        <!--  Content="{x:Bind Source, Mode=OneWay}"  -->
+                        <!--  HorizontalAlignment="Center"  -->
+                        <!--  VerticalAlignment="Top" />  -->
+                    </Grid>
+                </Border>
+                <winUi:Effects.Shadow>
+                    <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
+                </winUi:Effects.Shadow>
+            </Border>
+
+            <!--  Play Button and Black Overlay  -->
+            <!--  <Grid  -->
+            <!--  Grid.Row="0"  -->
+            <!--  Visibility="Collapsed"  -->
+            <!--  x:Name="BlackOverlayGrid">  -->
+            <!--     <Grid.Resources> -->
+            <!--         <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush> -->
+            <!--         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush> -->
+            <!--         <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush> -->
+            <!--         <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush> -->
+            <!--     </Grid.Resources> -->
+            <!--  <Grid  -->
+            <!--  Background="Black"  -->
+            <!--  CornerRadius="{StaticResource OverlayCornerRadius}"  -->
+            <!--  Opacity="0.55" />  -->
+            <!--  <Button  -->
+            <!--  BorderThickness="0"  -->
+            <!--  Click="PlayButton_Click"  -->
+            <!--  HorizontalAlignment="Center"  -->
+            <!--  Tag="play"  -->
+            <!--  ToolTipService.ToolTip="Play"  -->
+            <!--  VerticalAlignment="Center"  -->
+            <!--  x:Name="PlayPauseButton">  -->
+            <!--         <Button.Resources> -->
+            <!--             <ResourceDictionary> -->
+            <!--                 <StaticResource ResourceKey="AccentFillColorDefaultBrush" x:Key="ButtonForeground" /> -->
+            <!--                 <StaticResource ResourceKey="AccentFillColorTertiaryBrush" x:Key="ButtonForegroundPressed" /> -->
+            <!--                 <StaticResource ResourceKey="AccentFillColorSecondaryBrush" x:Key="ButtonForegroundPointerOver" /> -->
+            <!--                 <StaticResource ResourceKey="AccentFillColorDisabledBrush" x:Key="ButtonForegroundDisabled" /> -->
+            <!--             </ResourceDictionary> -->
+            <!--         </Button.Resources> -->
+            <!--         <Viewbox MaxHeight="{x:Bind ViewModel.PlayButtonHeightWidth, Mode=OneWay}" MaxWidth="{x:Bind ViewModel.PlayButtonHeightWidth, Mode=OneWay}"> -->
+            <!--             <FontIcon Glyph="&#xF5B0;" /> -->
+            <!--         </Viewbox> -->
+            <!--     </Button> -->
+            <!-- </Grid> -->
+
+            <!-- <Grid Grid.Row="1"> -->
+            <!--    -->
+            <!--     <Grid.ColumnDefinitions> -->
+            <!--         <ColumnDefinition Width="*" /> -->
+            <!--         <ColumnDefinition Width="Auto" /> -->
+            <!--     </Grid.ColumnDefinitions> -->
+            <!--    -->
+            <!--  <StackPanel  -->
+            <!--  Grid.Column="0"  -->
+            <!--  Orientation="Vertical"  -->
+            <!--  RelativePanel.AlignLeftWithPanel="True"  -->
+            <!--  Spacing="4"  -->
+            <!--  x:Name="TitleAuthorPanel">  -->
+            <!--  <TextBlock  -->
+            <!--  FontSize="{x:Bind ViewModel.TitleFontSize, Mode=OneWay}"  -->
+            <!--  Foreground="{ThemeResource TextFillColorPrimaryBrush}"  -->
+            <!--  HorizontalAlignment="Left"  -->
+            <!--  MaxWidth="{x:Bind ViewModel.TitleMaxWidth, Mode=OneWay}"  -->
+            <!--  Style="{StaticResource BodyTextBlockStyle}"  -->
+            <!--  Text="{x:Bind Title, Mode=OneWay}"  -->
+            <!--  TextTrimming="CharacterEllipsis"  -->
+            <!--  TextWrapping="NoWrap"  -->
+            <!--  ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}"  -->
+            <!--  x:Name="TitleText" />  -->
+            <!--  <TextBlock  -->
+            <!--  FontSize="{x:Bind ViewModel.AuthorFontSize, Mode=OneWay}"  -->
+            <!--  Foreground="{ThemeResource TextFillColorSecondaryBrush}"  -->
+            <!--  HorizontalAlignment="Left"  -->
+            <!--  Style="{StaticResource CaptionTextBlockStyle}"  -->
+            <!--  Text="{x:Bind Author, Mode=OneWay}"  -->
+            <!--  TextTrimming="CharacterEllipsis"  -->
+            <!--  TextWrapping="NoWrap" />  -->
+            <!--     </StackPanel> -->
+            <!--    -->
+            <!--  ~1~  progress  @1@  -->
+            <!--  <Grid  -->
+            <!--  Grid.Column="1"  -->
+            <!--  HorizontalAlignment="Right"  -->
+            <!--  Visibility="Collapsed"  -->
+            <!--  x:Name="ProgressGrid">  -->
+            <!--  <ProgressRing  -->
+            <!--  Background="LightGray"  -->
+            <!--  Height="{x:Bind ViewModel.ProgressIndicatorFontSize, Mode=OneWay}"  -->
+            <!--  HorizontalAlignment="Center"  -->
+            <!--  IsIndeterminate="False"  -->
+            <!--  Maximum="100"  -->
+            <!--  Minimum="0"  -->
+            <!--  Value="{x:Bind Progress, Mode=OneWay}"  -->
+            <!--  VerticalAlignment="Center"  -->
+            <!--  Width="{x:Bind ViewModel.ProgressIndicatorFontSize, Mode=OneWay}" />  -->
+            <!--  <TextBlock  -->
+            <!--  FontSize="{x:Bind ViewModel.ProgressIndicatorTextFontSize, Mode=OneWay}"  -->
+            <!--  HorizontalAlignment="Center"  -->
+            <!--  Text="{x:Bind Progress, Mode=OneWay}"  -->
+            <!--  VerticalAlignment="Center" />  -->
+            <!--     </Grid> -->
+            <!--  ~1~  is complete checkmark  @1@  -->
+            <!--  <Grid  -->
+            <!--  Grid.Column="1"  -->
+            <!--  Visibility="Collapsed"  -->
+            <!--  x:Name="CompletedGrid">  -->
+            <!--  <FontIcon  -->
+            <!--  FontSize="{x:Bind ViewModel.ProgressIndicatorFontSize, Mode=OneWay}"  -->
+            <!--  Glyph="&#xEC61;"  -->
+            <!--  HorizontalAlignment="Center"  -->
+            <!--  VerticalAlignment="Center" />  -->
+            <!--     </Grid> -->
+            <!-- </Grid> -->
+        </Grid>
+    </Button>
+</UserControl>

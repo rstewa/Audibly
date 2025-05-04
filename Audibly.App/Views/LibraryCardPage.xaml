@@ -219,7 +219,7 @@
                         </AppBarButton.Flyout>
                     </AppBarButton>
 
-                    <!--  debug menu  -->
+                    <!--  region: debug menu  -->
                     <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
 
                     <AppBarButton
@@ -316,6 +316,7 @@
                         </AppBarButton.Flyout>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEBE8;" />
                     </AppBarButton>
+                    <!--  endregion: debug menu  -->
                 </CommandBar>
             </StackPanel>
         </StackPanel>

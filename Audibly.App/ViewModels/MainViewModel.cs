@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 02/14/2025
+// Updated: 05/08/2025
 
 using System;
 using System.Collections.Generic;
@@ -72,18 +72,6 @@ public class MainViewModel : BindableBase
         AppDataService = appDataService;
         LoggingService = loggingService;
         Task.Run(() => GetAudiobookListAsync(true));
-
-        // todo: save this as a user setting
-        TitleFontSize = 18; // 1.8
-        AuthorFontSize = 14; // 1.4
-        TitleMaxWidth = 200; // 20
-        PlayButtonHeightWidth = 70; // 7
-        ProgressIndicatorTextFontSize = 20; // 2
-        ProgressIndicatorFontSize = 40; // 4
-        AudiobookTileWidth = 300; // 30
-        AudiobookTileMinColumnSpacing = 28; // 2.8
-
-        ZoomLevel = 100;
 
         InitializeZoomLevelToTileSizeDictionary();
     }
@@ -602,6 +590,7 @@ public class MainViewModel : BindableBase
                     AudiobookTileWidth = tileSize.AudiobookTileWidth;
                     AudiobookTileMinColumnSpacing = tileSize.AudiobookTileMinColumnSpacing;
                 });
+            UserSettings.ZoomLevel = ZoomLevel;
         }
         finally
         {
@@ -873,7 +862,7 @@ public class MainViewModel : BindableBase
             }
         };
 
-        ResizeAudiobookTile(100);
+        ResizeAudiobookTile(UserSettings.ZoomLevel);
     }
 
     private double _titleFontSize;

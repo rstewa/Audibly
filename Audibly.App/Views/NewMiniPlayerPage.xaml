@@ -63,6 +63,7 @@
                 Glyph="&#xe904;"
                 Grid.Column="0"
                 HorizontalAlignment="Center"
+                ToolTipService.ToolTip="Drag to move"
                 VerticalAlignment="Center" />
 
             <userControls:CoverImageTile

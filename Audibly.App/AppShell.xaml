@@ -1,16 +1,18 @@
 ﻿<!--  ReSharper disable once Xaml.InvalidResourceType  -->
 <Page
-    x:Class="Audibly.App.AppShell"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:winUi="using:CommunityToolkit.WinUI"
     Background="{ThemeResource AppShellBackgroundBrush}"
     Loaded="AppShell_OnLoaded"
     TabNavigation="Cycle"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Class="Audibly.App.AppShell"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:userControls="using:Audibly.App.UserControls"
+    xmlns:viewModels="using:Audibly.App.ViewModels"
+    xmlns:winUi="using:CommunityToolkit.WinUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -25,67 +27,55 @@
         </Grid.RowDefinitions>
 
         <Border
-            x:Name="AppTitleBar"
-            Grid.Column="1"
-            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
-            Margin="48,0,0,0"
-            VerticalAlignment="Stretch"
             AutomationProperties.AutomationId="AppTitleBar"
             Canvas.ZIndex="1"
-            IsHitTestVisible="True">
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                <Image Width="24" Source="ms-appx:///Assets/book-open-flat.png" />
+            Grid.Column="1"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
+            IsHitTestVisible="True"
+            Margin="48,0,0,0"
+            VerticalAlignment="Stretch"
+            x:Name="AppTitleBar">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Source="ms-appx:///Assets/logo.png" Width="24" />
                 <TextBlock
-                    x:Name="AppTitle"
                     Margin="12,0,0,0"
-                    VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Audibly" />
+                    Text="Audibly"
+                    VerticalAlignment="Center"
+                    x:Name="AppTitle" />
             </StackPanel>
         </Border>
 
         <muxc:NavigationView
-            x:Name="NavView"
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            Grid.Column="1"
             AlwaysShowHeader="False"
             BackRequested="NavigationView_BackRequested"
             Canvas.ZIndex="0"
             DisplayModeChanged="NavView_DisplayModeChanged"
+            Grid.Column="1"
+            Grid.Row="0"
+            Grid.RowSpan="2"
             IsBackEnabled="{x:Bind AppAppShellFrame.CanGoBack, Mode=OneWay}"
             IsSettingsVisible="True"
             IsTitleBarAutoPaddingEnabled="True"
             ItemInvoked="NavigationView_ItemInvoked"
-            Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}">
-            <NavigationView.Resources>
-                <!--  ReSharper disable all Xaml.RedundantResource  -->
-                <!--  This top margin is the height of the custom titleBar  -->
-                <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
-                <Thickness x:Key="NavigationViewMinimalContentMargin">0,48,0,0</Thickness>
-                <Thickness x:Key="NavigationViewContentGridBorderThickness">0,0,0,0</Thickness>
-                <!--  This is the rounded corner on the Top left of the L Pattern  -->
-                <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
-            </NavigationView.Resources>
+            Visibility="{x:Bind ViewModel.IsNavigationViewVisible, Mode=OneWay}"
+            x:Name="NavView">
 
             <muxc:NavigationView.MenuItems>
                 <muxc:NavigationViewItem
-                    x:Name="LibraryCardMenuItem"
                     Content="{x:Bind LibraryLabel}"
                     Tag="LibraryPage"
-                    ToolTipService.ToolTip="{x:Bind LibraryLabel}">
+                    ToolTipService.ToolTip="{x:Bind LibraryLabel}"
+                    x:Name="LibraryCardMenuItem">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE736;" />
                     </muxc:NavigationViewItem.Icon>
-                    <NavigationViewItem.InfoBadge>
-                        <InfoBadge x:Name="infoBadge1" Value="{x:Bind ViewModel.Audiobooks.Count, Mode=OneWay}" />
-                    </NavigationViewItem.InfoBadge>
                 </muxc:NavigationViewItem>
                 <muxc:NavigationViewItem
-                    x:Name="NowPlayingMenuItem"
                     Content="{x:Bind NowPlayingLabel}"
                     Tag="NowPlayingPage"
-                    ToolTipService.ToolTip="{x:Bind NowPlayingLabel}">
+                    ToolTipService.ToolTip="{x:Bind NowPlayingLabel}"
+                    x:Name="NowPlayingMenuItem">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
                     </muxc:NavigationViewItem.Icon>
@@ -94,10 +84,10 @@
 
             <NavigationView.AutoSuggestBox>
                 <AutoSuggestBox
-                    x:Name="AudiobookSearchBox"
                     AutomationProperties.Name="AudiobookSearchBox"
                     Loaded="AudiobookSearchBox_Loaded"
-                    QueryIcon="Find" />
+                    QueryIcon="Find"
+                    x:Name="AudiobookSearchBox" />
             </NavigationView.AutoSuggestBox>
 
             <muxc:NavigationView.PaneFooter>
@@ -113,21 +103,74 @@
                 </StackPanel>
             </muxc:NavigationView.PaneFooter>
 
-            <!--  In OnNavigatingToPage, we synchronize the selected item in the NavigationView with the current page.  -->
-            <Frame
-                x:Name="AppShellFrame"
-                Margin="12,0,0,0"
-                Navigating="OnNavigatingToPage">
-                <Frame.ContentTransitions>
-                    <TransitionCollection>
-                        <NavigationThemeTransition>
-                            <NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                                <EntranceNavigationTransitionInfo />
-                            </NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                        </NavigationThemeTransition>
-                    </TransitionCollection>
-                </Frame.ContentTransitions>
-            </Frame>
+            <!--  Content  -->
+            <RelativePanel>
+                <!--  In OnNavigatingToPage, we synchronize the selected item in the NavigationView with the current page.  -->
+                <Frame
+                    Margin="12,0,0,0"
+                    Navigating="OnNavigatingToPage"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    x:Name="AppShellFrame">
+                    <Frame.ContentTransitions>
+                        <TransitionCollection>
+                            <NavigationThemeTransition>
+                                <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                                    <EntranceNavigationTransitionInfo />
+                                </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                            </NavigationThemeTransition>
+                        </TransitionCollection>
+                    </Frame.ContentTransitions>
+                </Frame>
+
+                <!--  player  -->
+                <Grid
+                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="2"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Margin="12,0,12,12"
+                    MaxHeight="250"
+                    Padding="12"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    x:Name="Player">
+
+                    <userControls:PlayerControlGrid />
+
+                </Grid>
+
+                <!--  notifications  -->
+                <ScrollViewer
+                    Canvas.ZIndex="2"
+                    Margin="0,0,12,12"
+                    RelativePanel.Above="Player"
+                    RelativePanel.AlignRightWithPanel="True">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:Notification">
+                                    <Grid>
+                                        <InfoBar
+                                            Closed="InfoBar_OnClosed"
+                                            HorizontalAlignment="Right"
+                                            IsClosable="True"
+                                            IsIconVisible="True"
+                                            IsOpen="True"
+                                            Message="{x:Bind Message}"
+                                            Severity="{x:Bind Severity}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </RelativePanel>
+
         </muxc:NavigationView>
 
         <VisualStateManager.VisualStateGroups>
@@ -139,6 +182,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="NowPlayingMenuItem.Visibility" Value="Collapsed" />
+                        <Setter Target="Player.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

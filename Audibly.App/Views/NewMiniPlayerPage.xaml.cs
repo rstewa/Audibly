@@ -1,16 +1,18 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 01/28/2025
+// Updated: 05/24/2025
 
 using System;
-using System.Diagnostics;
+using System.Threading.Tasks;
+using Windows.System;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Constants = Audibly.App.Helpers.Constants;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Audibly.App.Views;
 
@@ -19,9 +21,15 @@ namespace Audibly.App.Views;
 /// </summary>
 public sealed partial class NewMiniPlayerPage : Page
 {
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
     public NewMiniPlayerPage()
     {
         InitializeComponent();
+        KeyDown += NewMiniPlayerPage_KeyDown;
+
+        // need this to show the slider when the user increases or decreases the speed with the keyboard shortcuts
+        PlaybackSpeedSliderFlyout.Opened += (s, e) => { PlaybackSpeedSlider.Focus(FocusState.Programmatic); };
     }
 
     /// <summary>
@@ -33,6 +41,61 @@ public sealed partial class NewMiniPlayerPage : Page
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    private void NewMiniPlayerPage_KeyDown(object sender, KeyRoutedEventArgs args)
+    {
+        var key = args.Key;
+        if (key == (VirtualKey)219) // Open bracket '['
+        {
+            HandleSpeedDecrease();
+            ClosePlaybackSpeedFlyout();
+            args.Handled = true;
+        }
+        else if (key == (VirtualKey)221) // Close bracket ']'
+        {
+            HandleSpeedIncrease();
+            ClosePlaybackSpeedFlyout();
+            args.Handled = true;
+        }
+        else if (key == (VirtualKey)0xDC) // Backslash '\'
+        {
+            ResetPlaybackSpeed();
+            ClosePlaybackSpeedFlyout();
+            args.Handled = true;
+        }
+    }
+
+    // todo: maybe cancel this if the user clicks the slider or moves the cursor above it
+    private void ClosePlaybackSpeedFlyout()
+    {
+        _dispatcherQueue.TryEnqueue(async () =>
+        {
+            await Task.Delay(2000);
+            if (PlaybackSpeedSliderFlyout.IsOpen) PlaybackSpeedSliderFlyout.Hide();
+        });
+    }
+
+    private void ResetPlaybackSpeed()
+    {
+        PlaybackSpeedSliderFlyout.ShowAt(PlaybackSpeedButton);
+        PlaybackSpeedSlider.Value = Constants.PlaybackSpeedDefault;
+    }
+
+    private void HandleSpeedIncrease()
+    {
+        PlaybackSpeedSliderFlyout.ShowAt(PlaybackSpeedButton);
+        var newValue = PlaybackSpeedSlider.Value + Constants.PlaybackSpeedIncrement;
+        if (newValue >= Constants.PlaybackSpeedMaximum) newValue = Constants.PlaybackSpeedMaximum;
+        PlaybackSpeedSlider.Value = newValue;
+    }
+
+    private void HandleSpeedDecrease()
+    {
+        PlaybackSpeedSliderFlyout.ShowAt(PlaybackSpeedButton);
+        var newValue = PlaybackSpeedSlider.Value - Constants.PlaybackSpeedIncrement;
+        if (newValue <= Constants.PlaybackSpeedMinimum) newValue = Constants.PlaybackSpeedMinimum;
+        PlaybackSpeedSlider.Value = newValue;
+    }
 
     // todo: fix the bug where this is getting triggered even when the user hasn't clicked the slider
     private async void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
@@ -48,7 +111,7 @@ public sealed partial class NewMiniPlayerPage : Page
 
         await PlayerViewModel.NowPlaying.SaveAsync();
     }
-    
+
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         var slider = sender as Slider;
@@ -63,56 +126,6 @@ public sealed partial class NewMiniPlayerPage : Page
         if (slider == null || !IsLoaded) return;
 
         PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
-    }
-    
-    private void VolumeButton_Click(object sender, RoutedEventArgs e)
-    {
-        // Show volume flyout with slider
-        Flyout volumeFlyout = new Flyout();
-    
-        Grid grid = new Grid();
-    
-        Slider volumeSlider = new Slider
-        {
-            Orientation = Orientation.Vertical,
-            Minimum = 0,
-            Maximum = 1.0,
-            SmallChange = 0.01,
-            StepFrequency = 0.01,
-            Value = PlayerViewModel.VolumeLevel,
-            Height = 100
-        };
-        volumeSlider.ValueChanged += VolumeSlider_ValueChanged;
-    
-        grid.Children.Add(volumeSlider);
-        volumeFlyout.Content = grid;
-    
-        volumeFlyout.ShowAt(sender as FrameworkElement);
-    }
-
-    private void PlaybackSpeedButton_Click(object sender, RoutedEventArgs e)
-    {
-        // Show playback speed flyout with slider
-        Flyout speedFlyout = new Flyout();
-    
-        Grid grid = new Grid();
-    
-        Slider speedSlider = new Slider
-        {
-            Orientation = Orientation.Vertical,
-            Minimum = 0.5,
-            Maximum = 4.0,
-            SmallChange = 0.05,
-            StepFrequency = 0.05,
-            Value = PlayerViewModel.PlaybackSpeed,
-            Height = 100
-        };
-        speedSlider.ValueChanged += PlaybackSpeedSlider_ValueChanged;
-    
-        grid.Children.Add(speedSlider);
-        speedFlyout.Content = grid;
-    
-        speedFlyout.ShowAt(sender as FrameworkElement);
     }
 
     private void PinButton_Click(object sender, RoutedEventArgs e)

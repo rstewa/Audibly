@@ -11,7 +11,8 @@
     xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      xmlns:helpers="using:Audibly.App.Helpers"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
 
     <Page.Resources>
@@ -177,7 +178,7 @@
                         FontSize="16"
                         Glyph="&#xEC57;" />
                     <Button.Flyout>
-                        <Flyout ShouldConstrainToRootBounds="False">
+                        <Flyout ShouldConstrainToRootBounds="False" x:Name="PlaybackSpeedSliderFlyout">
                             <Flyout.FlyoutPresenterStyle>
                                 <Style TargetType="FlyoutPresenter">
                                     <Setter Property="MinWidth" Value="30" />
@@ -190,19 +191,27 @@
                                     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
                                 </Style>
                             </Flyout.FlyoutPresenterStyle>
-                            <Slider
-                                AutomationProperties.Name="PlaybackSpeedSlider"
-                                Margin="-14,0,0,0"
-                                Maximum="4.0"
-                                Minimum="0.5"
-                                Orientation="Vertical"
-                                SmallChange="0.05"
-                                SnapsTo="StepValues"
-                                StepFrequency="0.05"
-                                ToolTipService.ToolTip="Playback Speed"
-                                Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
-                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                x:Name="PlaybackSpeedSlider" />
+                            <Slider AutomationProperties.Name="PlaybackSpeedSlider"
+                                    Margin="-14,0,0,0"
+                                    Maximum="{x:Bind helpers:Constants.PlaybackSpeedMaximum}"
+                                    Minimum="{x:Bind helpers:Constants.PlaybackSpeedMinimum}"
+                                    Orientation="Vertical"
+                                    SmallChange="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
+                                    ToolTipService.ToolTip="Playback Speed"
+                                    Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
+                                    ValueChanged="PlaybackSpeedSlider_ValueChanged"
+                                    x:Name="PlaybackSpeedSlider"
+                                    FocusVisualPrimaryThickness="0"
+                                    FocusVisualSecondaryThickness="0">
+                                <Slider.Resources>
+                                    <SolidColorBrush x:Key="FocusVisualPrimaryBrush"
+                                                     Color="Transparent" />
+                                    <SolidColorBrush x:Key="FocusVisualSecondaryBrush"
+                                                     Color="Transparent" />
+                                </Slider.Resources>
+                            </Slider>
                         </Flyout>
                     </Button.Flyout>
                 </Button>

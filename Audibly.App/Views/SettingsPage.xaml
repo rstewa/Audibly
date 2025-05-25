@@ -26,6 +26,8 @@
             </Style.Setters>
         </Style>
     </Page.Resources>
+
+    <!-- TODO: allow user to overscroll; check out community.toolkit.behaviors.viewportbehavior-->
     <Grid x:Name="RootGrid" Padding="36,36,48,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

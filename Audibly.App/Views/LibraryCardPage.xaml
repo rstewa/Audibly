@@ -41,7 +41,7 @@
             Modifiers="Control,Shift" />
     </Page.KeyboardAccelerators>
 
-    <RelativePanel Padding="36,36,36,0" x:Name="LayoutRoot">
+    <RelativePanel Padding="36,36,48,0" x:Name="LayoutRoot">
         <!--  start panel (shown when no audiobooks have been imported yet)  -->
         <StackPanel
             Orientation="Vertical"
@@ -219,7 +219,7 @@
                         </AppBarButton.Flyout>
                     </AppBarButton>
 
-                    <!--  debug menu  -->
+                    <!--  region: debug menu  -->
                     <AppBarSeparator Visibility="{x:Bind ViewModel.ShowDebugMenu, Mode=OneWay}" x:Name="DebugMenuSeparator" />
 
                     <AppBarButton
@@ -316,6 +316,7 @@
                         </AppBarButton.Flyout>
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEBE8;" />
                     </AppBarButton>
+                    <!--  endregion: debug menu  -->
                 </CommandBar>
             </StackPanel>
         </StackPanel>
@@ -329,20 +330,21 @@
             RelativePanel.AlignRightWithPanel="True"
             RelativePanel.Below="TitleAndCommandBarPanel"
             x:Name="LibraryCardScrollView">
-            <ItemsRepeater
-                ItemTemplate="{StaticResource AudiobookTemplate}"
-                ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
-                x:Name="LibraryCardView">
-
-                <ItemsRepeater.Layout>
-                    <UniformGridLayout
-                        ItemsJustification="Start"
-                        ItemsStretch="Uniform"
-                        MinColumnSpacing="4"
-                        MinRowSpacing="12" />
-                </ItemsRepeater.Layout>
-
-            </ItemsRepeater>
+            <StackPanel Orientation="Vertical">
+                <ItemsRepeater
+                    ItemTemplate="{StaticResource AudiobookTemplate}"
+                    ItemsSource="{x:Bind ViewModel.Audiobooks, Mode=OneWay}"
+                    x:Name="LibraryCardView">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsJustification="Start"
+                            ItemsStretch="Uniform"
+                            MinColumnSpacing="4"
+                            MinRowSpacing="12" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+                <Rectangle Height="200" Opacity="0" />
+            </StackPanel>
         </ScrollViewer>
 
         <!--  progress bar for when library view is loading  -->
@@ -356,51 +358,6 @@
             RelativePanel.AlignVerticalCenterWithPanel="True"
             Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
 
-        <!--  player  -->
-        <Grid
-            Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
-            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            Canvas.ZIndex="2"
-            CornerRadius="{StaticResource OverlayCornerRadius}"
-            Margin="-36,0,-26,12"
-            MaxHeight="250"
-            Padding="12"
-            RelativePanel.AlignBottomWithPanel="True"
-            RelativePanel.AlignLeftWithPanel="True"
-            RelativePanel.AlignRightWithPanel="True"
-            x:Name="Player">
-
-            <userControls:PlayerControlGrid />
-
-        </Grid>
-
-        <!--  notifications  -->
-        <ScrollViewer
-            Canvas.ZIndex="2"
-            Margin="0,0,-26,12"
-            RelativePanel.Above="Player"
-            RelativePanel.AlignRightWithPanel="True">
-            <StackPanel>
-                <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications, Mode=OneWay}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="viewModels:Notification">
-                            <Grid>
-                                <InfoBar
-                                    Closed="InfoBar_OnClosed"
-                                    HorizontalAlignment="Right"
-                                    IsClosable="True"
-                                    IsIconVisible="True"
-                                    IsOpen="True"
-                                    Message="{x:Bind Message}"
-                                    Severity="{x:Bind Severity}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
-
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="LibraryCardViewVisibility">
                 <!--  when no audiobooks have been imported yet  -->
@@ -411,17 +368,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LibraryCardScrollView.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-            <VisualStateGroup x:Name="PlayerVisibility">
-                <!--  when no audiobooks have been imported yet  -->
-                <VisualState x:Name="PlayerStateCollapsed">
-                    <VisualState.StateTriggers>
-                        <winUi:IsNullOrEmptyStateTrigger Value="{x:Bind PlayerViewModel.NowPlaying, Mode=OneWay}" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="Player.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

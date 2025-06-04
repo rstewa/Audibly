@@ -9,6 +9,7 @@
     xmlns:converters="using:Audibly.App.Helpers.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
+    xmlns:helpers="using:Audibly.App.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -63,6 +64,7 @@
                 Glyph="&#xe904;"
                 Grid.Column="0"
                 HorizontalAlignment="Center"
+                ToolTipService.ToolTip="Drag to move"
                 VerticalAlignment="Center" />
 
             <userControls:CoverImageTile
@@ -99,11 +101,130 @@
                 Width="1"
                 x:Name="Separator" />
 
+            <!--  region: other buttons  -->
             <StackPanel
                 Grid.Column="5"
                 Orientation="Horizontal"
                 Spacing="-8"
                 VerticalAlignment="Center">
+
+                <!--  Volume Button  -->
+                <Button
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ToolTipService.ToolTip="Volume"
+                    VerticalAlignment="Center"
+                    x:Name="VolumeButton">
+                    <Button.Resources>
+                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                    </Button.Resources>
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="16"
+                        Glyph="&#xE767;" />
+                    <Button.Flyout>
+                        <Flyout ShouldConstrainToRootBounds="False">
+                            <Flyout.FlyoutPresenterStyle>
+                                <Style TargetType="FlyoutPresenter">
+                                    <Setter Property="MinWidth" Value="30" />
+                                    <Setter Property="MaxWidth" Value="30" />
+                                    <Setter Property="MinHeight" Value="125" />
+                                    <Setter Property="CornerRadius" Value="4" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                </Style>
+                            </Flyout.FlyoutPresenterStyle>
+                            <Slider
+                                AutomationProperties.Name="VolumeLevelSlider"
+                                LargeChange="25"
+                                Margin="-14,0,0,0"
+                                Maximum="100"
+                                Minimum="0"
+                                Orientation="Vertical"
+                                SmallChange="1"
+                                SnapsTo="StepValues"
+                                StepFrequency="1"
+                                ToolTipService.ToolTip="Volume Level"
+                                Value="{x:Bind PlayerViewModel.VolumeLevel}"
+                                ValueChanged="VolumeSlider_ValueChanged"
+                                x:Name="VolumeLevelSlider" />
+                        </Flyout>
+                    </Button.Flyout>
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="M" Modifiers="Control" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+
+                <!--  Playback Speed Button  -->
+                <Button
+                    Background="Transparent"
+                    BorderThickness="0"
+                    VerticalAlignment="Center"
+                    x:Name="PlaybackSpeedButton">
+                    <ToolTipService.ToolTip>
+                        <TextBlock>
+                            <Run Text="Playback Speed" />
+                            <LineBreak />
+                            <Run Text="[ = Decrease speed" />
+                            <LineBreak />
+                            <Run Text="] = Increase speed" />
+                            <LineBreak />
+                            <Run Text="\ = Reset to normal speed" />
+                        </TextBlock>
+                    </ToolTipService.ToolTip>
+                    <Button.Resources>
+                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                    </Button.Resources>
+                    <FontIcon
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="16"
+                        Glyph="&#xEC57;" />
+                    <Button.Flyout>
+                        <Flyout ShouldConstrainToRootBounds="False" x:Name="PlaybackSpeedSliderFlyout">
+                            <Flyout.FlyoutPresenterStyle>
+                                <Style TargetType="FlyoutPresenter">
+                                    <Setter Property="MinWidth" Value="30" />
+                                    <Setter Property="MaxWidth" Value="30" />
+                                    <Setter Property="MinHeight" Value="125" />
+                                    <Setter Property="CornerRadius" Value="4" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                </Style>
+                            </Flyout.FlyoutPresenterStyle>
+                            <Slider
+                                AutomationProperties.Name="PlaybackSpeedSlider"
+                                FocusVisualPrimaryThickness="0"
+                                FocusVisualSecondaryThickness="0"
+                                Margin="-14,0,0,0"
+                                Maximum="{x:Bind helpers:Constants.PlaybackSpeedMaximum}"
+                                Minimum="{x:Bind helpers:Constants.PlaybackSpeedMinimum}"
+                                Orientation="Vertical"
+                                SmallChange="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
+                                SnapsTo="StepValues"
+                                StepFrequency="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
+                                ToolTipService.ToolTip="Playback Speed"
+                                Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
+                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
+                                x:Name="PlaybackSpeedSlider">
+                                <Slider.Resources>
+                                    <SolidColorBrush Color="Transparent" x:Key="FocusVisualPrimaryBrush" />
+                                    <SolidColorBrush Color="Transparent" x:Key="FocusVisualSecondaryBrush" />
+                                </Slider.Resources>
+                            </Slider>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+
                 <!--  pin button  -->
                 <Button
                     Background="Transparent"
@@ -162,35 +283,13 @@
                         <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
                         <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
                     </Button.Resources>
-
                     <FontIcon
                         FontFamily="{StaticResource AudiblyCustomFont}"
                         FontSize="24"
                         Glyph="&#xe901;" />
                 </Button>
-
-                <!--  todo: decide if i want to keep this  -->
-                <!--  close button  -->
-                <!--  <Button  -->
-                <!--  Background="Transparent"  -->
-                <!--  BorderThickness="0"  -->
-                <!--  Click="CloseButton_Click"  -->
-                <!--  HorizontalAlignment="Right"  -->
-                <!--  ToolTipService.ToolTip="Close Audibly"  -->
-                <!--  VerticalAlignment="Center"  -->
-                <!--  x:Name="CloseButton">  -->
-                <!--     <Button.Resources> -->
-                <!--         <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush> -->
-                <!--         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush> -->
-                <!--         <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush> -->
-                <!--         <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush> -->
-                <!--     </Button.Resources> -->
-                <!--  <FontIcon  -->
-                <!--  FontFamily="Segoe MDL2 Assets"  -->
-                <!--  FontSize="16"  -->
-                <!--  Glyph="&#xE70D;" />  -->
-                <!-- </Button> -->
             </StackPanel>
+            <!--  endregion: other buttons  -->
         </Grid>
 
         <Slider

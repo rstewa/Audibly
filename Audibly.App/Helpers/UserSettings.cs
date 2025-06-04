@@ -1,6 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Created: 06/16/2024
-// Updated: 07/01/2024
+// Updated: 05/08/2025
 
 using System;
 using Windows.Storage;
@@ -76,6 +75,30 @@ public static class UserSettings
             return version?.ToString();
         }
         set => ApplicationData.Current.LocalSettings.Values["PreviousVersion"] = value;
+    }
+
+    public static double ZoomLevel
+    {
+        get
+        {
+            try
+            {
+                var zoomLevel = ApplicationData.Current.LocalSettings.Values["ZoomLevel"];
+                if (zoomLevel != null)
+                    if (double.TryParse(zoomLevel.ToString(), out var result))
+                        return result;
+
+                ApplicationData.Current.LocalSettings.Values["ZoomLevel"] = 100;
+                return 100;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return 100;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["ZoomLevel"] = value;
     }
 
     public static double Volume

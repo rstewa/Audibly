@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -27,7 +27,7 @@
 
     <!-- We recommend only using these features for release builds. -->
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-		<!-- Configure Sentry org and project -->
+        <!-- Configure Sentry org and project -->
         <SentryOrg>audibly</SentryOrg>
         <SentryProject>audibly</SentryProject>
 
@@ -55,12 +55,14 @@
         <None Remove="UserControls\PlayerControlGrid.xaml" />
         <None Remove="UserControls\PlaySkipButtonsStack.xaml" />
         <None Remove="UserControls\TitleArtistStack.xaml" />
+        <None Remove="Views\CollectionContentPage.xaml" />
         <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml" />
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
         <None Remove="Views\ControlPages\FailedDataMigrationContent.xaml" />
         <None Remove="Views\ControlPages\MoreInfoDialogContent.xaml" />
         <None Remove="Views\ControlPages\OnBoardingDialogContent.xaml" />
         <None Remove="Views\ControlPages\SelectedFilesDialog.xaml" />
+        <None Remove="Views\FoldersPage.xaml" />
         <None Remove="Views\MiniPlayerPage.xaml" />
         <None Remove="Views\NewMiniPlayerPage.xaml" />
         <None Remove="Views\ResizableContentDialog.xaml" />
@@ -94,6 +96,9 @@
         <Content Update="Assets\AudiblyCustom.ttf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Update="Assets\logo.png">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -101,31 +106,31 @@
         <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.250206-build.2040" />
         <PackageReference Include="CommunityToolkit.Labs.WinUI.MarqueeText" Version="0.1.250206-build.2040" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250129-preview2" />
-        <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" Version="8.2.250129-preview2" />
-        <PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.2.250129-preview2" />
-        <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250129-preview2" />
-        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.2.250129-preview2" />
-        <PackageReference Include="CommunityToolkit.WinUI.Triggers" Version="8.2.250129-preview2" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.2.250402" />
+        <PackageReference Include="CommunityToolkit.WinUI.Triggers" Version="8.2.250402" />
         <PackageReference Include="Dapper" Version="2.1.66" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
         <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
         <Manifest Include="$(ApplicationManifest)" />
         <PackageReference Include="PInvoke.User32" Version="0.7.124" />
-        <PackageReference Include="Sentry" Version="5.1.1" />
+        <PackageReference Include="Sentry" Version="5.5.0" />
         <PackageReference Include="Sharpener" Version="0.2.4" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
-        <PackageReference Include="z440.atl.core" Version="6.17.0" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+        <PackageReference Include="z440.atl.core" Version="6.20.0" />
     </ItemGroup>
 
     <!-- 

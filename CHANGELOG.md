@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.5] - 6-3-25
+
+### Changed/Fixed
+
+- #101: moved now player bar to AppShell
+- #102: moved notifications view to AppShell
+- #104: increased playback speed maximum to 4x
+- #86, #107: save zoom level so that it doesn't reset on app restart
+- #90: added tooltip to drag-indicator in mini-player
+- #104: added volume and playback speed buttons to mini-player
+  - added keyboard shortcuts to mini-player for PlaybackSpeed
+- #103: added over-scrolling to the library and settings pages so that the player doesn't hide content at the bottom
+
 ## [2.2.4] - 3-4-25
 
 ### Fixed

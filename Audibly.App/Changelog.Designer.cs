@@ -60,20 +60,18 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.2.4] - 3-4-25
+        ///   Looks up a localized string similar to ## [2.2.5] - 6-3-25
         ///
-        ///### Fixed
+        ///### Changed/Fixed
         ///
-        ///- Fixed #92 where an unhandled exception occurs in the LibraryCardPage if an AudiobookTile tries to load an invalid
-        ///  image
-        ///- Fixed #94 where DialogService.ShowErrorDialogAsync() was throwing an unhandled exception because xamlroot wasn&apos;t
-        ///  initialized yet
-        ///    - Updated all methods in the DialogService to check if xamlroot is null before using it
-        ///- Fixed #97 where the description for an .mp3 audiobook wasn&apos;t getting grabbed on import
-        ///
-        ///## [2.2.3] - 2-26-25
-        ///
-        ///### Fi [rest of string was truncated]&quot;;.
+        ///- #101: moved now player bar to AppShell
+        ///- #102: moved notifications view to AppShell
+        ///- #104: increased playback speed maximum to 4x
+        ///- #86, #107: save zoom level so that it doesn&apos;t reset on app restart
+        ///- #90: added tooltip to drag-indicator in mini-player
+        ///- #104: added volume and playback speed buttons to mini-player
+        ///  - added keyboard shortcuts to mini-player for PlaybackSpeed
+        ///- #103: added over-scrolling to the library and settings pages so that the playe [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

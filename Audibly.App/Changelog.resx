@@ -118,40 +118,17 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.4] - 3-4-25
+    <value>## [2.2.5] - 6-3-25
 
-### Fixed
+### Changed/Fixed
 
-- Fixed #92 where an unhandled exception occurs in the LibraryCardPage if an AudiobookTile tries to load an invalid
-  image
-- Fixed #94 where DialogService.ShowErrorDialogAsync() was throwing an unhandled exception because xamlroot wasn't
-  initialized yet
-    - Updated all methods in the DialogService to check if xamlroot is null before using it
-- Fixed #97 where the description for an .mp3 audiobook wasn't getting grabbed on import
-
-## [2.2.3] - 2-26-25
-
-### Fixed
-
-- Fixed light theme
-
-## [2.2.1] - 2-24-25
-
-### Fixed
-
-- Fixed bug in the settings page where the app would crash if the current theme was set to default
-
-## [2.2.0] - 2-21-25
-
-### Added/Changed
-
-- UI Changes:
-  - Added Mini-player
-  - Changed the corner radius for all cover image tiles
-  - Added zoom option for main library page
-  - Added mica background for Win11 users
-  - Changes to allow window size to be much smaller
-  - Disabled light theme until it can be completed at a future date
-  - Several other small UI improvements</value>
+- #101: moved now player bar to AppShell
+- #102: moved notifications view to AppShell
+- #104: increased playback speed maximum to 4x
+- #86, #107: save zoom level so that it doesn't reset on app restart
+- #90: added tooltip to drag-indicator in mini-player
+- #104: added volume and playback speed buttons to mini-player
+  - added keyboard shortcuts to mini-player for PlaybackSpeed
+- #103: added over-scrolling to the library and settings pages so that the player doesn't hide content at the bottom</value>
   </data>
 </root>

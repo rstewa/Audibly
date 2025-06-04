@@ -149,7 +149,7 @@ public sealed partial class LibraryCardPage : Page
         {
             if (_activeFilters.Contains(AudioBookFilter.InProgress) && audiobook.Progress > 0 && !audiobook.IsCompleted)
                 matches.Add(audiobook);
-            if (_activeFilters.Contains(AudioBookFilter.NotStarted) && audiobook.Progress == 0)
+            if (_activeFilters.Contains(AudioBookFilter.NotStarted) && audiobook.Progress == 0 && !audiobook.IsCompleted)
                 matches.Add(audiobook);
             if (_activeFilters.Contains(AudioBookFilter.Completed) && audiobook.IsCompleted)
                 matches.Add(audiobook);

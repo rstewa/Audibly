@@ -9,10 +9,10 @@
     xmlns:converters="using:Audibly.App.Helpers.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
+    xmlns:helpers="using:Audibly.App.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
-      xmlns:helpers="using:Audibly.App.Helpers"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
 
     <Page.Resources>
@@ -164,9 +164,19 @@
                 <Button
                     Background="Transparent"
                     BorderThickness="0"
-                    ToolTipService.ToolTip="Playback Speed"
                     VerticalAlignment="Center"
                     x:Name="PlaybackSpeedButton">
+                    <ToolTipService.ToolTip>
+                        <TextBlock>
+                            <Run Text="Playback Speed" />
+                            <LineBreak />
+                            <Run Text="[ = Decrease speed" />
+                            <LineBreak />
+                            <Run Text="] = Increase speed" />
+                            <LineBreak />
+                            <Run Text="\ = Reset to normal speed" />
+                        </TextBlock>
+                    </ToolTipService.ToolTip>
                     <Button.Resources>
                         <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
                         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
@@ -191,25 +201,24 @@
                                     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
                                 </Style>
                             </Flyout.FlyoutPresenterStyle>
-                            <Slider AutomationProperties.Name="PlaybackSpeedSlider"
-                                    Margin="-14,0,0,0"
-                                    Maximum="{x:Bind helpers:Constants.PlaybackSpeedMaximum}"
-                                    Minimum="{x:Bind helpers:Constants.PlaybackSpeedMinimum}"
-                                    Orientation="Vertical"
-                                    SmallChange="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
-                                    SnapsTo="StepValues"
-                                    StepFrequency="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
-                                    ToolTipService.ToolTip="Playback Speed"
-                                    Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
-                                    ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                    x:Name="PlaybackSpeedSlider"
-                                    FocusVisualPrimaryThickness="0"
-                                    FocusVisualSecondaryThickness="0">
+                            <Slider
+                                AutomationProperties.Name="PlaybackSpeedSlider"
+                                FocusVisualPrimaryThickness="0"
+                                FocusVisualSecondaryThickness="0"
+                                Margin="-14,0,0,0"
+                                Maximum="{x:Bind helpers:Constants.PlaybackSpeedMaximum}"
+                                Minimum="{x:Bind helpers:Constants.PlaybackSpeedMinimum}"
+                                Orientation="Vertical"
+                                SmallChange="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
+                                SnapsTo="StepValues"
+                                StepFrequency="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
+                                ToolTipService.ToolTip="Playback Speed"
+                                Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
+                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
+                                x:Name="PlaybackSpeedSlider">
                                 <Slider.Resources>
-                                    <SolidColorBrush x:Key="FocusVisualPrimaryBrush"
-                                                     Color="Transparent" />
-                                    <SolidColorBrush x:Key="FocusVisualSecondaryBrush"
-                                                     Color="Transparent" />
+                                    <SolidColorBrush Color="Transparent" x:Key="FocusVisualPrimaryBrush" />
+                                    <SolidColorBrush Color="Transparent" x:Key="FocusVisualSecondaryBrush" />
                                 </Slider.Resources>
                             </Slider>
                         </Flyout>

@@ -1,7 +1,8 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 05/24/2025
+// Updated: 06/03/2025
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
 using Audibly.App.Extensions;
@@ -22,6 +23,7 @@ namespace Audibly.App.Views;
 public sealed partial class NewMiniPlayerPage : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    private CancellationTokenSource? _playbackSpeedFlyoutCts;
 
     public NewMiniPlayerPage()
     {
@@ -65,13 +67,25 @@ public sealed partial class NewMiniPlayerPage : Page
         }
     }
 
-    // todo: maybe cancel this if the user clicks the slider or moves the cursor above it
     private void ClosePlaybackSpeedFlyout()
     {
+        // Cancel any previous close operation
+        _playbackSpeedFlyoutCts?.Cancel();
+        _playbackSpeedFlyoutCts = new CancellationTokenSource();
+        var token = _playbackSpeedFlyoutCts.Token;
+
         _dispatcherQueue.TryEnqueue(async () =>
         {
-            await Task.Delay(2000);
-            if (PlaybackSpeedSliderFlyout.IsOpen) PlaybackSpeedSliderFlyout.Hide();
+            try
+            {
+                await Task.Delay(2000, token);
+                if (PlaybackSpeedSliderFlyout.IsOpen)
+                    PlaybackSpeedSliderFlyout.Hide();
+            }
+            catch (TaskCanceledException)
+            {
+                // Ignore cancellation
+            }
         });
     }
 

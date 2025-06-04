@@ -98,7 +98,7 @@ This desktop audiobook player for Windows 10/11 supports playing .m4b and .mp3 f
 
 ### Mini-player
 <p align="middle">
-  <img src="images/v2.2.0/audibly_mini_player.png" />
+  <img src="images/v2.2.5/audibly_mini_player.png" />
 </p> 
 
 ### More Info Dialog

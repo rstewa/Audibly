@@ -54,6 +54,12 @@
                     <FontIcon Glyph="&#xE894;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
+            <!--  export metadata to json file  -->
+            <MenuFlyoutItem Click="ExportMetadataToJson_OnClick" Text="Export Metadata to JSON">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8B5;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
         </MenuFlyout>
     </UserControl.Resources>
     <Button

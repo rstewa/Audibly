@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 05/08/2025
+// Updated: 06/09/2025
 
 using System;
 using System.Collections.Generic;
@@ -43,6 +43,7 @@ public class MainViewModel : BindableBase
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     public readonly IAppDataService AppDataService;
+    public readonly IFileDialogService FileDialogService;
     public readonly IImportFiles FileImporter;
     public readonly IloggingService LoggingService;
 
@@ -66,11 +67,14 @@ public class MainViewModel : BindableBase
     /// <summary>
     ///     Creates a new MainViewModel.
     /// </summary>
-    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, IloggingService loggingService)
+    public MainViewModel(IImportFiles fileImporter, IAppDataService appDataService, IloggingService loggingService,
+        IFileDialogService fileDialogService)
     {
         FileImporter = fileImporter;
         AppDataService = appDataService;
         LoggingService = loggingService;
+        FileDialogService = fileDialogService;
+
         Task.Run(() => GetAudiobookListAsync(true));
 
         InitializeZoomLevelToTileSizeDictionary();

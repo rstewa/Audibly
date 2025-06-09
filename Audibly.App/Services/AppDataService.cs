@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 4/15/2024
-// Updated: 6/11/2024
+// Updated: 06/09/2025
 
 using System;
 using System.Collections.Generic;
@@ -8,17 +7,29 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using ATL;
 using Audibly.App.Helpers;
 using Audibly.App.Services.Interfaces;
+using Audibly.App.ViewModels;
+using Audibly.Models;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Audibly.App.Services;
 
 public class AppDataService : IAppDataService
 {
+    private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private static StorageFolder StorageFolder => ApplicationData.Current.LocalFolder;
+
+    /// <summary>
+    ///     Gets the app-wide ViewModel instance.
+    /// </summary>
+    public MainViewModel ViewModel => App.ViewModel;
 
     #region IAppDataService Members
 
@@ -77,7 +88,20 @@ public class AppDataService : IAppDataService
 
             var folder = await StorageFolder.GetFolderFromPathAsync(dirName);
 
-            await folder.DeleteAsync();
+            // Try to delete all files in the folder first
+            var files = await folder.GetFilesAsync();
+            foreach (var file in files)
+                try
+                {
+                    await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
+                }
+                catch (Exception fileEx)
+                {
+                    App.ViewModel.LoggingService.LogError(fileEx);
+                }
+
+            // Now try to delete the empty folder
+            await folder.DeleteAsync(StorageDeleteOption.PermanentDelete);
         }
         catch (Exception e)
         {
@@ -103,8 +127,60 @@ public class AppDataService : IAppDataService
             await bookAppdataDir.CreateFileAsync("Metadata.json", CreationCollisionOption.ReplaceExisting), json);
     }
 
-    #endregion
+    public async Task ExportMetadataAsync(List<SourceFile> sourceFiles)
+    {
+        try
+        {
+            // Create a list to hold all track metadata
+            var tracks = new List<Track>();
 
+            // Process each source file
+            foreach (var sourceFile in sourceFiles)
+            {
+                var track = new Track(sourceFile.FilePath);
+                tracks.Add(track);
+            }
+
+            // Serialize the entire collection
+            var json = JsonSerializer.Serialize(tracks, new JsonSerializerOptions { WriteIndented = true });
+
+            var file = ViewModel.FileDialogService.SaveFileDialog("Metadata.json",
+                new List<string> { ".json" }, PickerLocationId.DocumentsLibrary);
+            if (file == null) return; // User cancelled
+            // Write the JSON to the file
+            await FileIO.WriteTextAsync(file, json);
+
+            // show notification
+            App.ViewModel.EnqueueNotification(new Notification
+            {
+                Message = $"Metadata exported to {file.Name}", Severity = InfoBarSeverity.Success
+            });
+
+
+            // Uncomment the following lines if you want to use a dispatcher queue for UI updates
+
+            // await _dispatcherQueue.EnqueueAsync(async () =>
+            // {
+            //     // Let the user choose where to save the combined metadata file
+            //     var savePicker = new FileSavePicker
+            //     {
+            //         SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+            //         SuggestedFileName = "Combined Metadata.json",
+            //         FileTypeChoices = { { "JSON", new List<string> { ".json" } } }
+            //     };
+            //     var file = await savePicker.PickSaveFileAsync();
+            //     if (file == null) return; // User cancelled
+            //
+            //     await FileIO.WriteTextAsync(file, json);
+            // });
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e, true);
+        }
+    }
+
+    #endregion
 
     // from: https://stackoverflow.com/questions/26486671/how-to-resize-an-image-maintaining-the-aspect-ratio-in-c-sharp
     private async Task<bool> ShrinkAndSaveAsync(string path, string savePath, int maxHeight, int maxWidth)

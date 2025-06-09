@@ -1,11 +1,11 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/31/2024
-// Updated: 4/13/2024
+// Updated: 06/09/2025
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ATL;
+using Audibly.Models;
 
 namespace Audibly.App.Services.Interfaces;
 
@@ -18,4 +18,6 @@ public interface IAppDataService
     Task DeleteCoverImagesAsync(List<string> paths, Func<int, int, string, Task> progressCallback);
 
     Task WriteMetadataAsync(string path, Track track);
+
+    Task ExportMetadataAsync(List<SourceFile> sourceFiles);
 }

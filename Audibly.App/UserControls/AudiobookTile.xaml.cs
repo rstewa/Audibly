@@ -1,11 +1,12 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 01/26/2025
+// Updated: 06/09/2025
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.Models;
@@ -137,6 +138,18 @@ public sealed partial class AudiobookTile : UserControl
         if (audiobook == null) return;
         audiobook.IsCompleted = false;
         await audiobook.SaveAsync();
+    }
+
+    private void ExportMetadataToJson_OnClick(object sender, RoutedEventArgs e)
+    {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null) return;
+
+        ViewModel.AppDataService.ExportMetadataAsync(audiobook.SourcePaths)
+            .ContinueWith(task =>
+            {
+                if (task.IsFaulted) App.ViewModel.LoggingService.LogError(task.Exception, true);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     #region dependency properties

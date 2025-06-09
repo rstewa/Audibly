@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/02/2025
+// Updated: 06/09/2025
 
 using System;
 using System.Collections.Generic;
@@ -81,7 +81,7 @@ public partial class App : Application
     /// </summary>
     public static MainViewModel ViewModel { get; } =
         new(new FileImportService(), new AppDataService(),
-            new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"));
+            new LoggingService(ApplicationData.Current.LocalFolder.Path + @"\Audibly.log"), new FileDialogService());
 
     /// <summary>
     ///     Gets the app-wide PlayerViewModel singleton instance.

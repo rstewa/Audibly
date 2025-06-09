@@ -60,7 +60,17 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.2.5] - 6-3-25
+        ///   Looks up a localized string similar to ## [2.2.6] - 6-9-25
+        ///
+        ///### Added
+        ///
+        ///- Added export audiobook metadata context menu option to audiobook tile
+        ///
+        ///### Fixed
+        ///
+        ///- #111: fixed bug where filtering on &quot;Not Started&quot; would show books marked as completed
+        ///
+        ///## [2.2.5] - 6-3-25
         ///
         ///### Changed/Fixed
         ///
@@ -68,10 +78,7 @@ namespace Audibly.App {
         ///- #102: moved notifications view to AppShell
         ///- #104: increased playback speed maximum to 4x
         ///- #86, #107: save zoom level so that it doesn&apos;t reset on app restart
-        ///- #90: added tooltip to drag-indicator in mini-player
-        ///- #104: added volume and playback speed buttons to mini-player
-        ///  - added keyboard shortcuts to mini-player for PlaybackSpeed
-        ///- #103: added over-scrolling to the library and settings pages so that the playe [rest of string was truncated]&quot;;.
+        ///- #90: added tooltip to drag-indicator in mini- [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

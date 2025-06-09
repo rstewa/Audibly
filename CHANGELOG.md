@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.6] - 6-9-25
+
+### Added
+
+- Added export audiobook metadata context menu option to audiobook tile
+
+### Fixed
+
+- #111: fixed bug where filtering on "Not Started" would show books marked as completed
+
 ## [2.2.5] - 6-3-25
 
 ### Changed/Fixed

@@ -118,7 +118,17 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.5] - 6-3-25
+    <value>## [2.2.6] - 6-9-25
+
+### Added
+
+- Added export audiobook metadata context menu option to audiobook tile
+
+### Fixed
+
+- #111: fixed bug where filtering on "Not Started" would show books marked as completed
+
+## [2.2.5] - 6-3-25
 
 ### Changed/Fixed
 

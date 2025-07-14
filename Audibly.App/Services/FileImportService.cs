@@ -290,7 +290,7 @@ public class FileImportService : IImportFiles
                         StartOffset = 0,
                         EndOffset = 0,
                         UseOffset = false,
-                        Title = audiobook.Title,
+                        Title = track.Title,
                         Index = chapterIndex++,
                         ParentSourceFileIndex = sourceFile.Index
                     });

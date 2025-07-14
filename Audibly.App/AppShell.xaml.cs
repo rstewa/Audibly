@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/17/2025
+// Updated: 07/14/2025
 
 using System;
 using System.Collections.Generic;
@@ -47,7 +47,11 @@ public sealed partial class AppShell : Page
         //window.SizeChanged += Window_SizeChanged; // Subscribe to the SizeChanged event
         AppShellFrame.Navigate(typeof(LibraryCardPage));
 
-        Loaded += (_, _) => { NavView.SelectedItem = LibraryCardMenuItem; };
+        Loaded += (_, _) =>
+        {
+            NavView.SelectedItem = LibraryCardMenuItem;
+            NavView.IsPaneOpen = !UserSettings.IsSidebarCollapsed;
+        };
         PointerWheelChanged += (_, e) =>
         {
             // wait 1 second before resetting the zoom buttons
@@ -310,7 +314,7 @@ public sealed partial class AppShell : Page
 
     private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
     {
-        if (args.DisplayMode == NavigationViewDisplayMode.Minimal)
+        if (UserSettings.IsSidebarCollapsed || args.DisplayMode == NavigationViewDisplayMode.Minimal)
             VisualStateManager.GoToState(this, "Compact", true);
         else
             VisualStateManager.GoToState(this, "Default", true);

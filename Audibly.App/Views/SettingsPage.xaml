@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="using:System"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:views="using:Audibly.App.Views"
@@ -27,7 +28,6 @@
         </Style>
     </Page.Resources>
 
-    <!--  TODO: allow user to overscroll; check out community.toolkit.behaviors.viewportbehavior  -->
     <Grid Padding="36,36,48,0" x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -46,9 +46,11 @@
             Style="{StaticResource TitleTextBlockStyle}"
             Text="Settings"
             x:Name="PageHeader" />
+
         <ScrollViewer
             Grid.Row="1"
             IsTabStop="False"
+            Padding="16,0,16,0"
             UseSystemFocusVisuals="False"
             VerticalScrollBarVisibility="Auto"
             VerticalScrollMode="Auto">
@@ -73,6 +75,63 @@
                         <ComboBoxItem Content="Use system setting" Tag="Default" />
                     </ComboBox>
                 </toolkit:SettingsCard>
+
+                <!--  set default playback speed and volume  -->
+                <toolkit:SettingsExpander Description="Set the default playback speed and volume for audiobooks" Header="Default Playback settings">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8D0;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard Header="Default playback speed">
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <Slider
+                                    AutomationProperties.AutomationId="playbackSpeedSlider"
+                                    LargeChange="0.5"
+                                    Maximum="4.0"
+                                    Minimum="0.5"
+                                    SmallChange="0.05"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="0.05"
+                                    ToolTipService.ToolTip="Playback speed"
+                                    Value="{x:Bind ViewModel.DefaultPlaybackSpeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    x:Name="playbackSpeed" />
+
+                                <TextBox
+                                    HorizontalContentAlignment="Center"
+                                    IsReadOnly="True"
+                                    Text="{x:Bind sys:String.Format('{0:F2}', ViewModel.DefaultPlaybackSpeed), Mode=OneWay}"
+                                    TextAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Width="16"
+                                    x:Name="playbackSpeedTextBox" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Header="Default volume">
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <Slider
+                                    AutomationProperties.AutomationId="playbackVolumeSlider"
+                                    LargeChange="10"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="1"
+                                    ToolTipService.ToolTip="Playback volume"
+                                    Value="{x:Bind ViewModel.DefaultVolume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    x:Name="playbackVolume" />
+
+                                <TextBox
+                                    HorizontalContentAlignment="Center"
+                                    IsReadOnly="True"
+                                    Text="{x:Bind sys:String.Format('{0:F0}', ViewModel.DefaultVolume), Mode=OneWay}"
+                                    TextAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Width="16"
+                                    x:Name="playbackVolumeTextBox" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
 
                 <!--  Donate  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Donate" />
@@ -115,21 +174,27 @@
 
                 <!--  Resources  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Resources" />
-                <toolkit:SettingsCard
-                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                    Click="libationCard_Click"
-                    Description="Libation is a free, open-source and cross-platform Audible audiobook manager that allows you to backup your Audible library (and convert them to .M4B files)."
-                    Header="Libation"
-                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/libation_icon.png}"
-                    IsClickEnabled="True" />
-
-                <toolkit:SettingsCard
-                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                    Click="openAudibleCard_Click"
-                    Description="OpenAudible is a cross-platform audiobook manager designed for Audible users. It allows you view/manage your library as well as convert your audiobooks to .M4B files."
-                    Header="OpenAudible"
-                    HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/openaudible-icon.png}"
-                    IsClickEnabled="True" />
+                <toolkit:SettingsExpander Description="Links to external tools for managing your audiobook library." Header="Resources">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE71B;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard
+                            ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                            Click="libationCard_Click"
+                            Description="Libation is a free, open-source and cross-platform Audible audiobook manager that allows you to backup your Audible library (and convert them to .M4B files)."
+                            Header="Libation"
+                            HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/libation_icon.png}"
+                            IsClickEnabled="True" />
+                        <toolkit:SettingsCard
+                            ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                            Click="openAudibleCard_Click"
+                            Description="OpenAudible is a cross-platform audiobook manager designed for Audible users. It allows you view/manage your library as well as convert your audiobooks to .M4B files."
+                            Header="OpenAudible"
+                            HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/openaudible-icon.png}"
+                            IsClickEnabled="True" />
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
 
                 <!--  About  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="About" />
@@ -186,12 +251,13 @@
                         <FontIcon Glyph="&#xE713;" />
                     </toolkit:SettingsExpander.HeaderIcon>
                     <toolkit:SettingsExpander.Items>
+                        <!--  todo: add delete entire library option  -->
                         <toolkit:SettingsCard
                             Click="OpenAppStateFolderInFileExplorer_Click"
                             Header="Open App State Folder in File Explorer"
                             IsClickEnabled="True">
                             <toolkit:SettingsCard.ActionIcon>
-                                <FontIcon Glyph="&#xE777;" />
+                                <FontIcon Glyph="&#xE78B;" />
                             </toolkit:SettingsCard.ActionIcon>
                         </toolkit:SettingsCard>
                     </toolkit:SettingsExpander.Items>

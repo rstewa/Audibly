@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 06/09/2025
+// Updated: 07/24/2025
 
 using System;
 using System.Collections.Generic;
@@ -49,6 +49,10 @@ public class MainViewModel : BindableBase
 
     private CancellationTokenSource? _cancellationTokenSource;
 
+    private double _defaultPlaybackSpeed;
+
+    private double _defaultVolume;
+
     private bool _isImporting;
     private bool _isLoading;
     private bool _isNavigationViewVisible = true;
@@ -75,6 +79,9 @@ public class MainViewModel : BindableBase
         LoggingService = loggingService;
         FileDialogService = fileDialogService;
 
+        DefaultPlaybackSpeed = UserSettings.PlaybackSpeed;
+        DefaultVolume = UserSettings.Volume;
+
         Task.Run(() => GetAudiobookListAsync(true));
 
         InitializeZoomLevelToTileSizeDictionary();
@@ -99,6 +106,24 @@ public class MainViewModel : BindableBase
     {
         get => _selectedAudiobook;
         set => Set(ref _selectedAudiobook, value);
+    }
+
+    public double DefaultPlaybackSpeed
+    {
+        get => _defaultPlaybackSpeed;
+        set
+        {
+            if (Set(ref _defaultPlaybackSpeed, value)) UserSettings.PlaybackSpeed = value;
+        }
+    }
+
+    public double DefaultVolume
+    {
+        get => _defaultVolume;
+        set
+        {
+            if (Set(ref _defaultVolume, value)) UserSettings.Volume = value;
+        }
     }
 
     /// <summary>

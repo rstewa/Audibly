@@ -165,7 +165,7 @@
                                         SnapsTo="StepValues"
                                         StepFrequency="1"
                                         ToolTipService.ToolTip="Volume Level"
-                                        Value="{x:Bind PlayerViewModel.VolumeLevel}"
+                                        Value="{x:Bind PlayerViewModel.VolumeLevel, Mode=OneWay}"
                                         ValueChanged="VolumeSlider_ValueChanged"
                                         x:Name="VolumeLevelSlider" />
                                 </Grid>
@@ -207,7 +207,7 @@
                                         SnapsTo="StepValues"
                                         StepFrequency="0.05"
                                         ToolTipService.ToolTip="Playback Speed"
-                                        Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
+                                        Value="{x:Bind PlayerViewModel.PlaybackSpeed, Mode=OneWay}"
                                         ValueChanged="PlaybackSpeedSlider_ValueChanged"
                                         x:Name="PlaybackSpeedSlider" />
                                 </Grid>

@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 03/02/2025
+// Updated: 07/24/2025
 
 using System;
 using System.IO;
@@ -205,11 +205,11 @@ public class PlayerViewModel : BindableBase
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
 
         // set volume level from settings
-        UpdateVolume(UserSettings.Volume);
-        UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
+        // UpdateVolume(UserSettings.Volume);
+        // UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
     }
 
-    public void UpdateVolume(double volume)
+    public async void UpdateVolume(double volume)
     {
         VolumeLevel = volume;
         MediaPlayer.Volume = volume / 100;
@@ -221,17 +221,25 @@ public class PlayerViewModel : BindableBase
             _ => Constants.VolumeGlyph0
         };
 
-        // save volume level to settings
-        UserSettings.Volume = volume;
+        // save volume level for audiobook
+        if (NowPlaying == null) return;
+
+        NowPlaying.Volume = volume;
+        NowPlaying.IsModified = true;
+        await NowPlaying.SaveAsync();
     }
 
-    public void UpdatePlaybackSpeed(double speed)
+    public async void UpdatePlaybackSpeed(double speed)
     {
         PlaybackSpeed = speed;
         MediaPlayer.PlaybackRate = speed;
 
-        // save playback speed to settings
-        UserSettings.PlaybackSpeed = speed;
+        // save playback speed for audiobook
+        if (NowPlaying == null) return;
+
+        NowPlaying.PlaybackSpeed = speed;
+        NowPlaying.IsModified = true;
+        await NowPlaying.SaveAsync();
     }
 
     public async Task OpenAudiobook(AudiobookViewModel audiobook)
@@ -266,6 +274,21 @@ public class PlayerViewModel : BindableBase
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             NowPlaying = audiobook;
+
+            if (NowPlaying.DateLastPlayed == null)
+            {
+                // use the global playback speed and volume level if they are set
+                // and this is the first time the audiobook is being played
+                UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
+                UpdateVolume(UserSettings.Volume);
+            }
+            else
+            {
+                // use the audiobook's playback speed and volume level
+                UpdatePlaybackSpeed(NowPlaying.PlaybackSpeed);
+                UpdateVolume(NowPlaying.Volume);
+            }
+
             NowPlaying.IsNowPlaying = true;
             NowPlaying.DateLastPlayed = DateTime.Now;
 

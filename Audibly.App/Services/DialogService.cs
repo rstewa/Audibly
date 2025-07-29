@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 03/02/2025
+// Updated: 07/29/2025
 
 using System;
 using System.Threading;
@@ -38,6 +38,32 @@ public static class DialogService
             App.ViewModel.LoggingService.LogError(e, true);
             return null;
         }
+    }
+
+    // confirmation dialog with custom title and content
+    internal static async Task<ContentDialogResult> ShowConfirmationDialogAsync(string title, string content,
+        string primaryButtonText = "Yes", string closeButtonText = "No")
+    {
+        var xamlRoot = GetXamlRoot();
+        if (xamlRoot == null) return ContentDialogResult.None;
+
+        var result = ContentDialogResult.None;
+        await _dispatcherQueue.EnqueueAsync(async () =>
+        {
+            var confirmationDialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                PrimaryButtonText = primaryButtonText,
+                CloseButtonText = closeButtonText,
+                XamlRoot = App.Window.Content.XamlRoot,
+                RequestedTheme = ThemeHelper.ActualTheme
+            };
+
+            result = await confirmationDialog.ShowOneAtATimeAsync();
+        });
+
+        return result;
     }
 
     internal static async Task ShowErrorDialogAsync(string title, string content)

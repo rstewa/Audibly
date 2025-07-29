@@ -241,8 +241,6 @@
                     </toolkit:SettingsExpander.Items>
                 </toolkit:SettingsExpander>
 
-
-
                 <!--  advanced settings  -->
                 <!--  TODO: only show this if data migration failed  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Advanced" />
@@ -252,6 +250,17 @@
                     </toolkit:SettingsExpander.HeaderIcon>
                     <toolkit:SettingsExpander.Items>
                         <!--  todo: add delete entire library option  -->
+                        <toolkit:SettingsCard
+                            Click="ResetLibrary_Click"
+                            Header="Reset Library"
+                            IsClickEnabled="True">
+                            <toolkit:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE777;" />
+                            </toolkit:SettingsCard.ActionIcon>
+                            <toolkit:SettingsCard.Description>
+                                This will remove all audiobooks in your library. Use with caution!
+                            </toolkit:SettingsCard.Description>
+                        </toolkit:SettingsCard>
                         <toolkit:SettingsCard
                             Click="OpenAppStateFolderInFileExplorer_Click"
                             Header="Open App State Folder in File Explorer"

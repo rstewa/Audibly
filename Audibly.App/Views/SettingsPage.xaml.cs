@@ -1,6 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Created: 3/29/2024
-// Updated: 4/9/2024
+// Updated: 07/29/2025
 
 using System;
 using System.Diagnostics;
@@ -61,18 +60,12 @@ public sealed partial class SettingsPage : Page
         {
             ThemeHelper.RootTheme = App.GetEnum<ElementTheme>(selectedTheme);
             if (selectedTheme == "Dark")
-            {
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.White);
-            }
             else if (selectedTheme == "Light" && currentTheme != ElementTheme.Light)
-            {
                 TitleBarHelper.SetCaptionButtonColors(window, Colors.Black);
-            }
             else
-            {
                 // todo: don't think i need the conditional here
                 _ = TitleBarHelper.ApplySystemThemeToCaptionButtons(window) == Colors.White ? "Dark" : "Light";
-            }
         }
     }
 
@@ -118,5 +111,18 @@ public sealed partial class SettingsPage : Page
         p.StartInfo.FileName = "explorer.exe";
         p.StartInfo.Arguments = $"/open, \"{filePath}\"";
         p.Start();
+    }
+
+    private async void ResetLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        // show confirmation dialog
+        var result = await DialogService.ShowConfirmationDialogAsync(
+            "Reset Library",
+            "Are you sure you want to reset your library? This will NOT delete your actual audiobook files but it WILL delete the records of them in Audibly's database. This action cannot be undone.",
+            "Yes, Reset Library",
+            "No, Cancel");
+        if (result != ContentDialogResult.Primary) return;
+
+        ViewModel.DeleteAudiobooksAsync();
     }
 }

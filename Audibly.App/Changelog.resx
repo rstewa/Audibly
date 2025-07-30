@@ -118,27 +118,17 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.6] - 6-9-25
+    <value>&#x8;## [2.2.7] - 7-30-25
 
 ### Added
 
-- Added export audiobook metadata context menu option to audiobook tile
+- #116: Added Sleep Timer feature
+- #119: Updated app to remember the state of the navigation menu
+- #122: Added option in the advanced settings in the settings page to delete entire library
 
 ### Fixed
 
-- #111: fixed bug where filtering on "Not Started" would show books marked as completed
-
-## [2.2.5] - 6-3-25
-
-### Changed/Fixed
-
-- #101: moved now player bar to AppShell
-- #102: moved notifications view to AppShell
-- #104: increased playback speed maximum to 4x
-- #86, #107: save zoom level so that it doesn't reset on app restart
-- #90: added tooltip to drag-indicator in mini-player
-- #104: added volume and playback speed buttons to mini-player
-  - added keyboard shortcuts to mini-player for PlaybackSpeed
-- #103: added over-scrolling to the library and settings pages so that the player doesn't hide content at the bottom</value>
+- #105: Fixed bug in the "ImportAudiobookWithMultipleFiles"
+- #121: Fixed bug where the volume and playback speed weren't showing their actual values</value>
   </data>
 </root>

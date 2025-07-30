@@ -88,22 +88,27 @@ This desktop audiobook player for Windows 10/11 supports playing .m4b and .mp3 f
 
 ### Home/Library
 <p align="middle">
-  <img src="images/v2.2.0/audibly_home_page.png" />
+  <img src="images/v2.2.7/audibly_home_page.png" />
 </p> 
 
 ### Expanded Player
 <p align="middle">
-  <img src="images/v2.2.0/audibly_player_page.png" />
+  <img src="images/v2.2.7/audibly_player_page.png" />
 </p> 
 
 ### Mini-player
 <p align="middle">
-  <img src="images/v2.2.5/audibly_mini_player.png" />
+  <img src="images/v2.2.7/audibly_mini_player.png" />
 </p> 
+
+### Sleep Timer
+<p align="middle">
+    <img src="images/v2.2.7/audibly_sleep_timer.png" />
+</p>
 
 ### More Info Dialog
 <p align="middle">
-  <img src="images/v2.2.0/audibly_more_info.png" />
+  <img src="images/v2.2.7/audibly_more_info.png" />
 </p> 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

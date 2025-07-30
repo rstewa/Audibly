@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 02/18/2025
+// Updated: 07/30/2025
 
 using System;
 using Audibly.App.Extensions;
@@ -7,7 +7,6 @@ using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.App.Views;
 using Audibly.Models;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -116,5 +115,60 @@ public sealed partial class PlayerControlGrid : UserControl
         if (slider == null || !IsLoaded) return;
 
         PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
+    }
+
+    private void TimerSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+    {
+        // todo
+    }
+
+    private void TimerButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        // todo
+    }
+
+    private void TimerMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuFlyoutItem item && int.TryParse(item.Tag?.ToString(), out var seconds))
+            PlayerViewModel.SetTimer(seconds);
+    }
+
+    private void CustomTimerMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        // Create the popup
+        var timerPopup = new CustomTimerPopup();
+
+        // Find the timer button and position the popup above it
+
+        // get timer button's position using its x:name
+        var timerButton = TimerButton;
+        if (timerButton == null)
+        {
+            // Fallback if the button is not found
+            timerPopup.Show(XamlRoot);
+            return;
+        }
+
+        // Show the popup above the button
+        timerPopup.ShowAbove(timerButton, XamlRoot);
+    }
+
+    private void CancelTimerMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.SetTimer(0);
+    }
+
+    private void EndOfChapterTimerMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (PlayerViewModel.NowPlaying?.CurrentChapter == null) return;
+
+        var endTime = PlayerViewModel.NowPlaying.CurrentChapter.EndTime;
+        var currentPosition = PlayerViewModel.CurrentPosition.TotalMilliseconds;
+        var timerDuration = endTime - currentPosition;
+
+        // convert to seconds
+        timerDuration = timerDuration.ToSeconds().ToInt();
+
+        if (timerDuration > 0) PlayerViewModel.SetTimer(timerDuration);
     }
 }

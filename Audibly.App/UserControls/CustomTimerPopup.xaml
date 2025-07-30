@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    mc:Ignorable="d"
+    x:Class="Audibly.App.UserControls.CustomTimerPopup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Popup IsLightDismissEnabled="True" x:Name="TimerPopup">
+            <Border
+                Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                MinWidth="280"
+                Padding="20">
+
+                <StackPanel Spacing="12">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,8"
+                        Text="Set Custom Timer" />
+
+                    <TimePicker x:Name="TimePicker" />
+
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        Margin="0,16,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+
+                        <Button
+                            Click="CancelButton_Click"
+                            Content="Cancel"
+                            x:Name="CancelButton" />
+
+                        <Button
+                            Click="ConfirmButton_Click"
+                            Content="Set Timer"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            x:Name="ConfirmButton" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

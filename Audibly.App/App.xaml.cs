@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 06/09/2025
+// Updated: 07/30/2025
 
 using System;
 using System.Collections.Generic;
@@ -136,6 +136,7 @@ public partial class App : Application
         appWindow.Closing += async (_, _) =>
         {
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
+            PlayerViewModel.Dispose();
             WindowHelper.CloseAll();
         };
 

@@ -1,10 +1,11 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 07/24/2025
+// Updated: 07/30/2025
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Audibly.App.Extensions;
@@ -16,7 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.ViewModels;
 
-public class PlayerViewModel : BindableBase
+public class PlayerViewModel : BindableBase, IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -36,6 +37,7 @@ public class PlayerViewModel : BindableBase
     private string _chapterPositionText = "0:00:00";
 
     private bool _isPlayerFullScreen;
+    private bool _isTimerActive;
 
     private string _maximizeMinimizeGlyph = Constants.MaximizeGlyph;
 
@@ -46,6 +48,11 @@ public class PlayerViewModel : BindableBase
     private double _playbackSpeed = 1.0;
 
     private Symbol _playPauseIcon = Symbol.Play;
+
+    private Timer? _sleepTimer;
+    private DateTime _timerEndTime;
+
+    private double _timerValue;
 
     private double _volumeLevel;
 
@@ -63,6 +70,15 @@ public class PlayerViewModel : BindableBase
     {
         get => _nowPlaying;
         set => Set(ref _nowPlaying, value);
+    }
+
+    /// <summary>
+    ///     Gets or sets the timer value for the player.
+    /// </summary>
+    public double TimerValue
+    {
+        get => _timerValue;
+        set => Set(ref _timerValue, value);
     }
 
     /// <summary>
@@ -190,6 +206,22 @@ public class PlayerViewModel : BindableBase
         set => MediaPlayer.PlaybackSession.Position = value > TimeSpan.Zero ? value : TimeSpan.Zero;
     }
 
+    /// <summary>
+    /// </summary>
+    public bool IsTimerActive
+    {
+        get => _isTimerActive;
+        private set => Set(ref _isTimerActive, value);
+    }
+
+    /// <summary>
+    /// </summary>
+    public string TimerRemainingText
+    {
+        get => _isTimerActive ? FormatTimeRemaining() : "Timer Off";
+        private set => OnPropertyChanged();
+    }
+
     #region methods
 
     private void InitializeAudioPlayer()
@@ -207,6 +239,74 @@ public class PlayerViewModel : BindableBase
         // set volume level from settings
         // UpdateVolume(UserSettings.Volume);
         // UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
+    }
+
+    public void SetTimer(double seconds)
+    {
+        // Cancel existing timer if active
+        if (_sleepTimer != null)
+        {
+            _sleepTimer.Stop();
+            _sleepTimer.Dispose();
+            _sleepTimer = null;
+        }
+
+        // Disable timer if seconds is 0
+        if (seconds <= 0)
+        {
+            TimerValue = 0;
+            IsTimerActive = false;
+            OnPropertyChanged(nameof(TimerRemainingText));
+            return;
+        }
+
+        // Create and start new timer
+        _timerEndTime = DateTime.Now.AddSeconds(seconds);
+        TimerValue = seconds;
+        IsTimerActive = true;
+
+        _sleepTimer = new Timer(1000); // Update every second
+        _sleepTimer.Elapsed += SleepTimer_Elapsed;
+        _sleepTimer.Start();
+
+        OnPropertyChanged(nameof(TimerRemainingText));
+    }
+
+    private void SleepTimer_Elapsed(object? sender, ElapsedEventArgs e)
+    {
+        var timeRemaining = _timerEndTime - DateTime.Now;
+
+        if (timeRemaining <= TimeSpan.Zero)
+            // Timer expired - pause playback
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                MediaPlayer.Pause();
+                IsTimerActive = false;
+                _sleepTimer?.Stop();
+                _sleepTimer?.Dispose();
+                _sleepTimer = null;
+                OnPropertyChanged(nameof(TimerRemainingText));
+            });
+        else
+            // Update remaining time display
+            _dispatcherQueue.TryEnqueue(() => { OnPropertyChanged(nameof(TimerRemainingText)); });
+    }
+
+    private string FormatTimeRemaining()
+    {
+        var timeRemaining = _timerEndTime - DateTime.Now;
+        if (timeRemaining <= TimeSpan.Zero)
+            return "Timer Off";
+
+        return timeRemaining.TotalHours >= 1
+            ? $"{(int)timeRemaining.TotalHours}:{timeRemaining:mm\\:ss}"
+            : $"{timeRemaining:mm\\:ss}";
+    }
+
+    public void Dispose()
+    {
+        _sleepTimer?.Stop();
+        _sleepTimer?.Dispose();
     }
 
     public async void UpdateVolume(double volume)

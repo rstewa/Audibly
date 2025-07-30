@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- #116: Added Sleep Timer feature
+- #119: Updated app to remember the state of the navigation menu
+- #122: Added option in the advanced settings in the settings page to delete entire library
+
+### Fixed
+
+- #105: Fixed bug in the "ImportAudiobookWithMultipleFiles"
+- #121: Fixed bug where the volume and playback speed weren't showing their actual values
+
 ## [2.2.6] - 6-9-25
 
 ### Added

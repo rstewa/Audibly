@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 01/26/2025
+// Updated: 07/30/2025
 
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ public static class WindowHelper
         TrackWindow(name, newWindow);
         return newWindow;
     }
-    
+
     // TODO: having the names hardcoded is gross
     public static Window? GetMainWindow()
     {
@@ -44,7 +44,7 @@ public static class WindowHelper
         ActiveWindows.TryGetValue("MiniPlayerWindow", out var miniPlayerWindow);
         return miniPlayerWindow;
     }
-    
+
     public static void ShowMiniPlayer()
     {
         ActiveWindows.TryGetValue("MiniPlayerWindow", out var miniPlayerWindow);
@@ -52,24 +52,24 @@ public static class WindowHelper
         {
             (miniPlayerWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
             miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
-            
+
             HideMainWindow();
             return;
         }
-        
+
         miniPlayerWindow = CreateWindow("MiniPlayerWindow");
-        miniPlayerWindow.CustomizeWindow(596, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
+        miniPlayerWindow.CustomizeWindow(648, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         miniPlayerWindow.Content = rootPage;
 
         ThemeHelper.Initialize();
-        
+
         (miniPlayerWindow as MainWindow)?.TrySetSystemBackdrop();
 
         miniPlayerWindow.SetWindowDraggable(true);
         miniPlayerWindow.RemoveWindowBorderAndTitleBar();
-        
+
         miniPlayerWindow.Activate();
         miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
         HideMainWindow();

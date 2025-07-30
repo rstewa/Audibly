@@ -17,6 +17,12 @@
 
     <Page.Resources>
         <converters:ProgressSliderValueConverter x:Key="ProgressSliderValueConverter" />
+        <ResourceDictionary x:Key="ButtonResources">
+            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid Padding="0,8,0,0" RowSpacing="-6">
@@ -51,6 +57,8 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="125" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -225,6 +233,115 @@
                     </Button.Flyout>
                 </Button>
 
+                <!--#region TimerButton-->
+                <Button
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ToolTipService.ToolTip="Sleep Timer"
+                    x:Name="TimerButton">
+
+                    <Button.Resources>
+                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                    </Button.Resources>
+
+                    <Grid>
+                        <!--  Timer Icon  -->
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="16"
+                            Glyph="&#xE916;" />
+
+                        <!--  Badge Indicator  -->
+                        <Ellipse
+                            Fill="{ThemeResource SystemAccentColor}"
+                            Height="8"
+                            HorizontalAlignment="Right"
+                            Margin="0,-2,-2,0"
+                            VerticalAlignment="Top"
+                            Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}"
+                            Width="8" />
+                    </Grid>
+
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <!--  Timer status display  -->
+                            <MenuFlyoutItem
+                                DataContext="{x:Bind PlayerViewModel, Mode=OneWay}"
+                                IsEnabled="False"
+                                Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}">
+                                <MenuFlyoutItem.Template>
+                                    <ControlTemplate TargetType="MenuFlyoutItem">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            HorizontalAlignment="Center"
+                                            Margin="0,8,0,8"
+                                            Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.TimerRemainingText}"
+                                            TextAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </ControlTemplate>
+                                </MenuFlyoutItem.Template>
+                            </MenuFlyoutItem>
+                            <!--  Separator when timer is active  -->
+                            <MenuFlyoutSeparator Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+
+                            <!--  Existing menu items  -->
+                            <MenuFlyoutItem
+                                Click="TimerMenuItem_Click"
+                                Tag="300"
+                                Text="5 minutes" />
+                            <MenuFlyoutItem
+                                Click="TimerMenuItem_Click"
+                                Tag="600"
+                                Text="10 minutes" />
+                            <MenuFlyoutItem
+                                Click="TimerMenuItem_Click"
+                                Tag="900"
+                                Text="15 minutes" />
+                            <MenuFlyoutItem
+                                Click="TimerMenuItem_Click"
+                                Tag="1800"
+                                Text="30 minutes" />
+                            <MenuFlyoutItem
+                                Click="TimerMenuItem_Click"
+                                Tag="2700"
+                                Text="45 minutes" />
+                            <MenuFlyoutItem
+                                Click="TimerMenuItem_Click"
+                                Tag="3600"
+                                Text="60 minutes" />
+                            <MenuFlyoutItem
+                                Click="EndOfChapterTimerMenuItem_Click"
+                                Tag="EndOfChapter"
+                                Text="End of Chapter" />
+                            <MenuFlyoutSeparator Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+                            <MenuFlyoutItem
+                                Click="CancelTimerMenuItem_Click"
+                                Text="Cancel Timer"
+                                Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <!--#endregion TimerButton-->
+            </StackPanel>
+            <!--  endregion: other buttons  -->
+
+            <Border
+                Background="{ThemeResource AppBarSeparatorForeground}"
+                Grid.Column="6"
+                Height="40"
+                HorizontalAlignment="Center"
+                Width="1" />
+
+            <StackPanel
+                Grid.Column="7"
+                Orientation="Horizontal"
+                Spacing="-8"
+                VerticalAlignment="Center">
+
                 <!--  pin button  -->
                 <Button
                     Background="Transparent"
@@ -289,7 +406,6 @@
                         Glyph="&#xe901;" />
                 </Button>
             </StackPanel>
-            <!--  endregion: other buttons  -->
         </Grid>
 
         <Slider

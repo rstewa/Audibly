@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 07/30/2025
+// Updated: 08/02/2025
 
 using System;
 using Audibly.App.Extensions;
@@ -115,11 +115,6 @@ public sealed partial class PlayerControlGrid : UserControl
         if (slider == null || !IsLoaded) return;
 
         PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
-    }
-
-    private void TimerSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        // todo
     }
 
     private void TimerButton_OnClick(object sender, RoutedEventArgs e)

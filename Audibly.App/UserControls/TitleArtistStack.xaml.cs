@@ -1,5 +1,5 @@
 // Author: rstewa · https://github.com/rstewa
-// Updated: 02/14/2025
+// Updated: 08/02/2025
 
 using System;
 using System.Threading.Tasks;
@@ -36,7 +36,7 @@ public sealed partial class TitleArtistStack : UserControl
     {
         InitializeComponent();
         TitleMarqueeText.MarqueeCompleted += TitleMarqueeText_MarqueeCompleted;
-        CurrentChapterTitleMarqueeText.MarqueeCompleted += CurrentChapterTitleMarqueeText_MarqueeCompleted;
+        // CurrentChapterTitleMarqueeText.MarqueeCompleted += CurrentChapterTitleMarqueeText_MarqueeCompleted;
     }
 
     /// <summary>
@@ -81,16 +81,16 @@ public sealed partial class TitleArtistStack : UserControl
         _dispatcherQueue.TryEnqueue(() => TitleMarqueeText.StartMarquee());
     }
 
-    private void CurrentChapterTitleMarqueeText_MarqueeCompleted(object? sender, EventArgs e)
-    {
-        if (!_isPointerOver) _dispatcherQueue.TryEnqueue(() => CurrentChapterTitleMarqueeText.StopMarquee());
-    }
-
-    private void CurrentChapterTitleTextBlock_OnPointerEntered(object sender, PointerRoutedEventArgs e)
-    {
-        _dispatcherQueue.TryEnqueue(() => CurrentChapterTitleMarqueeText.StartMarquee());
-        _isPointerOver = true;
-    }
+    // private void CurrentChapterTitleMarqueeText_MarqueeCompleted(object? sender, EventArgs e)
+    // {
+    //     if (!_isPointerOver) _dispatcherQueue.TryEnqueue(() => CurrentChapterTitleMarqueeText.StopMarquee());
+    // }
+    //
+    // private void CurrentChapterTitleTextBlock_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+    // {
+    //     _dispatcherQueue.TryEnqueue(() => CurrentChapterTitleMarqueeText.StartMarquee());
+    //     _isPointerOver = true;
+    // }
 
     private void CurrentChapterTitleMarqueeText_OnPointerExited(object sender, PointerRoutedEventArgs e)
     {

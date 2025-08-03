@@ -1,57 +1,71 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <UserControl
+    mc:Ignorable="d"
     x:Class="Audibly.App.UserControls.TitleArtistStack"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarqueeTextRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--  Title and Artist  -->
     <StackPanel
-        x:Name="TitleArtistStackPanel"
         HorizontalAlignment="Left"
         Orientation="Vertical"
-        Spacing="{x:Bind Spacing, Mode=OneWay}">
+        Spacing="{x:Bind Spacing, Mode=OneWay}"
+        x:Name="TitleArtistStackPanel">
 
         <!--  Title  -->
         <labs:MarqueeText
-            x:Name="TitleMarqueeText"
-            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             Behavior="Looping"
             Direction="Left"
             FontSize="{x:Bind TitleFontSize, Mode=OneWay}"
             FontWeight="SemiBold"
+            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             Speed="15"
-            Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}" />
+            Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
+            x:Name="TitleMarqueeText" />
 
         <!--  Artist  -->
         <TextBlock
-            x:Name="ArtistTextBlock"
-            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             FontSize="{x:Bind ArtistFontSize, Mode=OneWay}"
+            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}"
             TextTrimming="CharacterEllipsis"
-            TextWrapping="NoWrap" />
+            TextWrapping="NoWrap"
+            x:Name="ArtistTextBlock" />
 
-        <labs:MarqueeText
-            x:Name="CurrentChapterTitleMarqueeText"
-            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
-            Margin="0,4,0,0"
-            VerticalAlignment="Bottom"
-            Behavior="Looping"
-            Direction="Left"
+        <TextBlock
             FontSize="{x:Bind ArtistFontSize, Mode=OneWay}"
             FontStyle="Italic"
             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-            PointerEntered="CurrentChapterTitleTextBlock_OnPointerEntered"
-            PointerExited="CurrentChapterTitleMarqueeText_OnPointerExited"
-            Speed="15"
+            Margin="0,4,0,0"
+            MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
             Text="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
             ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"
-            Visibility="{x:Bind ShowChapterTitle, Mode=OneWay}" />
+            VerticalAlignment="Bottom"
+            Visibility="{x:Bind ShowChapterTitle, Mode=OneWay}"
+            x:Name="CurrentChapterTitleTextBlock" />
+
+        <!--  <labs:MarqueeText  -->
+        <!--  x:Name="CurrentChapterTitleMarqueeText"  -->
+        <!--  MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"  -->
+        <!--  Margin="0,4,0,0"  -->
+        <!--  VerticalAlignment="Bottom"  -->
+        <!--  Behavior="Looping"  -->
+        <!--  Direction="Left"  -->
+        <!--  FontSize="{x:Bind ArtistFontSize, Mode=OneWay}"  -->
+        <!--  FontStyle="Italic"  -->
+        <!--  Foreground="{ThemeResource TextFillColorTertiaryBrush}"  -->
+        <!--  PointerEntered="CurrentChapterTitleTextBlock_OnPointerEntered"  -->
+        <!--  PointerExited="CurrentChapterTitleMarqueeText_OnPointerExited"  -->
+        <!--  Speed="15"  -->
+        <!--  Text="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"  -->
+        <!--  ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"  -->
+        <!--  Visibility="{x:Bind ShowChapterTitle, Mode=OneWay}" />  -->
     </StackPanel>
 </UserControl>

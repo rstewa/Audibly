@@ -1,5 +1,5 @@
 ﻿// Author: rstewa · https://github.com/rstewa
-// Updated: 07/30/2025
+// Updated: 08/02/2025
 
 using System;
 using System.IO;
@@ -44,6 +44,8 @@ public class PlayerViewModel : BindableBase, IDisposable
     private string _maximizeMinimizeTooltip = Constants.MaximizeTooltip;
 
     private AudiobookViewModel? _nowPlaying;
+
+    private bool _pendingAutoPlay;
 
     private double _playbackSpeed = 1.0;
 
@@ -409,7 +411,11 @@ public class PlayerViewModel : BindableBase, IDisposable
         NowPlaying.CurrentTimeMs = 0;
         NowPlaying.CurrentSourceFileIndex = index;
         NowPlaying.CurrentChapterIndex = chapterIndex;
-        NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
+
+        await _dispatcherQueue.EnqueueAsync(() =>
+        {
+            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
+        });
 
         await NowPlaying.SaveAsync();
 
@@ -447,6 +453,12 @@ public class PlayerViewModel : BindableBase, IDisposable
                     : 0;
 
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
+
+            if (_pendingAutoPlay)
+            {
+                _pendingAutoPlay = false;
+                MediaPlayer.Play();
+            }
         });
     }
 
@@ -458,8 +470,9 @@ public class PlayerViewModel : BindableBase, IDisposable
         // todo: log error here
         if (NowPlaying.CurrentChapterIndex == null) return;
 
+        _pendingAutoPlay = true;
+
         OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
-        MediaPlayer.Play();
     }
 
     private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)

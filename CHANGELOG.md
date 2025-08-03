@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file
 - #127: Fixed bug in CoverImageTile where it was throwing an unhandled exception when trying to convert a string into an ImageSource
 
+### Changed
+
+- Updated nuget packages
+
 ## [2.2.7] - 7-30-25
 
 ### Added

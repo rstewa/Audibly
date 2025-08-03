@@ -61,18 +61,24 @@ namespace Audibly.App {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ## [2.2.7] - 7-30-25
-        ///
-        ///### Added
-        ///
-        ///- #116: Added Sleep Timer feature
-        ///- #119: Updated app to remember the state of the navigation menu
-        ///- #122: Added option in the advanced settings in the settings page to delete entire library
+        ///   Looks up a localized string similar to ## [2.2.8] - 8-2-25
         ///
         ///### Fixed
         ///
-        ///- #105: Fixed bug in the &quot;ImportAudiobookWithMultipleFiles&quot;
-        ///- #121: Fixed bug where the volume and playback speed weren&apos;t showing their actual values.
+        ///- #109: Fixed bug where playing an audiobook containing multiple source files would crash when switching to the next
+        ///  source file
+        ///- #126: Fixed bug where audiobooks containing multiple source files wouldn&apos;t autoplay when switching to the next source
+        ///  file
+        ///- #127: Fixed bug in CoverImageTile where it was throwing an unhandled exception when trying to convert a string into an ImageSource
+        ///
+        ///### Changed
+        ///
+        ///- Updated nuget packages
+        ///
+        ///## [2.2.7] - 7-30-25
+        ///
+        ///### Added
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Text {
             get {

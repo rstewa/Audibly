@@ -13,6 +13,7 @@
 
     <UserControl.Resources>
         <converters:CornerRadiusConverter x:Key="CornerRadiusConverter" />
+        <converters:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
     </UserControl.Resources>
 
     <!--  Cover Image  -->
@@ -28,7 +29,7 @@
             <!--  CornerRadius="{x:Bind CoverImageRadius, Converter={StaticResource CornerRadiusConverter}}">  -->
             <Grid>
                 <Image Source="ms-appx:///Assets/DefaultCoverImage.png" Stretch="UniformToFill" />
-                <Image Source="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay}" Stretch="UniformToFill" />
+                <Image Source="{x:Bind PlayerViewModel.NowPlaying.ThumbnailPath, Mode=OneWay, Converter={StaticResource StringToImageSourceConverter}}" Stretch="UniformToFill" />
             </Grid>
         </Border>
         <winUi:Effects.Shadow>

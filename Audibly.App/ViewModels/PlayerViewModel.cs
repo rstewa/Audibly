@@ -454,6 +454,8 @@ public class PlayerViewModel : BindableBase, IDisposable
 
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
 
+            MediaPlayer.PlaybackRate = PlaybackSpeed;
+
             if (_pendingAutoPlay)
             {
                 _pendingAutoPlay = false;

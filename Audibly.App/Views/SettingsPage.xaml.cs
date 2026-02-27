@@ -1,4 +1,4 @@
-﻿// Author: rstewa · https://github.com/rstewa
+﻿﻿// Author: rstewa · https://github.com/rstewa
 // Updated: 07/29/2025
 
 using System;
@@ -124,5 +124,21 @@ public sealed partial class SettingsPage : Page
         if (result != ContentDialogResult.Primary) return;
 
         ViewModel.DeleteAudiobooksAsync();
+    }
+
+    private async void AddWatchedFolder_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.AddWatchedFolderAsync();
+    }
+
+    private void RemoveWatchedFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is WatchedFolder folder)
+            ViewModel.RemoveWatchedFolder(folder);
+    }
+
+    private async void SyncLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.SyncLibraryAsync(showProgressDialog: true);
     }
 }

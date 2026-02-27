@@ -2,6 +2,7 @@
 // Updated: 05/08/2025
 
 using System;
+using System.Text.Json;
 using Windows.Storage;
 using Sentry;
 
@@ -171,5 +172,33 @@ public static class UserSettings
             }
         }
         set => ApplicationData.Current.LocalSettings.Values["IsSidebarCollapsed"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets the list of FutureAccessList tokens for watched folders.
+    /// </summary>
+    public static string[] WatchedFolderTokens
+    {
+        get
+        {
+            try
+            {
+                var json = ApplicationData.Current.LocalSettings.Values["WatchedFolderTokens"]?.ToString();
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var result = JsonSerializer.Deserialize<string[]>(json);
+                    if (result != null) return result;
+                }
+
+                return [];
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return [];
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["WatchedFolderTokens"] =
+            JsonSerializer.Serialize(value);
     }
 }

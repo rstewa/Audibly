@@ -85,6 +85,7 @@ public class MainViewModel : BindableBase
         Task.Run(() => GetAudiobookListAsync(true));
 
         InitializeZoomLevelToTileSizeDictionary();
+        Task.Run(LoadWatchedFoldersAsync);
     }
 
     public string FileActivationError { get; set; } = string.Empty;
@@ -226,6 +227,11 @@ public class MainViewModel : BindableBase
     }
 
     public ObservableCollection<SelectedFile> SelectedFiles { get; } = [];
+
+    /// <summary>
+    ///     The collection of watched folders scanned for new audiobooks.
+    /// </summary>
+    public ObservableCollection<WatchedFolder> WatchedFolders { get; } = [];
 
     // TODO: need to move these methods to a separate class
 
@@ -1367,6 +1373,184 @@ public class MainViewModel : BindableBase
 
         stopwatch.Stop();
         LoggingService.Log($"Imported {totalBooks} audiobooks in {stopwatch.Elapsed} seconds.");
+    }
+
+    #endregion
+
+    #region Watched Folders
+
+    /// <summary>
+    ///     Loads the persisted watched folders into the <see cref="WatchedFolders" /> collection.
+    /// </summary>
+    public async Task LoadWatchedFoldersAsync()
+    {
+        var tokens = UserSettings.WatchedFolderTokens;
+        var validTokens = new List<string>();
+
+        foreach (var token in tokens)
+            try
+            {
+                var folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
+                await _dispatcherQueue.EnqueueAsync(() =>
+                    WatchedFolders.Add(new WatchedFolder { Token = token, DisplayPath = folder.Path }));
+                validTokens.Add(token);
+            }
+            catch
+            {
+                // Token is stale / folder was removed — drop it silently
+            }
+
+        // Prune stale tokens from settings
+        if (validTokens.Count != tokens.Length)
+            UserSettings.WatchedFolderTokens = validTokens.ToArray();
+    }
+
+    /// <summary>
+    ///     Opens a folder picker and adds the chosen folder to the watched folders list.
+    /// </summary>
+    public async Task AddWatchedFolderAsync()
+    {
+        var openPicker = new FolderPicker();
+        var window = App.Window;
+        var hWnd = WindowNative.GetWindowHandle(window);
+        InitializeWithWindow.Initialize(openPicker, hWnd);
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.FileTypeFilter.Add("*");
+
+        var folder = await openPicker.PickSingleFolderAsync();
+        if (folder == null) return;
+
+        // Avoid duplicates
+        if (WatchedFolders.Any(f => f.DisplayPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
+        {
+            EnqueueNotification(new Notification
+            {
+                Message = "This folder is already being watched.",
+                Severity = InfoBarSeverity.Warning
+            });
+            return;
+        }
+
+        var token = Guid.NewGuid().ToString();
+        StorageApplicationPermissions.FutureAccessList.AddOrReplace(token, folder);
+
+        var watchedFolder = new WatchedFolder { Token = token, DisplayPath = folder.Path };
+        await _dispatcherQueue.EnqueueAsync(() => WatchedFolders.Add(watchedFolder));
+
+        // Persist
+        UserSettings.WatchedFolderTokens = WatchedFolders.Select(f => f.Token).ToArray();
+
+        EnqueueNotification(new Notification
+        {
+            Message = $"Watching: {folder.Path}",
+            Severity = InfoBarSeverity.Success
+        });
+    }
+
+    /// <summary>
+    ///     Removes a watched folder from the list and the FutureAccessList.
+    /// </summary>
+    public void RemoveWatchedFolder(WatchedFolder watchedFolder)
+    {
+        if (StorageApplicationPermissions.FutureAccessList.ContainsItem(watchedFolder.Token))
+            StorageApplicationPermissions.FutureAccessList.Remove(watchedFolder.Token);
+
+        _dispatcherQueue.TryEnqueue(() => WatchedFolders.Remove(watchedFolder));
+
+        UserSettings.WatchedFolderTokens = WatchedFolders.Select(f => f.Token).ToArray();
+
+        EnqueueNotification(new Notification
+        {
+            Message = $"Removed watched folder: {watchedFolder.DisplayPath}",
+            Severity = InfoBarSeverity.Informational
+        });
+    }
+
+    /// <summary>
+    ///     Scans all watched folders and imports any new audiobooks found.
+    /// </summary>
+    public async Task SyncLibraryAsync(bool showProgressDialog = false)
+    {
+        if (WatchedFolders.Count == 0) return;
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
+        var totalImported = 0;
+
+        try
+        {
+            if (showProgressDialog)
+            {
+                UpdateProgressDialogProperties(progressDialogPrefix: "Syncing library");
+                await DialogService.ShowProgressDialogAsync("Syncing Library", _cancellationTokenSource);
+            }
+            else
+            {
+                await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+            }
+
+            foreach (var watchedFolder in WatchedFolders.ToList())
+                try
+                {
+                    var folder =
+                        await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(watchedFolder.Token);
+
+                    async Task ProgressCallback(int progress, int total, string title, bool didFail)
+                    {
+                        if (showProgressDialog)
+                            await _dispatcherQueue.EnqueueAsync(() =>
+                            {
+                                ProgressDialogProgress = total > 0 ? (int)((double)progress / total * 100) : 0;
+                                ProgressDialogPrefix = "Syncing";
+                                ProgressDialogText = title;
+                                ProgressDialogTotalText = $"{progress} of {total}";
+                            });
+
+                        if (!didFail) totalImported++;
+                    }
+
+                    await FileImporter.ImportDirectoryAsync(folder.Path, token, ProgressCallback, notifyUser: false);
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.LogError(ex, true);
+                }
+        }
+        catch (OperationCanceledException)
+        {
+            EnqueueNotification(new Notification
+            {
+                Message = "Sync cancelled.",
+                Severity = InfoBarSeverity.Warning
+            });
+        }
+        catch (Exception ex)
+        {
+            LoggingService.LogError(ex, true);
+        }
+        finally
+        {
+            if (showProgressDialog)
+                await DialogService.CloseProgressDialogAsync();
+
+            await _dispatcherQueue.EnqueueAsync(() => IsLoading = false);
+        }
+
+        await GetAudiobookListAsync();
+
+        if (totalImported > 0)
+            EnqueueNotification(new Notification
+            {
+                Message = $"Sync complete — {totalImported} new audiobook(s) added.",
+                Severity = InfoBarSeverity.Success
+            });
+        else
+            EnqueueNotification(new Notification
+            {
+                Message = "Library is up to date.",
+                Severity = InfoBarSeverity.Informational
+            });
     }
 
     #endregion

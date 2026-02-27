@@ -16,7 +16,7 @@ public interface IImportFiles
     public event ImportCompletedHandler ImportCompleted;
 
     Task ImportDirectoryAsync(string path, CancellationToken cancellationToken,
-        Func<int, int, string, bool, Task> progressCallback);
+        Func<int, int, string, bool, Task> progressCallback, bool notifyUser = true);
 
     Task ImportFileAsync(string path, CancellationToken cancellationToken,
         Func<int, int, string, bool, Task> progressCallback);

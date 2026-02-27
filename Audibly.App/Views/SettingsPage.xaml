@@ -8,6 +8,7 @@
     xmlns:sys="using:System"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Audibly.App.ViewModels"
     xmlns:views="using:Audibly.App.Views"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--  ReSharper disable all Xaml.RedundantResource  -->
@@ -59,6 +60,61 @@
                     <EntranceThemeTransition FromVerticalOffset="50" />
                     <RepositionThemeTransition IsStaggeringEnabled="False" />
                 </StackPanel.ChildrenTransitions>
+
+                <!--  Library  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Library" />
+                <toolkit:SettingsExpander
+                    Description="These folders are scanned on startup for new audiobooks (.m4b, .mp3)."
+                    Header="Watched Folders"
+                    x:Name="WatchedFoldersExpander">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <!--  Header action buttons  -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            Click="SyncLibrary_Click"
+                            Content="Sync Now"
+                            x:Name="SyncLibraryButton" />
+                        <Button
+                            Click="AddWatchedFolder_Click"
+                            Content="Add Folder"
+                            Style="{StaticResource AccentButtonStyle}"
+                            x:Name="AddWatchedFolderButton" />
+                    </StackPanel>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard ContentAlignment="Left" x:Name="WatchedFoldersListCard">
+                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.WatchedFolders, Mode=OneWay}" x:Name="WatchedFoldersList">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="4" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:WatchedFolder">
+                                        <Grid ColumnSpacing="12" Padding="0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Text="{x:Bind DisplayPath}"
+                                                TextTrimming="CharacterEllipsis"
+                                                ToolTipService.ToolTip="{x:Bind DisplayPath}"
+                                                VerticalAlignment="Center" />
+                                            <Button
+                                                Click="RemoveWatchedFolder_Click"
+                                                Grid.Column="1"
+                                                Tag="{x:Bind}"
+                                                ToolTipService.ToolTip="Remove folder">
+                                                <FontIcon FontSize="12" Glyph="&#xE711;" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
 
                 <!--  Appearance & behavior  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Appearance &amp; behavior" />

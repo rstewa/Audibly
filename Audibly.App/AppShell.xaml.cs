@@ -1,4 +1,4 @@
-﻿// Author: rstewa · https://github.com/rstewa
+﻿﻿// Author: rstewa · https://github.com/rstewa
 // Updated: 07/14/2025
 
 using System;
@@ -120,6 +120,9 @@ public sealed partial class AppShell : Page
             await DialogService.ShowErrorDialogAsync("File Activation Error", ViewModel.FileActivationError);
             ViewModel.FileActivationError = string.Empty;
         }
+
+        // silently sync watched folders in the background
+        _ = Task.Run(async () => await ViewModel.SyncLibraryAsync(showProgressDialog: false));
     }
 
     private void InfoBar_OnClosed(InfoBar sender, InfoBarClosedEventArgs args)

@@ -37,7 +37,7 @@ public class FileImportService : IImportFiles
 
     // TODO: need a better way of checking if a file is one we have already imported
     public async Task ImportDirectoryAsync(string path, CancellationToken cancellationToken,
-        Func<int, int, string, bool, Task> progressCallback)
+        Func<int, int, string, bool, Task> progressCallback, bool notifyUser = true)
     {
         var didFail = false;
 
@@ -54,7 +54,7 @@ public class FileImportService : IImportFiles
             // Check if cancellation was requested
             cancellationToken.ThrowIfCancellationRequested();
 
-            var audiobook = await CreateAudiobook(file);
+            var audiobook = await CreateAudiobook(file, notifyUser: notifyUser);
 
             if (audiobook == null) didFail = true;
 
@@ -326,7 +326,7 @@ public class FileImportService : IImportFiles
         }
     }
 
-    private static async Task<Audiobook?> CreateAudiobook(string path, ImportedAudiobook? importedAudiobook = null)
+    private static async Task<Audiobook?> CreateAudiobook(string path, ImportedAudiobook? importedAudiobook = null, bool notifyUser = true)
     {
         try
         {
@@ -339,11 +339,14 @@ public class FileImportService : IImportFiles
             {
                 // log the error
                 App.ViewModel.LoggingService.LogError(new Exception("Audiobook already exists in the database"));
-                App.ViewModel.EnqueueNotification(new Notification
+                if (notifyUser)
                 {
-                    Message = "Audiobook is already in the library.",
-                    Severity = InfoBarSeverity.Warning
-                });
+                    App.ViewModel.EnqueueNotification(new Notification
+                    {
+                        Message = "Audiobook is already in the library.",
+                        Severity = InfoBarSeverity.Warning
+                    });
+                }
                 return null;
             }
 

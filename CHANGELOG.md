@@ -5,10 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.2.10] - 3-17-26
+
+### Added
+
+- Added a Watched Folders feature. A user can set folders that will be scanned on startup for new audiobooks (.m4b, .mp3)
 
 ### Fixed
 
+- #138: Fixed a bug where playback speed wasn't persisting for audiobooks consisting of multiple files
 - Added ico to window and mini window so that logo appears in switchers
 
 ## [2.2.8]/[2.2.9] - 8-2-25

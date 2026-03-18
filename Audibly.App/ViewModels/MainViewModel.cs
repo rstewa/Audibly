@@ -1473,6 +1473,12 @@ public class MainViewModel : BindableBase
     public async Task SyncLibraryAsync(bool showProgressDialog = false)
     {
         if (WatchedFolders.Count == 0) return;
+        
+        EnqueueNotification(new Notification
+        {
+            Message = "Syncing Library ...",
+            Severity = InfoBarSeverity.Informational
+        });
 
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
@@ -1482,8 +1488,11 @@ public class MainViewModel : BindableBase
         {
             if (showProgressDialog)
             {
-                UpdateProgressDialogProperties(progressDialogPrefix: "Syncing library");
-                await DialogService.ShowProgressDialogAsync("Syncing Library", _cancellationTokenSource);
+                await _dispatcherQueue.EnqueueAsync(async () =>
+                {
+                    UpdateProgressDialogProperties(progressDialogPrefix: "Syncing library");
+                    await DialogService.ShowProgressDialogAsync("Syncing Library", _cancellationTokenSource);
+                });
             }
             else
             {
@@ -1537,19 +1546,20 @@ public class MainViewModel : BindableBase
             await _dispatcherQueue.EnqueueAsync(() => IsLoading = false);
         }
 
-        await GetAudiobookListAsync();
-
         if (totalImported > 0)
+        {
+            await _dispatcherQueue.EnqueueAsync(async () => await GetAudiobookListAsync());
             EnqueueNotification(new Notification
             {
                 Message = $"Sync complete — {totalImported} new audiobook(s) added.",
                 Severity = InfoBarSeverity.Success
             });
+        }
         else
             EnqueueNotification(new Notification
             {
                 Message = "Library is up to date.",
-                Severity = InfoBarSeverity.Informational
+                Severity = InfoBarSeverity.Success
             });
     }
 

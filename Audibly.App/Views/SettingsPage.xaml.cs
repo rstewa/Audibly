@@ -10,6 +10,7 @@ using Windows.System;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.ViewModels;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -137,8 +138,9 @@ public sealed partial class SettingsPage : Page
             ViewModel.RemoveWatchedFolder(folder);
     }
 
-    private async void SyncLibrary_Click(object sender, RoutedEventArgs e)
+    private void SyncLibrary_Click(object sender, RoutedEventArgs e)
     {
-        await ViewModel.SyncLibraryAsync(showProgressDialog: true);
+        Frame.Navigate(typeof(LibraryCardPage));
+        _ = Task.Run(async () => await ViewModel.SyncLibraryAsync(showProgressDialog: true));
     }
 }

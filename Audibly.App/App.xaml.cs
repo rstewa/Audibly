@@ -1,4 +1,4 @@
-﻿// Author: rstewa · https://github.com/rstewa
+// Author: rstewa · https://github.com/rstewa
 // Updated: 07/30/2025
 
 using System;

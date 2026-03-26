@@ -1,5 +1,5 @@
 using Audibly.App.Helpers;
-using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Views.ControlPages;

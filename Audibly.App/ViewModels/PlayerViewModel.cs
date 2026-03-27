@@ -489,12 +489,17 @@ public class PlayerViewModel : BindableBase, IDisposable
         // check if there is a next source file
         if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1) return;
 
-        // todo: log error here
-        if (NowPlaying.CurrentChapterIndex == null) return;
+        var nextSourceFileIndex = NowPlaying.CurrentSourceFileIndex + 1;
+
+        // find the first chapter belonging to the next source file
+        var nextChapter = NowPlaying.Chapters.FirstOrDefault(c =>
+            c.ParentSourceFileIndex == nextSourceFileIndex);
+
+        if (nextChapter == null) return;
 
         _pendingAutoPlay = true;
 
-        OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
+        OpenSourceFile(nextSourceFileIndex, nextChapter.Index);
     }
 
     private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)

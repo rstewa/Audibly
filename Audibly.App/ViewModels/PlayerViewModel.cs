@@ -60,6 +60,9 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private string _volumeLevelGlyph = Constants.VolumeGlyph3;
 
+    private DateTime _lastSaveTime = DateTime.MinValue;
+    private static readonly TimeSpan SaveThrottleInterval = TimeSpan.FromSeconds(2);
+
     public PlayerViewModel()
     {
         InitializeAudioPlayer();
@@ -578,7 +581,12 @@ public class PlayerViewModel : BindableBase, IDisposable
             NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
         });
 
-        await NowPlaying.SaveAsync();
+        var now = DateTime.UtcNow;
+        if (now - _lastSaveTime >= SaveThrottleInterval)
+        {
+            _lastSaveTime = now;
+            await NowPlaying.SaveAsync();
+        }
     }
 
     #endregion

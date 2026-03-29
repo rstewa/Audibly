@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - #138: Fixed a bug where playback speed wasn't persisting for audiobooks consisting of multiple files
+- Fixed a bug where it showed WinUI Desktop instead of Audibly in task bar
 - Added ico to window and mini window so that logo appears in switchers
 
 ## [2.2.8]/[2.2.9] - 8-2-25

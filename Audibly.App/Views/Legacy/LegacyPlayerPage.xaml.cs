@@ -82,18 +82,15 @@ public sealed partial class LegacyPlayerPage : Page
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            PlayerViewModel.NowPlaying.PlaybackSpeed = e.NewValue;
-            PlayerViewModel.MediaPlayer.PlaybackRate = e.NewValue;
+            PlayerViewModel.UpdatePlaybackSpeed(e.NewValue);
         });
     }
 
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        DispatcherQueue.EnqueueAsync(async () =>
+        DispatcherQueue.TryEnqueue(() =>
         {
-            PlayerViewModel.NowPlaying.Volume = e.NewValue;
-            PlayerViewModel.MediaPlayer.Volume = e.NewValue / 100;
-            await PlayerViewModel.NowPlaying.SaveAsync();
+            PlayerViewModel.UpdateVolume(e.NewValue);
         });
     }
 }

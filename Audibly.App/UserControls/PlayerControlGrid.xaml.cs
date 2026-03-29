@@ -23,7 +23,6 @@ public sealed partial class PlayerControlGrid : UserControl
     public PlayerControlGrid()
     {
         InitializeComponent();
-        AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
     }
 
     /// <summary>

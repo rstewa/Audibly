@@ -36,13 +36,6 @@
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <MediaPlayerElement
-                AreTransportControlsEnabled="False"
-                AutoPlay="False"
-                Height="0"
-                Width="0"
-                x:Name="AudioPlayerElement" />
-
             <!--#region Book Cover Image-->
             <Border
                 BorderBrush="transparent"

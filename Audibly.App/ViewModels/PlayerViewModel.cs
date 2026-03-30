@@ -2,6 +2,7 @@
 // Updated: 08/02/2025
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -213,7 +214,7 @@ public class PlayerViewModel : BindableBase, IDisposable
     public TimeSpan CurrentPosition
     {
         get => TimeSpan.FromMilliseconds(_mediaPlayer.Time >= 0 ? _mediaPlayer.Time : 0);
-        set => _mediaPlayer.Time = (long)Math.Max(value.TotalMilliseconds, 0);
+        set => _mediaPlayer.Time = (long)value.TotalMilliseconds;
     }
 
     /// <summary>
@@ -570,8 +571,11 @@ public class PlayerViewModel : BindableBase, IDisposable
         });
 
         _mediaJustOpened = true;
-        using var media = new Media(_libVLC, audiobook.CurrentSourceFile.FilePath.AsUri());
-        _mediaPlayer.Play(media);
+        using (var media = new Media(_libVLC, audiobook.CurrentSourceFile.FilePath, FromType.FromPath))
+        {
+            _mediaPlayer.Play(media);
+        }
+
     }
 
     public async void OpenSourceFile(int index, int chapterIndex)
@@ -591,8 +595,13 @@ public class PlayerViewModel : BindableBase, IDisposable
         await NowPlaying.SaveAsync();
 
         _mediaJustOpened = true;
-        using var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath.AsUri());
-        _mediaPlayer.Play(media);
+        using (var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath, FromType.FromPath))
+        {
+            _mediaPlayer.Play(media);
+
+            Debug.Print(media.Duration.ToString());
+        }
+        
     }
 
     /// <summary>

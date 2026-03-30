@@ -251,6 +251,11 @@ public class PlayerViewModel : BindableBase, IDisposable
     /// </summary>
     public void Play()
     {
+        if (_mediaPlayer.State == VLCState.Ended)
+        {
+            // If media has ended, stop to get the player back into a state where it can play
+            _mediaPlayer.Stop();
+        }
         _mediaPlayer.Play();
     }
 
@@ -412,7 +417,14 @@ public class PlayerViewModel : BindableBase, IDisposable
     private void HandleMediaEnded()
     {
         // check if there is a next source file
-        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1) return;
+        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1)
+        {
+            //We have no more media to play make sure to set the play button to play instead of pause!
+            if (PlayPauseIcon != Symbol.Play)
+                PlayPauseIcon = Symbol.Play;
+            return;
+        }
+         
 
         // todo: log error here
         if (NowPlaying.CurrentChapterIndex == null) return;

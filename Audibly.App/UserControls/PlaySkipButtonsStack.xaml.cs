@@ -62,10 +62,8 @@ public sealed partial class PlaySkipButtonsStack : UserControl
                 .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
         {
             var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex - 1;
-            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx);
-            PlayerViewModel.CurrentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
-            await PlayerViewModel.NowPlaying.SaveAsync();
+            await PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx,
+                PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
 
             return;
         }
@@ -98,10 +96,8 @@ public sealed partial class PlaySkipButtonsStack : UserControl
                 .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
         {
             var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex + 1;
-            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx);
-            PlayerViewModel.CurrentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
-            await PlayerViewModel.NowPlaying.SaveAsync();
+            await PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx,
+                PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
 
             return;
         }

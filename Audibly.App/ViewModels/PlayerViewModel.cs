@@ -64,7 +64,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     public PlayerViewModel()
     {
-        _libVLC = new LibVLC("--no-video");
+        _libVLC = new LibVLC("--no-video", "--audio-resampler=speex", "--speex-resampler-quality=10");
         _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
         InitializeAudioPlayer();
     }

@@ -579,7 +579,6 @@ public class PlayerViewModel : BindableBase, IDisposable
         if (NowPlaying != null && NowPlaying.Equals(audiobook))
             return;
 
-        _mediaJustOpened = true;
         var playRequested = false;
 
         try
@@ -643,10 +642,9 @@ public class PlayerViewModel : BindableBase, IDisposable
             {
                 //this makes vlc ignore chapters usually it's chapter aware but that breaks our existing logic assuming the player position is absolute from file start instead of chapter start.
                 media.AddOption(":demux=avformat");
-                _mediaPlayer.Play(media);
+                _mediaJustOpened = true;
+                playRequested = _mediaPlayer.Play(media);
             }
-
-            playRequested = true;
         }
         finally
         {
@@ -663,7 +661,6 @@ public class PlayerViewModel : BindableBase, IDisposable
         if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex == index)
             return;
 
-        _mediaJustOpened = true;
         var playRequested = false;
 
         try
@@ -684,10 +681,9 @@ public class PlayerViewModel : BindableBase, IDisposable
             using (var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath, FromType.FromPath))
             {
                 media.AddOption(":demux=avformat");
-                _mediaPlayer.Play(media);
+                _mediaJustOpened = true;
+                playRequested = _mediaPlayer.Play(media);
             }
-
-            playRequested = true;
         }
         finally
         {

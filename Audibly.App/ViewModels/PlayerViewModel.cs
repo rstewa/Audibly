@@ -216,10 +216,43 @@ public class PlayerViewModel : BindableBase, IDisposable
     public TimeSpan CurrentPosition
     {
         get => TimeSpan.FromMilliseconds(_mediaPlayer.Time >= 0 ? _mediaPlayer.Time : 0);
-        set {
+        set
+        {
             if (!_skipSeeking)
             {
-                _mediaPlayer.Time = (long)value.TotalMilliseconds;
+                var currentPositionMs = Math.Max(0, (long)value.TotalMilliseconds);
+                _mediaPlayer.Time = currentPositionMs;
+
+                if (NowPlaying == null) return;
+
+                if (!NowPlaying.CurrentChapter.InRange(currentPositionMs))
+                {
+                    var newChapter = NowPlaying.Chapters.FirstOrDefault(c =>
+                        c.ParentSourceFileIndex == NowPlaying.CurrentSourceFileIndex &&
+                        c.InRange(currentPositionMs));
+
+                    if (newChapter != null)
+                    {
+                        _skipSeeking = true;
+                        NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
+                        NowPlaying.CurrentChapterTitle = newChapter.Title;
+                        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                        _skipSeeking = false;
+                    }
+                }
+
+                ChapterPositionMs = (int)(currentPositionMs > NowPlaying.CurrentChapter.StartTime
+                    ? currentPositionMs - NowPlaying.CurrentChapter.StartTime
+                    : 0);
+                NowPlaying.CurrentTimeMs = (int)currentPositionMs;
+
+                double tmp = 0;
+                if (NowPlaying.CurrentSourceFileIndex != 0)
+                    for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
+                        tmp += NowPlaying.SourcePaths[i].Duration;
+                tmp += currentPositionMs / 1000.0;
+                NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
+                NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
             }
         }
     }
@@ -285,14 +318,11 @@ public class PlayerViewModel : BindableBase, IDisposable
         {
             if (PlayPauseIcon == Symbol.Pause) return;
             PlayPauseIcon = Symbol.Pause;
-        });
 
-        // Handle "media opened" logic on first Playing event after setting new media
-        if (_mediaJustOpened)
-        {
-            _mediaJustOpened = false;
-            HandleMediaOpened();
-        }
+            // Handle "media opened" logic on first Playing event after setting new media.
+            if (_mediaJustOpened)
+                HandleMediaOpened();
+        });
     }
 
     private void OnPaused(object? sender, EventArgs e)
@@ -313,7 +343,11 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private void OnEncounteredError(object? sender, EventArgs e)
     {
-        _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            _mediaJustOpened = false;
+            NowPlaying = null;
+        });
 
         App.ViewModel.EnqueueNotification(new Notification
         {
@@ -325,9 +359,9 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private void OnTimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
     {
-        _ = _dispatcherQueue.EnqueueAsync(() =>
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            if (NowPlaying == null) return;
+            if (NowPlaying == null || _mediaJustOpened) return;
 
             var currentPositionMs = e.Time;
 
@@ -366,52 +400,50 @@ public class PlayerViewModel : BindableBase, IDisposable
             ;
 
             _ = Task.Run(async () => await NowPlaying.SaveAsync());
-
         });
-
     }
 
     private void HandleMediaOpened()
     {
         if (NowPlaying == null) return;
-        _dispatcherQueue.EnqueueAsync(async () =>
+
+        if (NowPlaying.Chapters.Count == 0)
         {
-            if (NowPlaying.Chapters.Count == 0)
-            {
-                NowPlaying = null;
+            _mediaJustOpened = false;
+            NowPlaying = null;
 
-                await DialogService.ShowErrorDialogAsync("Error",
-                    "An error occurred while trying to open the selected audiobook. " +
-                    "The chapters could not be loaded. Please try importing the audiobook again.");
+            _ = DialogService.ShowErrorDialogAsync("Error",
+                "An error occurred while trying to open the selected audiobook. " +
+                "The chapters could not be loaded. Please try importing the audiobook again.");
 
-                return;
-            }
+            return;
+        }
 
-            ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
+        ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
+        NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
+        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        ChapterPositionMs =
+            NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
+                ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
+                : 0;
 
-            ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        // Seek to saved position.
+        _mediaPlayer.Time = NowPlaying.CurrentTimeMs;
 
-            ChapterPositionMs =
-                NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
-                    ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
-                    : 0;
+        _mediaPlayer.SetRate((float)PlaybackSpeed);
 
-            // Seek to saved position
-            _mediaPlayer.Time = NowPlaying.CurrentTimeMs;
+        if (_pendingAutoPlay)
+        {
+            _pendingAutoPlay = false;
+            // Already playing since we used _mediaPlayer.Play() to open
+        }
+        else
+        {
+            // We started playing to trigger media load — pause now since user didn't press play
+            _mediaPlayer.Pause();
+        }
 
-            _mediaPlayer.SetRate((float)PlaybackSpeed);
-
-            if (_pendingAutoPlay)
-            {
-                _pendingAutoPlay = false;
-                // Already playing since we used _mediaPlayer.Play() to open
-            }
-            else
-            {
-                // We started playing to trigger media load — pause now since user didn't press play
-                _mediaPlayer.Pause();
-            }
-        });
+        _mediaJustOpened = false;
     }
 
     private void HandleMediaEnded()
@@ -431,7 +463,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
         _pendingAutoPlay = true;
 
-        OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
+        _ = OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
     }
 
     public void SetTimer(double seconds)
@@ -541,93 +573,127 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     public async Task OpenAudiobook(AudiobookViewModel audiobook)
     {
+        if (_mediaJustOpened)
+            return;
+
         if (NowPlaying != null && NowPlaying.Equals(audiobook))
             return;
 
-        // todo: trying this out
-        if (NowPlaying != null)
-        {
-            NowPlaying.IsNowPlaying = false;
-
-            await NowPlaying.SaveAsync();
-        }
-
-        _mediaPlayer.Pause();
-
-        App.ViewModel.SelectedAudiobook = audiobook;
-
-        // verify that the file exists
-        // if there are multiple source files, check them all
-
-        if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
-        {
-            // note: content dialog
-            await DialogService.ShowErrorDialogAsync("Error",
-                $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved.");
-
-            return;
-        }
-
-        await _dispatcherQueue.EnqueueAsync(async () =>
-        {
-            NowPlaying = audiobook;
-
-            if (NowPlaying.DateLastPlayed == null)
-            {
-                // use the global playback speed and volume level if they are set
-                // and this is the first time the audiobook is being played
-                UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
-                UpdateVolume(UserSettings.Volume);
-            }
-            else
-            {
-                // use the audiobook's playback speed and volume level
-                UpdatePlaybackSpeed(NowPlaying.PlaybackSpeed);
-                UpdateVolume(NowPlaying.Volume);
-            }
-
-            NowPlaying.IsNowPlaying = true;
-            NowPlaying.DateLastPlayed = DateTime.Now;
-
-            ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
-            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
-
-            await NowPlaying.SaveAsync();
-        });
-
         _mediaJustOpened = true;
-        using (var media = new Media(_libVLC, audiobook.CurrentSourceFile.FilePath, FromType.FromPath))
-        {
-            //this makes vlc ignore chapters usually it's chapter aware but that breaks our existing logic assuming the player position is absolute from file start instead of chapter start.
-            media.AddOption(":demux=avformat");
-            _mediaPlayer.Play(media);
-        }
+        var playRequested = false;
 
+        try
+        {
+            if (NowPlaying != null)
+            {
+                NowPlaying.IsNowPlaying = false;
+
+                await NowPlaying.SaveAsync();
+            }
+
+            _mediaPlayer.Pause();
+
+            App.ViewModel.SelectedAudiobook = audiobook;
+
+            // verify that the file exists
+            // if there are multiple source files, check them all
+
+            if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
+            {
+                // note: content dialog
+                await DialogService.ShowErrorDialogAsync("Error",
+                    $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved.");
+
+                return;
+            }
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                NowPlaying = audiobook;
+
+                if (NowPlaying.DateLastPlayed == null)
+                {
+                    // use the global playback speed and volume level if they are set
+                    // and this is the first time the audiobook is being played
+                    UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
+                    UpdateVolume(UserSettings.Volume);
+                }
+                else
+                {
+                    // use the audiobook's playback speed and volume level
+                    UpdatePlaybackSpeed(NowPlaying.PlaybackSpeed);
+                    UpdateVolume(NowPlaying.Volume);
+                }
+
+                NowPlaying.IsNowPlaying = true;
+                NowPlaying.DateLastPlayed = DateTime.Now;
+
+                ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
+                NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
+                ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                ChapterPositionMs =
+                    NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
+                        ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
+                        : 0;
+            });
+
+            await NowPlaying.SaveAsync();
+
+            using (var media = new Media(_libVLC, audiobook.CurrentSourceFile.FilePath, FromType.FromPath))
+            {
+                //this makes vlc ignore chapters usually it's chapter aware but that breaks our existing logic assuming the player position is absolute from file start instead of chapter start.
+                media.AddOption(":demux=avformat");
+                _mediaPlayer.Play(media);
+            }
+
+            playRequested = true;
+        }
+        finally
+        {
+            if (!playRequested)
+                _mediaJustOpened = false;
+        }
     }
 
-    public async void OpenSourceFile(int index, int chapterIndex)
+    public async Task OpenSourceFile(int index, int chapterIndex, long currentTimeMs = 0)
     {
+        if (_mediaJustOpened)
+            return;
+
         if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex == index)
             return;
 
-        NowPlaying.CurrentTimeMs = 0;
-        NowPlaying.CurrentSourceFileIndex = index;
-        NowPlaying.CurrentChapterIndex = chapterIndex;
-
-        await _dispatcherQueue.EnqueueAsync(() =>
-        {
-            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
-        });
-
-        await NowPlaying.SaveAsync();
-
         _mediaJustOpened = true;
-        using (var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath, FromType.FromPath))
-        {
-            media.AddOption(":demux=avformat");
-            _mediaPlayer.Play(media);
-        }
+        var playRequested = false;
 
+        try
+        {
+            NowPlaying.CurrentTimeMs = (int)currentTimeMs;
+            NowPlaying.CurrentSourceFileIndex = index;
+            NowPlaying.CurrentChapterIndex = chapterIndex;
+            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
+            ChapterComboSelectedIndex = chapterIndex;
+            ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+            ChapterPositionMs =
+                currentTimeMs > NowPlaying.CurrentChapter.StartTime
+                    ? (int)(currentTimeMs - NowPlaying.CurrentChapter.StartTime)
+                    : 0;
+
+            await NowPlaying.SaveAsync();
+
+            using (var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath, FromType.FromPath))
+            {
+                media.AddOption(":demux=avformat");
+                _mediaPlayer.Play(media);
+            }
+
+            playRequested = true;
+        }
+        finally
+        {
+            if (!playRequested)
+                _mediaJustOpened = false;
+        }
     }
 
     /// <summary>

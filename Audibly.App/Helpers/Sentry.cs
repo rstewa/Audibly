@@ -6,5 +6,5 @@ namespace Audibly.App.Helpers;
 
 internal static class Sentry
 {
-    public const string Dsn = "sentry-dsn-url-goes-here";
+    public const string Dsn = ""; // sentry dsn url goes here
 }

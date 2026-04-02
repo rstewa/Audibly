@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - #138: Fixed a bug where playback speed wasn't persisting for audiobooks consisting of multiple files
 - Fixed a bug where it showed WinUI Desktop instead of Audibly in task bar
 - Added ico to window and mini window so that logo appears in switchers
+- Fixed a bug that made the player sometimes jump ahead multiple chapters after reaching the end of a file
+- Fixed a bug where the now playing slider would jump back to the current position if the audiobook was playing as you were seeking
 
 ## [2.2.8]/[2.2.9] - 8-2-25
 

@@ -3,16 +3,28 @@
 
 using System;
 using Audibly.App.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 
 namespace Audibly.App.UserControls;
 
 public sealed partial class NowPlayingBar : UserControl
 {
+    private bool _isPointerInteracting;
+    private double _pendingSeekValue;
+
     public NowPlayingBar()
     {
         InitializeComponent();
+
+        ProgressSlider.AddHandler(PointerPressedEvent,
+            new PointerEventHandler(Slider_OnPointerPressed), true);
+        ProgressSlider.AddHandler(PointerReleasedEvent,
+            new PointerEventHandler(Slider_OnPointerReleased), true);
+        ProgressSlider.AddHandler(PointerCanceledEvent,
+            new PointerEventHandler(Slider_OnPointerReleased), true);
     }
 
     /// <summary>
@@ -20,17 +32,28 @@ public sealed partial class NowPlayingBar : UserControl
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
 
-    private async void NowPlayingBar_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    private void Slider_OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {
-        var slider = sender as Slider;
+        _isPointerInteracting = true;
+        PlayerViewModel.IsUserSeeking = true;
+    }
 
-        if (slider == null || slider.Value == 0) return;
+    private async void Slider_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        if (!_isPointerInteracting) return;
+        _isPointerInteracting = false;
 
-        if (PlayerViewModel.NowPlaying?.CurrentChapter == null) return;
+        await PlayerViewModel.SeekToPositionAsync(_pendingSeekValue);
+    }
 
-        PlayerViewModel.CurrentPosition =
-            TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime + slider.Value);
+    private async void Slider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+    {
+        _pendingSeekValue = e.NewValue;
 
-        await PlayerViewModel.NowPlaying.SaveAsync();
+        // If not dragging (e.g. a tap/click to seek), commit immediately
+        if (!_isPointerInteracting && PlayerViewModel.IsUserSeeking)
+        {
+            await PlayerViewModel.SeekToPositionAsync(e.NewValue);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Author: rstewa · https://github.com/rstewa
+// Author: rstewa · https://github.com/rstewa
 // Updated: 08/02/2025
 
 using System;
@@ -64,6 +64,13 @@ public class PlayerViewModel : BindableBase, IDisposable
     {
         InitializeAudioPlayer();
     }
+
+    /// <summary>
+    ///     Gets or sets whether the user is currently seeking (dragging the slider).
+    ///     When true, the PositionChanged handler will not update ChapterPositionMs
+    ///     so that the slider doesn't fight with the user's drag.
+    /// </summary>
+    public bool IsUserSeeking { get; set; }
 
     /// <summary>
     ///     Gets or sets the currently playing audiobook.
@@ -422,7 +429,20 @@ public class PlayerViewModel : BindableBase, IDisposable
         MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
     }
 
-    # endregion
+    /// <summary>
+    ///     Seeks to the specified slider value within the current chapter.
+    /// </summary>
+    public async Task SeekToPositionAsync(double sliderValue)
+    {
+        if (NowPlaying?.CurrentChapter == null) return;
+
+        IsUserSeeking = false;
+        CurrentPosition =
+            TimeSpan.FromMilliseconds(NowPlaying.CurrentChapter.StartTime + sliderValue);
+        await NowPlaying.SaveAsync();
+    }
+
+    #endregion
 
     #region event handlers
 
@@ -469,12 +489,17 @@ public class PlayerViewModel : BindableBase, IDisposable
         // check if there is a next source file
         if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1) return;
 
-        // todo: log error here
-        if (NowPlaying.CurrentChapterIndex == null) return;
+        var nextSourceFileIndex = NowPlaying.CurrentSourceFileIndex + 1;
+
+        // find the first chapter belonging to the next source file
+        var nextChapter = NowPlaying.Chapters.FirstOrDefault(c =>
+            c.ParentSourceFileIndex == nextSourceFileIndex);
+
+        if (nextChapter == null) return;
 
         _pendingAutoPlay = true;
 
-        OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
+        OpenSourceFile(nextSourceFileIndex, nextChapter.Index);
     }
 
     private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
@@ -533,12 +558,13 @@ public class PlayerViewModel : BindableBase, IDisposable
                 });
         }
 
+        if (IsUserSeeking) return;
+
         _ = _dispatcherQueue.EnqueueAsync(async () =>
         {
             ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
                 ? CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime
                 : 0);
-            // ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime);
             NowPlaying.CurrentTimeMs = (int)CurrentPosition.TotalMilliseconds;
 
             // TODO: this is gross

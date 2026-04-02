@@ -414,9 +414,10 @@
             Grid.Row="1"
             HorizontalAlignment="Stretch"
             Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
-            PointerCaptureLost="NowPlayingBar_OnPointerCaptureLost"
+            ValueChanged="Slider_OnValueChanged"
             ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}"
-            Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}">
+            Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}"
+            x:Name="ProgressSlider">
             <Slider.Resources>
                 <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
                 <x:Double x:Key="SliderHorizontalThumbHeight">8</x:Double>

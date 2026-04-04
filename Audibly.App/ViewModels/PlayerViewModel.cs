@@ -364,7 +364,7 @@ public class PlayerViewModel : BindableBase, IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            if (NowPlaying == null || _mediaJustOpened) return;
+            if (NowPlaying == null || _mediaJustOpened || IsUserSeeking ) return;
 
             var currentPositionMs = e.Time;
 

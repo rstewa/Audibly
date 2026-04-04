@@ -304,6 +304,9 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private void InitializeAudioPlayer()
     {
+        //Enable hardware acceleartion.
+        _mediaPlayer.EnableHardwareDecoding = true;
+
         // LibVLC events fire on background threads — dispatch to UI thread.
         _mediaPlayer.Playing += OnPlaying;
         _mediaPlayer.Paused += OnPaused;

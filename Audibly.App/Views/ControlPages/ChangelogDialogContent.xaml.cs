@@ -3,7 +3,7 @@
 // Updated: 6/1/2024
 
 using Audibly.App.Helpers;
-using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Audibly.App.Views.ControlPages;

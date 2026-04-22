@@ -18,11 +18,13 @@
 
         <!--  Title  -->
         <controls:Marquee
+            AutoPlay="True"
             Behavior="Looping"
             Direction="Left"
             FontSize="{x:Bind TitleFontSize, Mode=OneWay}"
             FontWeight="SemiBold"
             MaxWidth="{x:Bind TitleMaxWidth, Mode=OneWay}"
+            RepeatBehavior="Forever"
             Speed="15"
             Content="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
             x:Name="TitleMarqueeText" />

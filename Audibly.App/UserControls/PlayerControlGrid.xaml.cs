@@ -23,7 +23,6 @@ public sealed partial class PlayerControlGrid : UserControl
     public PlayerControlGrid()
     {
         InitializeComponent();
-        AudioPlayer.SetMediaPlayer(PlayerViewModel.MediaPlayer);
     }
 
     /// <summary>
@@ -61,8 +60,8 @@ public sealed partial class PlayerControlGrid : UserControl
             PlayerViewModel.NowPlaying.CurrentSourceFile.Index != newChapter.ParentSourceFileIndex)
         {
             // set the current source file index to the new source file index
-            PlayerViewModel.OpenSourceFile(newChapter.ParentSourceFileIndex, newChapter.Index);
-            PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(newChapter.StartTime);
+            await PlayerViewModel.OpenSourceFile(newChapter.ParentSourceFileIndex, newChapter.Index,
+                newChapter.StartTime);
         }
         else if (ChapterCombo.SelectedIndex != ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying?.CurrentChapter))
         {

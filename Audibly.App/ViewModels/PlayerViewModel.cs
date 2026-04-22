@@ -459,14 +459,15 @@ public class PlayerViewModel : BindableBase, IDisposable
                 PlayPauseIcon = Symbol.Play;
             return;
         }
-         
+        var nextSourceFileIndex = NowPlaying.CurrentSourceFileIndex + 1;
+        var nextChapter = NowPlaying.Chapters.FirstOrDefault(c =>
+            c.ParentSourceFileIndex == nextSourceFileIndex);
 
-        // todo: log error here
-        if (NowPlaying.CurrentChapterIndex == null) return;
+        if (nextChapter == null) return;
 
         _pendingAutoPlay = true;
 
-        _ = OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, (int)NowPlaying.CurrentChapterIndex + 1);
+        _ = OpenSourceFile(nextSourceFileIndex, nextChapter.Index);
     }
 
     public void SetTimer(double seconds)

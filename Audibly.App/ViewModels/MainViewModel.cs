@@ -978,6 +978,8 @@ public class MainViewModel : BindableBase
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
         openPicker.FileTypeFilter.Add(".mp3");
+        openPicker.FileTypeFilter.Add(".m4a");
+        openPicker.FileTypeFilter.Add(".ogg");
 
         var file = await openPicker.PickSingleFileAsync();
         if (file == null) return;
@@ -1176,6 +1178,8 @@ public class MainViewModel : BindableBase
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
         openPicker.FileTypeFilter.Add(".mp3");
+        openPicker.FileTypeFilter.Add(".m4a");
+        openPicker.FileTypeFilter.Add(".ogg");
 
         var files = await openPicker.PickMultipleFilesAsync();
         if (files.IsNullOrEmpty()) return;

@@ -141,7 +141,12 @@
         <PackageReference Include="z440.atl.core" Version="7.2.0" />
     </ItemGroup>
 
-    <!-- 
+    <!--  AI transcription (read-along)  -->
+    <ItemGroup>
+        <PackageReference Include="SharpCompress" Version="0.47.4" />
+    </ItemGroup>
+
+    <!--
       Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
       Tools extension to be activated for this project even if the Windows App SDK Nuget
       package has not yet been restored.

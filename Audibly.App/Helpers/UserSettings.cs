@@ -175,6 +175,79 @@ public static class UserSettings
     }
 
     /// <summary>
+    ///     Gets or sets whether background AI transcription is enabled.
+    /// </summary>
+    public static bool TranscriptionEnabled
+    {
+        get
+        {
+            try
+            {
+                var enabled = ApplicationData.Current.LocalSettings.Values["TranscriptionEnabled"];
+                if (enabled != null && bool.TryParse(enabled.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptionEnabled"] = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return false;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptionEnabled"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets what gets transcribed automatically:
+    ///     0 = off (manual only), 1 = currently playing book, 2 = entire library.
+    /// </summary>
+    public static int TranscriptionScope
+    {
+        get
+        {
+            try
+            {
+                var scope = ApplicationData.Current.LocalSettings.Values["TranscriptionScope"];
+                if (scope != null && int.TryParse(scope.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptionScope"] = 1;
+                return 1;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return 1;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptionScope"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets whether the transcript pane in the full-screen player is open.
+    /// </summary>
+    public static bool IsTranscriptPaneOpen
+    {
+        get
+        {
+            try
+            {
+                var isOpen = ApplicationData.Current.LocalSettings.Values["IsTranscriptPaneOpen"];
+                if (isOpen != null && bool.TryParse(isOpen.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["IsTranscriptPaneOpen"] = true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return true;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["IsTranscriptPaneOpen"] = value;
+    }
+
+    /// <summary>
     ///     Gets or sets the list of FutureAccessList tokens for watched folders.
     /// </summary>
     public static string[] WatchedFolderTokens

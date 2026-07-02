@@ -33,7 +33,32 @@ public sealed partial class SettingsPage : Page
     /// </summary>
     public MainViewModel ViewModel => App.ViewModel;
 
+    /// <summary>
+    ///     Gets the app-wide AI transcription settings view model.
+    /// </summary>
+    public TranscriptionSettingsViewModel TranscriptionSettings => App.TranscriptionSettings;
+
     public static string Version => Constants.Version;
+
+    private async void DownloadModel_Click(object sender, RoutedEventArgs e)
+    {
+        await TranscriptionSettings.DownloadModelAsync();
+    }
+
+    private void CancelModelDownload_Click(object sender, RoutedEventArgs e)
+    {
+        TranscriptionSettings.CancelModelDownload();
+    }
+
+    private async void DeleteModel_Click(object sender, RoutedEventArgs e)
+    {
+        var result = await DialogService.ShowConfirmationDialogAsync("Delete speech model",
+            $"This removes the downloaded model ({TranscriptionSettings.Descriptor.DiskSizeText}) from this device. " +
+            "Existing transcripts are kept.",
+            "Delete", "Cancel");
+
+        if (result == ContentDialogResult.Primary) await TranscriptionSettings.DeleteModelAsync();
+    }
 
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {

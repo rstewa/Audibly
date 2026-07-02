@@ -16,6 +16,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
+using Audibly.App.Services.Transcription;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using Audibly.Models.v1;
@@ -94,6 +95,16 @@ public partial class App : Application
     public static IAudiblyRepository Repository { get; private set; }
 
     /// <summary>
+    ///     Manages download/installation of the speech model used for AI transcription.
+    /// </summary>
+    public static TranscriptionModelService TranscriptionModel { get; private set; }
+
+    /// <summary>
+    ///     Backs the AI transcription settings UI.
+    /// </summary>
+    public static TranscriptionSettingsViewModel TranscriptionSettings { get; private set; }
+
+    /// <summary>
     ///     Gets the root frame of the app. This contains the nav view and the player page
     /// </summary>
     public static Frame? RootFrame { get; private set; }
@@ -146,6 +157,10 @@ public partial class App : Application
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 940, y = 640 });
 
         UseSqlite();
+
+        TranscriptionModel = new TranscriptionModelService(SpeechModels.ParakeetTdtV3Int8);
+        TranscriptionSettings = new TranscriptionSettingsViewModel(TranscriptionModel);
+        _ = TranscriptionModel.VerifyInstalledAsync();
 
         RootFrame = Window.Content as Frame;
 

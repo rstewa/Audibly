@@ -27,7 +27,8 @@ public record ChapterTranscriptionJob(
     long ChapterStartMs,
     long ChapterEndMs,
     long FileDurationMs,
-    string ModelId);
+    string ModelId,
+    long ResumeFromMs = 0);
 
 /// <summary>
 ///     Transcribes one chapter: decodes it in ≤30-minute blocks, runs 40 s windows with
@@ -47,18 +48,37 @@ public class ChapterTranscriber(
     private const int MinTailWindowMs = 2_000;
     private const int FlushBatchSize = 20;
 
+    /// <summary>
+    ///     How far transcription restarts before the resume point: gives the first window
+    ///     one second of already-transcribed left context (dropped again by the seam filter)
+    ///     so the first new word is not clipped.
+    /// </summary>
+    private const int ResumeBackoffMs = 1_000;
+
     public async Task RunAsync(ChapterTranscriptionJob job, Action<int> onProgress,
         Action<IReadOnlyList<TranscriptSegment>> onFlushed, Func<bool> shouldPreempt,
         CancellationToken cancellationToken)
     {
-        var startMs = Math.Clamp(job.ChapterStartMs, 0, job.FileDurationMs);
+        var chapterStartMs = Math.Clamp(job.ChapterStartMs, 0, job.FileDurationMs);
         var endMs = Math.Clamp(job.ChapterEndMs, 0, job.FileDurationMs);
-        if (endMs <= startMs)
+        if (endMs <= chapterStartMs)
             throw new PcmExtractionException(
                 $"Invalid chapter bounds: [{job.ChapterStartMs}, {job.ChapterEndMs}] in a {job.FileDurationMs} ms file.");
 
+        // resuming an interrupted chapter: everything before ResumeFromMs is already persisted
+        var resumeFromMs = Math.Clamp(job.ResumeFromMs, chapterStartMs, endMs);
+        if (endMs - resumeFromMs < MinTailWindowMs && resumeFromMs > chapterStartMs)
+        {
+            await repository.Transcripts.CompleteChapterAsync(job.AudiobookId, job.ChapterIndex,
+                [], job.ModelId);
+            onProgress(100);
+            return;
+        }
+
+        var startMs = Math.Max(chapterStartMs, resumeFromMs - ResumeBackoffMs);
+
         var windows = BuildWindows(startMs, endMs);
-        var assembler = new SentenceAssembler();
+        var assembler = new SentenceAssembler(resumeFromMs > chapterStartMs ? resumeFromMs : -1);
         var carry = new List<TimedWord>();
         var batch = new List<TranscriptSegment>();
 
@@ -96,11 +116,14 @@ public class ChapterTranscriber(
                 var finalCount = 0;
                 while (finalCount < merged.Count && merged[finalCount].StartMs < finalBoundary) finalCount++;
 
-                batch.AddRange(assembler.Push(merged.Take(finalCount)).Select(d => ToSegment(job, d)));
+                // the resume seam: drop re-transcribed words that are already persisted
+                var finalWords = merged.Take(finalCount).Where(w => w.StartMs >= resumeFromMs);
+                batch.AddRange(assembler.Push(finalWords).Select(d => ToSegment(job, d)));
                 carry.Clear();
                 carry.AddRange(merged.Skip(finalCount));
 
-                var progress = Math.Min(99, (i + 1) * 100 / windows.Count);
+                // progress over the whole chapter, so a resumed chapter continues where it left off
+                var progress = (int)Math.Min(99, (winEnd - chapterStartMs) * 100 / (endMs - chapterStartMs));
                 if (batch.Count >= FlushBatchSize)
                 {
                     await FlushAsync(job, batch, progress, onFlushed);
@@ -114,7 +137,8 @@ public class ChapterTranscriber(
                 onProgress(progress);
             }
 
-            batch.AddRange(assembler.Push(carry).Select(d => ToSegment(job, d)));
+            batch.AddRange(assembler.Push(carry.Where(w => w.StartMs >= resumeFromMs))
+                .Select(d => ToSegment(job, d)));
             if (assembler.Flush() is { } trailing) batch.Add(ToSegment(job, trailing));
 
             await repository.Transcripts.CompleteChapterAsync(job.AudiobookId, job.ChapterIndex, batch, job.ModelId);

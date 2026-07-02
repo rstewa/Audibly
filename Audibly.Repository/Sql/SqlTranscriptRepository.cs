@@ -119,6 +119,13 @@ public class SqlTranscriptRepository(AudiblyContext db) : ITranscriptRepository
             .ExecuteDeleteAsync();
     }
 
+    public async Task<int> GetChapterTranscribedUntilAsync(Guid audiobookId, int chapterIndex)
+    {
+        return await db.TranscriptSegments
+            .Where(s => s.AudiobookId == audiobookId && s.ChapterIndex == chapterIndex)
+            .MaxAsync(s => (int?)s.EndMs) ?? 0;
+    }
+
     public async Task DeleteForAudiobookAsync(Guid audiobookId)
     {
         await db.TranscriptSegments
@@ -150,24 +157,11 @@ public class SqlTranscriptRepository(AudiblyContext db) : ITranscriptRepository
 
     public async Task<int> ResetInterruptedAsync()
     {
-        var interrupted = await db.TranscriptChapterStatuses
+        // keep any partial segments — the worker resumes from the last flushed sentence
+        return await db.TranscriptChapterStatuses
             .Where(s => s.Status == TranscriptStatus.InProgress)
-            .Select(s => new { s.AudiobookId, s.ChapterIndex })
-            .ToListAsync();
-
-        foreach (var chapter in interrupted)
-        {
-            await db.TranscriptSegments
-                .Where(s => s.AudiobookId == chapter.AudiobookId && s.ChapterIndex == chapter.ChapterIndex)
-                .ExecuteDeleteAsync();
-            await db.TranscriptChapterStatuses
-                .Where(s => s.AudiobookId == chapter.AudiobookId && s.ChapterIndex == chapter.ChapterIndex)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(x => x.Status, TranscriptStatus.Queued)
-                    .SetProperty(x => x.ProgressPercent, 0)
-                    .SetProperty(x => x.UpdatedAtUtc, DateTime.UtcNow));
-        }
-
-        return interrupted.Count;
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(x => x.Status, TranscriptStatus.Queued)
+                .SetProperty(x => x.UpdatedAtUtc, DateTime.UtcNow));
     }
 }

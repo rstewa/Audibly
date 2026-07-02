@@ -29,7 +29,16 @@ public class SentenceAssembler
 
     private readonly List<TimedWord> _words = [];
     private int _charLength;
-    private long _lastEmittedEndMs = -1;
+    private long _lastEmittedEndMs;
+
+    /// <param name="lastEmittedEndMs">
+    ///     End time of the last already-persisted sentence when resuming an interrupted
+    ///     chapter (keeps paragraph detection correct across the seam); -1 for a fresh chapter.
+    /// </param>
+    public SentenceAssembler(long lastEmittedEndMs = -1)
+    {
+        _lastEmittedEndMs = lastEmittedEndMs;
+    }
 
     /// <summary>
     ///     Adds words (in time order) and returns any sentences they completed.

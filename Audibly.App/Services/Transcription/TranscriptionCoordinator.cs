@@ -374,15 +374,25 @@ public class TranscriptionCoordinator : IDisposable
         SetActivity($"Loading speech model…");
         await _backend.EnsureLoadedAsync(_modelService.ModelDirectory, cancellationToken);
 
-        await _repository.Transcripts.DeleteChapterSegmentsAsync(book.Id, chapter.Index);
-        await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.InProgress, 0,
-            null, modelId);
+        // resume an interrupted chapter from its last persisted sentence, unless the
+        // existing rows came from a different model (then redo from scratch)
+        var previousStatus = (await _repository.Transcripts.GetStatusesAsync(book.Id))
+            .FirstOrDefault(s => s.ChapterIndex == chapter.Index);
+        var resumeFromMs = 0L;
+        if (previousStatus != null && (previousStatus.ModelId.Length == 0 || previousStatus.ModelId == modelId))
+            resumeFromMs = await _repository.Transcripts.GetChapterTranscribedUntilAsync(book.Id, chapter.Index);
+        if (resumeFromMs == 0)
+            await _repository.Transcripts.DeleteChapterSegmentsAsync(book.Id, chapter.Index);
+
+        await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.InProgress,
+            previousStatus?.ProgressPercent ?? 0, null, modelId);
         PersistStatus(TranscriptStatus.InProgress);
-        StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.InProgress, 0);
+        StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.InProgress, previousStatus?.ProgressPercent ?? 0);
         SetActivity($"Transcribing \"{book.Title}\" — chapter {chapter.Index + 1} of {book.Chapters.Count}");
 
         var job = new ChapterTranscriptionJob(book.Id, chapter.Index, chapter.ParentSourceFileIndex,
-            sourceFile.FilePath, chapter.StartTime, chapter.EndTime, sourceFile.Duration * 1000, modelId);
+            sourceFile.FilePath, chapter.StartTime, chapter.EndTime, sourceFile.Duration * 1000, modelId,
+            resumeFromMs);
 
         try
         {
@@ -409,8 +419,7 @@ public class TranscriptionCoordinator : IDisposable
         }
         catch (Exception e) when (e is OperationCanceledException or TranscriptionPreemptedException)
         {
-            // yield cleanly: purge partial rows and put the chapter back in line
-            await _repository.Transcripts.DeleteChapterSegmentsAsync(book.Id, chapter.Index);
+            // yield cleanly: keep the flushed sentences (the next run resumes after them)
             await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.Queued, 0,
                 null, modelId);
             PersistStatus(TranscriptStatus.Queued);

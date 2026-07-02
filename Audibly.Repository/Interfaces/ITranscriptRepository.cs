@@ -48,9 +48,15 @@ public interface ITranscriptRepository
         IReadOnlyList<TranscriptSegment> segments, string modelId);
 
     /// <summary>
-    ///     Deletes all segments of one chapter (preemption/retry cleanup).
+    ///     Deletes all segments of one chapter (failed-retry / re-transcribe cleanup).
     /// </summary>
     Task DeleteChapterSegmentsAsync(Guid audiobookId, int chapterIndex);
+
+    /// <summary>
+    ///     End time (ms) of the last persisted segment of a chapter, 0 when none —
+    ///     the resume point for an interrupted chapter.
+    /// </summary>
+    Task<int> GetChapterTranscribedUntilAsync(Guid audiobookId, int chapterIndex);
 
     /// <summary>
     ///     Deletes all transcript data (segments and statuses) of an audiobook.

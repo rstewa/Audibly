@@ -45,7 +45,7 @@ public class SherpaOnnxParakeetBackend : ISpeechToTextBackend
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var config = new OfflineRecognizerConfig();
-                config.ModelConfig.NumThreads = Math.Clamp(Environment.ProcessorCount / 2, 2, 4);
+                config.ModelConfig.NumThreads = Math.Max(1, Environment.ProcessorCount - 1);
                 config.ModelConfig.Provider = "cpu";
                 config.ModelConfig.ModelType = "nemo_transducer";
                 config.ModelConfig.Tokens = Path.Combine(modelDirectory, "tokens.txt");

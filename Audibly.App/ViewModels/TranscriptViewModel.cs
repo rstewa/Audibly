@@ -118,6 +118,11 @@ public class TranscriptViewModel : BindableBase
     /// </summary>
     public event Action<int>? ActiveSentenceChanged;
 
+    /// <summary>
+    ///     Explicit scroll request (search-hit navigation) — UI thread.
+    /// </summary>
+    public event Action<int>? ScrollToRequested;
+
     public ObservableCollection<TranscriptSegmentViewModel> Sentences { get; } = [];
 
     public bool IsPaneOpen
@@ -191,6 +196,111 @@ public class TranscriptViewModel : BindableBase
         IsPaneOpen = !IsPaneOpen;
     }
 
+    #region search
+
+    private readonly List<TranscriptSegment> _searchHits = [];
+    private int _currentHitIndex = -1;
+    private string _searchQuery = "";
+    private DispatcherQueueTimer? _searchDebounce;
+
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (!Set(ref _searchQuery, value)) return;
+
+            if (_searchDebounce == null)
+            {
+                _searchDebounce = _dispatcherQueue.CreateTimer();
+                _searchDebounce.Interval = TimeSpan.FromMilliseconds(300);
+                _searchDebounce.IsRepeating = false;
+                _searchDebounce.Tick += (_, _) => _ = RunSearchAsync();
+            }
+
+            _searchDebounce.Stop();
+            _searchDebounce.Start();
+        }
+    }
+
+    public string HitCounterText => _searchHits.Count == 0 ? "" : $"{_currentHitIndex + 1}/{_searchHits.Count}";
+
+    public bool HasHits => _searchHits.Count > 0;
+
+    private async Task RunSearchAsync()
+    {
+        var query = _searchQuery.Trim();
+        var bookId = _displayedBookId;
+
+        _searchHits.Clear();
+        _currentHitIndex = -1;
+
+        if (query.Length >= 2 && bookId != Guid.Empty)
+            try
+            {
+                var hits = await Task.Run(async () =>
+                    await App.Repository.Transcripts.SearchAsync(bookId, query));
+                if (query == _searchQuery.Trim() && bookId == _displayedBookId)
+                    _searchHits.AddRange(hits);
+            }
+            catch (Exception e)
+            {
+                App.ViewModel.LoggingService.LogError(e, false);
+            }
+
+        OnPropertyChanged(nameof(HitCounterText));
+        OnPropertyChanged(nameof(HasHits));
+    }
+
+    public Task GoToNextHitAsync()
+    {
+        return GoToHitAsync(+1);
+    }
+
+    public Task GoToPreviousHitAsync()
+    {
+        return GoToHitAsync(-1);
+    }
+
+    private async Task GoToHitAsync(int direction)
+    {
+        if (_searchHits.Count == 0) return;
+
+        _currentHitIndex = ((_currentHitIndex + direction) % _searchHits.Count + _searchHits.Count) %
+                           _searchHits.Count;
+        OnPropertyChanged(nameof(HitCounterText));
+
+        var hit = _searchHits[_currentHitIndex];
+
+        if (hit.ChapterIndex != _displayedChapterIndex)
+        {
+            // browsing away from the playing chapter — stop following until the chip is used
+            FollowPlayback = false;
+            IsAutoScrollSuspended = true;
+            var title = App.PlayerViewModel.NowPlaying?.Chapters
+                .FirstOrDefault(c => c.Index == hit.ChapterIndex)?.Title ?? $"Chapter {hit.ChapterIndex + 1}";
+            await LoadChapterAsync(hit.AudiobookId, hit.ChapterIndex, title);
+        }
+
+        var index = Sentences.ToList().FindIndex(s => s.Segment.Id == hit.Id);
+        if (index < 0)
+            index = Sentences.ToList().FindIndex(s => s.StartMs == hit.StartMs);
+        if (index >= 0) ScrollToRequested?.Invoke(index);
+    }
+
+    public void ClearSearch()
+    {
+        _searchQuery = "";
+        _searchHits.Clear();
+        _currentHitIndex = -1;
+        OnPropertyChanged(nameof(SearchQuery));
+        OnPropertyChanged(nameof(HitCounterText));
+        OnPropertyChanged(nameof(HasHits));
+        ResumeFollowing();
+    }
+
+    #endregion
+
     /// <summary>
     ///     Tap-to-seek: same source file seeks directly; a different file goes through
     ///     OpenSourceFile (which loads it and seeks).
@@ -218,6 +328,16 @@ public class TranscriptViewModel : BindableBase
     {
         FollowPlayback = true;
         IsAutoScrollSuspended = false;
+
+        var playing = App.PlayerViewModel.NowPlaying;
+        if (playing != null &&
+            (playing.Model.Id != _displayedBookId || (playing.CurrentChapterIndex ?? 0) != _displayedChapterIndex))
+        {
+            _displayedChapterIndex = -1; // force reload of the playing chapter
+            _ = ReloadAsync();
+            return;
+        }
+
         if (_activeIndex >= 0) ActiveSentenceChanged?.Invoke(_activeIndex);
     }
 
@@ -258,7 +378,8 @@ public class TranscriptViewModel : BindableBase
     }
 
     /// <summary>
-    ///     Loads the playing chapter's sentences (off the UI thread) and swaps the list.
+    ///     Playback-driven reload: shows the playing chapter (unless the user is browsing
+    ///     another chapter via search — the return chip brings them back).
     /// </summary>
     private async Task ReloadAsync()
     {
@@ -273,13 +394,24 @@ public class TranscriptViewModel : BindableBase
             return;
         }
 
-        var bookId = playing.Model.Id;
+        if (!FollowPlayback) return;
+
         var chapterIndex = playing.CurrentChapterIndex ?? 0;
+        await LoadChapterAsync(playing.Model.Id, chapterIndex,
+            playing.CurrentChapter?.Title ?? $"Chapter {chapterIndex + 1}");
+        Advance(playing.CurrentTimeMs);
+    }
+
+    /// <summary>
+    ///     Loads one chapter's sentences (off the UI thread) and swaps the list.
+    /// </summary>
+    private async Task LoadChapterAsync(Guid bookId, int chapterIndex, string title)
+    {
         if (bookId == _displayedBookId && chapterIndex == _displayedChapterIndex) return;
 
         _displayedBookId = bookId;
         _displayedChapterIndex = chapterIndex;
-        ChapterTitle = playing.CurrentChapter?.Title ?? $"Chapter {chapterIndex + 1}";
+        ChapterTitle = title;
 
         List<TranscriptSegment> segments = [];
         TranscriptChapterStatus? status = null;
@@ -307,7 +439,6 @@ public class TranscriptViewModel : BindableBase
         _chapterStatus = status?.Status ?? TranscriptStatus.NotStarted;
         UpdateStatusTexts(status?.ProgressPercent ?? 0, status?.LastError);
         RefreshPlaceholder();
-        Advance(playing.CurrentTimeMs);
     }
 
     private void OnTranscriptionStatusChanged(Guid bookId, int chapterIndex, TranscriptStatus status, int pct)
@@ -378,6 +509,11 @@ public class TranscriptViewModel : BindableBase
     private void Advance(long positionMs)
     {
         if (Sentences.Count == 0) return;
+
+        // only track when the pane is showing the playing chapter
+        var playing = App.PlayerViewModel.NowPlaying;
+        if (playing == null || playing.Model.Id != _displayedBookId ||
+            (playing.CurrentChapterIndex ?? 0) != _displayedChapterIndex) return;
 
         var index = _activeIndex;
 

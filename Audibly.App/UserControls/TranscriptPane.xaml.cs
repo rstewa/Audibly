@@ -28,6 +28,7 @@ public sealed partial class TranscriptPane : UserControl
 
         Vm.ActiveSentenceChanged += OnActiveSentenceChanged;
         Vm.ActiveWordChanged += OnActiveWordChanged;
+        Vm.ScrollToRequested += OnScrollToRequested;
     }
 
     /// <summary>
@@ -44,6 +45,49 @@ public sealed partial class TranscriptPane : UserControl
     private void ReturnToPosition_Click(object sender, RoutedEventArgs e)
     {
         Vm.ResumeFollowing();
+    }
+
+    private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            Vm.SearchQuery = sender.Text;
+    }
+
+    private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        await Vm.GoToNextHitAsync();
+    }
+
+    private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key != Windows.System.VirtualKey.Escape) return;
+
+        SearchBox.Text = "";
+        Vm.ClearSearch();
+        e.Handled = true;
+    }
+
+    private async void NextHit_Click(object sender, RoutedEventArgs e)
+    {
+        await Vm.GoToNextHitAsync();
+    }
+
+    private async void PreviousHit_Click(object sender, RoutedEventArgs e)
+    {
+        await Vm.GoToPreviousHitAsync();
+    }
+
+    private void OnScrollToRequested(int index)
+    {
+        var element = Repeater.TryGetElement(index) ?? Repeater.GetOrCreateElement(index);
+        if (element == null) return;
+
+        _programmaticScroll = true;
+        element.StartBringIntoView(new BringIntoViewOptions
+        {
+            VerticalAlignmentRatio = 0.4,
+            AnimationDesired = true
+        });
     }
 
     private void OnActiveSentenceChanged(int index)

@@ -102,6 +102,7 @@
                             CornerRadius="4"
                             Margin="{x:Bind ParagraphMargin}"
                             Padding="8,4"
+                            Tag="{x:Bind}"
                             Tapped="Sentence_Tapped">
                             <TextBlock
                                 IsTextSelectionEnabled="False"

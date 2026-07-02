@@ -50,6 +50,7 @@ namespace Audibly.App;
 public partial class App : Application
 {
     private static Win32WindowHelper win32WindowHelper;
+    private static bool _shutdownCleanupDone;
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
@@ -155,11 +156,22 @@ public partial class App : Application
         Window = WindowHelper.CreateWindow("MainWindow");
 
         var appWindow = WindowHelper.GetAppWindow(Window);
-        appWindow.Closing += async (_, _) =>
+        appWindow.Closing += async (_, closingArgs) =>
         {
-            Transcription?.Shutdown();
+            if (_shutdownCleanupDone) return;
+
+            // Hold the close until the native stacks are quiet: exiting the process while
+            // sherpa/onnxruntime is mid-decode (or a VLC transcode is live) dies with an
+            // unhandled win32 exception during teardown. Bounded so a hung decode can
+            // never block exit.
+            closingArgs.Cancel = true;
+            if (Transcription != null)
+                await Task.WhenAny(Transcription.StopAndUnloadAsync(), Task.Delay(8000));
+
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
             PlayerViewModel.Dispose();
+
+            _shutdownCleanupDone = true;
             WindowHelper.CloseAll();
         };
         appWindow.Title = "Audibly — Audiobook Player";

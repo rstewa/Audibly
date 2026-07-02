@@ -70,9 +70,8 @@ public class SherpaOnnxParakeetBackend : ISpeechToTextBackend
 
     /// <summary>
     ///     Decode threads, applied when the model (re)loads: the user's explicit setting if
-    ///     any, else all logical processors sharing the last-level cache minus one (keeps a
-    ///     real core free even when ProcessorCount includes parked LP-E cores), else a
-    ///     conservative formula for systems without cache topology (VMs).
+    ///     any, else max(count - 4, count / 2) — keeps headroom for playback/UI and
+    ///     tolerates parked LP-E cores that inflate ProcessorCount on Intel hybrid SoCs.
     /// </summary>
     public static int ResolveThreadCount()
     {
@@ -80,10 +79,6 @@ public class SherpaOnnxParakeetBackend : ISpeechToTextBackend
 
         var manual = Helpers.UserSettings.TranscriptionThreads;
         if (manual > 0) return Math.Min(manual, processorCount);
-
-        var lastLevelCacheCount = CpuTopology.GetLastLevelCacheLogicalProcessorCount();
-        if (lastLevelCacheCount > 0 && lastLevelCacheCount <= processorCount)
-            return Math.Max(1, lastLevelCacheCount - 1);
 
         return Math.Max(1, Math.Max(processorCount - 4, processorCount / 2));
     }

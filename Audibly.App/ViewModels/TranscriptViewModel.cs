@@ -19,9 +19,11 @@ namespace Audibly.App.ViewModels;
 public class TranscriptSegmentViewModel : BindableBase
 {
     private static SolidColorBrush? _activeBrush;
+    private static SolidColorBrush? _searchHitBrush;
     private static readonly SolidColorBrush InactiveBrush = new(Microsoft.UI.Colors.Transparent);
 
     private bool _isActive;
+    private bool _isSearchHit;
     private WordTiming[]? _words;
 
     public TranscriptSegmentViewModel(TranscriptSegment segment)
@@ -55,9 +57,23 @@ public class TranscriptSegmentViewModel : BindableBase
         }
     }
 
-    public Brush ActiveBrush => _isActive ? GetAccentBrush() : InactiveBrush;
+    /// <summary>
+    ///     Marks the currently focused search result.
+    /// </summary>
+    public bool IsSearchHit
+    {
+        get => _isSearchHit;
+        set
+        {
+            if (!Set(ref _isSearchHit, value)) return;
+            OnPropertyChanged(nameof(ActiveBrush));
+            OnPropertyChanged(nameof(RowOpacity));
+        }
+    }
 
-    public double RowOpacity => _isActive ? 1.0 : 0.85;
+    public Brush ActiveBrush => _isSearchHit ? GetSearchHitBrush() : _isActive ? GetAccentBrush() : InactiveBrush;
+
+    public double RowOpacity => _isActive || _isSearchHit ? 1.0 : 0.85;
 
     private static SolidColorBrush GetAccentBrush()
     {
@@ -66,6 +82,11 @@ public class TranscriptSegmentViewModel : BindableBase
         var accent = (Windows.UI.Color)Application.Current.Resources["SystemAccentColor"];
         _activeBrush = new SolidColorBrush(accent) { Opacity = 0.3 };
         return _activeBrush;
+    }
+
+    private static SolidColorBrush GetSearchHitBrush()
+    {
+        return _searchHitBrush ??= new SolidColorBrush(Microsoft.UI.Colors.Goldenrod) { Opacity = 0.4 };
     }
 }
 
@@ -205,6 +226,7 @@ public class TranscriptViewModel : BindableBase
     private int _currentHitIndex = -1;
     private string _searchQuery = "";
     private DispatcherQueueTimer? _searchDebounce;
+    private TranscriptSegmentViewModel? _currentHitSentence;
 
     public string SearchQuery
     {
@@ -288,7 +310,12 @@ public class TranscriptViewModel : BindableBase
         var index = Sentences.ToList().FindIndex(s => s.Segment.Id == hit.Id);
         if (index < 0)
             index = Sentences.ToList().FindIndex(s => s.StartMs == hit.StartMs);
-        if (index >= 0) ScrollToRequested?.Invoke(index);
+        if (index < 0) return;
+
+        if (_currentHitSentence != null) _currentHitSentence.IsSearchHit = false;
+        _currentHitSentence = Sentences[index];
+        _currentHitSentence.IsSearchHit = true;
+        ScrollToRequested?.Invoke(index);
     }
 
     public void ClearSearch()
@@ -296,6 +323,8 @@ public class TranscriptViewModel : BindableBase
         _searchQuery = "";
         _searchHits.Clear();
         _currentHitIndex = -1;
+        if (_currentHitSentence != null) _currentHitSentence.IsSearchHit = false;
+        _currentHitSentence = null;
         OnPropertyChanged(nameof(SearchQuery));
         OnPropertyChanged(nameof(HitCounterText));
         OnPropertyChanged(nameof(HasHits));

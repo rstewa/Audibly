@@ -38,7 +38,8 @@ public sealed partial class TranscriptPane : UserControl
 
     private async void Sentence_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.DataContext is TranscriptSegmentViewModel sentence)
+        // ItemsRepeater does not set DataContext for x:Bind templates — the item travels via Tag
+        if ((sender as FrameworkElement)?.Tag is TranscriptSegmentViewModel sentence)
             await Vm.SeekToAsync(sentence);
     }
 
@@ -116,16 +117,14 @@ public sealed partial class TranscriptPane : UserControl
             return;
         }
 
-        if (!ReferenceEquals(_highlightedTextBlock, textBlock))
-        {
-            ClearWordHighlight();
-            textBlock.TextHighlighters.Add(_wordHighlighter);
-            _highlightedTextBlock = textBlock;
-        }
-
+        // TextBlock does not repaint when an attached highlighter's Ranges mutate —
+        // the highlighter must be detached and re-attached for every word change.
+        _highlightedTextBlock?.TextHighlighters.Remove(_wordHighlighter);
         _wordHighlighter.Ranges.Clear();
         if (charOffset + charLength <= textBlock.Text.Length)
             _wordHighlighter.Ranges.Add(new TextRange(charOffset, charLength));
+        textBlock.TextHighlighters.Add(_wordHighlighter);
+        _highlightedTextBlock = textBlock;
     }
 
     private void ClearWordHighlight()

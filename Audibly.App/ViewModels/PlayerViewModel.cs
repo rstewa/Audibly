@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Audibly.App.Extensions;
@@ -49,7 +50,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private Symbol _playPauseIcon = Symbol.Play;
 
-    private Timer? _sleepTimer;
+    private System.Timers.Timer? _sleepTimer;
     private DateTime _timerEndTime;
 
     private double _timerValue;
@@ -61,6 +62,8 @@ public class PlayerViewModel : BindableBase, IDisposable
     private bool _mediaJustOpened;
 
     private bool _skipSeeking;
+
+    private int _saveInFlight;
 
     public PlayerViewModel()
     {
@@ -215,7 +218,13 @@ public class PlayerViewModel : BindableBase, IDisposable
     /// </summary>
     public TimeSpan CurrentPosition
     {
-        get => TimeSpan.FromMilliseconds(_mediaPlayer.Time >= 0 ? _mediaPlayer.Time : 0);
+        get
+        {
+            // Time is -1 when there is no active playback (Ended/Stopped); fall back to
+            // the persisted position so skip buttons don't operate on a bogus 0.
+            var time = _mediaPlayer.Time;
+            return TimeSpan.FromMilliseconds(time >= 0 ? time : NowPlaying?.CurrentTimeMs ?? 0);
+        }
         set
         {
             if (!_skipSeeking)
@@ -260,8 +269,23 @@ public class PlayerViewModel : BindableBase, IDisposable
     /// <summary>
     ///     Gets the natural duration of the currently loaded media.
     /// </summary>
-    public TimeSpan NaturalDuration =>
-        TimeSpan.FromMilliseconds(_mediaPlayer.Length >= 0 ? _mediaPlayer.Length : 0);
+    public TimeSpan NaturalDuration
+    {
+        get
+        {
+            // Length is -1 when there is no active playback (Ended/Stopped); fall back to
+            // the media's parsed duration so skip-forward doesn't clamp to 0 and wipe the
+            // saved position.
+            var length = _mediaPlayer.Length;
+            if (length < 0)
+            {
+                using var media = _mediaPlayer.Media;
+                length = media?.Duration ?? 0;
+            }
+
+            return TimeSpan.FromMilliseconds(length >= 0 ? length : 0);
+        }
+    }
 
     /// <summary>
     /// </summary>
@@ -319,10 +343,13 @@ public class PlayerViewModel : BindableBase, IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            if (PlayPauseIcon == Symbol.Pause) return;
             PlayPauseIcon = Symbol.Pause;
 
             // Handle "media opened" logic on first Playing event after setting new media.
+            // This must run even when the icon already showed Pause: auto-advancing to the
+            // next source file goes Playing -> EndReached -> Playing without a Paused event
+            // in between, so gating this on the icon state would leave _mediaJustOpened set
+            // forever (freezing time updates and blocking all future opens).
             if (_mediaJustOpened)
                 HandleMediaOpened();
         });
@@ -349,6 +376,7 @@ public class PlayerViewModel : BindableBase, IDisposable
         _dispatcherQueue.TryEnqueue(() =>
         {
             _mediaJustOpened = false;
+            _pendingAutoPlay = false;
             NowPlaying = null;
         });
 
@@ -364,7 +392,7 @@ public class PlayerViewModel : BindableBase, IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            if (NowPlaying == null || _mediaJustOpened || IsUserSeeking ) return;
+            if (NowPlaying == null || _mediaJustOpened || IsUserSeeking) return;
 
             var currentPositionMs = e.Time;
 
@@ -382,9 +410,7 @@ public class PlayerViewModel : BindableBase, IDisposable
                     ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
                     _skipSeeking = false;
                 }
-                ;
             }
-
 
             ChapterPositionMs = (int)(currentPositionMs > NowPlaying.CurrentChapter.StartTime
                 ? currentPositionMs - NowPlaying.CurrentChapter.StartTime
@@ -400,20 +426,47 @@ public class PlayerViewModel : BindableBase, IDisposable
             tmp += currentPositionMs / 1000.0;
             NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
             NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
-            ;
 
-            _ = Task.Run(async () => await NowPlaying.SaveAsync());
+            // TimeChanged fires several times per second; allow only one save in flight
+            // so slow upserts don't pile up concurrently.
+            var nowPlaying = NowPlaying;
+            if (Interlocked.CompareExchange(ref _saveInFlight, 1, 0) == 0)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await nowPlaying.SaveAsync();
+                    }
+                    finally
+                    {
+                        Volatile.Write(ref _saveInFlight, 0);
+                    }
+                });
         });
     }
 
     private void HandleMediaOpened()
     {
-        if (NowPlaying == null) return;
+        if (NowPlaying == null)
+        {
+            // The audiobook was closed/removed while its media was still opening.
+            // Playback was started only to trigger the media load, so silence it and
+            // clear the transition flags or no audiobook could ever be opened again.
+            _mediaJustOpened = false;
+            _pendingAutoPlay = false;
+            _mediaPlayer.SetPause(true);
+            return;
+        }
 
         if (NowPlaying.Chapters.Count == 0)
         {
             _mediaJustOpened = false;
+            _pendingAutoPlay = false;
             NowPlaying = null;
+
+            // Playback was started only to trigger the media load — stop the broken
+            // media so it doesn't keep playing behind the error dialog.
+            _mediaPlayer.Stop();
 
             _ = DialogService.ShowErrorDialogAsync("Error",
                 "An error occurred while trying to open the selected audiobook. " +
@@ -435,6 +488,10 @@ public class PlayerViewModel : BindableBase, IDisposable
 
         _mediaPlayer.SetRate((float)PlaybackSpeed);
 
+        // libvlc can ignore a volume set before the first audio output exists;
+        // re-apply it now that playback has started.
+        _mediaPlayer.Volume = (int)VolumeLevel;
+
         if (_pendingAutoPlay)
         {
             _pendingAutoPlay = false;
@@ -452,22 +509,22 @@ public class PlayerViewModel : BindableBase, IDisposable
     private void HandleMediaEnded()
     {
         // check if there is a next source file
-        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1)
+        var nextSourceFileIndex = (NowPlaying?.CurrentSourceFileIndex ?? 0) + 1;
+
+        // find the first chapter belonging to the next source file
+        var nextChapter = NowPlaying != null && nextSourceFileIndex <= NowPlaying.SourcePaths.Count - 1
+            ? NowPlaying.Chapters.FirstOrDefault(c => c.ParentSourceFileIndex == nextSourceFileIndex)
+            : null;
+
+        if (nextChapter == null)
         {
             //We have no more media to play make sure to set the play button to play instead of pause!
             if (PlayPauseIcon != Symbol.Play)
                 PlayPauseIcon = Symbol.Play;
             return;
         }
-        var nextSourceFileIndex = NowPlaying.CurrentSourceFileIndex + 1;
-        var nextChapter = NowPlaying.Chapters.FirstOrDefault(c =>
-            c.ParentSourceFileIndex == nextSourceFileIndex);
 
-        if (nextChapter == null) return;
-
-        _pendingAutoPlay = true;
-
-        _ = OpenSourceFile(nextSourceFileIndex, nextChapter.Index);
+        _ = OpenSourceFile(nextSourceFileIndex, nextChapter.Index, autoPlay: true);
     }
 
     public void SetTimer(double seconds)
@@ -494,7 +551,7 @@ public class PlayerViewModel : BindableBase, IDisposable
         TimerValue = seconds;
         IsTimerActive = true;
 
-        _sleepTimer = new Timer(1000); // Update every second
+        _sleepTimer = new System.Timers.Timer(1000); // Update every second
         _sleepTimer.Elapsed += SleepTimer_Elapsed;
         _sleepTimer.Start();
 
@@ -646,6 +703,7 @@ public class PlayerViewModel : BindableBase, IDisposable
             {
                 //this makes vlc ignore chapters usually it's chapter aware but that breaks our existing logic assuming the player position is absolute from file start instead of chapter start.
                 media.AddOption(":demux=avformat");
+                _pendingAutoPlay = false;
                 _mediaJustOpened = true;
                 playRequested = _mediaPlayer.Play(media);
             }
@@ -653,11 +711,14 @@ public class PlayerViewModel : BindableBase, IDisposable
         finally
         {
             if (!playRequested)
+            {
                 _mediaJustOpened = false;
+                _pendingAutoPlay = false;
+            }
         }
     }
 
-    public async Task OpenSourceFile(int index, int chapterIndex, long currentTimeMs = 0)
+    public async Task OpenSourceFile(int index, int chapterIndex, long currentTimeMs = 0, bool autoPlay = false)
     {
         if (_mediaJustOpened)
             return;
@@ -685,6 +746,7 @@ public class PlayerViewModel : BindableBase, IDisposable
             using (var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath, FromType.FromPath))
             {
                 media.AddOption(":demux=avformat");
+                _pendingAutoPlay = autoPlay;
                 _mediaJustOpened = true;
                 playRequested = _mediaPlayer.Play(media);
             }
@@ -692,7 +754,10 @@ public class PlayerViewModel : BindableBase, IDisposable
         finally
         {
             if (!playRequested)
+            {
                 _mediaJustOpened = false;
+                _pendingAutoPlay = false;
+            }
         }
     }
 

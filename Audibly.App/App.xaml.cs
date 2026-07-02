@@ -111,6 +111,11 @@ public partial class App : Application
     public static TranscriptionCoordinator? Transcription { get; private set; }
 
     /// <summary>
+    ///     Backs the read-along transcript pane in the full-screen player.
+    /// </summary>
+    public static TranscriptViewModel TranscriptVm { get; private set; }
+
+    /// <summary>
     ///     Gets the root frame of the app. This contains the nav view and the player page
     /// </summary>
     public static Frame? RootFrame { get; private set; }
@@ -170,6 +175,7 @@ public partial class App : Application
         Transcription = new TranscriptionCoordinator(Repository, TranscriptionModel, speechBackend,
             new LibVlcPcmAudioExtractor(speechBackend.Model.RequiredSampleRate));
         TranscriptionSettings = new TranscriptionSettingsViewModel(TranscriptionModel);
+        TranscriptVm = new TranscriptViewModel();
         _ = Task.Run(async () =>
         {
             await TranscriptionModel.VerifyInstalledAsync();

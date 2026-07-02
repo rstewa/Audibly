@@ -58,6 +58,7 @@
         <None Remove="UserControls\PlayerControlGrid.xaml" />
         <None Remove="UserControls\PlaySkipButtonsStack.xaml" />
         <None Remove="UserControls\TitleArtistStack.xaml" />
+        <None Remove="UserControls\TranscriptPane.xaml" />
         <None Remove="Views\CollectionContentPage.xaml" />
         <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml" />
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />

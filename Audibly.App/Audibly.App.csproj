@@ -143,6 +143,7 @@
 
     <!--  AI transcription (read-along)  -->
     <ItemGroup>
+        <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.12.35" />
         <PackageReference Include="SharpCompress" Version="0.47.4" />
     </ItemGroup>
 

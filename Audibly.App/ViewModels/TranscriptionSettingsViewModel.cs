@@ -48,6 +48,7 @@ public class TranscriptionSettingsViewModel : BindableBase
         {
             UserSettings.TranscriptionEnabled = value;
             OnPropertyChanged();
+            App.Transcription?.OnSettingsChanged();
         }
     }
 
@@ -61,6 +62,7 @@ public class TranscriptionSettingsViewModel : BindableBase
         {
             UserSettings.TranscriptionScope = value;
             OnPropertyChanged();
+            App.Transcription?.OnSettingsChanged();
         }
     }
 
@@ -113,6 +115,7 @@ public class TranscriptionSettingsViewModel : BindableBase
 
     public async Task DeleteModelAsync()
     {
+        if (App.Transcription != null) await App.Transcription.StopAndUnloadAsync();
         await _modelService.DeleteAsync();
     }
 

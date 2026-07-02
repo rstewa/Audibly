@@ -94,11 +94,25 @@ public sealed partial class AudiobookTile : UserControl
     private void ButtonTile_OnRightTapped(object sender, RightTappedRoutedEventArgs? e)
     {
         if (e is null) return;
+        TranscribeMenuItem.IsEnabled = App.Transcription?.CanTranscribe == true;
         var myOption = new FlyoutShowOptions
         {
             ShowMode = FlyoutShowMode.Transient
         };
         MenuFlyout.ShowAt(ButtonTile, myOption);
+    }
+
+    private void Transcribe_OnClick(object sender, RoutedEventArgs e)
+    {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null || App.Transcription is not { CanTranscribe: true } transcription) return;
+
+        transcription.RequestBook(Id);
+        ViewModel.EnqueueNotification(new Notification
+        {
+            Message = $"Queued \"{audiobook.Title}\" for transcription.",
+            Severity = InfoBarSeverity.Informational
+        });
     }
 
     private void OpenInAppFolder_OnClick(object sender, RoutedEventArgs e)

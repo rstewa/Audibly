@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
@@ -105,6 +106,11 @@ public partial class App : Application
     public static TranscriptionSettingsViewModel TranscriptionSettings { get; private set; }
 
     /// <summary>
+    ///     Background transcription scheduler.
+    /// </summary>
+    public static TranscriptionCoordinator? Transcription { get; private set; }
+
+    /// <summary>
     ///     Gets the root frame of the app. This contains the nav view and the player page
     /// </summary>
     public static Frame? RootFrame { get; private set; }
@@ -146,6 +152,7 @@ public partial class App : Application
         var appWindow = WindowHelper.GetAppWindow(Window);
         appWindow.Closing += async (_, _) =>
         {
+            Transcription?.Shutdown();
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
             PlayerViewModel.Dispose();
             WindowHelper.CloseAll();
@@ -160,7 +167,14 @@ public partial class App : Application
 
         TranscriptionModel = new TranscriptionModelService(SpeechModels.ParakeetTdtV3Int8);
         TranscriptionSettings = new TranscriptionSettingsViewModel(TranscriptionModel);
-        _ = TranscriptionModel.VerifyInstalledAsync();
+        var speechBackend = new SherpaOnnxParakeetBackend();
+        Transcription = new TranscriptionCoordinator(Repository, TranscriptionModel, speechBackend,
+            new LibVlcPcmAudioExtractor(speechBackend.Model.RequiredSampleRate));
+        _ = Task.Run(async () =>
+        {
+            await TranscriptionModel.VerifyInstalledAsync();
+            await Transcription.InitializeAsync();
+        });
 
         RootFrame = Window.Content as Frame;
 

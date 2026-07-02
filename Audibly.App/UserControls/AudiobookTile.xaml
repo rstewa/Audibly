@@ -60,6 +60,14 @@
                     <FontIcon Glyph="&#xE8B5;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
+            <MenuFlyoutItem
+                Click="Transcribe_OnClick"
+                Text="Transcribe now"
+                x:Name="TranscribeMenuItem">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE720;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
         </MenuFlyout>
     </UserControl.Resources>
     <Button

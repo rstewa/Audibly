@@ -13,6 +13,7 @@ using Windows.Storage;
 using ATL;
 using Audibly.App.Extensions;
 using Audibly.App.Services.Interfaces;
+using Audibly.App.Services.Transcription;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using AutoMapper;
@@ -134,6 +135,17 @@ public class FileImportService : IImportFiles
                 // insert the audiobook into the database
                 var result = await App.Repository.Audiobooks.UpsertAsync(audiobook);
                 if (result == null) didFail = true;
+
+                // restore an embedded transcript; a bad payload must never fail the book import
+                if (result != null && importedAudiobook.Transcript != null)
+                    try
+                    {
+                        await TranscriptExportMapper.ImportAsync(result, importedAudiobook.Transcript);
+                    }
+                    catch (Exception ex)
+                    {
+                        App.ViewModel.LoggingService.LogError(ex, true);
+                    }
             }
 
             var title = audiobook?.Title ?? Path.GetFileNameWithoutExtension(importedAudiobook.FilePath);

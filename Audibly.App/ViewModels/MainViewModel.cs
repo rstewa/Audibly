@@ -16,6 +16,7 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
+using Audibly.App.Services.Transcription;
 using Audibly.Models;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -434,11 +435,39 @@ public class MainViewModel : BindableBase
     {
         await GetAudiobookListAsync();
 
-        var audiobooksExport = Audiobooks.Select(x => new
+        // offer to embed AI transcripts when any exist
+        var booksWithTranscripts = (await App.Repository.Transcripts.GetAllStatusesAsync())
+            .Where(s => s.Status is TranscriptStatus.Completed or TranscriptStatus.Failed)
+            .Select(s => s.AudiobookId)
+            .ToHashSet();
+        var includeTranscripts = false;
+        if (booksWithTranscripts.Count > 0)
         {
-            x.CurrentSourceFile.CurrentTimeMs, x.CoverImagePath, x.CurrentSourceFile.FilePath, x.Progress,
-            x.CurrentChapterIndex, x.IsNowPlaying, x.IsCompleted
-        });
+            var dialogResult = await DialogService.ShowConfirmationDialogAsync("Include transcripts?",
+                "Embedding AI transcripts makes the export file significantly larger (a few MB per book) " +
+                "but restores them on import without re-transcribing.",
+                "Include", "Skip");
+            includeTranscripts = dialogResult == ContentDialogResult.Primary;
+        }
+
+        var audiobooksExport = new List<ImportedAudiobook>();
+        foreach (var x in Audiobooks)
+        {
+            var item = new ImportedAudiobook
+            {
+                CurrentTimeMs = x.CurrentSourceFile.CurrentTimeMs,
+                CoverImagePath = x.CoverImagePath,
+                FilePath = x.CurrentSourceFile.FilePath,
+                Progress = x.Progress,
+                CurrentChapterIndex = x.CurrentChapterIndex,
+                IsNowPlaying = x.IsNowPlaying,
+                IsCompleted = x.IsCompleted
+            };
+            if (includeTranscripts && booksWithTranscripts.Contains(x.Id))
+                item.Transcript = await TranscriptExportMapper.BuildAsync(x.Id);
+            audiobooksExport.Add(item);
+        }
+
         var json = JsonSerializer.Serialize(audiobooksExport);
 
         // let user choose where to save the file

@@ -13,4 +13,10 @@ public class ImportedAudiobook
     public int? CurrentChapterIndex { get; set; }
     public bool IsNowPlaying { get; set; }
     public bool IsCompleted { get; set; }
+
+    /// <summary>
+    ///     Optional embedded transcript; null in exports made without transcripts and in
+    ///     files from older app versions (unknown members are ignored on both sides).
+    /// </summary>
+    public TranscriptExport? Transcript { get; set; }
 }

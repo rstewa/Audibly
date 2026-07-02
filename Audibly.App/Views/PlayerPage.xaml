@@ -63,79 +63,100 @@
                 </Border.Background>
             </Border>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <RelativePanel HorizontalAlignment="Stretch">
+                <!--  Back button  -->
+                <Button
+                    RequestedTheme="Dark"
+                    Click="BackButton_OnClick"
+                    IsEnabled="{x:Bind Frame.CanGoBack, Mode=OneWay}"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    Style="{StaticResource NavigationBackButtonNormalStyle}"
+                    ToolTipService.ToolTip="Back"
+                    x:Name="BackButton" />
 
-                <!--  read-along pane  -->
-                <userControls:TranscriptPane
-                    Grid.Column="1"
-                    Margin="0,48,16,16"
+                <!--  transcript pane toggle  -->
+                <Button
+                    Click="TranscriptToggle_OnClick"
+                    Margin="0,48,20,0"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RequestedTheme="Dark"
+                    ToolTipService.ToolTip="Read along (Ctrl+T)"
+                    x:Name="TranscriptToggleButton">
+                    <FontIcon FontSize="16" Glyph="&#xED1E;" />
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="T" Modifiers="Control" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+
+                <!--  cover image (large, centered) — read-along closed  -->
+                <Border
+                    BorderThickness="0"
+                    Height="300"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.AlignVerticalCenterWithPanel="True"
+                    Visibility="{x:Bind TranscriptVm.IsPaneClosed, Mode=OneWay}"
+                    Width="300"
+                    x:Name="BigCoverHost">
+                    <Border
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Border.Background>
+                            <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                        </Border.Background>
+                    </Border>
+                    <winUi:Effects.Shadow>
+                        <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
+                    </winUi:Effects.Shadow>
+                </Border>
+
+                <!--  cover image (small, corner) — read-along open  -->
+                <Border
+                    BorderThickness="0"
+                    Height="132"
+                    Margin="20,12,0,0"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.Below="BackButton"
                     Visibility="{x:Bind TranscriptVm.IsPaneOpen, Mode=OneWay}"
-                    Width="400"
+                    Width="132"
+                    x:Name="SmallCoverHost">
+                    <Border
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Border.Background>
+                            <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                        </Border.Background>
+                    </Border>
+                    <winUi:Effects.Shadow>
+                        <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="2, 2" />
+                    </winUi:Effects.Shadow>
+                </Border>
+
+                <!--  read-along pane: fills the stage right of the small cover  -->
+                <userControls:TranscriptPane
+                    Margin="16,12,20,12"
+                    RelativePanel.Above="PlayerControls"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.Below="BackButton"
+                    RelativePanel.RightOf="SmallCoverHost"
+                    Visibility="{x:Bind TranscriptVm.IsPaneOpen, Mode=OneWay}"
                     x:Name="TranscriptPaneControl" />
 
-                <RelativePanel Grid.Column="0" HorizontalAlignment="Stretch">
-                    <!--  Back button  -->
-                    <Button
-                        RequestedTheme="Dark"
-                        Click="BackButton_OnClick"
-                        IsEnabled="{x:Bind Frame.CanGoBack, Mode=OneWay}"
-                        RelativePanel.AlignLeftWithPanel="True"
-                        RelativePanel.AlignTopWithPanel="True"
-                        Style="{StaticResource NavigationBackButtonNormalStyle}"
-                        ToolTipService.ToolTip="Back"
-                        x:Name="BackButton" />
-
-                    <!--  transcript pane toggle  -->
-                    <Button
-                        Click="TranscriptToggle_OnClick"
-                        Margin="0,48,16,0"
-                        RelativePanel.AlignRightWithPanel="True"
-                        RelativePanel.AlignTopWithPanel="True"
-                        RequestedTheme="Dark"
-                        ToolTipService.ToolTip="Read along (Ctrl+T)"
-                        x:Name="TranscriptToggleButton">
-                        <FontIcon FontSize="16" Glyph="&#xED1E;" />
-                        <Button.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="T" Modifiers="Control" />
-                        </Button.KeyboardAccelerators>
-                    </Button>
-
-                    <!--  cover image  -->
-                    <Border
-                        BorderThickness="0"
-                        Height="300"
-                        RelativePanel.AlignHorizontalCenterWithPanel="True"
-                        RelativePanel.AlignVerticalCenterWithPanel="True"
-                        Width="300">
-                        <Border
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
-                            CornerRadius="{StaticResource OverlayCornerRadius}">
-                            <Border.Background>
-                                <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
-                            </Border.Background>
-                        </Border>
-                        <winUi:Effects.Shadow>
-                            <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
-                        </winUi:Effects.Shadow>
-                    </Border>
-
-                    <!--  player controls  -->
-                    <userControls:PlayerControlGrid
-                        RequestedTheme="Dark"
-                        HorizontalAlignment="Stretch"
-                        Margin="4,20,20,20"
-                        RelativePanel.AlignBottomWithPanel="True"
-                        RelativePanel.AlignHorizontalCenterWithPanel="True"
-                        RelativePanel.AlignLeftWithPanel="True"
-                        RelativePanel.AlignRightWithPanel="True"
-                        ShowCoverImage="False" />
-                </RelativePanel>
-            </Grid>
+                <!--  player controls  -->
+                <userControls:PlayerControlGrid
+                    RequestedTheme="Dark"
+                    HorizontalAlignment="Stretch"
+                    Margin="4,20,20,20"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    ShowCoverImage="False"
+                    x:Name="PlayerControls" />
+            </RelativePanel>
         </Grid>
 
         <VisualStateManager.VisualStateGroups>

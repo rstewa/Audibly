@@ -132,8 +132,11 @@ public class TranscriptViewModel : BindableBase
         {
             UserSettings.IsTranscriptPaneOpen = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsPaneClosed));
         }
     }
+
+    public bool IsPaneClosed => !IsPaneOpen;
 
     public string ChapterTitle
     {

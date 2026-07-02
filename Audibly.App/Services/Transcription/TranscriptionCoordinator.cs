@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using Audibly.Repository.Interfaces;
@@ -12,10 +14,15 @@ using Microsoft.UI.Xaml.Controls;
 namespace Audibly.App.Services.Transcription;
 
 /// <summary>
-///     Owns the background transcription worker: picks chapters, drives
-///     <see cref="ChapterTranscriber" />, persists status transitions, unloads the model
-///     after 60 s idle, and surfaces progress via events (raised on the worker thread —
-///     consumers must dispatch).
+///     Owns the background transcription worker. One chapter is transcribed at a time,
+///     re-picking after every chapter so priorities follow playback:
+///     ① the playing book's current chapter, ② its later chapters, ③ its earlier chapters,
+///     ④ manually requested books (works even with automatic scope Off, retries Failed),
+///     ⑤ with scope "entire library": other unfinished books (most recently played first,
+///     from their current chapter, wrapping), ⑥ finished books. Playback movement preempts
+///     the in-flight chapter at the next window boundary when it is no longer the top pick.
+///     The model and decoder are unloaded after 60 s idle. Events fire on the worker
+///     thread — consumers must dispatch.
 /// </summary>
 public class TranscriptionCoordinator : IDisposable
 {
@@ -30,11 +37,15 @@ public class TranscriptionCoordinator : IDisposable
     private readonly ConcurrentQueue<Guid> _manualQueue = new();
     private readonly object _workerLock = new();
     private readonly HashSet<Guid> _failureNotifiedBooks = [];
+    private readonly ConcurrentDictionary<(Guid BookId, int ChapterIndex), TranscriptStatus> _statusCache = new();
 
     private Task? _worker;
     private CancellationTokenSource? _workerCts;
     private Timer? _idleTimer;
     private bool? _extractorAvailable;
+    private volatile bool _playbackChanged;
+    private (Guid BookId, int ChapterIndex)? _runningChapter;
+    private AudiobookViewModel? _observedBook;
 
     public TranscriptionCoordinator(IAudiblyRepository repository, TranscriptionModelService modelService,
         ISpeechToTextBackend backend, IPcmAudioExtractor extractor)
@@ -61,13 +72,23 @@ public class TranscriptionCoordinator : IDisposable
     /// </summary>
     public event Action<Guid, int, IReadOnlyList<TranscriptSegment>>? SegmentsFlushed;
 
+    /// <summary>
+    ///     Raised when <see cref="ActivityDescription" /> changes — on the worker thread.
+    /// </summary>
+    public event Action? ActivityChanged;
+
+    public string ActivityDescription { get; private set; } = "Idle";
+
     public bool IsSupportedPlatform => _backend.IsSupportedOnThisDevice &&
                                        (_extractorAvailable ??= _extractor.IsAvailable);
 
-    public bool CanTranscribe => IsSupportedPlatform && _modelService.State == SpeechModelState.Ready;
+    public bool CanTranscribe => IsSupportedPlatform &&
+                                 UserSettings.TranscriptionEnabled &&
+                                 _modelService.State == SpeechModelState.Ready;
 
     /// <summary>
-    ///     Startup: clean temp files, recover chapters left InProgress by a crash, start work.
+    ///     Startup: clean temp files, recover chapters left InProgress by a crash, hook
+    ///     playback tracking, start work.
     /// </summary>
     public async Task InitializeAsync()
     {
@@ -78,27 +99,35 @@ public class TranscriptionCoordinator : IDisposable
             var recovered = await _repository.Transcripts.ResetInterruptedAsync();
             if (recovered > 0)
                 App.ViewModel.LoggingService.Log($"Transcription: re-queued {recovered} interrupted chapter(s).");
+
+            foreach (var status in await _repository.Transcripts.GetAllStatusesAsync())
+                _statusCache[(status.AudiobookId, status.ChapterIndex)] = status.Status;
         }
         catch (Exception e)
         {
             App.ViewModel.LoggingService.LogError(e, true);
         }
 
+        App.PlayerViewModel.PropertyChanged += OnPlayerPropertyChanged;
+        ObserveNowPlaying(App.PlayerViewModel.NowPlaying);
+
         KickWorker();
     }
 
     /// <summary>
     ///     Manual "Transcribe now": queues the whole book (retrying Failed chapters), even
-    ///     when automatic transcription is off.
+    ///     when the automatic scope is Off.
     /// </summary>
     public void RequestBook(Guid audiobookId)
     {
         if (!_manualQueue.Contains(audiobookId)) _manualQueue.Enqueue(audiobookId);
+        _failureNotifiedBooks.Remove(audiobookId);
         KickWorker();
     }
 
     public void OnSettingsChanged()
     {
+        _playbackChanged = true; // re-evaluate the pick against the new scope
         KickWorker();
     }
 
@@ -140,6 +169,32 @@ public class TranscriptionCoordinator : IDisposable
         }
     }
 
+    private void OnPlayerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(PlayerViewModel.NowPlaying)) return;
+
+        ObserveNowPlaying(App.PlayerViewModel.NowPlaying);
+        _playbackChanged = true;
+        KickWorker();
+    }
+
+    private void ObserveNowPlaying(AudiobookViewModel? book)
+    {
+        if (ReferenceEquals(_observedBook, book)) return;
+
+        if (_observedBook != null) _observedBook.PropertyChanged -= OnNowPlayingPropertyChanged;
+        _observedBook = book;
+        if (book != null) book.PropertyChanged += OnNowPlayingPropertyChanged;
+    }
+
+    private void OnNowPlayingPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not (nameof(AudiobookViewModel.CurrentChapterIndex))) return;
+
+        _playbackChanged = true;
+        KickWorker();
+    }
+
     private void KickWorker()
     {
         if (!CanTranscribe) return;
@@ -164,8 +219,11 @@ public class TranscriptionCoordinator : IDisposable
         {
             while (!cancellationToken.IsCancellationRequested && CanTranscribe)
             {
-                if (!_manualQueue.TryDequeue(out var bookId)) break;
-                await ProcessBookAsync(bookId, cancellationToken);
+                var pick = await PickNextChapterAsync();
+                if (pick == null) break;
+
+                _playbackChanged = false;
+                await TranscribeChapterAsync(pick.Book, pick.Chapter, cancellationToken);
             }
         }
         catch (OperationCanceledException)
@@ -178,67 +236,150 @@ public class TranscriptionCoordinator : IDisposable
         }
         finally
         {
+            SetActivity("Idle");
             ScheduleIdleUnload();
         }
     }
 
-    private async Task ProcessBookAsync(Guid bookId, CancellationToken cancellationToken)
+    private sealed record ChapterPick(Audiobook Book, ChapterInfo Chapter);
+
+    private async Task<ChapterPick?> PickNextChapterAsync()
     {
-        var book = await _repository.Audiobooks.GetAsync(bookId);
-        if (book == null) return;
+        var scope = UserSettings.TranscriptionScope;
 
-        await _repository.Transcripts.EnsureStatusRowsAsync(bookId,
-            book.Chapters.Select(c => (c.Index, c.ParentSourceFileIndex)));
-        var statuses = (await _repository.Transcripts.GetStatusesAsync(bookId))
-            .ToDictionary(s => s.ChapterIndex);
-
-        var didWork = false;
-        var anyFailed = false;
-
-        foreach (var chapter in book.Chapters.OrderBy(c => c.Index))
+        // ①–③ the playing book, in listening order
+        if (scope >= 1)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (!CanTranscribe) return;
-
-            if (statuses.TryGetValue(chapter.Index, out var status) &&
-                status.Status == TranscriptStatus.Completed)
-                continue;
-
-            didWork = true;
-            if (!await TranscribeChapterAsync(book, chapter, cancellationToken)) anyFailed = true;
+            var playing = App.PlayerViewModel.NowPlaying;
+            if (playing != null)
+            {
+                var pick = await PickFromBookAsync(playing.Model.Id, playing.CurrentChapterIndex ?? 0,
+                    retryFailed: false);
+                if (pick != null) return pick;
+            }
         }
 
-        if (didWork && !anyFailed)
-            App.ViewModel.EnqueueNotification(new Notification
-            {
-                Message = $"Finished transcribing \"{book.Title}\".",
-                Severity = InfoBarSeverity.Success
-            });
+        // ④ manual requests, in request order
+        while (_manualQueue.TryPeek(out var manualId))
+        {
+            var pick = await PickFromBookAsync(manualId, 0, retryFailed: true);
+            if (pick != null) return pick;
+            _manualQueue.TryDequeue(out _);
+        }
+
+        if (scope < 2) return null;
+
+        // ⑤ unfinished books, most recently played first — ⑥ then finished books
+        var books = (await _repository.Audiobooks.GetAsync()).ToList();
+        foreach (var book in books
+                     .OrderBy(b => b.IsCompleted)
+                     .ThenByDescending(b => b.DateLastPlayed ?? DateTime.MinValue))
+        {
+            var pick = await PickFromBookAsync(book.Id, book.CurrentChapterIndex ?? 0, retryFailed: false, book);
+            if (pick != null) return pick;
+        }
+
+        return null;
     }
 
     /// <summary>
-    ///     Runs one chapter; returns false when it failed (already logged and persisted).
+    ///     First chapter needing work, starting at <paramref name="startChapterIndex" /> and
+    ///     wrapping around to the beginning.
     /// </summary>
-    private async Task<bool> TranscribeChapterAsync(Audiobook book, ChapterInfo chapter,
+    private async Task<ChapterPick?> PickFromBookAsync(Guid bookId, int startChapterIndex, bool retryFailed,
+        Audiobook? loaded = null)
+    {
+        var needsAnything = _statusCache.IsEmpty ||
+                            !_statusCache.Keys.Any(k => k.BookId == bookId) ||
+                            _statusCache.Any(kv => kv.Key.BookId == bookId && NeedsWork(kv.Value, retryFailed));
+        if (!needsAnything) return null;
+
+        var book = loaded ?? await _repository.Audiobooks.GetAsync(bookId);
+        if (book == null || book.Chapters.Count == 0) return null;
+
+        await _repository.Transcripts.EnsureStatusRowsAsync(book.Id,
+            book.Chapters.Select(c => (c.Index, c.ParentSourceFileIndex)));
+        var statuses = await _repository.Transcripts.GetStatusesAsync(book.Id);
+        foreach (var status in statuses)
+            _statusCache[(book.Id, status.ChapterIndex)] = status.Status;
+        var byIndex = statuses.ToDictionary(s => s.ChapterIndex, s => s.Status);
+
+        var ordered = book.Chapters.OrderBy(c => c.Index).ToList();
+        foreach (var chapter in ordered.Where(c => c.Index >= startChapterIndex)
+                     .Concat(ordered.Where(c => c.Index < startChapterIndex)))
+        {
+            if (!byIndex.TryGetValue(chapter.Index, out var status)) status = TranscriptStatus.NotStarted;
+            if (NeedsWork(status, retryFailed)) return new ChapterPick(book, chapter);
+        }
+
+        return null;
+    }
+
+    private static bool NeedsWork(TranscriptStatus status, bool retryFailed)
+    {
+        return status switch
+        {
+            TranscriptStatus.Completed => false,
+            TranscriptStatus.Failed => retryFailed,
+            _ => true
+        };
+    }
+
+    /// <summary>
+    ///     Checked between windows: yield when playback moved and the running chapter is no
+    ///     longer the top pick (the chapter being listened to is never preempted by
+    ///     movement within itself).
+    /// </summary>
+    private bool ShouldPreemptCurrentChapter()
+    {
+        if (!CanTranscribe) return true;
+        if (!_playbackChanged || _runningChapter is not { } running) return false;
+
+        var playing = App.PlayerViewModel.NowPlaying;
+        if (playing == null) return false;
+
+        var target = (BookId: playing.Model.Id, ChapterIndex: playing.CurrentChapterIndex ?? 0);
+        if (target == running) return false;
+
+        // only preempt when the listener's chapter actually needs transcribing
+        return !_statusCache.TryGetValue(target, out var status) ||
+               NeedsWork(status, retryFailed: false);
+    }
+
+    /// <summary>
+    ///     Runs one chapter; failures are persisted and notified (once per book).
+    /// </summary>
+    private async Task TranscribeChapterAsync(Audiobook book, ChapterInfo chapter,
         CancellationToken cancellationToken)
     {
         var modelId = _backend.Model.Id;
+        _runningChapter = (book.Id, chapter.Index);
+
+        void PersistStatus(TranscriptStatus status)
+        {
+            _statusCache[(book.Id, chapter.Index)] = status;
+        }
 
         var sourceFile = book.SourcePaths.FirstOrDefault(s => s.Index == chapter.ParentSourceFileIndex);
         if (sourceFile == null)
         {
             await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.Failed, 0,
                 $"No source file with index {chapter.ParentSourceFileIndex}.", modelId);
+            PersistStatus(TranscriptStatus.Failed);
             StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.Failed, 0);
-            return false;
+            _runningChapter = null;
+            return;
         }
 
+        SetActivity($"Loading speech model…");
         await _backend.EnsureLoadedAsync(_modelService.ModelDirectory, cancellationToken);
 
         await _repository.Transcripts.DeleteChapterSegmentsAsync(book.Id, chapter.Index);
         await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.InProgress, 0,
             null, modelId);
+        PersistStatus(TranscriptStatus.InProgress);
         StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.InProgress, 0);
+        SetActivity($"Transcribing \"{book.Title}\" — chapter {chapter.Index + 1} of {book.Chapters.Count}");
 
         var job = new ChapterTranscriptionJob(book.Id, chapter.Index, chapter.ParentSourceFileIndex,
             sourceFile.FilePath, chapter.StartTime, chapter.EndTime, sourceFile.Duration * 1000, modelId);
@@ -246,13 +387,25 @@ public class TranscriptionCoordinator : IDisposable
         try
         {
             await _transcriber.RunAsync(job,
-                pct => StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.InProgress, pct),
+                pct =>
+                {
+                    StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.InProgress, pct);
+                    SetActivity(
+                        $"Transcribing \"{book.Title}\" — chapter {chapter.Index + 1} of {book.Chapters.Count} ({pct}%)");
+                },
                 segments => SegmentsFlushed?.Invoke(book.Id, chapter.Index, segments),
                 ShouldPreemptCurrentChapter,
                 cancellationToken);
 
+            PersistStatus(TranscriptStatus.Completed);
             StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.Completed, 100);
-            return true;
+
+            if (_statusCache.Where(kv => kv.Key.BookId == book.Id).All(kv => kv.Value == TranscriptStatus.Completed))
+                App.ViewModel.EnqueueNotification(new Notification
+                {
+                    Message = $"Finished transcribing \"{book.Title}\".",
+                    Severity = InfoBarSeverity.Success
+                });
         }
         catch (Exception e) when (e is OperationCanceledException or TranscriptionPreemptedException)
         {
@@ -260,8 +413,10 @@ public class TranscriptionCoordinator : IDisposable
             await _repository.Transcripts.DeleteChapterSegmentsAsync(book.Id, chapter.Index);
             await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.Queued, 0,
                 null, modelId);
+            PersistStatus(TranscriptStatus.Queued);
             StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.Queued, 0);
-            throw;
+
+            if (e is OperationCanceledException) throw;
         }
         catch (Exception e)
         {
@@ -269,6 +424,7 @@ public class TranscriptionCoordinator : IDisposable
             await _repository.Transcripts.DeleteChapterSegmentsAsync(book.Id, chapter.Index);
             await _repository.Transcripts.UpdateStatusAsync(book.Id, chapter.Index, TranscriptStatus.Failed, 0,
                 e.Message, modelId);
+            PersistStatus(TranscriptStatus.Failed);
             StatusChanged?.Invoke(book.Id, chapter.Index, TranscriptStatus.Failed, 0);
 
             if (_failureNotifiedBooks.Add(book.Id))
@@ -277,16 +433,18 @@ public class TranscriptionCoordinator : IDisposable
                     Message = $"Transcription of \"{book.Title}\" failed: {e.Message}",
                     Severity = InfoBarSeverity.Warning
                 });
-            return false;
+        }
+        finally
+        {
+            _runningChapter = null;
         }
     }
 
-    /// <summary>
-    ///     Slice hook for the playback-aware scheduler; the manual queue never preempts.
-    /// </summary>
-    private bool ShouldPreemptCurrentChapter()
+    private void SetActivity(string description)
     {
-        return false;
+        if (ActivityDescription == description) return;
+        ActivityDescription = description;
+        ActivityChanged?.Invoke();
     }
 
     private void ScheduleIdleUnload()

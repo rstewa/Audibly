@@ -166,10 +166,10 @@ public partial class App : Application
         UseSqlite();
 
         TranscriptionModel = new TranscriptionModelService(SpeechModels.ParakeetTdtV3Int8);
-        TranscriptionSettings = new TranscriptionSettingsViewModel(TranscriptionModel);
         var speechBackend = new SherpaOnnxParakeetBackend();
         Transcription = new TranscriptionCoordinator(Repository, TranscriptionModel, speechBackend,
             new LibVlcPcmAudioExtractor(speechBackend.Model.RequiredSampleRate));
+        TranscriptionSettings = new TranscriptionSettingsViewModel(TranscriptionModel);
         _ = Task.Run(async () =>
         {
             await TranscriptionModel.VerifyInstalledAsync();

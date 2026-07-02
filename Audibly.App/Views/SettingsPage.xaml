@@ -252,6 +252,11 @@
                                 <ComboBoxItem Content="Entire library" />
                             </ComboBox>
                         </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.ActivityText, Mode=OneWay}" Header="Activity">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                        </toolkit:SettingsCard>
                         <toolkit:SettingsCard ContentAlignment="Left" Header="Licenses &amp; attribution" HorizontalContentAlignment="Left">
                             <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
                                 <HyperlinkButton

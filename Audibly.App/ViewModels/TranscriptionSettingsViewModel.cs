@@ -23,7 +23,12 @@ public class TranscriptionSettingsViewModel : BindableBase
     {
         _modelService = modelService;
         _modelService.StateChanged += () => _dispatcherQueue.TryEnqueue(NotifyModelStateChanged);
+        if (App.Transcription != null)
+            App.Transcription.ActivityChanged +=
+                () => _dispatcherQueue.TryEnqueue(() => OnPropertyChanged(nameof(ActivityText)));
     }
+
+    public string ActivityText => App.Transcription?.ActivityDescription ?? "Idle";
 
     public SpeechModelDescriptor Descriptor => _modelService.Descriptor;
 

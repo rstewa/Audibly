@@ -77,7 +77,23 @@ public class LibVlcPcmAudioExtractor : IPcmAudioExtractor
         try
         {
             await TranscodeAsync(libVlc, filePath, startMs, durationMs, wavPath, cancellationToken);
-            return WavPcmSource.Open(wavPath, BytesPerMs);
+            var source = WavPcmSource.Open(wavPath, BytesPerMs);
+
+            // a (near-)empty decode of a non-trivial range is a decoder failure, not silence
+            if (source.DurationMs == 0 && durationMs > 2000)
+            {
+                await source.DisposeAsync();
+                throw new PcmExtractionException(
+                    $"LibVLC produced no audio for [{startMs} ms, +{durationMs} ms) of {Path.GetFileName(filePath)}.");
+            }
+
+            return source;
+        }
+        catch (EndOfStreamException e)
+        {
+            TryDelete(wavPath);
+            throw new PcmExtractionException(
+                $"Decoded WAV for {Path.GetFileName(filePath)} is empty or truncated.", e);
         }
         catch
         {
@@ -111,8 +127,12 @@ public class LibVlcPcmAudioExtractor : IPcmAudioExtractor
 
         using var media = new Media(libVlc, new Uri(inputPath));
         media.AddOption(":no-video");
-        media.AddOption(":sout-keep");
         media.AddOption(":no-sout-video");
+        // VLC's native mp4 demuxer breaks :start-time with :sout ("Timestamp conversion
+        // failed: no reference clock"), yielding empty output for most offsets. avformat
+        // seeks correctly at any offset — and is what playback uses for these files too,
+        // so transcript timestamps share the player's seek semantics.
+        media.AddOption(":demux=avformat");
         if (startSeconds > 0)
             media.AddOption($":start-time={startSeconds.ToString(CultureInfo.InvariantCulture)}");
         media.AddOption($":run-time={durationSeconds.ToString(CultureInfo.InvariantCulture)}");

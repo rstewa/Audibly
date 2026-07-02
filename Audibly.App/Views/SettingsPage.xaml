@@ -252,6 +252,16 @@
                                 <ComboBoxItem Content="Entire library" />
                             </ComboBox>
                         </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.ThreadCountDescription, Mode=OneWay}" Header="Processor threads">
+                            <NumberBox
+                                LargeChange="4"
+                                Maximum="{x:Bind TranscriptionSettings.MaxThreads}"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind TranscriptionSettings.TranscriptionThreads, Mode=TwoWay}"
+                                x:Name="TranscriptionThreadsBox" />
+                        </toolkit:SettingsCard>
                         <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.ActivityText, Mode=OneWay}" Header="Activity">
                             <toolkit:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE916;" />

@@ -224,6 +224,30 @@ public static class UserSettings
     }
 
     /// <summary>
+    ///     Gets or sets the number of CPU threads used for transcription; 0 = automatic.
+    /// </summary>
+    public static int TranscriptionThreads
+    {
+        get
+        {
+            try
+            {
+                var threads = ApplicationData.Current.LocalSettings.Values["TranscriptionThreads"];
+                if (threads != null && int.TryParse(threads.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptionThreads"] = 0;
+                return 0;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return 0;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptionThreads"] = value;
+    }
+
+    /// <summary>
     ///     Gets or sets whether the transcript pane in the full-screen player is open.
     /// </summary>
     public static bool IsTranscriptPaneOpen

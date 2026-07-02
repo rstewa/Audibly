@@ -71,6 +71,26 @@ public class TranscriptionSettingsViewModel : BindableBase
         }
     }
 
+    /// <summary>
+    ///     Decode threads; 0 = automatic (last-level-cache topology minus one).
+    /// </summary>
+    public double TranscriptionThreads
+    {
+        get => UserSettings.TranscriptionThreads;
+        set
+        {
+            UserSettings.TranscriptionThreads = (int)value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ThreadCountDescription));
+        }
+    }
+
+    public double MaxThreads => Environment.ProcessorCount;
+
+    public string ThreadCountDescription =>
+        $"0 = automatic ({SherpaOnnxParakeetBackend.ResolveThreadCount()} on this device). " +
+        "Takes effect the next time the speech model loads.";
+
     public SpeechModelState ModelState => _modelService.State;
 
     public bool IsModelReady => _modelService.State == SpeechModelState.Ready;

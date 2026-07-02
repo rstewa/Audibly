@@ -45,7 +45,7 @@ public class SherpaOnnxParakeetBackend : ISpeechToTextBackend
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var config = new OfflineRecognizerConfig();
-                config.ModelConfig.NumThreads = Math.Max(1, Environment.ProcessorCount - 1);
+                config.ModelConfig.NumThreads = ResolveThreadCount();
                 config.ModelConfig.Provider = "cpu";
                 config.ModelConfig.ModelType = "nemo_transducer";
                 config.ModelConfig.Tokens = Path.Combine(modelDirectory, "tokens.txt");
@@ -66,6 +66,26 @@ public class SherpaOnnxParakeetBackend : ISpeechToTextBackend
             _recognizer?.Dispose();
             _recognizer = null;
         }
+    }
+
+    /// <summary>
+    ///     Decode threads, applied when the model (re)loads: the user's explicit setting if
+    ///     any, else all logical processors sharing the last-level cache minus one (keeps a
+    ///     real core free even when ProcessorCount includes parked LP-E cores), else a
+    ///     conservative formula for systems without cache topology (VMs).
+    /// </summary>
+    public static int ResolveThreadCount()
+    {
+        var processorCount = Environment.ProcessorCount;
+
+        var manual = Helpers.UserSettings.TranscriptionThreads;
+        if (manual > 0) return Math.Min(manual, processorCount);
+
+        var lastLevelCacheCount = CpuTopology.GetLastLevelCacheLogicalProcessorCount();
+        if (lastLevelCacheCount > 0 && lastLevelCacheCount <= processorCount)
+            return Math.Max(1, lastLevelCacheCount - 1);
+
+        return Math.Max(1, Math.Max(processorCount - 4, processorCount / 2));
     }
 
     public TimedWord[] TranscribeWindow(float[] pcm, long windowStartAbsMs)

@@ -215,7 +215,7 @@ public class TranscriptionModelService
         Directory.CreateDirectory(ModelDirectory);
 
         using var archiveStream = File.OpenRead(ArchivePath);
-        using var reader = ReaderFactory.OpenReader(archiveStream, new ReaderOptions());
+        using var reader = ReaderFactory.Open(archiveStream, new ReaderOptions());
         var buffer = new byte[81920];
 
         while (reader.MoveToNextEntry())

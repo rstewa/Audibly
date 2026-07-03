@@ -1,4 +1,5 @@
 using System;
+using Windows.Foundation;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -100,8 +101,12 @@ public sealed partial class TranscriptPane : UserControl
     }
 
     /// <summary>
-    ///     Scrolls a row into view; runs inside dispatcher callbacks, so any layout-timing
-    ///     exception is logged instead of fail-fasting the process.
+    ///     Scrolls a row toward the given viewport position. Deliberately avoids
+    ///     StartBringIntoView and GetOrCreateElement: forcing realization and bring-into-view
+    ///     while live transcription appends rows made layout re-invalidate itself until
+    ///     XAML fail-fasted with "Layout cycle detected". ChangeView only moves the scroll
+    ///     offset; unrealized targets get a proportional jump and the next active-sentence
+    ///     tick refines the position once virtualization has realized them.
     /// </summary>
     private void BringSentenceIntoView(int index, double verticalAlignmentRatio)
     {
@@ -109,15 +114,29 @@ public sealed partial class TranscriptPane : UserControl
 
         try
         {
-            var element = Repeater.TryGetElement(index) ?? Repeater.GetOrCreateElement(index);
-            if (element == null) return;
+            double targetOffset;
+
+            if (Repeater.TryGetElement(index) is FrameworkElement element)
+            {
+                var position = element.TransformToVisual(Scroll).TransformPoint(new Point(0, 0));
+                var desired = Scroll.ViewportHeight * verticalAlignmentRatio;
+
+                // close enough to the desired spot and fully visible — don't churn layout
+                if (position.Y >= 0 && position.Y + element.ActualHeight <= Scroll.ViewportHeight &&
+                    Math.Abs(position.Y - desired) < Scroll.ViewportHeight * 0.35)
+                    return;
+
+                targetOffset = Scroll.VerticalOffset + position.Y - desired;
+            }
+            else
+            {
+                var count = Vm.Sentences.Count;
+                if (count == 0) return;
+                targetOffset = Scroll.ScrollableHeight * index / (double)count;
+            }
 
             _programmaticScroll = true;
-            element.StartBringIntoView(new BringIntoViewOptions
-            {
-                VerticalAlignmentRatio = verticalAlignmentRatio,
-                AnimationDesired = true
-            });
+            Scroll.ChangeView(null, Math.Max(0, targetOffset), null);
         }
         catch (Exception e)
         {

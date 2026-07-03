@@ -71,6 +71,19 @@ public partial class App : Application
         });
 
         UnhandledException += OnUnhandledException;
+
+        // XAML's UnhandledException misses exceptions thrown inside DispatcherQueue
+        // callbacks and unobserved task faults; log those too so 0xc000027b-style
+        // fail-fasts leave a stack trace in Audibly.log.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            ViewModel.LoggingService.LogError(
+                e.ExceptionObject as Exception ?? new Exception($"Fatal: {e.ExceptionObject}"), true);
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            ViewModel.LoggingService.LogError(e.Exception, true);
+            e.SetObserved();
+        };
+
         InitializeComponent();
     }
 

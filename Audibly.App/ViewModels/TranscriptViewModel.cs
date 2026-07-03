@@ -487,7 +487,12 @@ public class TranscriptViewModel : BindableBase
         if (bookId != _displayedBookId || chapterIndex != _displayedChapterIndex) return;
 
         foreach (var segment in segments.OrderBy(s => s.StartMs))
+        {
+            // a flush can race a chapter reload whose DB read already contained these rows
+            if (Sentences.Any(s => s.Segment.Id == segment.Id)) continue;
             Sentences.Add(new TranscriptSegmentViewModel(segment));
+        }
+
         RefreshPlaceholder();
     }
 

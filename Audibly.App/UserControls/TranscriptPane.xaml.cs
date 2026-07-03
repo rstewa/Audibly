@@ -26,9 +26,23 @@ public sealed partial class TranscriptPane : UserControl
         _wordHighlighter.Background = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
         _wordHighlighter.Foreground = (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"];
 
-        Vm.ActiveSentenceChanged += OnActiveSentenceChanged;
-        Vm.ActiveWordChanged += OnActiveWordChanged;
-        Vm.ScrollToRequested += OnScrollToRequested;
+        // Subscribe only while in the visual tree: the view model outlives every pane
+        // instance (one is created per PlayerPage navigation), and a stale subscription
+        // would drive ItemsRepeater/BringIntoView on an unloaded tree — exceptions there
+        // happen inside dispatcher callbacks and fail-fast the app (0xc000027b).
+        Loaded += (_, _) =>
+        {
+            Vm.ActiveSentenceChanged += OnActiveSentenceChanged;
+            Vm.ActiveWordChanged += OnActiveWordChanged;
+            Vm.ScrollToRequested += OnScrollToRequested;
+        };
+        Unloaded += (_, _) =>
+        {
+            Vm.ActiveSentenceChanged -= OnActiveSentenceChanged;
+            Vm.ActiveWordChanged -= OnActiveWordChanged;
+            Vm.ScrollToRequested -= OnScrollToRequested;
+            ClearWordHighlight();
+        };
     }
 
     /// <summary>
@@ -80,32 +94,44 @@ public sealed partial class TranscriptPane : UserControl
 
     private void OnScrollToRequested(int index)
     {
-        var element = Repeater.TryGetElement(index) ?? Repeater.GetOrCreateElement(index);
-        if (element == null) return;
+        if (index < 0 || index >= Vm.Sentences.Count) return;
 
-        _programmaticScroll = true;
-        element.StartBringIntoView(new BringIntoViewOptions
+        BringSentenceIntoView(index, 0.4);
+    }
+
+    /// <summary>
+    ///     Scrolls a row into view; runs inside dispatcher callbacks, so any layout-timing
+    ///     exception is logged instead of fail-fasting the process.
+    /// </summary>
+    private void BringSentenceIntoView(int index, double verticalAlignmentRatio)
+    {
+        if (!IsLoaded) return;
+
+        try
         {
-            VerticalAlignmentRatio = 0.4,
-            AnimationDesired = true
-        });
+            var element = Repeater.TryGetElement(index) ?? Repeater.GetOrCreateElement(index);
+            if (element == null) return;
+
+            _programmaticScroll = true;
+            element.StartBringIntoView(new BringIntoViewOptions
+            {
+                VerticalAlignmentRatio = verticalAlignmentRatio,
+                AnimationDesired = true
+            });
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e, false);
+        }
     }
 
     private void OnActiveSentenceChanged(int index)
     {
         ClearWordHighlight();
 
-        if (index < 0 || Vm.IsAutoScrollSuspended || !Vm.FollowPlayback) return;
+        if (index < 0 || index >= Vm.Sentences.Count || Vm.IsAutoScrollSuspended || !Vm.FollowPlayback) return;
 
-        var element = Repeater.TryGetElement(index) ?? Repeater.GetOrCreateElement(index);
-        if (element == null) return;
-
-        _programmaticScroll = true;
-        element.StartBringIntoView(new BringIntoViewOptions
-        {
-            VerticalAlignmentRatio = 0.33,
-            AnimationDesired = true
-        });
+        BringSentenceIntoView(index, 0.33);
     }
 
     private void OnActiveWordChanged(int sentenceIndex, int charOffset, int charLength)

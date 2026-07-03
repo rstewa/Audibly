@@ -135,12 +135,13 @@
                     </winUi:Effects.Shadow>
                 </Border>
 
-                <!--  read-along pane: fills the stage right of the small cover  -->
+                <!--  read-along pane: fills the stage right of the small cover, below the
+                      toggle button so the toggle stays visible and clickable  -->
                 <userControls:TranscriptPane
-                    Margin="16,12,20,12"
+                    Margin="16,8,20,12"
                     RelativePanel.Above="PlayerControls"
                     RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.Below="BackButton"
+                    RelativePanel.Below="TranscriptToggleButton"
                     RelativePanel.RightOf="SmallCoverHost"
                     Visibility="{x:Bind TranscriptVm.IsPaneOpen, Mode=OneWay}"
                     x:Name="TranscriptPaneControl" />

@@ -33,11 +33,6 @@
             </ResourceDictionary>
         </Grid.Resources>
 
-        <MediaPlayerElement
-            AreTransportControlsEnabled="False"
-            Visibility="Collapsed"
-            x:Name="AudioPlayer" />
-
         <developerTools:AlignmentGrid
             Grid.ColumnSpan="2"
             Grid.RowSpan="3"

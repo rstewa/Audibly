@@ -2,16 +2,17 @@
 // Updated: 08/02/2025
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Windows.Media.Core;
-using Windows.Media.Playback;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
 using CommunityToolkit.WinUI;
+using LibVLCSharp.Shared;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 
@@ -21,10 +22,8 @@ public class PlayerViewModel : BindableBase, IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-    /// <summary>
-    ///     Gets the app-wide MediaPlayer instance.
-    /// </summary>
-    public readonly MediaPlayer MediaPlayer = new();
+    private readonly LibVLC _libVLC;
+    private readonly LibVLCSharp.Shared.MediaPlayer _mediaPlayer;
 
     private int _chapterComboSelectedIndex;
 
@@ -51,7 +50,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private Symbol _playPauseIcon = Symbol.Play;
 
-    private Timer? _sleepTimer;
+    private System.Timers.Timer? _sleepTimer;
     private DateTime _timerEndTime;
 
     private double _timerValue;
@@ -60,8 +59,16 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private string _volumeLevelGlyph = Constants.VolumeGlyph3;
 
+    private bool _mediaJustOpened;
+
+    private bool _skipSeeking;
+
+    private int _saveInFlight;
+
     public PlayerViewModel()
     {
+        _libVLC = new LibVLC("--no-video", "--audio-resampler=samplerate", "--src-converter-type=1");
+        _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
         InitializeAudioPlayer();
     }
 
@@ -211,8 +218,73 @@ public class PlayerViewModel : BindableBase, IDisposable
     /// </summary>
     public TimeSpan CurrentPosition
     {
-        get => MediaPlayer.PlaybackSession.Position;
-        set => MediaPlayer.PlaybackSession.Position = value > TimeSpan.Zero ? value : TimeSpan.Zero;
+        get
+        {
+            // Time is -1 when there is no active playback (Ended/Stopped); fall back to
+            // the persisted position so skip buttons don't operate on a bogus 0.
+            var time = _mediaPlayer.Time;
+            return TimeSpan.FromMilliseconds(time >= 0 ? time : NowPlaying?.CurrentTimeMs ?? 0);
+        }
+        set
+        {
+            if (!_skipSeeking)
+            {
+                var currentPositionMs = Math.Max(0, (long)value.TotalMilliseconds);
+                _mediaPlayer.Time = currentPositionMs;
+
+                if (NowPlaying == null) return;
+
+                if (!NowPlaying.CurrentChapter.InRange(currentPositionMs))
+                {
+                    var newChapter = NowPlaying.Chapters.FirstOrDefault(c =>
+                        c.ParentSourceFileIndex == NowPlaying.CurrentSourceFileIndex &&
+                        c.InRange(currentPositionMs));
+
+                    if (newChapter != null)
+                    {
+                        _skipSeeking = true;
+                        NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
+                        NowPlaying.CurrentChapterTitle = newChapter.Title;
+                        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                        _skipSeeking = false;
+                    }
+                }
+
+                ChapterPositionMs = (int)(currentPositionMs > NowPlaying.CurrentChapter.StartTime
+                    ? currentPositionMs - NowPlaying.CurrentChapter.StartTime
+                    : 0);
+                NowPlaying.CurrentTimeMs = (int)currentPositionMs;
+
+                double tmp = 0;
+                if (NowPlaying.CurrentSourceFileIndex != 0)
+                    for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
+                        tmp += NowPlaying.SourcePaths[i].Duration;
+                tmp += currentPositionMs / 1000.0;
+                NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
+                NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Gets the natural duration of the currently loaded media.
+    /// </summary>
+    public TimeSpan NaturalDuration
+    {
+        get
+        {
+            // Length is -1 when there is no active playback (Ended/Stopped); fall back to
+            // the media's parsed duration so skip-forward doesn't clamp to 0 and wipe the
+            // saved position.
+            var length = _mediaPlayer.Length;
+            if (length < 0)
+            {
+                using var media = _mediaPlayer.Media;
+                length = media?.Duration ?? 0;
+            }
+
+            return TimeSpan.FromMilliseconds(length >= 0 ? length : 0);
+        }
     }
 
     /// <summary>
@@ -231,23 +303,228 @@ public class PlayerViewModel : BindableBase, IDisposable
         private set => OnPropertyChanged();
     }
 
+    /// <summary>
+    ///     Starts or resumes playback.
+    /// </summary>
+    public void Play()
+    {
+        if (_mediaPlayer.State == VLCState.Ended)
+        {
+            // If media has ended, stop to get the player back into a state where it can play
+            _mediaPlayer.Stop();
+        }
+        _mediaPlayer.Play();
+    }
+
+    /// <summary>
+    ///     Pauses playback.
+    /// </summary>
+    public void Pause()
+    {
+        _mediaPlayer.SetPause(true);
+    }
+
     #region methods
 
     private void InitializeAudioPlayer()
     {
-        MediaPlayer.AutoPlay = false;
-        MediaPlayer.AudioCategory = MediaPlayerAudioCategory.Media;
-        MediaPlayer.AudioDeviceType = MediaPlayerAudioDeviceType.Multimedia;
-        MediaPlayer.CommandManager.IsEnabled = true; // todo: what is this?
-        MediaPlayer.MediaOpened += AudioPlayer_MediaOpened;
-        MediaPlayer.MediaEnded += AudioPlayer_MediaEnded;
-        MediaPlayer.MediaFailed += AudioPlayer_MediaFailed;
-        MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
-        MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+        //Enable hardware acceleartion.
+        _mediaPlayer.EnableHardwareDecoding = true;
 
-        // set volume level from settings
-        // UpdateVolume(UserSettings.Volume);
-        // UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
+        // LibVLC events fire on background threads — dispatch to UI thread.
+        _mediaPlayer.Playing += OnPlaying;
+        _mediaPlayer.Paused += OnPaused;
+        _mediaPlayer.EndReached += OnEndReached;
+        _mediaPlayer.EncounteredError += OnEncounteredError;
+        _mediaPlayer.TimeChanged += OnTimeChanged;
+    }
+
+    private void OnPlaying(object? sender, EventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            PlayPauseIcon = Symbol.Pause;
+
+            // Handle "media opened" logic on first Playing event after setting new media.
+            // This must run even when the icon already showed Pause: auto-advancing to the
+            // next source file goes Playing -> EndReached -> Playing without a Paused event
+            // in between, so gating this on the icon state would leave _mediaJustOpened set
+            // forever (freezing time updates and blocking all future opens).
+            if (_mediaJustOpened)
+                HandleMediaOpened();
+        });
+    }
+
+    private void OnPaused(object? sender, EventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (PlayPauseIcon == Symbol.Play) return;
+            PlayPauseIcon = Symbol.Play;
+        });
+    }
+
+    private void OnEndReached(object? sender, EventArgs e)
+    {
+        // CRITICAL: Must not call Play/SetMedia from EndReached handler — LibVLC deadlocks.
+        // Dispatch to UI thread to defer the operation.
+        _dispatcherQueue.TryEnqueue(() => HandleMediaEnded());
+    }
+
+    private void OnEncounteredError(object? sender, EventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            _mediaJustOpened = false;
+            _pendingAutoPlay = false;
+            NowPlaying = null;
+        });
+
+        App.ViewModel.EnqueueNotification(new Notification
+        {
+            Message =
+                "Unable to open the audiobook: media failed. Please verify that the file is not corrupted and try again.",
+            Severity = InfoBarSeverity.Error
+        });
+    }
+
+    private void OnTimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (NowPlaying == null || _mediaJustOpened || IsUserSeeking) return;
+
+            var currentPositionMs = e.Time;
+
+            if (!NowPlaying.CurrentChapter.InRange(currentPositionMs))
+            {
+                var newChapter = NowPlaying.Chapters.FirstOrDefault(c =>
+                    c.ParentSourceFileIndex == NowPlaying.CurrentSourceFileIndex &&
+                    c.InRange(currentPositionMs));
+
+                if (newChapter != null)
+                {
+                    _skipSeeking = true;
+                    NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
+                    NowPlaying.CurrentChapterTitle = newChapter.Title;
+                    ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                    _skipSeeking = false;
+                }
+            }
+
+            ChapterPositionMs = (int)(currentPositionMs > NowPlaying.CurrentChapter.StartTime
+                ? currentPositionMs - NowPlaying.CurrentChapter.StartTime
+                : 0);
+            NowPlaying.CurrentTimeMs = (int)currentPositionMs;
+
+            // TODO: this is gross
+            // calculate/update progress
+            double tmp = 0;
+            if (NowPlaying.CurrentSourceFileIndex != 0)
+                for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
+                    tmp += NowPlaying.SourcePaths[i].Duration;
+            tmp += currentPositionMs / 1000.0;
+            NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
+            NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
+
+            // TimeChanged fires several times per second; allow only one save in flight
+            // so slow upserts don't pile up concurrently.
+            var nowPlaying = NowPlaying;
+            if (Interlocked.CompareExchange(ref _saveInFlight, 1, 0) == 0)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await nowPlaying.SaveAsync();
+                    }
+                    finally
+                    {
+                        Volatile.Write(ref _saveInFlight, 0);
+                    }
+                });
+        });
+    }
+
+    private void HandleMediaOpened()
+    {
+        if (NowPlaying == null)
+        {
+            // The audiobook was closed/removed while its media was still opening.
+            // Playback was started only to trigger the media load, so silence it and
+            // clear the transition flags or no audiobook could ever be opened again.
+            _mediaJustOpened = false;
+            _pendingAutoPlay = false;
+            _mediaPlayer.SetPause(true);
+            return;
+        }
+
+        if (NowPlaying.Chapters.Count == 0)
+        {
+            _mediaJustOpened = false;
+            _pendingAutoPlay = false;
+            NowPlaying = null;
+
+            // Playback was started only to trigger the media load — stop the broken
+            // media so it doesn't keep playing behind the error dialog.
+            _mediaPlayer.Stop();
+
+            _ = DialogService.ShowErrorDialogAsync("Error",
+                "An error occurred while trying to open the selected audiobook. " +
+                "The chapters could not be loaded. Please try importing the audiobook again.");
+
+            return;
+        }
+
+        ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
+        NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
+        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        ChapterPositionMs =
+            NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
+                ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
+                : 0;
+
+        // Seek to saved position.
+        _mediaPlayer.Time = NowPlaying.CurrentTimeMs;
+
+        _mediaPlayer.SetRate((float)PlaybackSpeed);
+
+        // libvlc can ignore a volume set before the first audio output exists;
+        // re-apply it now that playback has started.
+        _mediaPlayer.Volume = (int)VolumeLevel;
+
+        if (_pendingAutoPlay)
+        {
+            _pendingAutoPlay = false;
+            // Already playing since we used _mediaPlayer.Play() to open
+        }
+        else
+        {
+            // We started playing to trigger media load — pause now since user didn't press play
+            _mediaPlayer.SetPause(true);
+        }
+
+        _mediaJustOpened = false;
+    }
+
+    private void HandleMediaEnded()
+    {
+        // check if there is a next source file
+        var nextSourceFileIndex = (NowPlaying?.CurrentSourceFileIndex ?? 0) + 1;
+
+        // find the first chapter belonging to the next source file
+        var nextChapter = NowPlaying != null && nextSourceFileIndex <= NowPlaying.SourcePaths.Count - 1
+            ? NowPlaying.Chapters.FirstOrDefault(c => c.ParentSourceFileIndex == nextSourceFileIndex)
+            : null;
+
+        if (nextChapter == null)
+        {
+            //We have no more media to play make sure to set the play button to play instead of pause!
+            if (PlayPauseIcon != Symbol.Play)
+                PlayPauseIcon = Symbol.Play;
+            return;
+        }
+
+        _ = OpenSourceFile(nextSourceFileIndex, nextChapter.Index, autoPlay: true);
     }
 
     public void SetTimer(double seconds)
@@ -274,7 +551,7 @@ public class PlayerViewModel : BindableBase, IDisposable
         TimerValue = seconds;
         IsTimerActive = true;
 
-        _sleepTimer = new Timer(1000); // Update every second
+        _sleepTimer = new System.Timers.Timer(1000); // Update every second
         _sleepTimer.Elapsed += SleepTimer_Elapsed;
         _sleepTimer.Start();
 
@@ -289,7 +566,7 @@ public class PlayerViewModel : BindableBase, IDisposable
             // Timer expired - pause playback
             _dispatcherQueue.TryEnqueue(() =>
             {
-                MediaPlayer.Pause();
+                _mediaPlayer.SetPause(true);
                 IsTimerActive = false;
                 _sleepTimer?.Stop();
                 _sleepTimer?.Dispose();
@@ -316,12 +593,16 @@ public class PlayerViewModel : BindableBase, IDisposable
     {
         _sleepTimer?.Stop();
         _sleepTimer?.Dispose();
+
+        _mediaPlayer.Stop();
+        _mediaPlayer.Dispose();
+        _libVLC.Dispose();
     }
 
     public async void UpdateVolume(double volume)
     {
         VolumeLevel = volume;
-        MediaPlayer.Volume = volume / 100;
+        _mediaPlayer.Volume = (int)volume;
         VolumeLevelGlyph = volume switch
         {
             > 66 => Constants.VolumeGlyph3,
@@ -341,7 +622,7 @@ public class PlayerViewModel : BindableBase, IDisposable
     public async void UpdatePlaybackSpeed(double speed)
     {
         PlaybackSpeed = speed;
-        MediaPlayer.PlaybackRate = speed;
+        _mediaPlayer.SetRate((float)speed);
 
         // save playback speed for audiobook
         if (NowPlaying == null) return;
@@ -353,80 +634,131 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     public async Task OpenAudiobook(AudiobookViewModel audiobook)
     {
+        if (_mediaJustOpened)
+            return;
+
         if (NowPlaying != null && NowPlaying.Equals(audiobook))
             return;
 
-        // todo: trying this out
-        if (NowPlaying != null)
+        var playRequested = false;
+
+        try
         {
-            NowPlaying.IsNowPlaying = false;
-
-            await NowPlaying.SaveAsync();
-        }
-
-        MediaPlayer.Pause();
-
-        App.ViewModel.SelectedAudiobook = audiobook;
-
-        // verify that the file exists
-        // if there are multiple source files, check them all
-
-        if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
-        {
-            // note: content dialog
-            await DialogService.ShowErrorDialogAsync("Error",
-                $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved.");
-
-            return;
-        }
-
-        await _dispatcherQueue.EnqueueAsync(async () =>
-        {
-            NowPlaying = audiobook;
-
-            if (NowPlaying.DateLastPlayed == null)
+            if (NowPlaying != null)
             {
-                // use the global playback speed and volume level if they are set
-                // and this is the first time the audiobook is being played
-                UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
-                UpdateVolume(UserSettings.Volume);
-            }
-            else
-            {
-                // use the audiobook's playback speed and volume level
-                UpdatePlaybackSpeed(NowPlaying.PlaybackSpeed);
-                UpdateVolume(NowPlaying.Volume);
+                NowPlaying.IsNowPlaying = false;
+
+                await NowPlaying.SaveAsync();
             }
 
-            NowPlaying.IsNowPlaying = true;
-            NowPlaying.DateLastPlayed = DateTime.Now;
+            _mediaPlayer.SetPause(true);
 
-            ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
-            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
+            App.ViewModel.SelectedAudiobook = audiobook;
+
+            // verify that the file exists
+            // if there are multiple source files, check them all
+
+            if (audiobook.SourcePaths.Any(sourceFile => !File.Exists(sourceFile.FilePath)))
+            {
+                // note: content dialog
+                await DialogService.ShowErrorDialogAsync("Error",
+                    $"Unable to play audiobook: {audiobook.Title}. One or more of its source files were deleted or moved.");
+
+                return;
+            }
+
+            await _dispatcherQueue.EnqueueAsync(() =>
+            {
+                NowPlaying = audiobook;
+
+                if (NowPlaying.DateLastPlayed == null)
+                {
+                    // use the global playback speed and volume level if they are set
+                    // and this is the first time the audiobook is being played
+                    UpdatePlaybackSpeed(UserSettings.PlaybackSpeed);
+                    UpdateVolume(UserSettings.Volume);
+                }
+                else
+                {
+                    // use the audiobook's playback speed and volume level
+                    UpdatePlaybackSpeed(NowPlaying.PlaybackSpeed);
+                    UpdateVolume(NowPlaying.Volume);
+                }
+
+                NowPlaying.IsNowPlaying = true;
+                NowPlaying.DateLastPlayed = DateTime.Now;
+
+                ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
+                NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[ChapterComboSelectedIndex].Title;
+                ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                ChapterPositionMs =
+                    NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
+                        ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
+                        : 0;
+            });
 
             await NowPlaying.SaveAsync();
-        });
 
-        MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
+            using (var media = new Media(_libVLC, audiobook.CurrentSourceFile.FilePath, FromType.FromPath))
+            {
+                //this makes vlc ignore chapters usually it's chapter aware but that breaks our existing logic assuming the player position is absolute from file start instead of chapter start.
+                media.AddOption(":demux=avformat");
+                _pendingAutoPlay = false;
+                _mediaJustOpened = true;
+                playRequested = _mediaPlayer.Play(media);
+            }
+        }
+        finally
+        {
+            if (!playRequested)
+            {
+                _mediaJustOpened = false;
+                _pendingAutoPlay = false;
+            }
+        }
     }
 
-    public async void OpenSourceFile(int index, int chapterIndex)
+    public async Task OpenSourceFile(int index, int chapterIndex, long currentTimeMs = 0, bool autoPlay = false)
     {
+        if (_mediaJustOpened)
+            return;
+
         if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex == index)
             return;
 
-        NowPlaying.CurrentTimeMs = 0;
-        NowPlaying.CurrentSourceFileIndex = index;
-        NowPlaying.CurrentChapterIndex = chapterIndex;
+        var playRequested = false;
 
-        await _dispatcherQueue.EnqueueAsync(() =>
+        try
         {
+            NowPlaying.CurrentTimeMs = (int)currentTimeMs;
+            NowPlaying.CurrentSourceFileIndex = index;
+            NowPlaying.CurrentChapterIndex = chapterIndex;
             NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
-        });
+            ChapterComboSelectedIndex = chapterIndex;
+            ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+            ChapterPositionMs =
+                currentTimeMs > NowPlaying.CurrentChapter.StartTime
+                    ? (int)(currentTimeMs - NowPlaying.CurrentChapter.StartTime)
+                    : 0;
 
-        await NowPlaying.SaveAsync();
+            await NowPlaying.SaveAsync();
 
-        MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
+            using (var media = new Media(_libVLC, NowPlaying.CurrentSourceFile.FilePath, FromType.FromPath))
+            {
+                media.AddOption(":demux=avformat");
+                _pendingAutoPlay = autoPlay;
+                _mediaJustOpened = true;
+                playRequested = _mediaPlayer.Play(media);
+            }
+        }
+        finally
+        {
+            if (!playRequested)
+            {
+                _mediaJustOpened = false;
+                _pendingAutoPlay = false;
+            }
+        }
     }
 
     /// <summary>
@@ -446,140 +778,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     #region event handlers
 
-    private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
-    {
-        if (NowPlaying == null) return;
-        _dispatcherQueue.EnqueueAsync(async () =>
-        {
-            if (NowPlaying.Chapters.Count == 0)
-            {
-                NowPlaying = null;
-
-                // note: content dialog
-                await DialogService.ShowErrorDialogAsync("Error",
-                    "An error occurred while trying to open the selected audiobook. " +
-                    "The chapters could not be loaded. Please try importing the audiobook again.");
-
-                return;
-            }
-
-            ChapterComboSelectedIndex = NowPlaying.CurrentChapterIndex ?? 0;
-
-            ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
-
-            ChapterPositionMs =
-                NowPlaying.CurrentTimeMs > NowPlaying.CurrentChapter.StartTime
-                    ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
-                    : 0;
-
-            CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
-
-            MediaPlayer.PlaybackRate = PlaybackSpeed;
-
-            if (_pendingAutoPlay)
-            {
-                _pendingAutoPlay = false;
-                MediaPlayer.Play();
-            }
-        });
-    }
-
-    private void AudioPlayer_MediaEnded(MediaPlayer sender, object args)
-    {
-        // check if there is a next source file
-        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex >= NowPlaying.SourcePaths.Count - 1) return;
-
-        var nextSourceFileIndex = NowPlaying.CurrentSourceFileIndex + 1;
-
-        // find the first chapter belonging to the next source file
-        var nextChapter = NowPlaying.Chapters.FirstOrDefault(c =>
-            c.ParentSourceFileIndex == nextSourceFileIndex);
-
-        if (nextChapter == null) return;
-
-        _pendingAutoPlay = true;
-
-        OpenSourceFile(nextSourceFileIndex, nextChapter.Index);
-    }
-
-    private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
-    {
-        _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
-
-        // note: content dialog
-        App.ViewModel.EnqueueNotification(new Notification
-        {
-            Message =
-                "Unable to open the audiobook: media failed. Please verify that the file is not corrupted and try again.",
-            Severity = InfoBarSeverity.Error
-        });
-    }
-
-    private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
-    {
-        switch (sender.PlaybackState)
-        {
-            case MediaPlaybackState.Playing:
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    if (PlayPauseIcon == Symbol.Pause) return;
-                    PlayPauseIcon = Symbol.Pause;
-                });
-
-                break;
-
-            case MediaPlaybackState.Paused:
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    if (PlayPauseIcon == Symbol.Play) return;
-                    PlayPauseIcon = Symbol.Play;
-                });
-
-                break;
-        }
-    }
-
-    private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
-    {
-        if (NowPlaying == null) return;
-
-        if (!NowPlaying.CurrentChapter.InRange(CurrentPosition.TotalMilliseconds))
-        {
-            var newChapter = NowPlaying.Chapters.FirstOrDefault(c =>
-                c.ParentSourceFileIndex == NowPlaying.CurrentSourceFileIndex &&
-                c.InRange(CurrentPosition.TotalMilliseconds));
-
-            if (newChapter != null)
-                _ = _dispatcherQueue.EnqueueAsync(() =>
-                {
-                    NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
-                    NowPlaying.CurrentChapterTitle = newChapter.Title;
-                    ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
-                });
-        }
-
-        if (IsUserSeeking) return;
-
-        _ = _dispatcherQueue.EnqueueAsync(async () =>
-        {
-            ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
-                ? CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime
-                : 0);
-            NowPlaying.CurrentTimeMs = (int)CurrentPosition.TotalMilliseconds;
-
-            // TODO: this is gross
-            // calculate/update progress
-            double tmp = 0;
-            if (NowPlaying.CurrentSourceFileIndex != 0)
-                for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
-                    tmp += NowPlaying.SourcePaths[i].Duration;
-            tmp += CurrentPosition.TotalSeconds;
-            NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
-            NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
-        });
-
-        await NowPlaying.SaveAsync();
-    }
+    // Event handlers are now private methods called from LibVLC event subscriptions above.
 
     #endregion
 }

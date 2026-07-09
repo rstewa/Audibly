@@ -329,7 +329,7 @@ public class MainViewModel : BindableBase
             if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    App.PlayerViewModel.MediaPlayer.Pause();
+                    App.PlayerViewModel.Pause();
                     App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
                     App.PlayerViewModel.NowPlaying = null;
                 });
@@ -366,7 +366,7 @@ public class MainViewModel : BindableBase
     {
         await _dispatcherQueue.EnqueueAsync(() =>
         {
-            App.PlayerViewModel.MediaPlayer.Pause();
+            App.PlayerViewModel.Pause();
             App.PlayerViewModel.NowPlaying = null;
             SelectedAudiobook = null;
             IsLoading = true;

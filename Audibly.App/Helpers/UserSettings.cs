@@ -175,6 +175,147 @@ public static class UserSettings
     }
 
     /// <summary>
+    ///     Gets or sets whether background AI transcription is enabled.
+    /// </summary>
+    public static bool TranscriptionEnabled
+    {
+        get
+        {
+            try
+            {
+                var enabled = ApplicationData.Current.LocalSettings.Values["TranscriptionEnabled"];
+                if (enabled != null && bool.TryParse(enabled.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptionEnabled"] = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return false;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptionEnabled"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets what gets transcribed automatically:
+    ///     0 = off (manual only), 1 = currently playing book, 2 = entire library.
+    /// </summary>
+    public static int TranscriptionScope
+    {
+        get
+        {
+            try
+            {
+                var scope = ApplicationData.Current.LocalSettings.Values["TranscriptionScope"];
+                if (scope != null && int.TryParse(scope.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptionScope"] = 1;
+                return 1;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return 1;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptionScope"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets the number of CPU threads used for transcription; 0 = automatic.
+    /// </summary>
+    public static int TranscriptionThreads
+    {
+        get
+        {
+            try
+            {
+                var threads = ApplicationData.Current.LocalSettings.Values["TranscriptionThreads"];
+                if (threads != null && int.TryParse(threads.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptionThreads"] = 0;
+                return 0;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return 0;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptionThreads"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets the font size of the read-along transcript text.
+    /// </summary>
+    public static double TranscriptFontSize
+    {
+        get
+        {
+            try
+            {
+                var size = ApplicationData.Current.LocalSettings.Values["TranscriptFontSize"];
+                if (size != null && double.TryParse(size.ToString(), out var result) && result > 0) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptFontSize"] = 16.0;
+                return 16.0;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return 16.0;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptFontSize"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets the font family of the read-along transcript text; "" = app default.
+    /// </summary>
+    public static string TranscriptFontFamily
+    {
+        get
+        {
+            try
+            {
+                return ApplicationData.Current.LocalSettings.Values["TranscriptFontFamily"]?.ToString() ?? "";
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return "";
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptFontFamily"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets whether the transcript pane in the full-screen player is open.
+    /// </summary>
+    public static bool IsTranscriptPaneOpen
+    {
+        get
+        {
+            try
+            {
+                var isOpen = ApplicationData.Current.LocalSettings.Values["IsTranscriptPaneOpen"];
+                if (isOpen != null && bool.TryParse(isOpen.ToString(), out var result)) return result;
+
+                ApplicationData.Current.LocalSettings.Values["IsTranscriptPaneOpen"] = true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return true;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["IsTranscriptPaneOpen"] = value;
+    }
+
+    /// <summary>
     ///     Gets or sets the list of FutureAccessList tokens for watched folders.
     /// </summary>
     public static string[] WatchedFolderTokens

@@ -58,6 +58,7 @@
         <None Remove="UserControls\PlayerControlGrid.xaml" />
         <None Remove="UserControls\PlaySkipButtonsStack.xaml" />
         <None Remove="UserControls\TitleArtistStack.xaml" />
+        <None Remove="UserControls\TranscriptPane.xaml" />
         <None Remove="Views\CollectionContentPage.xaml" />
         <None Remove="Views\ContentDialogs\ProgressContentDialog.xaml" />
         <None Remove="Views\ControlPages\ChangelogDialogContent.xaml" />
@@ -109,6 +110,7 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="14.0.0" />
+        <PackageReference Include="LibVLCSharp" Version="3.10.0" />
         <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.250206-build.2040" />
         <PackageReference Include="CommunityToolkit.Labs.WinUI.MarqueeText" Version="0.1.250206-build.2040" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -136,10 +138,17 @@
         <PackageReference Include="Sentry" Version="5.13.0" />
         <PackageReference Include="Sharpener" Version="0.2.4" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+        <PackageReference Include="VideoLAN.LibVLC.Windows.GPL" Version="3.0.23.1" />
         <PackageReference Include="z440.atl.core" Version="7.2.0" />
     </ItemGroup>
 
-    <!-- 
+    <!--  AI transcription (read-along)  -->
+    <ItemGroup>
+        <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.3" />
+        <PackageReference Include="SharpCompress" Version="1.0.0" />
+    </ItemGroup>
+
+    <!--
       Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
       Tools extension to be activated for this project even if the Windows App SDK Nuget
       package has not yet been restored.

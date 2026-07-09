@@ -75,25 +75,82 @@
                     ToolTipService.ToolTip="Back"
                     x:Name="BackButton" />
 
-                <!--  cover image  -->
+                <!--  transcript pane toggle  -->
+                <Button
+                    Click="TranscriptToggle_OnClick"
+                    Margin="0,48,20,0"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RequestedTheme="Dark"
+                    ToolTipService.ToolTip="Read along (Ctrl+T)"
+                    x:Name="TranscriptToggleButton">
+                    <FontIcon FontSize="16" Glyph="&#xED1E;" />
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="T" Modifiers="Control" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+
+                <!--  cover image (large, centered) — read-along closed  -->
                 <Border
                     BorderThickness="0"
                     Height="300"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.AlignVerticalCenterWithPanel="True"
-                    Width="300">
+                    Visibility="{x:Bind TranscriptVm.IsPaneClosed, Mode=OneWay}"
+                    Width="300"
+                    x:Name="BigCoverHost">
                     <Border
                         BorderBrush="Transparent"
                         BorderThickness="0"
                         CornerRadius="{StaticResource OverlayCornerRadius}">
                         <Border.Background>
-                            <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                            <ImageBrush
+                                ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}"
+                                Stretch="UniformToFill"
+                                x:Name="BigCoverBrush" />
                         </Border.Background>
                     </Border>
                     <winUi:Effects.Shadow>
                         <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="4, 4" />
                     </winUi:Effects.Shadow>
                 </Border>
+
+                <!--  cover image (small, corner) — read-along open  -->
+                <Border
+                    BorderThickness="0"
+                    Height="132"
+                    Margin="20,12,0,0"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.Below="BackButton"
+                    Visibility="{x:Bind TranscriptVm.IsPaneOpen, Mode=OneWay}"
+                    Width="132"
+                    x:Name="SmallCoverHost">
+                    <Border
+                        BorderBrush="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Border.Background>
+                            <ImageBrush
+                                ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}"
+                                Stretch="UniformToFill"
+                                x:Name="SmallCoverBrush" />
+                        </Border.Background>
+                    </Border>
+                    <winUi:Effects.Shadow>
+                        <media:AttachedCardShadow CornerRadius="{StaticResource OverlayCornerRadiusDouble}" Offset="2, 2" />
+                    </winUi:Effects.Shadow>
+                </Border>
+
+                <!--  read-along pane: fills the stage right of the small cover, below the
+                      toggle button so the toggle stays visible and clickable  -->
+                <userControls:TranscriptPane
+                    Margin="16,8,20,12"
+                    RelativePanel.Above="PlayerControls"
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.Below="TranscriptToggleButton"
+                    RelativePanel.RightOf="SmallCoverHost"
+                    Visibility="{x:Bind TranscriptVm.IsPaneOpen, Mode=OneWay}"
+                    x:Name="TranscriptPaneControl" />
 
                 <!--  player controls  -->
                 <userControls:PlayerControlGrid
@@ -104,7 +161,8 @@
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.AlignLeftWithPanel="True"
                     RelativePanel.AlignRightWithPanel="True"
-                    ShowCoverImage="False" />
+                    ShowCoverImage="False"
+                    x:Name="PlayerControls" />
             </RelativePanel>
         </Grid>
 

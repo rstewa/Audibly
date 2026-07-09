@@ -60,6 +60,23 @@
                     <FontIcon Glyph="&#xE8B5;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
+            <MenuFlyoutItem
+                Click="Transcribe_OnClick"
+                Text="Transcribe now"
+                x:Name="TranscribeMenuItem">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE720;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem
+                Click="DeleteTranscript_OnClick"
+                Text="Delete transcript"
+                Visibility="Collapsed"
+                x:Name="DeleteTranscriptMenuItem">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xED60;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
         </MenuFlyout>
     </UserControl.Resources>
     <Button

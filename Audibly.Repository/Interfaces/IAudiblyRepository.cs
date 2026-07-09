@@ -13,4 +13,9 @@ public interface IAudiblyRepository
     ///     Returns the audiobook repository.
     /// </summary>
     IAudiobookRepository Audiobooks { get; }
+
+    /// <summary>
+    ///     Returns the transcript repository.
+    /// </summary>
+    ITranscriptRepository Transcripts { get; }
 }

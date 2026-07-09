@@ -44,6 +44,13 @@ public class AudiblyContext : DbContext
         modelBuilder.Entity<Audiobook>()
             .HasIndex(a => new { a.Author, a.Title })
             .IsUnique();
+
+        modelBuilder.Entity<TranscriptSegment>()
+            .HasIndex(s => new { s.AudiobookId, s.ChapterIndex, s.StartMs });
+
+        modelBuilder.Entity<TranscriptChapterStatus>()
+            .HasIndex(s => new { s.AudiobookId, s.ChapterIndex })
+            .IsUnique();
     }
 
     /// <summary>
@@ -54,4 +61,8 @@ public class AudiblyContext : DbContext
     public DbSet<ChapterInfo> Chapters { get; set; }
 
     public DbSet<SourceFile> SourceFiles { get; set; }
+
+    public DbSet<TranscriptSegment> TranscriptSegments { get; set; }
+
+    public DbSet<TranscriptChapterStatus> TranscriptChapterStatuses { get; set; }
 }

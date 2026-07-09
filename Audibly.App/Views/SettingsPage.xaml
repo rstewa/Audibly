@@ -189,6 +189,112 @@
                     </toolkit:SettingsExpander.Items>
                 </toolkit:SettingsExpander>
 
+                <!--  AI Read-Along  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="AI Read-Along" />
+                <toolkit:SettingsExpander
+                    Description="{x:Bind TranscriptionSettings.SectionDescription}"
+                    Header="AI transcription (experimental)"
+                    x:Name="TranscriptionExpander">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE720;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <ToggleSwitch
+                        IsEnabled="{x:Bind TranscriptionSettings.IsSupported}"
+                        IsOn="{x:Bind TranscriptionSettings.IsEnabled, Mode=TwoWay}"
+                        x:Name="TranscriptionToggle" />
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.Descriptor.DisplayName}" Header="Speech model">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE9D9;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                <StackPanel
+                                    MaxWidth="320"
+                                    Orientation="Vertical"
+                                    Spacing="4"
+                                    VerticalAlignment="Center">
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind TranscriptionSettings.ModelStatusText, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                    <ProgressBar
+                                        IsIndeterminate="{x:Bind TranscriptionSettings.IsExtracting, Mode=OneWay}"
+                                        Maximum="100"
+                                        Visibility="{x:Bind TranscriptionSettings.IsBusy, Mode=OneWay}"
+                                        Value="{x:Bind TranscriptionSettings.DownloadProgressPercent, Mode=OneWay}"
+                                        Width="200" />
+                                </StackPanel>
+                                <Button
+                                    Click="DownloadModel_Click"
+                                    Content="Download"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Visibility="{x:Bind TranscriptionSettings.CanDownload, Mode=OneWay}"
+                                    x:Name="DownloadModelButton" />
+                                <Button
+                                    Click="CancelModelDownload_Click"
+                                    Content="Cancel"
+                                    Visibility="{x:Bind TranscriptionSettings.IsDownloading, Mode=OneWay}"
+                                    x:Name="CancelModelDownloadButton" />
+                                <Button
+                                    Click="DeleteModel_Click"
+                                    Content="Delete"
+                                    Visibility="{x:Bind TranscriptionSettings.IsModelReady, Mode=OneWay}"
+                                    x:Name="DeleteModelButton" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="Choose what gets transcribed in the background." Header="Automatic transcription">
+                            <ComboBox
+                                IsEnabled="{x:Bind TranscriptionSettings.IsModelReady, Mode=OneWay}"
+                                SelectedIndex="{x:Bind TranscriptionSettings.Scope, Mode=TwoWay}"
+                                x:Name="TranscriptionScopeCombo">
+                                <ComboBoxItem Content="Off (manual only)" />
+                                <ComboBoxItem Content="Currently playing book" />
+                                <ComboBoxItem Content="Entire library" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="Font and size of the read-along text." Header="Read-along text">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <ComboBox
+                                    MinWidth="170"
+                                    SelectionChanged="TranscriptFont_SelectionChanged"
+                                    x:Name="TranscriptFontCombo" />
+                                <NumberBox
+                                    Maximum="32"
+                                    Minimum="10"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind TranscriptionSettings.TranscriptFontSize, Mode=TwoWay}"
+                                    x:Name="TranscriptFontSizeBox" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.ThreadCountDescription, Mode=OneWay}" Header="Processor threads">
+                            <NumberBox
+                                LargeChange="4"
+                                Maximum="{x:Bind TranscriptionSettings.MaxThreads}"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind TranscriptionSettings.TranscriptionThreads, Mode=TwoWay}"
+                                x:Name="TranscriptionThreadsBox" />
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.ActivityText, Mode=OneWay}" Header="Activity">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE916;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard ContentAlignment="Left" Header="Licenses &amp; attribution" HorizontalContentAlignment="Left">
+                            <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
+                                <HyperlinkButton
+                                    Content="Speech recognition powered by sherpa-onnx (Apache-2.0)"
+                                    NavigateUri="https://github.com/k2-fsa/sherpa-onnx" />
+                                <HyperlinkButton
+                                    Content="{x:Bind TranscriptionSettings.ModelAttributionLabel}"
+                                    NavigateUri="{x:Bind TranscriptionSettings.ModelLicenseUri}" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
+
                 <!--  Donate  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Donate" />
 

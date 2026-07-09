@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
@@ -16,6 +17,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
+using Audibly.App.Services.Transcription;
 using Audibly.App.ViewModels;
 using Audibly.Models;
 using Audibly.Models.v1;
@@ -48,6 +50,7 @@ namespace Audibly.App;
 public partial class App : Application
 {
     private static Win32WindowHelper win32WindowHelper;
+    private static bool _shutdownCleanupDone;
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
     /// <summary>
@@ -68,6 +71,19 @@ public partial class App : Application
         });
 
         UnhandledException += OnUnhandledException;
+
+        // XAML's UnhandledException misses exceptions thrown inside DispatcherQueue
+        // callbacks and unobserved task faults; log those too so 0xc000027b-style
+        // fail-fasts leave a stack trace in Audibly.log.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            ViewModel.LoggingService.LogError(
+                e.ExceptionObject as Exception ?? new Exception($"Fatal: {e.ExceptionObject}"), true);
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            ViewModel.LoggingService.LogError(e.Exception, true);
+            e.SetObserved();
+        };
+
         InitializeComponent();
     }
 
@@ -92,6 +108,26 @@ public partial class App : Application
     ///     Pipeline for interacting with backend service or database.
     /// </summary>
     public static IAudiblyRepository Repository { get; private set; }
+
+    /// <summary>
+    ///     Manages download/installation of the speech model used for AI transcription.
+    /// </summary>
+    public static TranscriptionModelService TranscriptionModel { get; private set; }
+
+    /// <summary>
+    ///     Backs the AI transcription settings UI.
+    /// </summary>
+    public static TranscriptionSettingsViewModel TranscriptionSettings { get; private set; }
+
+    /// <summary>
+    ///     Background transcription scheduler.
+    /// </summary>
+    public static TranscriptionCoordinator? Transcription { get; private set; }
+
+    /// <summary>
+    ///     Backs the read-along transcript pane in the full-screen player.
+    /// </summary>
+    public static TranscriptViewModel TranscriptVm { get; private set; }
 
     /// <summary>
     ///     Gets the root frame of the app. This contains the nav view and the player page
@@ -133,10 +169,22 @@ public partial class App : Application
         Window = WindowHelper.CreateWindow("MainWindow");
 
         var appWindow = WindowHelper.GetAppWindow(Window);
-        appWindow.Closing += async (_, _) =>
+        appWindow.Closing += async (_, closingArgs) =>
         {
+            if (_shutdownCleanupDone) return;
+
+            // Hold the close until the native stacks are quiet: exiting the process while
+            // sherpa/onnxruntime is mid-decode (or a VLC transcode is live) dies with an
+            // unhandled win32 exception during teardown. Bounded so a hung decode can
+            // never block exit.
+            closingArgs.Cancel = true;
+            if (Transcription != null)
+                await Task.WhenAny(Transcription.StopAndUnloadAsync(), Task.Delay(8000));
+
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
             PlayerViewModel.Dispose();
+
+            _shutdownCleanupDone = true;
             WindowHelper.CloseAll();
         };
         appWindow.Title = "Audibly — Audiobook Player";
@@ -146,6 +194,18 @@ public partial class App : Application
         win32WindowHelper.SetWindowMinMaxSize(new Win32WindowHelper.POINT { x = 940, y = 640 });
 
         UseSqlite();
+
+        TranscriptionModel = new TranscriptionModelService(SpeechModels.ParakeetTdtV3Int8);
+        var speechBackend = new SherpaOnnxParakeetBackend();
+        Transcription = new TranscriptionCoordinator(Repository, TranscriptionModel, speechBackend,
+            new LibVlcPcmAudioExtractor(speechBackend.Model.RequiredSampleRate));
+        TranscriptionSettings = new TranscriptionSettingsViewModel(TranscriptionModel);
+        TranscriptVm = new TranscriptViewModel();
+        _ = Task.Run(async () =>
+        {
+            await TranscriptionModel.VerifyInstalledAsync();
+            await Transcription.InitializeAsync();
+        });
 
         RootFrame = Window.Content as Frame;
 

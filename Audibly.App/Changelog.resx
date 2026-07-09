@@ -118,31 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Text" xml:space="preserve">
-    <value>## [2.2.8] - 8-2-25
+    <value>## What's New in Version 2.2.10
 
-### Fixed
+### New Features
 
-- #109: Fixed bug where playing an audiobook containing multiple source files would crash when switching to the next
-  source file
-- #126: Fixed bug where audiobooks containing multiple source files wouldn't autoplay when switching to the next source
-  file
-- #127: Fixed bug in CoverImageTile where it was throwing an unhandled exception when trying to convert a string into an ImageSource
+- **Watched Folders**: You can now add folders that Audibly will automatically scan for new audiobooks (.m4b, .mp3) every time the app starts.  NOTE: This feature does not currently support audiobooks split across multiple files (e.g. audiobooks with separate files for chapters.
 
-### Changed
+### Bug Fixes
 
-- Updated nuget packages
-
-## [2.2.7] - 7-30-25
-
-### Added
-
-- #116: Added Sleep Timer feature
-- #119: Updated app to remember the state of the navigation menu
-- #122: Added option in the advanced settings in the settings page to delete entire library
-
-### Fixed
-
-- #105: Fixed bug in the "ImportAudiobookWithMultipleFiles"
-- #121: Fixed bug where the volume and playback speed weren't showing their actual values</value>
+- Your playback speed now saves correctly for audiobooks made up of multiple files
+- The app now shows "Audibly" with its icon properly in the taskbar and window switcher
+- Fixed an issue where the player would sometimes skip ahead multiple chapters when a file ended
+- Fixed an issue where the progress bar would snap back to the current position while you were trying to seek during playback
+- Fixed an issue where notification banners appeared invisible
+- Fixed the informational infobar message so that it's no longer transparent</value>
   </data>
 </root>

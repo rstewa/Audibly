@@ -137,7 +137,7 @@
                 <!--  Library  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Library" />
                 <toolkit:SettingsExpander
-                    Description="These folders are scanned on startup for new audiobooks (.m4b, .mp3)."
+                    Description="These folders are scanned on startup for new audiobooks (.m4b, .mp3). NOTE: This feature does not currently support audiobooks split across multiple files (e.g. audiobooks with separate files for chapters."
                     Header="Watched Folders"
                     x:Name="WatchedFoldersExpander">
                     <toolkit:SettingsExpander.HeaderIcon>

@@ -1496,7 +1496,7 @@ public class MainViewModel : BindableBase
             }
             else
             {
-                await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
+                // await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
             }
 
             foreach (var watchedFolder in WatchedFolders.ToList())

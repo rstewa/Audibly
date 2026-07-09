@@ -248,6 +248,50 @@ public static class UserSettings
     }
 
     /// <summary>
+    ///     Gets or sets the font size of the read-along transcript text.
+    /// </summary>
+    public static double TranscriptFontSize
+    {
+        get
+        {
+            try
+            {
+                var size = ApplicationData.Current.LocalSettings.Values["TranscriptFontSize"];
+                if (size != null && double.TryParse(size.ToString(), out var result) && result > 0) return result;
+
+                ApplicationData.Current.LocalSettings.Values["TranscriptFontSize"] = 16.0;
+                return 16.0;
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return 16.0;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptFontSize"] = value;
+    }
+
+    /// <summary>
+    ///     Gets or sets the font family of the read-along transcript text; "" = app default.
+    /// </summary>
+    public static string TranscriptFontFamily
+    {
+        get
+        {
+            try
+            {
+                return ApplicationData.Current.LocalSettings.Values["TranscriptFontFamily"]?.ToString() ?? "";
+            }
+            catch (Exception e)
+            {
+                SentrySdk.CaptureException(e);
+                return "";
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["TranscriptFontFamily"] = value;
+    }
+
+    /// <summary>
     ///     Gets or sets whether the transcript pane in the full-screen player is open.
     /// </summary>
     public static bool IsTranscriptPaneOpen

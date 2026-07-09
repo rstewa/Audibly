@@ -91,6 +91,38 @@ public class TranscriptionSettingsViewModel : BindableBase
         $"0 = automatic ({SherpaOnnxParakeetBackend.ResolveThreadCount()} on this device). " +
         "Takes effect the next time the speech model loads.";
 
+    public static readonly string[] TranscriptFontOptions =
+    [
+        "Default", "Segoe UI", "Arial", "Calibri", "Cambria", "Georgia",
+        "Times New Roman", "Verdana", "Comic Sans MS", "Consolas"
+    ];
+
+    public double TranscriptFontSize
+    {
+        get => UserSettings.TranscriptFontSize;
+        set
+        {
+            if (value < 8 || double.IsNaN(value)) return;
+            UserSettings.TranscriptFontSize = value;
+            OnPropertyChanged();
+            App.TranscriptVm?.RefreshTypography();
+        }
+    }
+
+    /// <summary>
+    ///     "" = app default font.
+    /// </summary>
+    public string TranscriptFontFamily
+    {
+        get => UserSettings.TranscriptFontFamily;
+        set
+        {
+            UserSettings.TranscriptFontFamily = value;
+            OnPropertyChanged();
+            App.TranscriptVm?.RefreshTypography();
+        }
+    }
+
     public SpeechModelState ModelState => _modelService.State;
 
     public bool IsModelReady => _modelService.State == SpeechModelState.Ready;

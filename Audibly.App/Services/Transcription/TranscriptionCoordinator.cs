@@ -44,6 +44,7 @@ public class TranscriptionCoordinator : IDisposable
     private Timer? _idleTimer;
     private bool? _extractorAvailable;
     private volatile bool _playbackChanged;
+    private volatile object? _deleteTargetBook;
     private (Guid BookId, int ChapterIndex)? _runningChapter;
     private AudiobookViewModel? _observedBook;
 
@@ -129,6 +130,47 @@ public class TranscriptionCoordinator : IDisposable
     {
         _playbackChanged = true; // re-evaluate the pick against the new scope
         KickWorker();
+    }
+
+    /// <summary>
+    ///     True when the book has transcript status rows and every chapter is Completed.
+    /// </summary>
+    public bool IsBookFullyTranscribed(Guid audiobookId)
+    {
+        var any = false;
+        foreach (var entry in _statusCache)
+        {
+            if (entry.Key.BookId != audiobookId) continue;
+            if (entry.Value != TranscriptStatus.Completed) return false;
+            any = true;
+        }
+
+        return any;
+    }
+
+    /// <summary>
+    ///     Deletes a book's transcript without touching the audiobook. A chapter of that
+    ///     book currently being transcribed yields at its next window boundary first.
+    ///     Note: if the book is still covered by the automatic scope, it will simply be
+    ///     re-transcribed — turn the scope down first to keep it transcript-free.
+    /// </summary>
+    public async Task DeleteTranscriptsAsync(Guid audiobookId)
+    {
+        _deleteTargetBook = audiobookId;
+        try
+        {
+            // wait (bounded) for a running chapter of this book to yield
+            for (var i = 0; i < 100 && _runningChapter?.BookId == audiobookId; i++)
+                await Task.Delay(150);
+
+            await _repository.Transcripts.DeleteForAudiobookAsync(audiobookId);
+            foreach (var key in _statusCache.Keys.Where(k => k.BookId == audiobookId).ToList())
+                _statusCache.TryRemove(key, out _);
+        }
+        finally
+        {
+            _deleteTargetBook = null;
+        }
     }
 
     /// <summary>
@@ -289,6 +331,8 @@ public class TranscriptionCoordinator : IDisposable
     private async Task<ChapterPick?> PickFromBookAsync(Guid bookId, int startChapterIndex, bool retryFailed,
         Audiobook? loaded = null)
     {
+        if (_deleteTargetBook is Guid deleteTarget && deleteTarget == bookId) return null;
+
         var needsAnything = _statusCache.IsEmpty ||
                             !_statusCache.Keys.Any(k => k.BookId == bookId) ||
                             _statusCache.Any(kv => kv.Key.BookId == bookId && NeedsWork(kv.Value, retryFailed));
@@ -333,6 +377,7 @@ public class TranscriptionCoordinator : IDisposable
     private bool ShouldPreemptCurrentChapter()
     {
         if (!CanTranscribe) return true;
+        if (_deleteTargetBook is Guid deleteTarget && _runningChapter?.BookId == deleteTarget) return true;
         if (!_playbackChanged || _runningChapter is not { } running) return false;
 
         var playing = App.PlayerViewModel.NowPlaying;

@@ -111,7 +111,6 @@ public class TranscriptViewModel : BindableBase
     private string _placeholderText = "";
     private bool _showPlaceholder;
     private bool _showPendingTail;
-    private string _pendingTailText = "Transcribing…";
     private TranscriptStatus _chapterStatus = TranscriptStatus.NotStarted;
 
     public TranscriptViewModel()
@@ -194,10 +193,19 @@ public class TranscriptViewModel : BindableBase
         private set => Set(ref _showPendingTail, value);
     }
 
-    public string PendingTailText
+    public double TranscriptFontSize => UserSettings.TranscriptFontSize;
+
+    public FontFamily TranscriptFontFamily => string.IsNullOrEmpty(UserSettings.TranscriptFontFamily)
+        ? FontFamily.XamlAutoFontFamily
+        : new FontFamily(UserSettings.TranscriptFontFamily);
+
+    /// <summary>
+    ///     Called by the settings page when the read-along typography settings change.
+    /// </summary>
+    public void RefreshTypography()
     {
-        get => _pendingTailText;
-        private set => Set(ref _pendingTailText, value);
+        OnPropertyChanged(nameof(TranscriptFontSize));
+        OnPropertyChanged(nameof(TranscriptFontFamily));
     }
 
     /// <summary>
@@ -507,7 +515,6 @@ public class TranscriptViewModel : BindableBase
             TranscriptStatus.Failed => "Transcription failed",
             _ => ""
         };
-        PendingTailText = _chapterStatus == TranscriptStatus.InProgress ? $"Transcribing… {pct}%" : "Transcribing…";
     }
 
     private void RefreshPlaceholder()

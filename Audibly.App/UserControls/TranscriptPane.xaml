@@ -85,8 +85,10 @@
             </Button>
         </Grid>
 
-        <!--  sentences  -->
+        <!--  sentences (font settings inherit to the sentence TextBlocks)  -->
         <ScrollViewer
+            FontFamily="{x:Bind Vm.TranscriptFontFamily, Mode=OneWay}"
+            FontSize="{x:Bind Vm.TranscriptFontSize, Mode=OneWay}"
             Grid.Row="2"
             Padding="8,0"
             ViewChanged="Scroll_ViewChanged"
@@ -137,23 +139,15 @@
                 TextWrapping="Wrap" />
         </StackPanel>
 
-        <!--  live "transcribing" tail  -->
-        <StackPanel
+        <!--  live "transcribing" tail: spinner only, the header already shows the status  -->
+        <ProgressRing
             Grid.Row="3"
+            Height="16"
+            HorizontalAlignment="Left"
+            IsActive="{x:Bind Vm.ShowPendingTail, Mode=OneWay}"
             Margin="16,4,16,8"
-            Orientation="Horizontal"
-            Spacing="8"
-            Visibility="{x:Bind Vm.ShowPendingTail, Mode=OneWay}">
-            <ProgressRing
-                Height="16"
-                IsActive="{x:Bind Vm.ShowPendingTail, Mode=OneWay}"
-                Width="16" />
-            <TextBlock
-                FontSize="12"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="{x:Bind Vm.PendingTailText, Mode=OneWay}"
-                VerticalAlignment="Center" />
-        </StackPanel>
+            Visibility="{x:Bind Vm.ShowPendingTail, Mode=OneWay}"
+            Width="16" />
 
         <!--  return-to-position chip  -->
         <Button

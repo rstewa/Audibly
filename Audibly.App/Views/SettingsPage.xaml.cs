@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -50,6 +51,12 @@ public sealed partial class SettingsPage : Page
         TranscriptionSettings.CancelModelDownload();
     }
 
+    private void TranscriptFont_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (TranscriptFontCombo.SelectedItem is not string font) return;
+        TranscriptionSettings.TranscriptFontFamily = font == "Default" ? "" : font;
+    }
+
     private async void DeleteModel_Click(object sender, RoutedEventArgs e)
     {
         var result = await DialogService.ShowConfirmationDialogAsync("Delete speech model",
@@ -62,6 +69,12 @@ public sealed partial class SettingsPage : Page
 
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
+        foreach (var font in TranscriptionSettingsViewModel.TranscriptFontOptions)
+            TranscriptFontCombo.Items.Add(font);
+        var currentFont = TranscriptionSettings.TranscriptFontFamily;
+        TranscriptFontCombo.SelectedItem =
+            TranscriptionSettingsViewModel.TranscriptFontOptions.Contains(currentFont) ? currentFont : "Default";
+
         var currentTheme = ThemeHelper.RootTheme;
         switch (currentTheme)
         {

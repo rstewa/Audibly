@@ -94,7 +94,13 @@ public sealed partial class AudiobookTile : UserControl
     private void ButtonTile_OnRightTapped(object sender, RightTappedRoutedEventArgs? e)
     {
         if (e is null) return;
+
+        // a fully transcribed book offers "Delete transcript" instead of "Transcribe now"
+        var isTranscribed = App.Transcription?.IsBookFullyTranscribed(Id) == true;
+        TranscribeMenuItem.Visibility = isTranscribed ? Visibility.Collapsed : Visibility.Visible;
         TranscribeMenuItem.IsEnabled = App.Transcription?.CanTranscribe == true;
+        DeleteTranscriptMenuItem.Visibility = isTranscribed ? Visibility.Visible : Visibility.Collapsed;
+
         var myOption = new FlyoutShowOptions
         {
             ShowMode = FlyoutShowMode.Transient
@@ -112,6 +118,24 @@ public sealed partial class AudiobookTile : UserControl
         {
             Message = $"Queued \"{audiobook.Title}\" for transcription.",
             Severity = InfoBarSeverity.Informational
+        });
+    }
+
+    private async void DeleteTranscript_OnClick(object sender, RoutedEventArgs e)
+    {
+        var audiobook = ViewModel.Audiobooks.FirstOrDefault(a => a.Id == Id);
+        if (audiobook == null || App.Transcription is not { } transcription) return;
+
+        var result = await DialogService.ShowConfirmationDialogAsync("Delete transcript",
+            $"This removes the AI transcript of \"{audiobook.Title}\". The audiobook itself is not affected.",
+            "Delete", "Cancel");
+        if (result != ContentDialogResult.Primary) return;
+
+        await transcription.DeleteTranscriptsAsync(Id);
+        ViewModel.EnqueueNotification(new Notification
+        {
+            Message = $"Deleted the transcript of \"{audiobook.Title}\".",
+            Severity = InfoBarSeverity.Success
         });
     }
 

@@ -104,7 +104,10 @@
                         BorderThickness="0"
                         CornerRadius="{StaticResource OverlayCornerRadius}">
                         <Border.Background>
-                            <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                            <ImageBrush
+                                ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}"
+                                Stretch="UniformToFill"
+                                x:Name="BigCoverBrush" />
                         </Border.Background>
                     </Border>
                     <winUi:Effects.Shadow>
@@ -127,7 +130,10 @@
                         BorderThickness="0"
                         CornerRadius="{StaticResource OverlayCornerRadius}">
                         <Border.Background>
-                            <ImageBrush ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}" Stretch="UniformToFill" />
+                            <ImageBrush
+                                ImageSource="{x:Bind PlayerViewModel.NowPlaying.CoverImagePath, Mode=OneWay}"
+                                Stretch="UniformToFill"
+                                x:Name="SmallCoverBrush" />
                         </Border.Background>
                     </Border>
                     <winUi:Effects.Shadow>

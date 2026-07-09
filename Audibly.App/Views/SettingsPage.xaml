@@ -252,6 +252,21 @@
                                 <ComboBoxItem Content="Entire library" />
                             </ComboBox>
                         </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Description="Font and size of the read-along text." Header="Read-along text">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <ComboBox
+                                    MinWidth="170"
+                                    SelectionChanged="TranscriptFont_SelectionChanged"
+                                    x:Name="TranscriptFontCombo" />
+                                <NumberBox
+                                    Maximum="32"
+                                    Minimum="10"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind TranscriptionSettings.TranscriptFontSize, Mode=TwoWay}"
+                                    x:Name="TranscriptFontSizeBox" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
                         <toolkit:SettingsCard Description="{x:Bind TranscriptionSettings.ThreadCountDescription, Mode=OneWay}" Header="Processor threads">
                             <NumberBox
                                 LargeChange="4"

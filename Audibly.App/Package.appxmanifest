@@ -63,6 +63,24 @@
                         <uap:EditFlags OpenIsSafe="true"/>
                     </uap:FileTypeAssociation>
                 </uap:Extension>
+                <uap:Extension Category="windows.fileTypeAssociation">
+                    <uap:FileTypeAssociation Name="m4a">
+                        <uap:SupportedFileTypes>
+                            <uap:FileType>.m4a</uap:FileType>
+                        </uap:SupportedFileTypes>
+                        <uap:DisplayName>Audiobook Player</uap:DisplayName>
+                        <uap:EditFlags OpenIsSafe="true"/>
+                    </uap:FileTypeAssociation>
+                </uap:Extension>
+                <uap:Extension Category="windows.fileTypeAssociation">
+                    <uap:FileTypeAssociation Name="ogg">
+                        <uap:SupportedFileTypes>
+                            <uap:FileType>.ogg</uap:FileType>
+                        </uap:SupportedFileTypes>
+                        <uap:DisplayName>Audiobook Player</uap:DisplayName>
+                        <uap:EditFlags OpenIsSafe="true"/>
+                    </uap:FileTypeAssociation>
+                </uap:Extension>
             </Extensions>
         </Application>
     </Applications>

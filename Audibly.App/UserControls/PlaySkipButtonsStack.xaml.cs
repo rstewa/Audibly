@@ -1,7 +1,7 @@
 // Author: rstewa · https://github.com/rstewa
 // Updated: 02/14/2025
 
-using System;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,9 +10,6 @@ namespace Audibly.App.UserControls;
 
 public sealed partial class PlaySkipButtonsStack : UserControl
 {
-    private static readonly TimeSpan _skipBackButtonAmount = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan _skipForwardButtonAmount = TimeSpan.FromSeconds(30);
-
     public static readonly DependencyProperty SpacingProperty = DependencyProperty.Register(
         nameof(Spacing), typeof(double), typeof(PlaySkipButtonsStack), new PropertyMetadata(0.0));
 
@@ -22,6 +19,21 @@ public sealed partial class PlaySkipButtonsStack : UserControl
     public PlaySkipButtonsStack()
     {
         InitializeComponent();
+        Loaded += (_, _) =>
+        {
+            UserSettings.SkipAmountsChanged -= UpdateSkipAmountLabels;
+            UserSettings.SkipAmountsChanged += UpdateSkipAmountLabels;
+            UpdateSkipAmountLabels();
+        };
+        Unloaded += (_, _) => UserSettings.SkipAmountsChanged -= UpdateSkipAmountLabels;
+    }
+
+    private void UpdateSkipAmountLabels()
+    {
+        SkipBackLabel.Text = UserSettings.SkipBackSeconds.ToString("0");
+        SkipForwardLabel.Text = UserSettings.SkipForwardSeconds.ToString("0");
+        ToolTipService.SetToolTip(SkipBackButton, $"Skip backward {UserSettings.SkipBackSeconds:0} seconds");
+        ToolTipService.SetToolTip(SkipForwardButton, $"Skip forward {UserSettings.SkipForwardSeconds:0} seconds");
     }
 
     /// <summary>
@@ -56,94 +68,21 @@ public sealed partial class PlaySkipButtonsStack : UserControl
 
     private async void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        if (PlayerViewModel.NowPlaying is not null &&
-            PlayerViewModel.NowPlaying?.CurrentChapterIndex - 1 > 0 &&
-            PlayerViewModel.NowPlaying?.Chapters[(int)(PlayerViewModel.NowPlaying?.CurrentChapterIndex - 1)]
-                .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
-        {
-            var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex - 1;
-            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx);
-            PlayerViewModel.CurrentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
-            await PlayerViewModel.NowPlaying.SaveAsync();
-
-            return;
-        }
-
-        var newChapterIndex = PlayerViewModel.NowPlaying.CurrentChapterIndex - 1 >= 0
-            ? PlayerViewModel.NowPlaying.CurrentChapterIndex - 1
-            : PlayerViewModel.NowPlaying.CurrentChapterIndex;
-
-        if (newChapterIndex == null) return;
-
-        // PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
-        PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
-        PlayerViewModel.NowPlaying.CurrentChapterTitle =
-            PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex].Title;
-        PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
-        PlayerViewModel.ChapterDurationMs =
-            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
-                  PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-        PlayerViewModel.CurrentPosition =
-            TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-
-        await PlayerViewModel.NowPlaying.SaveAsync();
+        await PlayerViewModel.PreviousChapter();
     }
 
     private async void NextChapterButton_Click(object sender, RoutedEventArgs e)
     {
-        if (PlayerViewModel.NowPlaying is not null &&
-            PlayerViewModel.NowPlaying?.CurrentChapterIndex + 1 < PlayerViewModel.NowPlaying?.Chapters.Count &&
-            PlayerViewModel.NowPlaying?.Chapters[(int)(PlayerViewModel.NowPlaying?.CurrentChapterIndex + 1)]
-                .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
-        {
-            var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex + 1;
-            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx);
-            PlayerViewModel.CurrentPosition =
-                TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
-            await PlayerViewModel.NowPlaying.SaveAsync();
-
-            return;
-        }
-
-        var newChapterIndex =
-            PlayerViewModel.NowPlaying.CurrentChapterIndex + 1 < PlayerViewModel.NowPlaying.Chapters.Count
-                ? PlayerViewModel.NowPlaying.CurrentChapterIndex + 1
-                : PlayerViewModel.NowPlaying.CurrentChapterIndex;
-
-        if (newChapterIndex == null) return;
-
-        // PlayerViewModel.NowPlaying.CurrentChapter = PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex];
-        PlayerViewModel.NowPlaying.CurrentChapterIndex = newChapterIndex;
-        PlayerViewModel.NowPlaying.CurrentChapterTitle =
-            PlayerViewModel.NowPlaying.Chapters[(int)newChapterIndex].Title;
-        PlayerViewModel.ChapterComboSelectedIndex = (int)newChapterIndex;
-        PlayerViewModel.ChapterDurationMs =
-            (int)(PlayerViewModel.NowPlaying.CurrentChapter.EndTime -
-                  PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-        PlayerViewModel.CurrentPosition =
-            TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.CurrentChapter.StartTime);
-
-        await PlayerViewModel.NowPlaying.SaveAsync();
+        await PlayerViewModel.NextChapter();
     }
 
     private async void SkipBackButton_OnClick(object sender, RoutedEventArgs e)
     {
-        PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition - _skipBackButtonAmount > TimeSpan.Zero
-            ? PlayerViewModel.CurrentPosition - _skipBackButtonAmount
-            : TimeSpan.Zero;
-
-        await PlayerViewModel.NowPlaying.SaveAsync();
+        await PlayerViewModel.SkipBack();
     }
 
     private async void SkipForwardButton_OnClick(object sender, RoutedEventArgs e)
     {
-        // todo: might need to switch this to using the duration from the audiobook record
-        PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition + _skipForwardButtonAmount <=
-                                          PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration
-            ? PlayerViewModel.CurrentPosition + _skipForwardButtonAmount
-            : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
-
-        await PlayerViewModel.NowPlaying.SaveAsync();
+        await PlayerViewModel.SkipForward();
     }
 }

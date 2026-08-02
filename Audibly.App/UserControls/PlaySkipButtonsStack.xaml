@@ -49,15 +49,22 @@
             Click="SkipBackButton_OnClick"
             Delay="500"
             Interval="100"
-            ToolTipService.ToolTip="Skip backward 10 seconds"
+            ToolTipService.ToolTip="Skip backward"
             x:Name="SkipBackButton">
             <RepeatButton.KeyboardAccelerators>
                 <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Left" />
             </RepeatButton.KeyboardAccelerators>
-            <FontIcon
-                FontFamily="Segoe MDL2 Assets"
-                FontSize="24"
-                Glyph="&#xED3C;" />
+            <StackPanel>
+                <FontIcon
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="20"
+                    Glyph="&#xEB9E;" />
+                <TextBlock
+                    FontSize="10"
+                    HorizontalAlignment="Center"
+                    Text="10"
+                    x:Name="SkipBackLabel" />
+            </StackPanel>
         </RepeatButton>
 
         <Button
@@ -76,15 +83,22 @@
             Click="SkipForwardButton_OnClick"
             Delay="500"
             Interval="100"
-            ToolTipService.ToolTip="Skip forward 30 seconds"
+            ToolTipService.ToolTip="Skip forward"
             x:Name="SkipForwardButton">
             <RepeatButton.KeyboardAccelerators>
                 <KeyboardAccelerator IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}" Key="Right" />
             </RepeatButton.KeyboardAccelerators>
-            <FontIcon
-                FontFamily="Segoe MDL2 Assets"
-                FontSize="24"
-                Glyph="&#xED3D;" />
+            <StackPanel>
+                <FontIcon
+                    FontFamily="Segoe MDL2 Assets"
+                    FontSize="20"
+                    Glyph="&#xEB9D;" />
+                <TextBlock
+                    FontSize="10"
+                    HorizontalAlignment="Center"
+                    Text="30"
+                    x:Name="SkipForwardLabel" />
+            </StackPanel>
         </RepeatButton>
 
         <Button

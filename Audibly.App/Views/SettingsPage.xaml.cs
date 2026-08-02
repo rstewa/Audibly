@@ -1,4 +1,4 @@
-﻿﻿// Author: rstewa · https://github.com/rstewa
+﻿// Author: rstewa · https://github.com/rstewa
 // Updated: 07/29/2025
 
 using System;
@@ -49,6 +49,53 @@ public sealed partial class SettingsPage : Page
             case ElementTheme.Default:
                 themeMode.SelectedIndex = 2;
                 break;
+        }
+
+        skipBackCombo.SelectedIndex = GetSkipIndex(UserSettings.SkipBackSeconds);
+        skipForwardCombo.SelectedIndex = GetSkipIndex(UserSettings.SkipForwardSeconds);
+        mediaButtonsCombo.SelectedIndex =
+            UserSettings.MediaButtonsBehavior == MediaControlBehavior.ChapterNavigation ? 1 : 0;
+        mediaTitleCombo.SelectedIndex =
+            UserSettings.MediaTitleDisplayMode == MediaTitleDisplayKind.ChapterTitle ? 1 : 0;
+    }
+
+    private static int GetSkipIndex(double seconds) =>
+        seconds switch
+        {
+            <= 5 => 0,
+            <= 10 => 1,
+            <= 15 => 2,
+            <= 30 => 3,
+            _ => 4
+        };
+
+    private void SkipBackCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (skipBackCombo.SelectedItem is ComboBoxItem { Tag: string tag } && double.TryParse(tag, out var seconds))
+            UserSettings.SkipBackSeconds = seconds;
+    }
+
+    private void SkipForwardCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (skipForwardCombo.SelectedItem is ComboBoxItem { Tag: string tag } &&
+            double.TryParse(tag, out var seconds))
+            UserSettings.SkipForwardSeconds = seconds;
+    }
+
+    private void MediaButtonsCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (mediaButtonsCombo.SelectedItem is ComboBoxItem { Tag: string tag } &&
+            Enum.TryParse(tag, out MediaControlBehavior behavior))
+            UserSettings.MediaButtonsBehavior = behavior;
+    }
+
+    private void MediaTitleCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (mediaTitleCombo.SelectedItem is ComboBoxItem { Tag: string tag } &&
+            Enum.TryParse(tag, out MediaTitleDisplayKind displayMode))
+        {
+            UserSettings.MediaTitleDisplayMode = displayMode;
+            App.PlayerViewModel.RefreshSmTcDisplay();
         }
     }
 

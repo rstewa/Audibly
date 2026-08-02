@@ -6,8 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Windows.Media;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
@@ -25,6 +28,16 @@ public class PlayerViewModel : BindableBase, IDisposable
     ///     Gets the app-wide MediaPlayer instance.
     /// </summary>
     public readonly MediaPlayer MediaPlayer = new();
+
+    /// <summary>
+    ///     The System Media Transport Controls instance (manual control for live metadata updates).
+    /// </summary>
+    private SystemMediaTransportControls? _smtc;
+
+    /// <summary>
+    ///     The cover image stream reference for the current audiobook.
+    /// </summary>
+    private RandomAccessStreamReference? _coverImage;
 
     private int _chapterComboSelectedIndex;
 
@@ -238,12 +251,24 @@ public class PlayerViewModel : BindableBase, IDisposable
         MediaPlayer.AutoPlay = false;
         MediaPlayer.AudioCategory = MediaPlayerAudioCategory.Media;
         MediaPlayer.AudioDeviceType = MediaPlayerAudioDeviceType.Multimedia;
-        MediaPlayer.CommandManager.IsEnabled = true; // todo: what is this?
+        MediaPlayer.CommandManager.IsEnabled = false; // manual SMTC control for live metadata updates
         MediaPlayer.MediaOpened += AudioPlayer_MediaOpened;
         MediaPlayer.MediaEnded += AudioPlayer_MediaEnded;
         MediaPlayer.MediaFailed += AudioPlayer_MediaFailed;
         MediaPlayer.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
         MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+
+        // manual System Media Transport Controls (Windows media overlay) so metadata updates live
+        _smtc = MediaPlayer.SystemMediaTransportControls;
+        _smtc.IsEnabled = true;
+        _smtc.IsPlayEnabled = true;
+        _smtc.IsPauseEnabled = true;
+        _smtc.IsNextEnabled = true;
+        _smtc.IsPreviousEnabled = true;
+        _smtc.IsRewindEnabled = true;
+        _smtc.IsFastForwardEnabled = true;
+        _smtc.PlaybackStatus = MediaPlaybackStatus.Closed;
+        _smtc.ButtonPressed += OnSmTcButtonPressed;
 
         // set volume level from settings
         // UpdateVolume(UserSettings.Volume);
@@ -351,6 +376,101 @@ public class PlayerViewModel : BindableBase, IDisposable
         await NowPlaying.SaveAsync();
     }
 
+    private async Task<MediaPlaybackItem> CreatePlaybackItem(string filePath, AudiobookViewModel audiobook)
+    {
+        var item = new MediaPlaybackItem(MediaSource.CreateFromUri(filePath.AsUri()));
+        _coverImage = await GetCoverImage(audiobook.ThumbnailPath);
+        ApplySmTcDisplayProperties();
+        return item;
+    }
+
+    private static async Task<RandomAccessStreamReference?> GetCoverImage(string? coverPath)
+    {
+        if (!string.IsNullOrEmpty(coverPath))
+        {
+            try
+            {
+                var file = await StorageFile.GetFileFromPathAsync(coverPath);
+                return RandomAccessStreamReference.CreateFromFile(file);
+            }
+            catch (Exception)
+            {
+                // fall through to the URI-based attempt
+            }
+
+            try
+            {
+                return RandomAccessStreamReference.CreateFromUri(new Uri(coverPath));
+            }
+            catch (Exception)
+            {
+                // fall through to the default cover
+            }
+        }
+
+        try
+        {
+            return RandomAccessStreamReference.CreateFromUri(new Uri("ms-appx:///Assets/DefaultCoverImage.png"));
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    private void ApplySmTcDisplayProperties()
+    {
+        if (_smtc == null || NowPlaying == null) return;
+
+        var updater = _smtc.DisplayUpdater;
+        updater.Type = MediaPlaybackType.Music;
+
+        var chapterTitle = NowPlaying.CurrentChapter?.Title;
+        if (UserSettings.MediaTitleDisplayMode == MediaTitleDisplayKind.ChapterTitle)
+        {
+            updater.MusicProperties.Title = string.IsNullOrEmpty(chapterTitle)
+                ? NowPlaying.Title
+                : chapterTitle!;
+            updater.MusicProperties.Artist = $"{NowPlaying.Title} — {NowPlaying.Author}";
+        }
+        else
+        {
+            updater.MusicProperties.Title = NowPlaying.Title;
+            updater.MusicProperties.Artist = string.IsNullOrEmpty(chapterTitle)
+                ? NowPlaying.Author
+                : $"{chapterTitle!} — {NowPlaying.Author}";
+        }
+
+        if (_coverImage != null) updater.Thumbnail = _coverImage;
+        updater.Update();
+    }
+
+    /// <summary>
+    ///     Re-applies the media overlay display properties immediately (e.g. after a settings change).
+    /// </summary>
+    public void RefreshSmTcDisplay()
+    {
+        ApplySmTcDisplayProperties();
+    }
+
+    private void UpdateSmTcTimeline()
+    {
+        if (_smtc == null) return;
+
+        var duration = MediaPlayer.PlaybackSession.NaturalDuration;
+        if (duration <= TimeSpan.Zero) return;
+
+        var timeline = new SystemMediaTransportControlsTimelineProperties
+        {
+            StartTime = TimeSpan.Zero,
+            EndTime = duration,
+            Position = CurrentPosition,
+            MinSeekTime = TimeSpan.Zero,
+            MaxSeekTime = duration
+        };
+        _smtc.UpdateTimelineProperties(timeline);
+    }
+
     public async Task OpenAudiobook(AudiobookViewModel audiobook)
     {
         if (NowPlaying != null && NowPlaying.Equals(audiobook))
@@ -407,7 +527,7 @@ public class PlayerViewModel : BindableBase, IDisposable
             await NowPlaying.SaveAsync();
         });
 
-        MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
+        MediaPlayer.Source = await CreatePlaybackItem(audiobook.CurrentSourceFile.FilePath, audiobook);
     }
 
     public async void OpenSourceFile(int index, int chapterIndex)
@@ -426,7 +546,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
         await NowPlaying.SaveAsync();
 
-        MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
+        MediaPlayer.Source = await CreatePlaybackItem(NowPlaying.CurrentSourceFile.FilePath, NowPlaying);
     }
 
     /// <summary>
@@ -442,9 +562,142 @@ public class PlayerViewModel : BindableBase, IDisposable
         await NowPlaying.SaveAsync();
     }
 
+    /// <summary>
+    ///     Skips backward by the configured number of seconds.
+    /// </summary>
+    public async Task SkipBack()
+    {
+        if (NowPlaying == null) return;
+
+        var skipAmount = TimeSpan.FromSeconds(UserSettings.SkipBackSeconds);
+        CurrentPosition = CurrentPosition - skipAmount > TimeSpan.Zero
+            ? CurrentPosition - skipAmount
+            : TimeSpan.Zero;
+
+        await NowPlaying.SaveAsync();
+    }
+
+    /// <summary>
+    ///     Skips forward by the configured number of seconds.
+    /// </summary>
+    public async Task SkipForward()
+    {
+        if (NowPlaying == null) return;
+
+        // todo: might need to switch this to using the duration from the audiobook record
+        var skipAmount = TimeSpan.FromSeconds(UserSettings.SkipForwardSeconds);
+        CurrentPosition = CurrentPosition + skipAmount <=
+                          MediaPlayer.PlaybackSession.NaturalDuration
+            ? CurrentPosition + skipAmount
+            : MediaPlayer.PlaybackSession.NaturalDuration;
+
+        await NowPlaying.SaveAsync();
+    }
+
+    /// <summary>
+    ///     Goes to the previous chapter.
+    /// </summary>
+    public async Task PreviousChapter()
+    {
+        if (NowPlaying == null) return;
+
+        if (NowPlaying.CurrentChapterIndex - 1 > 0 &&
+            NowPlaying.Chapters[(int)(NowPlaying.CurrentChapterIndex - 1)].ParentSourceFileIndex !=
+            NowPlaying.CurrentSourceFileIndex)
+        {
+            var newChapterIdx = (int)NowPlaying.CurrentChapterIndex - 1;
+            OpenSourceFile(NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx);
+            CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.Chapters[newChapterIdx].StartTime);
+            ApplySmTcDisplayProperties();
+            await NowPlaying.SaveAsync();
+
+            return;
+        }
+
+        var newChapterIndex = NowPlaying.CurrentChapterIndex - 1 >= 0
+            ? NowPlaying.CurrentChapterIndex - 1
+            : NowPlaying.CurrentChapterIndex;
+
+        if (newChapterIndex == null) return;
+
+        NowPlaying.CurrentChapterIndex = newChapterIndex;
+        NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[(int)newChapterIndex].Title;
+        ChapterComboSelectedIndex = (int)newChapterIndex;
+        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentChapter.StartTime);
+        ApplySmTcDisplayProperties();
+
+        await NowPlaying.SaveAsync();
+    }
+
+    /// <summary>
+    ///     Goes to the next chapter.
+    /// </summary>
+    public async Task NextChapter()
+    {
+        if (NowPlaying == null) return;
+
+        if (NowPlaying.CurrentChapterIndex + 1 < NowPlaying.Chapters.Count &&
+            NowPlaying.Chapters[(int)(NowPlaying.CurrentChapterIndex + 1)].ParentSourceFileIndex !=
+            NowPlaying.CurrentSourceFileIndex)
+        {
+            var newChapterIdx = (int)NowPlaying.CurrentChapterIndex + 1;
+            OpenSourceFile(NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx);
+            CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.Chapters[newChapterIdx].StartTime);
+            ApplySmTcDisplayProperties();
+            await NowPlaying.SaveAsync();
+
+            return;
+        }
+
+        var newChapterIndex =
+            NowPlaying.CurrentChapterIndex + 1 < NowPlaying.Chapters.Count
+                ? NowPlaying.CurrentChapterIndex + 1
+                : NowPlaying.CurrentChapterIndex;
+
+        if (newChapterIndex == null) return;
+
+        NowPlaying.CurrentChapterIndex = newChapterIndex;
+        NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[(int)newChapterIndex].Title;
+        ChapterComboSelectedIndex = (int)newChapterIndex;
+        ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+        CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentChapter.StartTime);
+        ApplySmTcDisplayProperties();
+
+        await NowPlaying.SaveAsync();
+    }
+
     #endregion
 
     #region event handlers
+
+    private bool UseChapterNavigation =>
+        UserSettings.MediaButtonsBehavior == MediaControlBehavior.ChapterNavigation;
+
+    private void OnSmTcButtonPressed(SystemMediaTransportControls sender,
+        SystemMediaTransportControlsButtonPressedEventArgs args)
+    {
+        _ = _dispatcherQueue.EnqueueAsync(() =>
+        {
+            switch (args.Button)
+            {
+                case SystemMediaTransportControlsButton.Play:
+                    MediaPlayer.Play();
+                    break;
+                case SystemMediaTransportControlsButton.Pause:
+                    MediaPlayer.Pause();
+                    break;
+                case SystemMediaTransportControlsButton.Next:
+                case SystemMediaTransportControlsButton.FastForward:
+                    _ = UseChapterNavigation ? NextChapter() : SkipForward();
+                    break;
+                case SystemMediaTransportControlsButton.Previous:
+                case SystemMediaTransportControlsButton.Rewind:
+                    _ = UseChapterNavigation ? PreviousChapter() : SkipBack();
+                    break;
+            }
+        });
+    }
 
     private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
     {
@@ -475,6 +728,9 @@ public class PlayerViewModel : BindableBase, IDisposable
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
 
             MediaPlayer.PlaybackRate = PlaybackSpeed;
+
+            ApplySmTcDisplayProperties();
+            UpdateSmTcTimeline();
 
             if (_pendingAutoPlay)
             {
@@ -517,6 +773,14 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
     {
+        if (_smtc != null)
+            _smtc.PlaybackStatus = sender.PlaybackState switch
+            {
+                MediaPlaybackState.Playing => MediaPlaybackStatus.Playing,
+                MediaPlaybackState.Paused => MediaPlaybackStatus.Paused,
+                _ => MediaPlaybackStatus.Stopped
+            };
+
         switch (sender.PlaybackState)
         {
             case MediaPlaybackState.Playing:
@@ -555,8 +819,11 @@ public class PlayerViewModel : BindableBase, IDisposable
                     NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
                     NowPlaying.CurrentChapterTitle = newChapter.Title;
                     ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                    ApplySmTcDisplayProperties();
                 });
         }
+
+        _ = _dispatcherQueue.TryEnqueue(UpdateSmTcTimeline);
 
         if (IsUserSeeking) return;
 

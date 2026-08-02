@@ -302,7 +302,7 @@ public class AudiobookViewModel : BindableBase
     ///     Gets or sets the thumbnail path of the audiobook.
     /// </summary>
     public string ThumbnailPath =>
-        Model.ThumbnailPath.Equals(string.Empty) ? Model.CoverImagePath : Model.ThumbnailPath;
+        string.IsNullOrEmpty(Model.ThumbnailPath) ? Model.CoverImagePath : Model.ThumbnailPath;
 
     /// <summary>
     ///     Gets the title of the audiobook.

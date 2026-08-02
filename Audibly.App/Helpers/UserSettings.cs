@@ -8,8 +8,37 @@ using Sentry;
 
 namespace Audibly.App.Helpers;
 
+/// <summary>
+///     Controls what the reverse/forward buttons in the Windows media overlay do.
+/// </summary>
+public enum MediaControlBehavior
+{
+    /// <summary>Reverse/forward skip back/forward by the configured number of seconds.</summary>
+    SkipBySeconds,
+
+    /// <summary>Reverse/forward go to the previous/next chapter.</summary>
+    ChapterNavigation
+}
+
+/// <summary>
+///     Controls what is shown as the primary title in the Windows media overlay.
+/// </summary>
+public enum MediaTitleDisplayKind
+{
+    /// <summary>Shows the book title as the primary title.</summary>
+    BookTitle,
+
+    /// <summary>Shows the current chapter name as the primary title.</summary>
+    ChapterTitle
+}
+
 public static class UserSettings
 {
+    /// <summary>
+    ///     Raised when the skip back/forward amounts change, so UI can refresh its labels/tooltips.
+    /// </summary>
+    public static event Action? SkipAmountsChanged;
+
     public static bool ShowDataMigrationFailedDialog
     {
         get
@@ -148,6 +177,113 @@ public static class UserSettings
             }
         }
         set => ApplicationData.Current.LocalSettings.Values["PlaybackSpeed"] = value;
+    }
+
+    public static double SkipBackSeconds
+    {
+        get
+        {
+            try
+            {
+                var skipBackSeconds = ApplicationData.Current.LocalSettings.Values["SkipBackSeconds"];
+                if (skipBackSeconds != null)
+                    if (double.TryParse(skipBackSeconds.ToString(), out var result))
+                        return result;
+
+                ApplicationData.Current.LocalSettings.Values["SkipBackSeconds"] = 10;
+                return 10;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return 10;
+            }
+        }
+        set
+        {
+            ApplicationData.Current.LocalSettings.Values["SkipBackSeconds"] = value;
+            SkipAmountsChanged?.Invoke();
+        }
+    }
+
+    public static double SkipForwardSeconds
+    {
+        get
+        {
+            try
+            {
+                var skipForwardSeconds = ApplicationData.Current.LocalSettings.Values["SkipForwardSeconds"];
+                if (skipForwardSeconds != null)
+                    if (double.TryParse(skipForwardSeconds.ToString(), out var result))
+                        return result;
+
+                ApplicationData.Current.LocalSettings.Values["SkipForwardSeconds"] = 30;
+                return 30;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return 30;
+            }
+        }
+        set
+        {
+            ApplicationData.Current.LocalSettings.Values["SkipForwardSeconds"] = value;
+            SkipAmountsChanged?.Invoke();
+        }
+    }
+
+    public static MediaControlBehavior MediaButtonsBehavior
+    {
+        get
+        {
+            try
+            {
+                var mediaButtonsBehavior =
+                    ApplicationData.Current.LocalSettings.Values["MediaButtonsBehavior"]?.ToString();
+                if (mediaButtonsBehavior != null &&
+                    Enum.TryParse(mediaButtonsBehavior, out MediaControlBehavior result))
+                    return result;
+
+                ApplicationData.Current.LocalSettings.Values["MediaButtonsBehavior"] =
+                    MediaControlBehavior.SkipBySeconds.ToString();
+                return MediaControlBehavior.SkipBySeconds;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return MediaControlBehavior.SkipBySeconds;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["MediaButtonsBehavior"] = value.ToString();
+    }
+
+    public static MediaTitleDisplayKind MediaTitleDisplayMode
+    {
+        get
+        {
+            try
+            {
+                var mediaTitleDisplay =
+                    ApplicationData.Current.LocalSettings.Values["MediaTitleDisplayMode"]?.ToString();
+                if (mediaTitleDisplay != null && Enum.TryParse(mediaTitleDisplay, out MediaTitleDisplayKind result))
+                    return result;
+
+                ApplicationData.Current.LocalSettings.Values["MediaTitleDisplayMode"] =
+                    MediaTitleDisplayKind.BookTitle.ToString();
+                return MediaTitleDisplayKind.BookTitle;
+            }
+            catch (Exception e)
+            {
+                // log to sentry
+                SentrySdk.CaptureException(e);
+                return MediaTitleDisplayKind.BookTitle;
+            }
+        }
+        set => ApplicationData.Current.LocalSettings.Values["MediaTitleDisplayMode"] = value.ToString();
     }
 
     public static bool IsSidebarCollapsed

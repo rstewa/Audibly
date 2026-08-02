@@ -134,6 +134,64 @@
                     </toolkit:SettingsExpander.Items>
                 </toolkit:SettingsExpander>
 
+                <!--  Playback controls  -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Playback controls" />
+                <toolkit:SettingsExpander
+                    Description="Configure the skip amounts used by the player and the Windows media overlay buttons."
+                    Header="Skip &amp; media controls">
+                    <toolkit:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xE8D0;" />
+                    </toolkit:SettingsExpander.HeaderIcon>
+                    <toolkit:SettingsExpander.Items>
+                        <toolkit:SettingsCard Header="Skip backward amount">
+                            <ComboBox
+                                AutomationProperties.AutomationId="skipBackComboBox"
+                                SelectionChanged="SkipBackCombo_SelectionChanged"
+                                x:Name="skipBackCombo">
+                                <ComboBoxItem Content="5 seconds" Tag="5" />
+                                <ComboBoxItem Content="10 seconds" Tag="10" />
+                                <ComboBoxItem Content="15 seconds" Tag="15" />
+                                <ComboBoxItem Content="30 seconds" Tag="30" />
+                                <ComboBoxItem Content="60 seconds" Tag="60" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard Header="Skip forward amount">
+                            <ComboBox
+                                AutomationProperties.AutomationId="skipForwardComboBox"
+                                SelectionChanged="SkipForwardCombo_SelectionChanged"
+                                x:Name="skipForwardCombo">
+                                <ComboBoxItem Content="5 seconds" Tag="5" />
+                                <ComboBoxItem Content="10 seconds" Tag="10" />
+                                <ComboBoxItem Content="15 seconds" Tag="15" />
+                                <ComboBoxItem Content="30 seconds" Tag="30" />
+                                <ComboBoxItem Content="60 seconds" Tag="60" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard
+                            Description="Controls what the reverse/forward buttons in the Windows media overlay do."
+                            Header="Windows media buttons">
+                            <ComboBox
+                                AutomationProperties.AutomationId="mediaButtonsComboBox"
+                                SelectionChanged="MediaButtonsCombo_SelectionChanged"
+                                x:Name="mediaButtonsCombo">
+                                <ComboBoxItem Content="Skip backward/forward" Tag="SkipBySeconds" />
+                                <ComboBoxItem Content="Previous/next chapter" Tag="ChapterNavigation" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                        <toolkit:SettingsCard
+                            Description="Controls what is shown as the title in the Windows media overlay."
+                            Header="Windows media overlay title">
+                            <ComboBox
+                                AutomationProperties.AutomationId="mediaTitleComboBox"
+                                SelectionChanged="MediaTitleCombo_SelectionChanged"
+                                x:Name="mediaTitleCombo">
+                                <ComboBoxItem Content="Book title" Tag="BookTitle" />
+                                <ComboBoxItem Content="Chapter title" Tag="ChapterTitle" />
+                            </ComboBox>
+                        </toolkit:SettingsCard>
+                    </toolkit:SettingsExpander.Items>
+                </toolkit:SettingsExpander>
+
                 <!--  Library  -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Library" />
                 <toolkit:SettingsExpander

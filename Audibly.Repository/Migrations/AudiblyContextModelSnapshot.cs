@@ -163,6 +163,35 @@ namespace Audibly.Repository.Migrations
                     b.ToTable("SourceFiles");
                 });
 
+            modelBuilder.Entity("Audibly.Models.PlaybackBookmark", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AudiobookId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ChapterTitle")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PositionMs")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SourceFileIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AudiobookId");
+
+                    b.ToTable("PlaybackBookmark");
+                });
+
             modelBuilder.Entity("Audibly.Models.ChapterInfo", b =>
                 {
                     b.HasOne("Audibly.Models.Audiobook", "Audiobook")
@@ -185,8 +214,21 @@ namespace Audibly.Repository.Migrations
                     b.Navigation("Audiobook");
                 });
 
+            modelBuilder.Entity("Audibly.Models.PlaybackBookmark", b =>
+                {
+                    b.HasOne("Audibly.Models.Audiobook", "Audiobook")
+                        .WithMany("Bookmarks")
+                        .HasForeignKey("AudiobookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Audiobook");
+                });
+
             modelBuilder.Entity("Audibly.Models.Audiobook", b =>
                 {
+                    b.Navigation("Bookmarks");
+
                     b.Navigation("Chapters");
 
                     b.Navigation("SourcePaths");

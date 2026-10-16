@@ -29,6 +29,7 @@ public class AudiobookViewModel : BindableBase
 
         Chapters.Clear();
         foreach (var chapter in model.Chapters) Chapters.Add(chapter);
+        foreach (var bookmark in model.Bookmarks) Bookmarks.Add(bookmark);
 
         // CurrentTimeMs = model.SourcePaths[model.CurrentSourceFileIndex].CurrentTimeMs;
     }
@@ -37,6 +38,7 @@ public class AudiobookViewModel : BindableBase
     ///     Gets the chapters of the audiobook.
     /// </summary>
     public ObservableCollection<ChapterInfo> Chapters { get; set; } = [];
+    public ObservableCollection<PlaybackBookmark> Bookmarks { get; } = [];
 
     /// <summary>
     ///     Gets or sets the volume glyph of the audiobook.

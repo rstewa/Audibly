@@ -32,6 +32,7 @@ public class Audiobook : DbObject, IEquatable<Audiobook>
     public bool IsCompleted { get; set; }
 
     public List<ChapterInfo> Chapters { get; set; } = [];
+    public List<PlaybackBookmark> Bookmarks { get; set; } = [];
 
     public bool Equals(Audiobook? other)
     {

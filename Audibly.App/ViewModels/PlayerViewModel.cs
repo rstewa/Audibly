@@ -14,6 +14,7 @@ using Audibly.App.Services;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
+using PlaybackBookmark = Audibly.Models.PlaybackBookmark;
 
 namespace Audibly.App.ViewModels;
 
@@ -440,6 +441,72 @@ public class PlayerViewModel : BindableBase, IDisposable
         CurrentPosition =
             TimeSpan.FromMilliseconds(NowPlaying.CurrentChapter.StartTime + sliderValue);
         await NowPlaying.SaveAsync();
+    }
+
+    public async Task AddBookmarkAsync()
+    {
+        if (NowPlaying == null)
+            throw new InvalidOperationException("A bookmark can only be added while an audiobook is open.");
+
+        var bookmark = new PlaybackBookmark
+        {
+            AudiobookId = NowPlaying.Id,
+            SourceFileIndex = NowPlaying.CurrentSourceFileIndex,
+            PositionMs = checked((int)CurrentPosition.TotalMilliseconds),
+            ChapterTitle = NowPlaying.CurrentChapter.Title,
+            CreatedAt = DateTime.Now
+        };
+
+        NowPlaying.Model.Bookmarks.Add(bookmark);
+        NowPlaying.Bookmarks.Add(bookmark);
+        NowPlaying.IsModified = true;
+        await NowPlaying.SaveAsync();
+    }
+
+    public async Task RemoveBookmarkAsync(PlaybackBookmark bookmark)
+    {
+        if (NowPlaying == null)
+            throw new InvalidOperationException("A bookmark can only be removed while an audiobook is open.");
+        if (!NowPlaying.Bookmarks.Remove(bookmark))
+            throw new ArgumentException("The bookmark does not belong to the currently open audiobook.", nameof(bookmark));
+
+        NowPlaying.Model.Bookmarks.Remove(bookmark);
+        NowPlaying.IsModified = true;
+        await NowPlaying.SaveAsync();
+    }
+
+    public async Task SeekToBookmarkAsync(PlaybackBookmark bookmark)
+    {
+        if (NowPlaying == null)
+            throw new InvalidOperationException("A bookmark can only be opened while an audiobook is playing.");
+        if (!NowPlaying.Bookmarks.Contains(bookmark))
+            throw new ArgumentException("The bookmark does not belong to the currently open audiobook.", nameof(bookmark));
+        if (bookmark.SourceFileIndex < 0 || bookmark.SourceFileIndex >= NowPlaying.SourcePaths.Count)
+            throw new InvalidDataException("The bookmark refers to an unavailable audiobook source file.");
+
+        var chapter = NowPlaying.Chapters.FirstOrDefault(candidate =>
+                          candidate.ParentSourceFileIndex == bookmark.SourceFileIndex &&
+                          candidate.InRange(bookmark.PositionMs))
+                      ?? NowPlaying.Chapters.FirstOrDefault(candidate =>
+                          candidate.ParentSourceFileIndex == bookmark.SourceFileIndex);
+        if (chapter == null)
+            throw new InvalidDataException("The bookmark does not refer to a valid audiobook chapter.");
+
+        var sourceChanged = NowPlaying.CurrentSourceFileIndex != bookmark.SourceFileIndex;
+        NowPlaying.CurrentSourceFileIndex = bookmark.SourceFileIndex;
+        NowPlaying.CurrentTimeMs = bookmark.PositionMs;
+        NowPlaying.CurrentChapterIndex = chapter.Index;
+        NowPlaying.CurrentChapterTitle = chapter.Title;
+        ChapterComboSelectedIndex = chapter.Index;
+        ChapterDurationMs = (int)(chapter.EndTime - chapter.StartTime);
+
+        if (!sourceChanged)
+            CurrentPosition = TimeSpan.FromMilliseconds(bookmark.PositionMs);
+
+        await NowPlaying.SaveAsync();
+
+        if (sourceChanged)
+            MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
     }
 
     #endregion

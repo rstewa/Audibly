@@ -17,6 +17,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .OrderBy(audiobook => audiobook.Title)
             // .AsNoTracking()  // todo: testing this out
             .ToListAsync();
@@ -28,6 +29,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook => audiobook.IsNowPlaying);
     }
@@ -37,6 +39,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook =>
                 audiobook.Title == title &&
@@ -50,6 +53,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook =>
                 audiobook.SourcePaths.Any(source => source.FilePath == filePath));
@@ -60,6 +64,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .AsNoTracking()
             .FirstOrDefaultAsync(audiobook => audiobook.Id == id);
     }
@@ -70,6 +75,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         return await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .Where(audiobook =>
                 parameters.Any(parameter =>
                     audiobook.Author.StartsWith(parameter) ||
@@ -89,6 +95,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         var current = await db.Audiobooks
             .Include(x => x.SourcePaths.OrderBy(source => source.Index))
             .Include(x => x.Chapters.OrderBy(chapter => chapter.Index))
+            .Include(x => x.Bookmarks)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Title == audiobook.Title && a.Author == audiobook.Author);
 
@@ -118,6 +125,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         var audiobook = await db.Audiobooks
             .Include(x => x.SourcePaths)
             .Include(x => x.Chapters)
+            .Include(x => x.Bookmarks)
             .FirstOrDefaultAsync(a => a.Id == audiobookId);
 
         if (audiobook != null) db.Remove(audiobook);
@@ -172,6 +180,7 @@ public class SqlAudiobookRepository(AudiblyContext db) : IAudiobookRepository
         var audiobooks = db.Audiobooks
             .Include(x => x.SourcePaths)
             .Include(x => x.Chapters)
+            .Include(x => x.Bookmarks)
             .ToList();
         
         for (var i = 0; i < audiobooks.Count; i++) 

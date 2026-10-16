@@ -166,4 +166,77 @@ public sealed partial class PlayerControlGrid : UserControl
 
         if (timerDuration > 0) PlayerViewModel.SetTimer(timerDuration);
     }
+
+    private void BookmarksFlyout_OnOpening(object sender, object e)
+    {
+        BookmarksFlyout.Items.Clear();
+
+        var addBookmarkItem = new MenuFlyoutItem
+        {
+            Text = "Add bookmark",
+            IsEnabled = PlayerViewModel.NowPlaying != null
+        };
+        addBookmarkItem.Click += AddBookmarkMenuItem_Click;
+        BookmarksFlyout.Items.Add(addBookmarkItem);
+
+        if (PlayerViewModel.NowPlaying == null)
+            return;
+
+        BookmarksFlyout.Items.Add(new MenuFlyoutSeparator());
+        if (PlayerViewModel.NowPlaying.Bookmarks.Count == 0)
+        {
+            BookmarksFlyout.Items.Add(new MenuFlyoutItem
+            {
+                Text = "No bookmarks yet",
+                IsEnabled = false
+            });
+            return;
+        }
+
+        foreach (var bookmark in PlayerViewModel.NowPlaying.Bookmarks)
+        {
+            var title = string.IsNullOrWhiteSpace(bookmark.ChapterTitle)
+                ? "Bookmark"
+                : bookmark.ChapterTitle;
+            var bookmarkItem = new MenuFlyoutSubItem
+            {
+                Text = $"{title} ({bookmark.PositionMs.ToStr_ms()})"
+            };
+
+            var goToBookmarkItem = new MenuFlyoutItem
+            {
+                Text = "Go to bookmark",
+                Tag = bookmark
+            };
+            goToBookmarkItem.Click += GoToBookmarkMenuItem_Click;
+            bookmarkItem.Items.Add(goToBookmarkItem);
+
+            var removeBookmarkItem = new MenuFlyoutItem
+            {
+                Text = "Remove bookmark",
+                Tag = bookmark
+            };
+            removeBookmarkItem.Click += RemoveBookmarkMenuItem_Click;
+            bookmarkItem.Items.Add(removeBookmarkItem);
+
+            BookmarksFlyout.Items.Add(bookmarkItem);
+        }
+    }
+
+    private async void AddBookmarkMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        await PlayerViewModel.AddBookmarkAsync();
+    }
+
+    private async void GoToBookmarkMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuFlyoutItem { Tag: PlaybackBookmark bookmark })
+            await PlayerViewModel.SeekToBookmarkAsync(bookmark);
+    }
+
+    private async void RemoveBookmarkMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuFlyoutItem { Tag: PlaybackBookmark bookmark })
+            await PlayerViewModel.RemoveBookmarkAsync(bookmark);
+    }
 }

@@ -303,6 +303,17 @@
                     </Button>
                     <!--#endregion TimerButton-->
 
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTipService.ToolTip="Bookmarks"
+                        x:Name="BookmarksButton">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE840;" />
+                        <Button.Flyout>
+                            <MenuFlyout Opening="BookmarksFlyout_OnOpening" x:Name="BookmarksFlyout" />
+                        </Button.Flyout>
+                    </Button>
+
                     <!--#region Maximize/Minimize Button-->
                     <Button
                         BorderThickness="0"

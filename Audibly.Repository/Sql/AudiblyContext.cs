@@ -44,6 +44,15 @@ public class AudiblyContext : DbContext
         modelBuilder.Entity<Audiobook>()
             .HasIndex(a => new { a.Author, a.Title })
             .IsUnique();
+
+        modelBuilder.Entity<PlaybackBookmark>()
+            .ToTable("PlaybackBookmark");
+
+        modelBuilder.Entity<Audiobook>()
+            .HasMany(a => a.Bookmarks)
+            .WithOne(bookmark => bookmark.Audiobook)
+            .HasForeignKey(bookmark => bookmark.AudiobookId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     /// <summary>

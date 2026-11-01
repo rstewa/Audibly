@@ -40,7 +40,7 @@
             x:Name="PreviousChapterButton">
             <FontIcon
                 FontFamily="Segoe MDL2 Assets"
-                FontSize="24"
+                FontSize="{x:Bind SkipButtonSize, Mode=OneWay}"
                 Glyph="&#xE76B;" />
         </Button>
 
@@ -56,7 +56,7 @@
             </RepeatButton.KeyboardAccelerators>
             <FontIcon
                 FontFamily="Segoe MDL2 Assets"
-                FontSize="24"
+                FontSize="{x:Bind SkipButtonSize, Mode=OneWay}"
                 Glyph="&#xED3C;" />
         </RepeatButton>
 
@@ -83,7 +83,7 @@
             </RepeatButton.KeyboardAccelerators>
             <FontIcon
                 FontFamily="Segoe MDL2 Assets"
-                FontSize="24"
+                FontSize="{x:Bind SkipButtonSize, Mode=OneWay}"
                 Glyph="&#xED3D;" />
         </RepeatButton>
 
@@ -95,7 +95,7 @@
             x:Name="NextChapterButton">
             <FontIcon
                 FontFamily="Segoe MDL2 Assets"
-                FontSize="24"
+                FontSize="{x:Bind SkipButtonSize, Mode=OneWay}"
                 Glyph="&#xE76C;" />
         </Button>
 

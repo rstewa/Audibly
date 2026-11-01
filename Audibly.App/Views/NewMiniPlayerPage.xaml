@@ -9,7 +9,6 @@
     xmlns:converters="using:Audibly.App.Helpers.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
-    xmlns:helpers="using:Audibly.App.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:userControls="using:Audibly.App.UserControls"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -17,27 +16,33 @@
 
     <Page.Resources>
         <converters:ProgressSliderValueConverter x:Key="ProgressSliderValueConverter" />
-        <ResourceDictionary x:Key="ButtonResources">
-            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-        </ResourceDictionary>
+        <Style TargetType="Button">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="MinWidth" Value="28" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="RepeatButton">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="MinWidth" Value="28" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
     </Page.Resources>
 
-    <Grid Padding="0,8,0,0" RowSpacing="-6">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <Grid Padding="0,6,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="15" />
         </Grid.RowDefinitions>
 
 
         <!--  TODO: remove this  -->
         <developerTools:AlignmentGrid
-            Grid.ColumnSpan="2"
             Grid.RowSpan="2"
             HorizontalAlignment="Stretch"
             HorizontalStep="4"
@@ -48,29 +53,30 @@
         <Grid
             Canvas.ZIndex="10"
             ColumnSpacing="8"
-            Grid.Column="1"
             Grid.Row="0"
             HorizontalAlignment="Stretch"
             Padding="8,0,0,0"
+            RowSpacing="4"
             VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="125" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="28" />
+            </Grid.RowDefinitions>
 
             <!--  drag icon  -->
             <FontIcon
                 FontFamily="{StaticResource AudiblyCustomFont}"
-                FontSize="24"
+                FontSize="16"
                 Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                 Glyph="&#xe904;"
                 Grid.Column="0"
+                Grid.RowSpan="2"
                 HorizontalAlignment="Center"
                 ToolTipService.ToolTip="Drag to move"
                 VerticalAlignment="Center" />
@@ -78,268 +84,311 @@
             <userControls:CoverImageTile
                 Canvas.ZIndex="10"
                 CoverImageRadius="6"
-                CoverImageSize="60"
+                CoverImageSize="56"
                 Grid.Column="1"
+                Grid.RowSpan="2"
                 HorizontalAlignment="Center"
                 ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
                 VerticalAlignment="Center" />
 
-            <userControls:TitleArtistStack
-                ArtistFontSize="12"
-                Grid.Column="2"
-                HorizontalAlignment="Center"
-                Margin="8,0,0,0"
-                ShowChapterTitle="True"
-                Spacing="4"
-                TitleFontSize="16"
-                TitleMaxWidth="125"
-                VerticalAlignment="Top" />
-
-            <userControls:PlaySkipButtonsStack
-                Grid.Column="3"
-                HorizontalAlignment="Center"
-                Margin="0,0,-8,0"
-                Spacing="-12" />
-
-            <Border
-                Background="{ThemeResource AppBarSeparatorForeground}"
-                Grid.Column="4"
-                Height="40"
-                HorizontalAlignment="Center"
-                Width="1"
-                x:Name="Separator" />
-
-            <!--  region: other buttons  -->
+            <!--  Give the title its own row so long titles cannot cover the controls.  -->
             <StackPanel
-                Grid.Column="5"
+                Grid.Column="2"
+                Grid.ColumnSpan="2"
+                Grid.Row="0"
+                Margin="0,0,32,0">
+                <StackPanel.RenderTransform>
+                    <TranslateTransform Y="16" />
+                </StackPanel.RenderTransform>
+                <TextBlock
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap"
+                    ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.Title, Mode=OneWay}" />
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.Author, Mode=OneWay}" />
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                        Grid.Column="1"
+                        Text="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        ToolTipService.ToolTip="{x:Bind PlayerViewModel.NowPlaying.CurrentChapterTitle, Mode=OneWay}" />
+                </Grid>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="2"
+                Grid.ColumnSpan="2"
+                Grid.Row="1"
                 Orientation="Horizontal"
-                Spacing="-8"
+                Spacing="8"
                 VerticalAlignment="Center">
 
-                <!--  Volume Button  -->
-                <Button
-                    Background="Transparent"
-                    BorderThickness="0"
-                    ToolTipService.ToolTip="Volume"
-                    VerticalAlignment="Center"
-                    x:Name="VolumeButton">
-                    <Button.Resources>
-                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-                    </Button.Resources>
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="16"
-                        Glyph="&#xE767;" />
-                    <Button.Flyout>
-                        <Flyout ShouldConstrainToRootBounds="False">
-                            <Flyout.FlyoutPresenterStyle>
-                                <Style TargetType="FlyoutPresenter">
-                                    <Setter Property="MinWidth" Value="30" />
-                                    <Setter Property="MaxWidth" Value="30" />
-                                    <Setter Property="MinHeight" Value="125" />
-                                    <Setter Property="CornerRadius" Value="4" />
-                                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-                                </Style>
-                            </Flyout.FlyoutPresenterStyle>
-                            <Slider
-                                AutomationProperties.Name="VolumeLevelSlider"
-                                LargeChange="25"
-                                Margin="-14,0,0,0"
-                                Maximum="100"
-                                Minimum="0"
-                                Orientation="Vertical"
-                                SmallChange="1"
-                                SnapsTo="StepValues"
-                                StepFrequency="1"
-                                ToolTipService.ToolTip="Volume Level"
-                                Value="{x:Bind PlayerViewModel.VolumeLevel}"
-                                ValueChanged="VolumeSlider_ValueChanged"
-                                x:Name="VolumeLevelSlider" />
-                        </Flyout>
-                    </Button.Flyout>
-                    <Button.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="M" Modifiers="Control" />
-                    </Button.KeyboardAccelerators>
-                </Button>
+                <userControls:PlaySkipButtonsStack
+                    PlayButtonSize="18"
+                    SkipButtonSize="16"
+                    Spacing="2" />
 
-                <!--  Playback Speed Button  -->
-                <Button
-                    Background="Transparent"
-                    BorderThickness="0"
-                    VerticalAlignment="Center"
-                    x:Name="PlaybackSpeedButton">
-                    <ToolTipService.ToolTip>
-                        <TextBlock>
-                            <Run Text="Playback Speed" />
-                            <LineBreak />
-                            <Run Text="[ = Decrease speed" />
-                            <LineBreak />
-                            <Run Text="] = Increase speed" />
-                            <LineBreak />
-                            <Run Text="\ = Reset to normal speed" />
-                        </TextBlock>
-                    </ToolTipService.ToolTip>
-                    <Button.Resources>
-                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-                    </Button.Resources>
-                    <FontIcon
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="16"
-                        Glyph="&#xEC57;" />
-                    <Button.Flyout>
-                        <Flyout ShouldConstrainToRootBounds="False" x:Name="PlaybackSpeedSliderFlyout">
-                            <Flyout.FlyoutPresenterStyle>
-                                <Style TargetType="FlyoutPresenter">
-                                    <Setter Property="MinWidth" Value="30" />
-                                    <Setter Property="MaxWidth" Value="30" />
-                                    <Setter Property="MinHeight" Value="125" />
-                                    <Setter Property="CornerRadius" Value="4" />
-                                    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-                                </Style>
-                            </Flyout.FlyoutPresenterStyle>
-                            <Slider
-                                AutomationProperties.Name="PlaybackSpeedSlider"
-                                FocusVisualPrimaryThickness="0"
-                                FocusVisualSecondaryThickness="0"
-                                Margin="-14,0,0,0"
-                                Maximum="{x:Bind helpers:Constants.PlaybackSpeedMaximum}"
-                                Minimum="{x:Bind helpers:Constants.PlaybackSpeedMinimum}"
-                                Orientation="Vertical"
-                                SmallChange="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
-                                SnapsTo="StepValues"
-                                StepFrequency="{x:Bind helpers:Constants.PlaybackSpeedIncrement}"
-                                ToolTipService.ToolTip="Playback Speed"
-                                Value="{x:Bind PlayerViewModel.PlaybackSpeed}"
-                                ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                x:Name="PlaybackSpeedSlider">
-                                <Slider.Resources>
-                                    <SolidColorBrush Color="Transparent" x:Key="FocusVisualPrimaryBrush" />
-                                    <SolidColorBrush Color="Transparent" x:Key="FocusVisualSecondaryBrush" />
-                                </Slider.Resources>
-                            </Slider>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
+                <Border
+                    Background="{ThemeResource AppBarSeparatorForeground}"
+                    Height="24"
+                    HorizontalAlignment="Center"
+                    Width="1"
+                    x:Name="Separator" />
 
-                <!--#region TimerButton-->
-                <Button
-                    Background="Transparent"
-                    BorderThickness="0"
-                    ToolTipService.ToolTip="Sleep Timer"
-                    x:Name="TimerButton">
+                <!--  region: other buttons  -->
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="4"
+                    VerticalAlignment="Center">
 
-                    <Button.Resources>
-                        <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-                    </Button.Resources>
-
-                    <Grid>
-                        <!--  Timer Icon  -->
+                    <!--  Volume Button  -->
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTipService.ToolTip="Volume"
+                        VerticalAlignment="Center"
+                        x:Name="VolumeButton">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                        </Button.Resources>
                         <FontIcon
                             FontFamily="Segoe MDL2 Assets"
-                            FontSize="16"
-                            Glyph="&#xE916;" />
+                            FontSize="14"
+                            Glyph="&#xE767;" />
+                        <Button.Flyout>
+                            <Flyout ShouldConstrainToRootBounds="False">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="MinWidth" Value="30" />
+                                        <Setter Property="MaxWidth" Value="30" />
+                                        <Setter Property="MinHeight" Value="125" />
+                                        <Setter Property="CornerRadius" Value="4" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Slider
+                                    AutomationProperties.Name="VolumeLevelSlider"
+                                    LargeChange="25"
+                                    Margin="-14,0,0,0"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Orientation="Vertical"
+                                    SmallChange="1"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="1"
+                                    ToolTipService.ToolTip="Volume Level"
+                                    Value="{x:Bind PlayerViewModel.VolumeLevel}"
+                                    ValueChanged="VolumeSlider_ValueChanged"
+                                    x:Name="VolumeLevelSlider" />
+                            </Flyout>
+                        </Button.Flyout>
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="M" Modifiers="Control" />
+                        </Button.KeyboardAccelerators>
+                    </Button>
 
-                        <!--  Badge Indicator  -->
-                        <Ellipse
-                            Fill="{ThemeResource SystemAccentColor}"
-                            Height="8"
-                            HorizontalAlignment="Right"
-                            Margin="0,-2,-2,0"
-                            VerticalAlignment="Top"
-                            Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}"
-                            Width="8" />
-                    </Grid>
+                    <!--  Playback Speed Button  -->
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        VerticalAlignment="Center"
+                        Width="40"
+                        x:Name="PlaybackSpeedButton">
+                        <ToolTipService.ToolTip>
+                            <TextBlock>
+                                <Run Text="Playback Speed" />
+                                <LineBreak />
+                                <Run Text="[ = Decrease speed" />
+                                <LineBreak />
+                                <Run Text="] = Increase speed" />
+                                <LineBreak />
+                                <Run Text="\ = Reset to normal speed" />
+                            </TextBlock>
+                        </ToolTipService.ToolTip>
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                        </Button.Resources>
+                        <Grid Width="32">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="14"
+                                Glyph="&#xEC57;"
+                                Visibility="{x:Bind NormalSpeedVisibility(PlayerViewModel.PlaybackSpeed), Mode=OneWay}" />
+                            <Border
+                                BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Height="20"
+                                Visibility="{x:Bind AdjustedSpeedVisibility(PlayerViewModel.PlaybackSpeed), Mode=OneWay}">
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"
+                                    Text="{x:Bind FormatPlaybackSpeed(PlayerViewModel.PlaybackSpeed), Mode=OneWay}"
+                                    VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                        <Button.Flyout>
+                            <Flyout ShouldConstrainToRootBounds="False" x:Name="PlaybackSpeedSliderFlyout">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="MinWidth" Value="30" />
+                                        <Setter Property="MaxWidth" Value="30" />
+                                        <Setter Property="MinHeight" Value="125" />
+                                        <Setter Property="CornerRadius" Value="4" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <Slider
+                                    AutomationProperties.Name="PlaybackSpeedSlider"
+                                    FocusVisualPrimaryThickness="0"
+                                    FocusVisualSecondaryThickness="0"
+                                    Margin="-14,0,0,0"
+                                    Orientation="Vertical"
+                                    Style="{StaticResource PlaybackSpeedSliderStyle}"
+                                    ToolTipService.ToolTip="Playback Speed"
+                                    Value="{x:Bind PlayerViewModel.PlaybackSpeed, Mode=OneWay, Converter={StaticResource PlaybackSpeedIndexConverter}}"
+                                    ValueChanged="PlaybackSpeedSlider_ValueChanged"
+                                    x:Name="PlaybackSpeedSlider">
+                                    <Slider.Resources>
+                                        <SolidColorBrush Color="Transparent" x:Key="FocusVisualPrimaryBrush" />
+                                        <SolidColorBrush Color="Transparent" x:Key="FocusVisualSecondaryBrush" />
+                                    </Slider.Resources>
+                                </Slider>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
 
-                    <Button.Flyout>
-                        <MenuFlyout>
-                            <!--  Timer status display  -->
-                            <MenuFlyoutItem
-                                DataContext="{x:Bind PlayerViewModel, Mode=OneWay}"
-                                IsEnabled="False"
-                                Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}">
-                                <MenuFlyoutItem.Template>
-                                    <ControlTemplate TargetType="MenuFlyoutItem">
-                                        <TextBlock
-                                            FontWeight="SemiBold"
-                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                            HorizontalAlignment="Center"
-                                            Margin="0,8,0,8"
-                                            Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.TimerRemainingText}"
-                                            TextAlignment="Center"
-                                            VerticalAlignment="Center" />
-                                    </ControlTemplate>
-                                </MenuFlyoutItem.Template>
-                            </MenuFlyoutItem>
-                            <!--  Separator when timer is active  -->
-                            <MenuFlyoutSeparator Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+                    <!--#region TimerButton-->
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalContentAlignment="Left"
+                        Margin="-4,0,0,0"
+                        ToolTipService.ToolTip="Sleep Timer"
+                        Width="78"
+                        x:Name="TimerButton">
 
-                            <!--  Existing menu items  -->
-                            <MenuFlyoutItem
-                                Click="TimerMenuItem_Click"
-                                Tag="300"
-                                Text="5 minutes" />
-                            <MenuFlyoutItem
-                                Click="TimerMenuItem_Click"
-                                Tag="600"
-                                Text="10 minutes" />
-                            <MenuFlyoutItem
-                                Click="TimerMenuItem_Click"
-                                Tag="900"
-                                Text="15 minutes" />
-                            <MenuFlyoutItem
-                                Click="TimerMenuItem_Click"
-                                Tag="1800"
-                                Text="30 minutes" />
-                            <MenuFlyoutItem
-                                Click="TimerMenuItem_Click"
-                                Tag="2700"
-                                Text="45 minutes" />
-                            <MenuFlyoutItem
-                                Click="TimerMenuItem_Click"
-                                Tag="3600"
-                                Text="60 minutes" />
-                            <MenuFlyoutItem
-                                Click="EndOfChapterTimerMenuItem_Click"
-                                Tag="EndOfChapter"
-                                Text="End of Chapter" />
-                            <MenuFlyoutSeparator Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
-                            <MenuFlyoutItem
-                                Click="CancelTimerMenuItem_Click"
-                                Text="Cancel Timer"
-                                Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
-                <!--#endregion TimerButton-->
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
+                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                        </Button.Resources>
+
+                        <Viewbox HorizontalAlignment="Left" MaxWidth="70" StretchDirection="DownOnly">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    FontSize="14"
+                                    Glyph="&#xE916;" />
+                                <TextBlock
+                                    FontFamily="Consolas"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    Text="{x:Bind PlayerViewModel.TimerRemainingText, Mode=OneWay}"
+                                    VerticalAlignment="Center"
+                                    Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+                            </StackPanel>
+                        </Viewbox>
+
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <!--  Timer status display  -->
+                                <MenuFlyoutItem
+                                    DataContext="{x:Bind PlayerViewModel, Mode=OneWay}"
+                                    IsEnabled="False"
+                                    Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}">
+                                    <MenuFlyoutItem.Template>
+                                        <ControlTemplate TargetType="MenuFlyoutItem">
+                                            <TextBlock
+                                                FontWeight="SemiBold"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,8,0,8"
+                                                Text="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=DataContext.TimerRemainingText}"
+                                                TextAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                        </ControlTemplate>
+                                    </MenuFlyoutItem.Template>
+                                </MenuFlyoutItem>
+                                <!--  Separator when timer is active  -->
+                                <MenuFlyoutSeparator Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+
+                                <!--  Existing menu items  -->
+                                <MenuFlyoutItem
+                                    Click="TimerMenuItem_Click"
+                                    Tag="300"
+                                    Text="5 minutes" />
+                                <MenuFlyoutItem
+                                    Click="TimerMenuItem_Click"
+                                    Tag="600"
+                                    Text="10 minutes" />
+                                <MenuFlyoutItem
+                                    Click="TimerMenuItem_Click"
+                                    Tag="900"
+                                    Text="15 minutes" />
+                                <MenuFlyoutItem
+                                    Click="TimerMenuItem_Click"
+                                    Tag="1800"
+                                    Text="30 minutes" />
+                                <MenuFlyoutItem
+                                    Click="TimerMenuItem_Click"
+                                    Tag="2700"
+                                    Text="45 minutes" />
+                                <MenuFlyoutItem
+                                    Click="TimerMenuItem_Click"
+                                    Tag="3600"
+                                    Text="60 minutes" />
+                                <MenuFlyoutItem
+                                    Click="EndOfChapterTimerMenuItem_Click"
+                                    Tag="EndOfChapter"
+                                    Text="End of Chapter" />
+                                <MenuFlyoutSeparator Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+                                <MenuFlyoutItem
+                                    Click="CancelTimerMenuItem_Click"
+                                    Text="Cancel Timer"
+                                    Visibility="{x:Bind PlayerViewModel.IsTimerActive, Mode=OneWay}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                    <!--#endregion TimerButton-->
+                </StackPanel>
+                <!--  endregion: other buttons  -->
             </StackPanel>
-            <!--  endregion: other buttons  -->
-
-            <Border
-                Background="{ThemeResource AppBarSeparatorForeground}"
-                Grid.Column="6"
-                Height="40"
-                HorizontalAlignment="Center"
-                Width="1" />
 
             <StackPanel
-                Grid.Column="7"
+                Grid.Column="3"
+                Grid.Row="1"
                 Orientation="Horizontal"
-                Spacing="-8"
+                Spacing="0"
                 VerticalAlignment="Center">
 
                 <!--  pin button  -->
@@ -359,7 +408,7 @@
                     </Button.Resources>
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
-                        FontSize="16"
+                        FontSize="14"
                         Glyph="&#xE840;" />
                 </Button>
 
@@ -381,7 +430,7 @@
                     </Button.Resources>
                     <FontIcon
                         FontFamily="Segoe MDL2 Assets"
-                        FontSize="16"
+                        FontSize="14"
                         Glyph="&#xE77A;" />
                 </Button>
 
@@ -402,26 +451,55 @@
                     </Button.Resources>
                     <FontIcon
                         FontFamily="{StaticResource AudiblyCustomFont}"
-                        FontSize="24"
+                        FontSize="18"
                         Glyph="&#xe901;" />
                 </Button>
             </StackPanel>
         </Grid>
 
+        <Button
+            AutomationProperties.Name="Exit Audibly"
+            Background="Transparent"
+            BorderThickness="0"
+            Canvas.ZIndex="20"
+            Click="ExitButton_Click"
+            Grid.Row="0"
+            Height="21"
+            HorizontalAlignment="Right"
+            Margin="0,0,4,0"
+            MinHeight="21"
+            MinWidth="21"
+            Padding="3"
+            ToolTipService.ToolTip="Exit Audibly"
+            VerticalAlignment="Top"
+            Width="21"
+            x:Name="ExitButton">
+            <FontIcon
+                FontFamily="Segoe MDL2 Assets"
+                FontSize="10.5"
+                Glyph="&#xE8BB;" />
+        </Button>
+
         <Slider
+            AutomationProperties.Name="Chapter progress"
             Canvas.ZIndex="0"
-            Grid.ColumnSpan="2"
             Grid.Row="1"
+            Height="15"
             HorizontalAlignment="Stretch"
             Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
+            MinHeight="0"
+            VerticalAlignment="Center"
             ValueChanged="Slider_OnValueChanged"
             ThumbToolTipValueConverter="{StaticResource ProgressSliderValueConverter}"
             Value="{x:Bind PlayerViewModel.ChapterPositionMs, Mode=OneWay}"
             x:Name="ProgressSlider">
             <Slider.Resources>
+                <x:Double x:Key="SliderHorizontalHeight">15</x:Double>
+                <!--  11 px visible text with 1 px of track above and below.  -->
+                <x:Double x:Key="SliderTrackThemeHeight">13</x:Double>
                 <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
-                <x:Double x:Key="SliderHorizontalThumbHeight">8</x:Double>
-                <x:Double x:Key="SliderPreContentMargin">16</x:Double>
+                <x:Double x:Key="SliderHorizontalThumbHeight">13</x:Double>
+                <x:Double x:Key="SliderPreContentMargin">2</x:Double>
                 <x:Double x:Key="SliderPostContentMargin">0</x:Double>
                 <Thickness x:Key="SliderTopHeaderMargin">0,0,0,0</Thickness>
                 <Thickness x:Key="SliderBorderThemeThickness">0</Thickness>
@@ -435,6 +513,48 @@
                 <StaticResource ResourceKey="ControlFillColorTransparentBrush" x:Key="SliderThumbBorderBrush" />
             </Slider.Resources>
         </Slider>
+
+        <!--  Let pointer input pass through the labels so the entire bar remains seekable.  -->
+        <Grid
+            Canvas.ZIndex="1"
+            Grid.Row="1"
+            IsHitTestVisible="False"
+            Margin="8,0,8,0"
+            VerticalAlignment="Center">
+            <!--  Center the visible glyphs as well as their line box.  -->
+            <Grid.RenderTransform>
+                <TranslateTransform Y="0" />
+            </Grid.RenderTransform>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border
+                HorizontalAlignment="Left"
+                Padding="4,0">
+                <TextBlock
+                    AutomationProperties.Name="Time left in chapter at current speed"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+                    <Run Text="Chapter " />
+                    <Run Text="{x:Bind PlayerViewModel.ChapterRemainingText, Mode=OneWay}" />
+                </TextBlock>
+            </Border>
+            <Border
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Padding="4,0">
+                <TextBlock
+                    AutomationProperties.Name="Time left in book at current speed"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+                    <Run Text="Book " />
+                    <Run Text="{x:Bind PlayerViewModel.BookRemainingText, Mode=OneWay}" />
+                </TextBlock>
+            </Border>
+        </Grid>
 
     </Grid>
 </Page>

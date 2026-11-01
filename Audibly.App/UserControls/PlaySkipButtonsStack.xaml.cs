@@ -19,6 +19,9 @@ public sealed partial class PlaySkipButtonsStack : UserControl
     public static readonly DependencyProperty PlayButtonSizeProperty = DependencyProperty.Register(
         nameof(PlayButtonSize), typeof(double), typeof(PlaySkipButtonsStack), new PropertyMetadata(32.0));
 
+    public static readonly DependencyProperty SkipButtonSizeProperty = DependencyProperty.Register(
+        nameof(SkipButtonSize), typeof(double), typeof(PlaySkipButtonsStack), new PropertyMetadata(24.0));
+
     public PlaySkipButtonsStack()
     {
         InitializeComponent();
@@ -46,12 +49,18 @@ public sealed partial class PlaySkipButtonsStack : UserControl
         set => SetValue(PlayButtonSizeProperty, value);
     }
 
+    public double SkipButtonSize
+    {
+        get => (double)GetValue(SkipButtonSizeProperty);
+        set => SetValue(SkipButtonSizeProperty, value);
+    }
+
     private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
     {
         if (PlayerViewModel.PlayPauseIcon == Symbol.Play)
-            PlayerViewModel.MediaPlayer.Play();
+            PlayerViewModel.AudioPlayer.Play();
         else
-            PlayerViewModel.MediaPlayer.Pause();
+            PlayerViewModel.AudioPlayer.Pause();
     }
 
     private async void PreviousChapterButton_Click(object sender, RoutedEventArgs e)
@@ -62,7 +71,7 @@ public sealed partial class PlaySkipButtonsStack : UserControl
                 .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
         {
             var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex - 1;
-            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx);
+            await PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex - 1, newChapterIdx);
             PlayerViewModel.CurrentPosition =
                 TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
             await PlayerViewModel.NowPlaying.SaveAsync();
@@ -98,7 +107,7 @@ public sealed partial class PlaySkipButtonsStack : UserControl
                 .ParentSourceFileIndex != PlayerViewModel.NowPlaying?.CurrentSourceFileIndex)
         {
             var newChapterIdx = (int)PlayerViewModel.NowPlaying.CurrentChapterIndex + 1;
-            PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx);
+            await PlayerViewModel.OpenSourceFile(PlayerViewModel.NowPlaying.CurrentSourceFileIndex + 1, newChapterIdx);
             PlayerViewModel.CurrentPosition =
                 TimeSpan.FromMilliseconds(PlayerViewModel.NowPlaying.Chapters[newChapterIdx].StartTime);
             await PlayerViewModel.NowPlaying.SaveAsync();
@@ -140,9 +149,9 @@ public sealed partial class PlaySkipButtonsStack : UserControl
     {
         // todo: might need to switch this to using the duration from the audiobook record
         PlayerViewModel.CurrentPosition = PlayerViewModel.CurrentPosition + _skipForwardButtonAmount <=
-                                          PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration
+                                          PlayerViewModel.AudioPlayer.Duration
             ? PlayerViewModel.CurrentPosition + _skipForwardButtonAmount
-            : PlayerViewModel.MediaPlayer.PlaybackSession.NaturalDuration;
+            : PlayerViewModel.AudioPlayer.Duration;
 
         await PlayerViewModel.NowPlaying.SaveAsync();
     }

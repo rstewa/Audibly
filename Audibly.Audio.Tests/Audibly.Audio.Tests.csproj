@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+    <PackageReference Include="SoundTouch.Net" Version="2.3.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exercise the production audio pipeline without requiring WinUI packaging. -->
+    <Compile Include="..\Audibly.App\Services\Audio\*.cs" Link="Audio\%(Filename)%(Extension)" />
+    <Compile Include="..\Audibly.App\Helpers\PlaybackTimeRemaining.cs" Link="PlaybackTimeRemaining.cs" />
+    <Compile Include="..\Audibly.App\Helpers\ChapterSleepTimer.cs" Link="ChapterSleepTimer.cs" />
+  </ItemGroup>
+</Project>

@@ -87,23 +87,18 @@
                             <StackPanel Orientation="Horizontal" Spacing="16">
                                 <Slider
                                     AutomationProperties.AutomationId="playbackSpeedSlider"
-                                    LargeChange="0.5"
-                                    Maximum="4.0"
-                                    Minimum="0.5"
-                                    SmallChange="0.05"
-                                    SnapsTo="StepValues"
-                                    StepFrequency="0.05"
+                                    Style="{StaticResource PlaybackSpeedSliderStyle}"
                                     ToolTipService.ToolTip="Playback speed"
-                                    Value="{x:Bind ViewModel.DefaultPlaybackSpeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Value="{x:Bind ViewModel.DefaultPlaybackSpeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource PlaybackSpeedIndexConverter}}"
                                     x:Name="playbackSpeed" />
 
                                 <TextBox
                                     HorizontalContentAlignment="Center"
                                     IsReadOnly="True"
-                                    Text="{x:Bind sys:String.Format('{0:F2}', ViewModel.DefaultPlaybackSpeed), Mode=OneWay}"
+                                    Text="{x:Bind sys:String.Format('{0:0.##}×', ViewModel.DefaultPlaybackSpeed), Mode=OneWay}"
                                     TextAlignment="Center"
                                     VerticalContentAlignment="Center"
-                                    Width="16"
+                                    Width="64"
                                     x:Name="playbackSpeedTextBox" />
                             </StackPanel>
                         </toolkit:SettingsCard>

@@ -200,14 +200,10 @@
                                     <Slider
                                         AutomationProperties.Name="PlaybackSpeedSlider"
                                         Margin="-14,0,0,0"
-                                        Maximum="4.0"
-                                        Minimum="0.5"
                                         Orientation="Vertical"
-                                        SmallChange="0.05"
-                                        SnapsTo="StepValues"
-                                        StepFrequency="0.05"
+                                        Style="{StaticResource PlaybackSpeedSliderStyle}"
                                         ToolTipService.ToolTip="Playback Speed"
-                                        Value="{x:Bind PlayerViewModel.PlaybackSpeed, Mode=OneWay}"
+                                        Value="{x:Bind PlayerViewModel.PlaybackSpeed, Mode=OneWay, Converter={StaticResource PlaybackSpeedIndexConverter}}"
                                         ValueChanged="PlaybackSpeedSlider_ValueChanged"
                                         x:Name="PlaybackSpeedSlider" />
                                 </Grid>

@@ -1,0 +1,13 @@
+Audibly uses the following unmodified audio libraries as separate assemblies:
+
+NAudio 2.2.1 (NAudio.Core and NAudio.Wasapi)
+Copyright Mark Heath and contributors. MIT license.
+Source: https://github.com/naudio/NAudio/tree/v2.2.1
+See NAudio-LICENSE.txt.
+
+SoundTouch.NET 2.3.2
+SoundTouch copyright Olli Parviainen; C# port copyright Olaf Woudenberg.
+GNU Lesser General Public License, version 2.1 or later.
+Source: https://github.com/owoudenberg/soundtouch.net
+Package: https://www.nuget.org/packages/SoundTouch.Net/2.3.2
+See SoundTouch.NET-LICENSE.txt.

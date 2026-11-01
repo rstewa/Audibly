@@ -12,8 +12,7 @@ public static class Constants
     public static double PlaybackSpeedMaximum { get; } = 4.0;
     public static double PlaybackSpeedDefault { get; } = 1.0;
 
-    public static double PlaybackSpeedMinimum { get; } = 0.5;
-    public static double PlaybackSpeedIncrement { get; } = 0.05;
+    public static double PlaybackSpeedMinimum { get; } = 1.0;
 
     public const string VolumeGlyph0 = "\uE74F";
     public const string VolumeGlyph1 = "\uE993";

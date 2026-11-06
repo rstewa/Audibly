@@ -32,6 +32,8 @@ For a local installation independent of the checkout, run `Install-ReadAlong.ps1
 
 This local installation uses a registered development package; it is not yet a signed consumer MSIX/Store release. It relies on the existing Windows/.NET application runtimes supplied by the development setup, while Node/FFmpeg and alignment dependencies are copied with the app. A desktop shortcut that already launches another Audibly installation is preserved, with **Audibly (Read Along)** used for the new shortcut in that case.
 
+Windows icon assets are copied explicitly to build/publish output, and the executable embeds `Assets\logo.ico`. Main and mini windows resolve their icon from the application's absolute install directory. The installer checks required icon/tile assets before registration. A missing-icon regression was reproduced through Windows shell icon extraction: before repair the app returned a blank-document icon; after restoring the missing image assets and refreshing the shell it returned Audibly's waveform icon. This check verifies shell icon resolution, not the rest of the native UI.
+
 `NuGet.Config` adds the official Toolkit Labs feed needed by Audibly's existing package versions. The project pins Windows SDK projection `10.0.19041.56`, which supplies the WinRT.Runtime 2.2 required by those packages on older .NET SDKs. These resolve baseline build problems; they do not upgrade the player framework.
 
 ## Use

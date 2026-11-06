@@ -29,11 +29,7 @@ public sealed partial class ReadAlongPanel : UserControl
     private bool _follow = true;
     private bool _busy;
     private ScrollViewer? _scroll;
-    private string EngineFolder
-    {
-        get => ApplicationData.Current.LocalSettings.Values["ReadAlongEngine"] as string ?? Path.Combine(AppContext.BaseDirectory, "read-along");
-        set => ApplicationData.Current.LocalSettings.Values["ReadAlongEngine"] = value;
-    }
+    private static string EngineFolder => Path.Combine(AppContext.BaseDirectory, "read-along");
     private AudiobookViewModel? Book => App.PlayerViewModel.NowPlaying;
     public ReadAlongPanel()
     {
@@ -66,7 +62,7 @@ public sealed partial class ReadAlongPanel : UserControl
     private static string[] SourcePaths(AudiobookViewModel book) => book.SourcePaths.Select(s => s.FilePath).ToArray();
     private void SetBusy(bool busy)
     {
-        _busy = busy; AttachButton.IsEnabled = GenerateButton.IsEnabled = EngineButton.IsEnabled = AudioLanguage.IsEnabled = !busy;
+        _busy = busy; AttachButton.IsEnabled = GenerateButton.IsEnabled = AudioLanguage.IsEnabled = !busy;
         CancelButton.IsEnabled = busy;
     }
     private async Task LoadBookAsync()
@@ -113,19 +109,6 @@ public sealed partial class ReadAlongPanel : UserControl
         }
         catch (Exception ex) { StatusText.Text = ex.Message; }
         finally { SetBusy(false); }
-    }
-    private async void Engine_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var picker = new FolderPicker(); picker.FileTypeFilter.Add("*");
-            InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(App.Window));
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder is null) return;
-            if (!File.Exists(Path.Combine(folder.Path, "align.mjs"))) throw new IOException("Choose tools/read-along, containing align.mjs, after running npm ci in that folder.");
-            EngineFolder = folder.Path; StatusText.Text = "Local engine configured. Attach an EPUB and generate alignment.";
-        }
-        catch (Exception ex) { StatusText.Text = ex.Message; }
     }
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {

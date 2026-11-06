@@ -261,6 +261,32 @@
         </Page>
     </ItemGroup>
 
+    <!-- Ship the local alignment runtime with the app, including dependency licence notices.
+         Models are downloaded to the user's cache on first use, never into the package. -->
+    <ItemGroup>
+        <Content Include="..\tools\read-along\align.mjs;..\tools\read-along\convert.mjs;..\tools\read-along\package.json;..\tools\read-along\package-lock.json">
+            <Link>read-along\%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+        <Content Include="..\tools\read-along\node_modules\**\*">
+            <Link>read-along\node_modules\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+    <Target Name="CheckReadAlongRuntime" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+        <Error Condition="!Exists('..\tools\read-along\node_modules\node\bin\node.exe') Or !Exists('..\tools\read-along\node_modules\@storyteller-platform\align\package.json')"
+               Text="Prepare bundled Read Along dependencies before building: npm ci --prefix tools/read-along (from the repository root)." />
+    </Target>
+    <!-- Runtime files are ordinary package payload, not localized UI resources.
+         Otherwise names such as dist-es and is-stream become language qualifiers. -->
+    <Target Name="ExcludeReadAlongFromResourceIndex" AfterTargets="GetPriOutputs">
+        <ItemGroup>
+            <PriOutputs Remove="@(PriOutputs)" Condition="$([System.String]::Copy('%(PriOutputs.FullPath)').Contains('\read-along\'))" />
+        </ItemGroup>
+    </Target>
+
     <!-- 
       Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
       Explorer "Package and Publish" context menu entry to be enabled for this project even if 

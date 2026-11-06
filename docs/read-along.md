@@ -17,7 +17,7 @@ npm.cmd ci --prefix tools/read-along
 dotnet build Audibly.App/Audibly.App.csproj -p:Platform=x64 -p:RuntimeIdentifier=win-x64
 ```
 
-The engine dependencies are installed into `tools/read-along/node_modules`; the lockfile pins the tested dependency tree. `allowScripts` in package.json permits the required native dependency installation scripts. FFmpeg, FFprobe and a local Node 24 runtime are provided by those dependencies, without editing system PATH. First alignment downloads the QuartzNet model to `%LOCALAPPDATA%\ghost-story\models` (roughly 182 MB for the downloaded model variants). Later processing works offline with those cached dependencies. Allow disk space for a temporary copy of each source audio file and emissions, as well as the EPUB and map.
+For developers, `npm ci` prepares dependencies in `tools/read-along/node_modules`; the lockfile pins the tested dependency tree. The build includes the adapter, Node 24, FFmpeg, FFprobe, Storyteller, native inference libraries and dependency notices under the app's `read-along` directory, including in publish/package content. Users do not need a system Node/FFmpeg installation or an engine-folder selection. The panel always uses the bundled copy and ignores the old folder preference. `allowScripts` in package.json permits the required developer dependency installation scripts. First alignment automatically downloads the QuartzNet model to `%LOCALAPPDATA%\ghost-story\models` (roughly 182 MB for the downloaded model variants). Later processing works offline with those cached dependencies. Allow disk space for a temporary copy of each source audio file and emissions, as well as the EPUB and map.
 
 Launch the separate development build from PowerShell:
 
@@ -34,11 +34,10 @@ The launcher builds and registers only `Audibly.ReadAlong.Development`, displaye
 
 1. Import an M4B, M4A or MP3 audiobook using Audibly's existing import commands. Use its existing multi-file import for a split audiobook, in the intended source order.
 2. Click **Read Along** beside the play/skip buttons in the bottom playback bar. It opens the expanded player and reading panel. The same toggle is available beside the expanded player's play/skip buttons; it no longer sits in the window's top-right area.
-3. Choose **Engine folder…** and select this checkout's `tools/read-along` folder. This selection is remembered. The folder must contain `align.mjs` and the installed dependencies.
-4. Choose **Attach EPUB**, select the matching DRM-free ebook, and set the audio language (`en` by default).
-5. Choose **Generate alignment**. Progress appears in the panel. **Cancel** terminates the worker process tree. Completed emissions can be reused when retrying.
-6. Play using the normal controls. Reliable words are highlighted in gold using the player's source position. Click an aligned word to seek. Untimed text stays readable and unhighlighted.
-7. Scroll manually to suspend following; choose **Follow narration** to resume. Toggle Read Along off to return to the original cover/player view. The toggle is remembered.
+3. Choose **Attach EPUB**, select the matching DRM-free ebook, and set the audio language (`en` by default).
+4. Choose **Generate alignment**. The app uses its included processing software automatically. Progress appears in the panel. **Cancel** terminates the worker process tree. Completed emissions can be reused when retrying.
+5. Play using the normal controls. Reliable words are highlighted in gold using the player's source position. Click an aligned word to seek. Untimed text stays readable and unhighlighted.
+6. Scroll manually to suspend following; choose **Follow narration** to resume. Toggle Read Along off to return to the original cover/player view. The toggle is remembered.
 
 Attaching an EPUB creates a managed copy; neither the original EPUB nor audiobook is modified. A book without an EPUB continues through the original player code. Reading saved maps does not launch Node or require Storyteller.
 
@@ -115,6 +114,8 @@ Actual results on 6 November 2026:
 | Actual M4B, M4A, two MP3 files | 202 cues each; MP3 cues mapped to both source-local timelines |
 | Cache rerun | Reused same map without rewriting it |
 | C# core + real map + real subprocess adapter | 228 assertions passed |
+| Bundled application runtime, system Node/FFmpeg removed from PATH | Real M4A CPU alignment succeeded: 202 word cues |
+| C# adapter using the app-bundled engine | 228 assertions passed |
 | Windows x64 app build | Succeeded; existing upstream warnings remain |
 | Isolated packaged app launch | Succeeded |
 | Native visual/click/playback integration | Not verified; computer-use app approval timed out |
@@ -134,7 +135,7 @@ The playback-rate assertions exercise the position-based lookup contract, not li
 
 ## Licences
 
-Audibly remains GPL-3.0. The alignment package is MIT, `ghost-story@0.3.4` is GPL-3.0, ONNX Runtime is MIT, and the FFmpeg static dependency carries GPL-3.0. The code licences are compatible with this GPL application. They are separately installed local dependencies; do not publish bundled binaries without retaining their notices and satisfying applicable source obligations. The lockfile includes upstream dependency metadata and URLs.
+Audibly remains GPL-3.0. The alignment package is MIT, `ghost-story@0.3.4` is GPL-3.0, ONNX Runtime is MIT, and the FFmpeg static dependency carries GPL-3.0. The code licences are compatible with this GPL application. Dependency notices are retained in the bundled dependency tree. Before distributing release binaries, satisfy applicable corresponding-source and other redistribution obligations; the current local development bundle is not a completed third-party distribution audit. The lockfile includes upstream dependency metadata and URLs.
 
 Model weights have their own terms. The automatically downloaded Storyteller QuartzNet conversion is **not bundled here**. NVIDIA's original [QuartzNet model page](https://catalog.ngc.nvidia.com/orgs/nvidia/nemo/models/stt_en_quartznet15x5) points to NGC terms; other conversions advertise different licences. A redistribution grant for Storyteller's exact converted weights has not been established, so this work makes no blanket model-redistribution compatibility claim. Review those terms before distributing weights. This does not require a cloud inference service for local processing.
 

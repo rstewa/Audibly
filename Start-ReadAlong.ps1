@@ -15,6 +15,11 @@ if (-not $NoBuild) {
 }
 $manifestPath = Join-Path $output 'AppxManifest.xml'
 if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Build the application before using -NoBuild.' }
+foreach ($component in @('align.mjs','convert.mjs','node_modules\node\bin\node.exe','node_modules\ffmpeg-static\ffmpeg.exe','node_modules\@storyteller-platform\align\package.json')) {
+    if (-not (Test-Path -LiteralPath (Join-Path $output ('read-along\' + $component)))) {
+        throw 'The build is missing bundled Read Along components. Run npm ci --prefix tools/read-along, then rebuild.'
+    }
+}
 $packageName = 'Audibly.ReadAlong.Development'
 $registered = Get-AppxPackage -Name $packageName
 if ($registered -and -not [string]::Equals([IO.Path]::GetFullPath($registered.InstallLocation), $developmentRoot, [StringComparison]::OrdinalIgnoreCase)) {
@@ -34,6 +39,13 @@ Copy-Item -Path (Join-Path $output '*') -Destination $developmentRoot -Recurse -
 $developmentManifest = Join-Path $developmentRoot 'AppxManifest.xml'
 [xml]$manifest = Get-Content -LiteralPath $developmentManifest
 $manifest.Package.Identity.Name = $packageName
+# Windows requires a higher version when the development payload changes.
+# Updating this identity preserves its existing LocalState/Settings data.
+if ($registered -and [version]$manifest.Package.Identity.Version -le [version]$registered.Version) {
+    $version = [version]$registered.Version
+    if ($version.Revision -ge 65535) { throw 'Development revision exhausted; update the source package version.' }
+    $manifest.Package.Identity.Version = '{0}.{1}.{2}.{3}' -f $version.Major,$version.Minor,$version.Build,($version.Revision + 1)
+}
 $manifest.Package.Properties.DisplayName = 'Audibly Read Along QA'
 $application = $manifest.Package.Applications.Application
 $application.VisualElements.DisplayName = 'Audibly Read Along QA'

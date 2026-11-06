@@ -9,7 +9,7 @@ public sealed class StorytellerProcessor
         string epub, IReadOnlyList<string> sources, string language, IProgress<string> progress, CancellationToken token)
     {
         if (!File.Exists(Path.Combine(engineFolder, "align.mjs")))
-            throw new FileNotFoundException("Choose the Read Along engine folder containing align.mjs. See docs/read-along.md for setup.");
+            throw new FileNotFoundException("Read Along components are missing from this installation. Repair or reinstall Audibly.");
         Directory.CreateDirectory(cacheFolder);
         var jobFile = Path.Combine(cacheFolder, Guid.NewGuid() + ".job.json");
         try

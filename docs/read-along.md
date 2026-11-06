@@ -1,6 +1,6 @@
 # EPUB Read Along
 
-Implemented from upstream `rstewa/Audibly` commit `ff1d5cfe4656cf6ef01ee0bc59ca6072ea31d279`, on local branch `feature/epub-read-along`. No existing fork was assumed and no hosted fork or PR was created.
+Implemented from upstream `rstewa/Audibly` commit `ff1d5cfe4656cf6ef01ee0bc59ca6072ea31d279`, on branch `feature/epub-read-along`. The contribution is published in the `saucedasf/Audibly` fork for upstream review.
 
 ## Current status
 
@@ -26,7 +26,11 @@ cd D:\audibly-transcript
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-ReadAlong.ps1
 ```
 
-The launcher builds and registers only `Audibly.ReadAlong.Development`, displayed in Start as **Audibly Read Along QA**. It refreshes `.research/qa-app`, gracefully closes only that checkout's QA process, and keeps its library/settings across launches. It refuses to replace a development registration from another directory and removes audiobook file associations from the QA manifest. Your installed Audibly retains its original identity and data. Use `-NoBuild` to register/launch an already-built version. Do not deploy the original production-identity manifest directly from Visual Studio when testing alongside the Store application.
+The launcher builds and registers only `Audibly.ReadAlong.Development`, displayed in Start as **Audibly**. It refreshes `.research/qa-app`, gracefully closes only the modified app, and keeps its library/settings across launches. Its private package identity remains different from the Store application even though the visible name is Audibly. It refuses unexpected registration paths and removes file associations from the development manifest. Your installed Audibly retains its original identity and data. Use `-NoBuild` to register/launch an already-built version. Do not deploy the original production-identity manifest directly from Visual Studio when testing alongside the Store application.
+
+For a local installation independent of the checkout, run `Install-ReadAlong.ps1` once (or `Install-ReadAlong.ps1 -NoBuild` after building). This copies the bundled app to `%LOCALAPPDATA%\Programs\AudiblyReadAlong`, registers that location using the same isolated identity, and creates an **Audibly** desktop shortcut using `Assets\logo.ico`. Existing modified-app library/settings stay in the same Windows package storage. Subsequent launches use the shortcut or Start menu, without PowerShell. The installer refuses to interrupt active alignment or force-close an app that will not shut down gracefully. It preserves the previous checkout payload. Later developer-launcher updates recognize the installed location and refresh it there.
+
+This local installation uses a registered development package; it is not yet a signed consumer MSIX/Store release. It relies on the existing Windows/.NET application runtimes supplied by the development setup, while Node/FFmpeg and alignment dependencies are copied with the app. A desktop shortcut that already launches another Audibly installation is preserved, with **Audibly (Read Along)** used for the new shortcut in that case.
 
 `NuGet.Config` adds the official Toolkit Labs feed needed by Audibly's existing package versions. The project pins Windows SDK projection `10.0.19041.56`, which supplies the WinRT.Runtime 2.2 required by those packages on older .NET SDKs. These resolve baseline build problems; they do not upgrade the player framework.
 

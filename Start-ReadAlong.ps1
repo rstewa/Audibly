@@ -1,14 +1,24 @@
-param([switch]$NoBuild)
+param([switch]$NoBuild, [switch]$Install)
 $ErrorActionPreference = 'Stop'
 $checkout = [IO.Path]::GetFullPath($PSScriptRoot)
+$packageName = 'Audibly.ReadAlong.Development'
+$registered = Get-AppxPackage -Name $packageName
+$qaRoot = [IO.Path]::GetFullPath((Join-Path $checkout '.research\qa-app'))
+$installRoot = [IO.Path]::GetFullPath((Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Programs\AudiblyReadAlong'))
+if ($registered -and @($qaRoot, $installRoot) -notcontains [IO.Path]::GetFullPath($registered.InstallLocation)) {
+    throw "This app identity is registered elsewhere: $($registered.InstallLocation). No package was changed."
+}
+$developmentRoot = if ($Install -or ($registered -and [IO.Path]::GetFullPath($registered.InstallLocation) -eq $installRoot)) { $installRoot } else { $qaRoot }
 # Never restart the QA app while one of its alignment workers is still running.
 $runningAlignment = Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object {
-    $_.CommandLine -and $_.CommandLine.Replace('/','\').IndexOf((Join-Path $checkout '.research\qa-app\read-along\align.mjs'), [StringComparison]::OrdinalIgnoreCase) -ge 0
+    $commandLine = $_.CommandLine
+    $commandLine -and (@($qaRoot, $installRoot) | Where-Object {
+        $commandLine.Replace('/','\').IndexOf((Join-Path $_ 'read-along\align.mjs'), [StringComparison]::OrdinalIgnoreCase) -ge 0
+    })
 }
 if ($runningAlignment) { throw 'Read Along preparation is still running. Wait for it to finish before updating or restarting this app.' }
 $output = Join-Path $checkout 'Audibly.App\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64'
-$developmentRoot = [IO.Path]::GetFullPath((Join-Path $checkout '.research\qa-app'))
-if (-not $developmentRoot.StartsWith($checkout.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
+if (@($qaRoot, $installRoot) -notcontains $developmentRoot) {
     throw 'Unexpected development output path.'
 }
 if (-not $NoBuild) {
@@ -25,17 +35,12 @@ foreach ($component in @('align.mjs','convert.mjs','prepare-epub.mjs','node_modu
         throw 'The build is missing bundled Read Along components. Run npm ci --prefix tools/read-along, then rebuild.'
     }
 }
-$packageName = 'Audibly.ReadAlong.Development'
-$registered = Get-AppxPackage -Name $packageName
-if ($registered -and -not [string]::Equals([IO.Path]::GetFullPath($registered.InstallLocation), $developmentRoot, [StringComparison]::OrdinalIgnoreCase)) {
-    throw "The development identity is registered elsewhere: $($registered.InstallLocation). No package was changed."
-}
 # Close only this checkout's QA process, allowing its existing close handler to save progress.
-$developmentExe = Join-Path $developmentRoot 'Audibly.App.exe'
+$developmentExe = Join-Path $(if ($registered) { $registered.InstallLocation } else { $developmentRoot }) 'Audibly.App.exe'
 foreach ($process in @(Get-Process Audibly.App -ErrorAction SilentlyContinue)) {
     if ([string]::Equals($process.Path, $developmentExe, [StringComparison]::OrdinalIgnoreCase)) {
         if (-not $process.CloseMainWindow() -or -not $process.WaitForExit(15000)) {
-            throw 'Close Audibly Read Along QA manually, then run this launcher again. It was not force-stopped.'
+            throw 'Close the modified Audibly app, then run this installer again. It was not force-stopped.'
         }
     }
 }
@@ -51,9 +56,9 @@ if ($registered -and [version]$manifest.Package.Identity.Version -le [version]$r
     if ($version.Revision -ge 65535) { throw 'Development revision exhausted; update the source package version.' }
     $manifest.Package.Identity.Version = '{0}.{1}.{2}.{3}' -f $version.Major,$version.Minor,$version.Build,($version.Revision + 1)
 }
-$manifest.Package.Properties.DisplayName = 'Audibly Read Along QA'
+$manifest.Package.Properties.DisplayName = 'Audibly'
 $application = $manifest.Package.Applications.Application
-$application.VisualElements.DisplayName = 'Audibly Read Along QA'
+$application.VisualElements.DisplayName = 'Audibly'
 # QA should never become a handler for the user's audiobook file associations.
 if ($application.Extensions) { [void]$application.RemoveChild($application.Extensions) }
 if ($manifest.Package.Identity.Name -ne $packageName) { throw 'Refusing to register the production identity.' }
@@ -61,6 +66,28 @@ $manifest.Save($developmentManifest)
 Add-AppxPackage -Register $developmentManifest
 $registered = Get-AppxPackage -Name $packageName
 if (-not $registered) { throw 'Development package registration failed.' }
+$desktop = [Environment]::GetFolderPath('Desktop')
+$shortcutPath = Join-Path $desktop 'Audibly.lnk'
+$shell = New-Object -ComObject WScript.Shell
+if (Test-Path -LiteralPath $shortcutPath) {
+    $existingShortcut = $shell.CreateShortcut($shortcutPath)
+    if ($existingShortcut.Arguments -notlike ('*' + $registered.PackageFamilyName + '*')) {
+        $shortcutPath = Join-Path $desktop 'Audibly (Read Along).lnk'
+    }
+}
+$shortcut = $shell.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = Join-Path $env:WINDIR 'explorer.exe'
+$shortcut.Arguments = 'shell:AppsFolder\' + $registered.PackageFamilyName + '!App'
+$shortcut.Description = 'Audibly with EPUB Read Along'
+$shortcut.IconLocation = (Join-Path $registered.InstallLocation 'Assets\logo.ico') + ',0'
+$shortcut.Save()
+$oldShortcutPath = Join-Path $desktop 'Audibly Read Along QA.lnk'
+if (Test-Path -LiteralPath $oldShortcutPath) {
+    $oldShortcut = $shell.CreateShortcut($oldShortcutPath)
+    if ($oldShortcut.Arguments -like ('*' + $registered.PackageFamilyName + '*')) {
+        Remove-Item -LiteralPath $oldShortcutPath
+    }
+}
 Start-Process explorer.exe -ArgumentList ('shell:AppsFolder\' + $registered.PackageFamilyName + '!App') -WindowStyle Hidden
-Write-Output 'Launched Audibly Read Along QA with its own library and settings.'
+Write-Output ('Launched Audibly with its own library and settings. Desktop shortcut: ' + $shortcutPath)
 Write-Output 'Read Along is the book icon beside volume and playback speed.'

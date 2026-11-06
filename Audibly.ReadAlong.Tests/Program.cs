@@ -43,6 +43,13 @@ void Reject(Action action, string name)
     try { action(); } catch (InvalidDataException) { Check(true, name); return; }
     throw new Exception("Accepted invalid map: " + name);
 }
+Check(AudiobookImportSelection.Parse(["book.M4A", "book.EPUB"]) == new AudiobookImportSelection("book.M4A", "book.EPUB"), "import audio and EPUB together, preserving original paths");
+Check(AudiobookImportSelection.Parse(["book.mp3"]).EpubPath is null, "audio-only import remains supported");
+Check(AudiobookImportSelection.Parse(["book.epub", "book.m4b"]).AudioPath == "book.m4b", "EPUB selection order does not affect audio import");
+Reject(() => AudiobookImportSelection.Parse(["book.epub"]), "EPUB without audio rejected before import");
+Reject(() => AudiobookImportSelection.Parse(["a.mp3", "b.mp3", "book.epub"]), "multiple audio files directed to existing ordered import");
+Reject(() => AudiobookImportSelection.Parse(["a.mp3", "a.epub", "b.epub"]), "ambiguous EPUB attachment rejected");
+Reject(() => AudiobookImportSelection.Parse(["a.mp3", "a.txt"]), "unsupported selection rejected before import");
 Check(AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Analysing audio\",\"fraction\":0.42,\"detail\":\"CPU\"}", out var progress) && progress?.Fraction == 0.42, "measured stage progress");
 Check(AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Checking files\"}", out progress) && progress?.Fraction is null, "unknown duration stays indeterminate");
 Check(!AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Audio\",\"fraction\":2}", out _), "invalid progress refused");

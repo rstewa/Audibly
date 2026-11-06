@@ -208,7 +208,7 @@ public sealed partial class ReadAlongPanel : UserControl
         _operation?.Cancel(); var operation = _operation = new CancellationTokenSource(); var token = operation.Token;
         ClearFailure();
         SetBusy(true); var sources = SourcePaths(book); var language = AudioLanguage.Text.Trim();
-        var device = (ProcessingDevice.SelectedItem as ComboBoxItem)?.Tag as string ?? "cpu";
+        var device = (ProcessingDevice.SelectedItem as ComboBoxItem)?.Tag as string ?? "dml";
         try
         {
             StatusText.Text = "Preparing this book for Read Along…";

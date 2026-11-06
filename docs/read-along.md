@@ -4,7 +4,7 @@ Implemented from upstream `rstewa/Audibly` commit `ff1d5cfe4656cf6ef01ee0bc59ca6
 
 ## Current status
 
-The Windows x64 application builds. The real CPU alignment pipeline, persisted map, C# subprocess adapter, matching and deliberately mismatched books, and M4B/M4A/multiple-MP3 inputs have been tested. The isolated QA application's native library screen was observed rendering. Computer use was then stopped by the user before the sample import, so Read Along rendering and the complete native interaction workflow remain **unverified**. At the user's request no further computer-use inspection was performed. The relocated bottom-player toggle builds successfully and the QA app has been refreshed. Do not treat this as a release-ready, manually validated feature.
+The Windows x64 application builds. Real CPU and DirectML GPU alignment, the persisted map, C# subprocess adapter, matching and deliberately mismatched books, and M4B/M4A/multiple-MP3 inputs have been tested. The isolated QA application's native library screen was observed rendering earlier. Computer use was then stopped by the user before the sample import, so Read Along rendering and the complete native interaction workflow remain **unverified**. At the user's request no further computer-use inspection was performed. Paired audio/EPUB import, the main book icon and GPU-preferred preparation compile, and the QA app has been refreshed. Do not treat this as a release-ready, manually validated feature.
 
 ## Setup on Windows 11 x64
 
@@ -32,8 +32,8 @@ The launcher builds and registers only `Audibly.ReadAlong.Development`, displaye
 
 ## Use
 
-1. Import an M4B, M4A or MP3 audiobook using Audibly's existing import commands. Use its existing multi-file import for a split audiobook, in the intended source order.
-2. Click **Read Along** beside the play/skip buttons in the bottom playback bar. It opens the expanded player and reading panel. The same toggle is available beside the expanded player's play/skip buttons; it no longer sits in the window's top-right area.
+1. Choose **Import an audiobook + optional EPUB**. Select one M4B, M4A or MP3 and, optionally, its matching EPUB together (Ctrl-click both files). The EPUB is copied into the imported book's own storage and the reading panel opens ready for **Prepare Read Along**. Audio-only import still works. Use the existing multi-file import for a split audiobook, in the intended source order, then attach its EPUB from the reading panel.
+2. The **book icon beside volume and playback speed** opens Read Along from the bottom playback bar and toggles the panel in the expanded player. The large text button beside play/skip has been removed.
 3. Choose **Choose EPUB and prepare** and select the matching DRM-free ebook. Preparation starts automatically. The selected filename stays visible; **Change EPUB** lets you replace it. If an EPUB was already attached, the main action is **Prepare Read Along**. Audio language (`en` by default) is under **Processing options**.
 4. A persistent preparation card shows the current stage, a progress bar, elapsed time and **Cancel preparation**. Percentages refer to the current stage, not an invented overall estimate. Stages without measured progress show an indeterminate bar. Completed emissions can be reused when retrying.
 5. Play using the normal controls. Reliable words are highlighted in gold using the player's source position. Click an aligned word to seek. Untimed text stays readable and unhighlighted.
@@ -156,7 +156,9 @@ For a recovered timing map, the test runner supports `--validate-map <alignment.
 
 ## CPU and GPU processing
 
-The existing running job explicitly uses CPU; it is not changed or stopped by editing/building this checkout. Under **Processing options**, the pending build adds **GPU (preview)** using Storyteller's supported Windows DirectML path. CPU remains the default verified mode. The current PC reports an NVIDIA GeForce RTX 5060 Ti and Intel UHD Graphics 770, but GPU inference has not been benchmarked or manually validated here. No concurrent inference benchmark was run during the user's ongoing analysis.
+New preparations default to **GPU preferred (CPU fallback)** under **Processing options**, using Storyteller's Windows DirectML path. CPU can be chosen explicitly. Existing completed maps remain usable without new analysis. An already-running CPU job cannot change processor midway and is never interrupted by the launcher.
+
+On 6 November 2026, after confirming no user alignment worker remained active, a fresh M4A sample completed with `requestedDevice=dml` and `actualDevice=dml`, producing 202 validated word cues. This verifies real GPU model loading/inference, not just a requested setting or cached map. Repeat with `tools/read-along/node_modules/node/bin/node.exe tools/read-along/verify-gpu.mjs` after generating the legal sample. It does not identify which physical adapter DirectML selects or establish a full-book speedup. Audio decoding and text matching still perform CPU work. The Windows build and all 260 C# regression checks passed, including combined-import selection, attachment persistence, cancellation, errors, and cue lookup. Native visual/click verification remains outstanding because computer use was disabled by the user.
 
 The actual shipped engine selects DirectML automatically on Windows when `auto` is requested, while its CUDA selection is gated to Linux x64. Its GPU loader can fall back to CPU if model loading fails. The adapter forwards an explicit `dml` choice only for future GPU requests, labels it preview, forwards fallback notices, and records the actual model-load device when upstream logging exposes it. Runtime failure after model loading is still reported as an error, not silently retried. No CUDA toolkit setup is required for this DirectML option. This is supported by the inspected 0.3.4 package source (`constants.js`, `emission/CtcModel.js`, `emission/ConvCtcOnnx.js`) and [ONNX Runtime's DirectML requirements](https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html).
 

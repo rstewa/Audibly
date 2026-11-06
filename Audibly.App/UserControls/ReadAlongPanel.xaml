@@ -19,8 +19,8 @@
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language" Width="100"/>
                         <ComboBox x:Name="ProcessingDevice" Header="Acceleration" SelectedIndex="0">
+                            <ComboBoxItem Content="GPU preferred (CPU fallback)" Tag="dml"/>
                             <ComboBoxItem Content="CPU" Tag="cpu"/>
-                            <ComboBoxItem Content="GPU (preview)" Tag="dml"/>
                         </ComboBox>
                     </StackPanel>
                 </Expander>

@@ -63,4 +63,4 @@ $registered = Get-AppxPackage -Name $packageName
 if (-not $registered) { throw 'Development package registration failed.' }
 Start-Process explorer.exe -ArgumentList ('shell:AppsFolder\' + $registered.PackageFamilyName + '!App') -WindowStyle Hidden
 Write-Output 'Launched Audibly Read Along QA with its own library and settings.'
-Write-Output 'Read Along is beside the play/skip controls in the bottom playback bar.'
+Write-Output 'Read Along is the book icon beside volume and playback speed.'

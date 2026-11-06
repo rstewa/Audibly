@@ -5,6 +5,28 @@ const elements = n => Array.from(n.getElementsByTagName('*'));
 const type = n => n.getAttribute('epub:type') ?? '';
 const hasType = (n, value) => type(n).split(/\s+/).some(t => t === `storyteller:${value}`);
 const bodyText = doc => elements(doc).find(n => n.localName === 'body')?.textContent ?? '';
+// Do not guess which word wins when the upstream matcher emits overlapping
+// ranges. Remove each entire connected overlap group; keep all published text.
+export function removeAmbiguousCues(passages) {
+  const tracks=new Map();
+  for(const passage of passages) for(const cue of passage.cues) {
+    if(!tracks.has(cue.sourceIndex)) tracks.set(cue.sourceIndex,[]);
+    tracks.get(cue.sourceIndex).push(cue);
+  }
+  const rejected=new Set();
+  for(const track of tracks.values()) {
+    track.sort((a,b)=>a.startSeconds-b.startSeconds);
+    let group=[],end=-Infinity;
+    const finish=()=>{if(group.length>1) for(const cue of group) rejected.add(cue);};
+    for(const cue of track) {
+      if(group.length && cue.startSeconds>=end) {finish();group=[];end=-Infinity;}
+      group.push(cue);end=Math.max(end,cue.endSeconds);
+    }
+    finish();
+  }
+  for(const passage of passages) passage.cues=passage.cues.filter(c=>!rejected.has(c));
+  return rejected.size;
+}
 function offsets(root, target) {
   let at = 0, found;
   function walk(n) {
@@ -77,6 +99,7 @@ export async function convert(originalPath, markedPath, alignedPath, sources, re
         passages.push({id:`${i}:${sentence.getAttribute('id')}`,href:src.href,fragment:sentence.getAttribute('id'),text:sentence.textContent,cues:sentenceCues});
       }
     }
+    removeAmbiguousCues(passages);
     return passages;
   } finally {original.discardAndClose();marked.discardAndClose();aligned.discardAndClose();}
 }

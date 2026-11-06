@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { convert } from './convert.mjs';
+import { convert, removeAmbiguousCues } from './convert.mjs';
 import pino from 'pino';
 import { prepareEpub } from './prepare-epub.mjs';
 const root=path.dirname(fileURLToPath(import.meta.url));
@@ -15,6 +15,10 @@ export async function fingerprint(file) {
   return {path:path.resolve(file),size:(await stat(file)).size,sha256:hash.digest('hex')};
 }
 export async function run(job) {
+  // Keep all upstream scratch files in the same protected Windows cache.
+  // CopyFile cannot move EFS-encrypted LocalState files to unencrypted %TEMP%.
+  process.env.STORYTELLER_SCRATCH_DIR=path.join(path.resolve(job.cache),'scratch');
+  await mkdir(process.env.STORYTELLER_SCRATCH_DIR,{recursive:true});
   const language=job.language ?? 'en';
   const device=job.device ?? 'cpu';
   if(!['cpu','dml'].includes(device)) throw new Error('Unsupported acceleration setting');
@@ -33,7 +37,17 @@ export async function run(job) {
   const work=path.join(job.cache,identity);
   await mkdir(path.join(work,'audio'),{recursive:true});
   const target=path.join(work,'alignment.json');
-  try {const cached=JSON.parse(await readFile(target,'utf8')); if(cached.schemaVersion===1 && cached.audiobookId===job.audiobookId) {console.log('Using cached alignment');return {target,model:cached};}} catch(e) {if(e.code!=='ENOENT' && !(e instanceof SyntaxError)) throw e;}
+  try {
+    const cached=JSON.parse(await readFile(target,'utf8'));
+    if(cached.schemaVersion===1 && cached.audiobookId===job.audiobookId) {
+      if(cached.adapterVersion!==2) {
+        cached.suppressedAmbiguousCues=removeAmbiguousCues(cached.passages);cached.adapterVersion=2;
+        if(!cached.passages.some(p=>p.cues.length)) throw new Error('No unambiguous matching words were found.');
+        const migrated=target+'.'+randomUUID()+'.tmp';await writeFile(migrated,JSON.stringify(cached));await rename(migrated,target);
+      }
+      console.log('Using cached alignment');return {target,model:cached};
+    }
+  } catch(e) {if(e.code!=='ENOENT' && !(e instanceof SyntaxError)) throw e;}
   reportProgress('Preparing ebook text');
   const emissions=path.join(work,'emissions'), marked=path.join(work,'marked.epub'), aligned=path.join(work,'aligned.epub'), reports=path.join(work,'report.json');
   await markup(preparedEpub,marked,{granularity:'word',primaryLocale:new Intl.Locale(language)});
@@ -61,7 +75,12 @@ export async function run(job) {
     } catch { /* Non-progress logs do not change user-visible state. */ }
   }});
   reportProgress('Loading speech model',null,deviceDescription()+' · first use may download the model');
-  await emit(path.join(work,'audio'),emissions,{model:'quartznet15x5',device,language:new Intl.Locale(language),logger,onProgress:progress('Analysing audio')});
+  await emit(path.join(work,'audio'),emissions,{model:'quartznet15x5',device,language:new Intl.Locale(language),logger,onProgress:p=>{
+    // Automated recovery checks can forbid expensive inference: upstream reports
+    // cached/planned before it loads a model or starts any analysis.
+    if(job.requireCachedEmissions && p<1) throw new Error('Completed audio analysis is unavailable; recovery test stopped without starting inference.');
+    progress('Analysing audio')(p);
+  }});
   reportProgress('Matching words to audio');
   await ctcAlign(marked,aligned,emissions,path.join(work,'audio'),{granularity:'word',primaryLocale:new Intl.Locale(language),reportsPath:reports,onProgress:progress('Matching words to audio')});
   reportProgress('Saving and checking alignment');
@@ -71,7 +90,7 @@ export async function run(job) {
   // Detect source modifications during processing; never publish a stale result.
   const after={epub:await fingerprint(job.epub),sources:await Promise.all(job.sources.map(fingerprint))};
   if(JSON.stringify(inputs)!==JSON.stringify(after)) throw new Error('Inputs changed while aligning; please retry.');
-  const model={schemaVersion:1,audiobookId:job.audiobookId,engine:`@storyteller-platform/align@0.2.16;quartznet15x5;${actualDevice ?? device+'-requested'}`,requestedDevice:device,actualDevice,status:'ready',language,epub:inputs.epub,sources,passages};
+  const model={schemaVersion:1,adapterVersion:2,audiobookId:job.audiobookId,engine:`@storyteller-platform/align@0.2.16;quartznet15x5;${actualDevice ?? device+'-requested'}`,requestedDevice:device,actualDevice,status:'ready',language,epub:inputs.epub,sources,passages};
   const temporary=target+'.'+randomUUID()+'.tmp';
   await writeFile(temporary,JSON.stringify(model));await rename(temporary,target);
   // Audio is already in the original library; retain only emissions, markup and maps.

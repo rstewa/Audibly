@@ -130,6 +130,18 @@ The user's actual 78-chapter ebook passed EPUB 2-to-3 conversion with identical 
 
 Worker stdout/stderr are decoded explicitly as UTF-8. A structured failure message is displayed without terminal download bars or stack traces; full stderr is retained as a UTF-8 `.job.log` in the book's cache folder for diagnosis. The subsequent lightweight C# suite passed 235 checks, including Unicode errors, clean summaries and retained diagnostic logs. Previous EPUB-2 failure messages are replaced in the panel with a readable retry instruction.
 
+### Protected Windows cache regression and copyable diagnostics
+
+The next full-book failure was reproduced as a Windows `copyfile` UNKNOWN error: `marked.epub` had the Encrypted attribute in packaged LocalState, and upstream attempted to copy it into unencrypted user TEMP. A copy within the same protected cache succeeded. The adapter now sets the upstream-supported `STORYTELLER_SCRATCH_DIR` to `<book cache>/scratch` before any EPUB work, retaining scratch files in the same protected storage. No encryption settings or source-book files are changed.
+
+`verify-protected-cache.mjs <directory inside QA LocalState>` reproduces that environment with the legal sample and existing emissions. The regression passed with an encrypted marked EPUB, 202 cues and unchanged emissions; it forbids new inference. The actual user's book then completed matching from its existing analysis cache. Full-book validation exposed overlapping upstream cue ranges; the converter now removes every connected ambiguous overlap group without modifying the published text or inventing replacement timing. Legacy maps are migrated atomically in place, keeping the expensive emissions/cache identity. Nested/chained intervals, touching boundaries, separate tracks and idempotent migration are covered by `verify-ambiguity.mjs`.
+
+The recovered full-book map passed the production C# loader, EPUB/audio SHA-256 checks and every lookup midpoint: 8,275 passages and 140,076 usable cues. A total of 217 ambiguous cues were suppressed and their text remains unhighlighted. These are automated backend/loader checks, not a claim of native visual or audible synchronization verification. No speech inference of the user's book was repeated.
+
+Error text is selectable. **Copy error details** copies the summary, processing context and UTF-8 diagnostic log (last 64 KiB for large logs) to the clipboard. Missing logs still produce a useful report. Failures remain copyable after reopening a book. The diagnostic report builder, Unicode behavior, missing logs and log-size bounds are covered by the C# suite, now 238 checks. The native clipboard-button click itself has not been UI-automated, in accordance with the user's instruction not to use computer use.
+
+For a recovered timing map, the test runner supports `--validate-map <alignment.json>` to exercise the production loader and all lookups. An optional third argument, the QA LocalState directory, associates that map with an existing attachment only after validating its current EPUB and sources again; it does not modify the library database.
+
 ## CPU and GPU processing
 
 The existing running job explicitly uses CPU; it is not changed or stopped by editing/building this checkout. Under **Processing options**, the pending build adds **GPU (preview)** using Storyteller's supported Windows DirectML path. CPU remains the default verified mode. The current PC reports an NVIDIA GeForce RTX 5060 Ti and Intel UHD Graphics 770, but GPU inference has not been benchmarked or manually validated here. No concurrent inference benchmark was run during the user's ongoing analysis.

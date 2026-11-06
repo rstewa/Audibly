@@ -1,6 +1,36 @@
 using System.Text.Json;
 using Audibly.ReadAlong;
 
+if (args.Length is 2 or 3 && args[0] == "--validate-map")
+{
+    var actual = JsonSerializer.Deserialize<AlignmentMap>(await File.ReadAllTextAsync(args[1]), AlignmentMap.Json)!;
+    actual.Validate(actual.AudiobookId, actual.Sources.Count);
+    var association = new BookAssociation { EpubPath = actual.Epub.Path, MapPath = Path.GetFullPath(args[1]) };
+    var loaded = await new ReadAlongStore(Path.GetDirectoryName(Path.GetFullPath(args[1]))!).LoadMapAsync(actual.AudiobookId, association, actual.Sources.Select(s=>s.Path).ToArray());
+    var count = 0;
+    foreach(var passage in loaded!.Passages)
+        foreach(var cue in passage.Cues)
+        {
+            if(loaded.Find(cue.SourceIndex,(cue.StartSeconds+cue.EndSeconds)/2)?.Cue.Id!=cue.Id)
+                throw new Exception("Real book lookup failed at " + cue.Id);
+            count++;
+        }
+    Console.WriteLine($"PASS real book: {loaded.Passages.Count} passages, {count} cues, source/EPUB fingerprints verified, all cue lookups passed");
+    if (args.Length == 3)
+    {
+        // Optional recovery tool: publish only after the exact app loader validates
+        // the current attachment as well, without modifying the library database.
+        var store = new ReadAlongStore(Path.GetFullPath(args[2]));
+        var saved = await store.LoadAsync(actual.AudiobookId) ?? throw new InvalidDataException("No existing EPUB attachment.");
+        var proposed = new BookAssociation { EpubPath = saved.EpubPath, MapPath = Path.GetFullPath(args[1]) };
+        await store.LoadMapAsync(actual.AudiobookId, proposed, actual.Sources.Select(s=>s.Path).ToArray());
+        saved.MapPath = proposed.MapPath; saved.Status = "ready"; saved.Error = null; saved.DiagnosticPath = null;
+        await store.SaveAsync(actual.AudiobookId, saved);
+        Console.WriteLine("Published verified alignment to the existing book attachment; library database unchanged.");
+    }
+    return;
+}
+
 var checks = 0;
 void Check(bool result, string name) { if (!result) throw new Exception(name); checks++; Console.WriteLine("PASS " + name); }
 void Reject(Action action, string name)
@@ -90,6 +120,13 @@ try
         Check(!error.Message.Contains('█'), "download progress excluded from error message");
         Check(Directory.EnumerateFiles(Path.Combine(temporary,"jobs"),"*.log").Any(f=>File.ReadAllText(f).Contains("Échec — EPUB 2")), "full UTF-8 diagnostic log retained");
     }
+    var diagnosticFile = Path.Combine(temporary,"diagnostic.log");
+    await File.WriteAllTextAsync(diagnosticFile,"Échec — full stack details");
+    var report = await FailureReport.CreateAsync("Alignment failed",diagnosticFile,"Stage: matching words");
+    Check(report.Contains("Stage: matching words") && report.Contains("Échec — full stack details"),"copyable error includes context and Unicode log");
+    Check((await FailureReport.CreateAsync("Alignment failed",Path.Combine(temporary,"missing.log"))).Contains("Unable to read diagnostic log"),"missing diagnostic remains copyable");
+    await File.WriteAllTextAsync(diagnosticFile,new string('x',100000));
+    Check((await FailureReport.CreateAsync("Alignment failed",diagnosticFile)).Length<67000,"large copied logs are bounded");
 }
 finally
 {

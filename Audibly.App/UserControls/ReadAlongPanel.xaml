@@ -36,7 +36,8 @@
                 </StackPanel>
             </Border>
             <StackPanel Grid.Row="3" Spacing="4">
-                <TextBlock x:Name="StatusText" Text="Choose an EPUB to get started." TextWrapping="Wrap" MaxHeight="90"/>
+                <TextBlock x:Name="StatusText" Text="Choose an EPUB to get started." TextWrapping="Wrap" MaxHeight="90" IsTextSelectionEnabled="True"/>
+                <Button x:Name="CopyErrorButton" Content="Copy error details" Click="CopyError_Click" Visibility="Collapsed"/>
                 <TextBlock x:Name="ModeLabel" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
             </StackPanel>
             <ListView Grid.Row="4" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"

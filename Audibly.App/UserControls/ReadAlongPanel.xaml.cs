@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.ApplicationModel.DataTransfer;
 using Audibly.App.ViewModels;
 using Audibly.ReadAlong;
 using Microsoft.UI.Xaml;
@@ -31,6 +32,9 @@ public sealed partial class ReadAlongPanel : UserControl
     private bool _busy;
     private readonly Stopwatch _processingClock = new();
     private long _lastElapsedSecond = -1;
+    private string? _lastError;
+    private string? _lastDiagnosticPath;
+    private string? _lastErrorContext;
     private ScrollViewer? _scroll;
     private static string EngineFolder => Path.Combine(AppContext.BaseDirectory, "read-along");
     private AudiobookViewModel? Book => App.PlayerViewModel.NowPlaying;
@@ -102,11 +106,34 @@ public sealed partial class ReadAlongPanel : UserControl
         }
         else ProcessingDetail.Text = line.Length > 400 ? line[..400] : line;
     }
+    private void ShowFailure(string message, string? diagnosticPath = null, string? context = null)
+    {
+        _lastError = message; _lastDiagnosticPath = diagnosticPath; _lastErrorContext = context;
+        StatusText.Text = message;
+        CopyErrorButton.Content = "Copy error details"; CopyErrorButton.Visibility = Visibility.Visible;
+    }
+    private void ClearFailure()
+    {
+        _lastError = null; _lastDiagnosticPath = null; _lastErrorContext = null;
+        CopyErrorButton.Visibility = Visibility.Collapsed;
+    }
+    private async void CopyError_Click(object sender, RoutedEventArgs e)
+    {
+        if (_lastError is not { } error) return;
+        try
+        {
+            var text = await FailureReport.CreateAsync(error, _lastDiagnosticPath, _lastErrorContext);
+            var package = new DataPackage(); package.SetText(text); Clipboard.SetContent(package);
+            CopyErrorButton.Content = "Copied";
+        }
+        catch (Exception ex) { CopyErrorButton.Content = "Copy failed"; StatusText.Text = error + "\n" + ex.Message; }
+    }
     private async Task LoadBookAsync()
     {
         _operation?.Cancel();
         var operation = _operation = new CancellationTokenSource(); var token = operation.Token;
         _book = Book?.Id; _map = null; _association = null; _lastPassage = null; _lastCue = null;
+        ClearFailure();
         Passages.ItemsSource = null; SetBusy(false); _follow = true;
         if (Book is not { } book) { StatusText.Text = "Open an audiobook first."; return; }
         try
@@ -126,11 +153,20 @@ public sealed partial class ReadAlongPanel : UserControl
                 : association.Error?.Contains("only supports EPUB 3", StringComparison.Ordinal) == true
                     ? "Your ebook uses EPUB 2. This version can convert a working copy automatically. Choose Prepare Read Along to retry."
                     : association.Error ?? "EPUB attached. Choose Prepare Read Along to begin.";
+            if (map is null && association.Error is { } savedError)
+            {
+                var diagnosticPath = association.DiagnosticPath;
+                if (diagnosticPath is null && savedError.LastIndexOf("Details: ", StringComparison.Ordinal) is var index && index >= 0)
+                    diagnosticPath = savedError[(index + 9)..].Trim();
+                if (diagnosticPath is not null && !Path.GetFullPath(diagnosticPath).StartsWith(_store.BookFolder(book.Id) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    diagnosticPath = null;
+                ShowFailure(StatusText.Text, diagnosticPath);
+            }
         }
         catch (OperationCanceledException) { }
         catch (Exception e)
         {
-            if (_operation == operation) StatusText.Text = e.Message + " Attach an EPUB or generate alignment again.";
+            if (_operation == operation) ShowFailure(e.Message + " Attach an EPUB or generate alignment again.", context: e.ToString());
             // Keep association available for regeneration when only the map is stale.
             if (_operation == operation) try { _association = await _store.LoadAsync(book.Id); } catch { }
             if (_operation == operation) UpdateSetup();
@@ -154,7 +190,7 @@ public sealed partial class ReadAlongPanel : UserControl
             await LoadBookAsync();
             return Book?.Id == book.Id && _association is not null;
         }
-        catch (Exception ex) { StatusText.Text = ex.Message; }
+        catch (Exception ex) { ShowFailure(ex.Message, context: ex.ToString()); }
         finally { SetBusy(false); }
         return false;
     }
@@ -164,6 +200,7 @@ public sealed partial class ReadAlongPanel : UserControl
         if (_association is null && !await AttachEpubAsync()) return;
         if (Book?.Id != book.Id || _association is not { } association) return;
         _operation?.Cancel(); var operation = _operation = new CancellationTokenSource(); var token = operation.Token;
+        ClearFailure();
         SetBusy(true); var sources = SourcePaths(book); var language = AudioLanguage.Text.Trim();
         var device = (ProcessingDevice.SelectedItem as ComboBoxItem)?.Tag as string ?? "cpu";
         try
@@ -188,8 +225,10 @@ public sealed partial class ReadAlongPanel : UserControl
         {
             if (_operation == operation)
             {
-                StatusText.Text = ex.Message;
+                var diagnosticPath = (ex as AlignmentProcessingException)?.DiagnosticPath;
+                ShowFailure(ex.Message, diagnosticPath, "Stage: " + ProcessingStage.Text + "\n" + ex);
                 association.Status = "failed"; association.Error = ex.Message;
+                association.DiagnosticPath = diagnosticPath;
                 try { await _store.SaveAsync(book.Id, association); } catch { }
             }
         }

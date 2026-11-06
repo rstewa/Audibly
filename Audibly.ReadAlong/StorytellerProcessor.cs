@@ -74,7 +74,7 @@ public sealed class StorytellerProcessor
             token.ThrowIfCancellationRequested();
             await diagnostics.FlushAsync();
             if (process.ExitCode != 0 || result is null)
-                throw new IOException($"Alignment failed: {failure ?? $"The processing worker exited with code {process.ExitCode}."}{Environment.NewLine}Details: {logFile}");
+                throw new AlignmentProcessingException($"Alignment failed: {failure ?? $"The processing worker exited with code {process.ExitCode}."}{Environment.NewLine}Details: {logFile}", logFile);
             var absolute = Path.GetFullPath(result);
             var prefix = Path.GetFullPath(cacheFolder).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
             if (!absolute.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) || !File.Exists(absolute))

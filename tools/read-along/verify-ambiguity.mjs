@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { removeAmbiguousCues } from './convert.mjs';
+const cue=(id,startSeconds,endSeconds,sourceIndex=0)=>({id,startSeconds,endSeconds,sourceIndex});
+const passages=[{text:'Published text stays unchanged',cues:[cue('a',0,1),cue('b',1,2),cue('nested',3,10),cue('n1',4,5),cue('n2',6,7),cue('last',10,11),cue('other-track',4,5,1)]}];
+assert.equal(removeAmbiguousCues(passages),3);
+assert.deepEqual(passages[0].cues.map(c=>c.id),['a','b','last','other-track']);
+assert.equal(passages[0].text,'Published text stays unchanged');
+assert.equal(removeAmbiguousCues(passages),0);
+const chain=[{text:'Unchanged',cues:[cue('a',0,2),cue('b',1,3),cue('c',2,4)]}];
+assert.equal(removeAmbiguousCues(chain),3);
+console.log('PASS overlaps: nested and chained ambiguity suppressed; touching intervals and separate sources retained; published text unchanged; idempotent migration');

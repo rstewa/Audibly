@@ -9,6 +9,7 @@ public sealed class BookAssociation
     public string? MapPath { get; set; }
     public string Status { get; set; } = "attached";
     public string? Error { get; set; }
+    public string? DiagnosticPath { get; set; }
 }
 
 // Sidecars live beside Audibly.db and use the existing database audiobook GUID.

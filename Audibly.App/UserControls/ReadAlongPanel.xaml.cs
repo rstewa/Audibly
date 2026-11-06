@@ -148,7 +148,11 @@ public sealed partial class ReadAlongPanel : UserControl
             var map = shared is not null && shared.AudiobookId == book.Id &&
                 string.Equals(shared.Epub.Path, association.EpubPath, StringComparison.OrdinalIgnoreCase) &&
                 shared.Sources.Select(s => s.Path).SequenceEqual(sources, StringComparer.OrdinalIgnoreCase)
-                ? shared : await Task.Run(() => _store.LoadMapAsync(book.Id, association, sources, token), token);
+                ? shared : await Task.Run(async () =>
+                {
+                    var saved = await _store.LoadMapAsync(book.Id, association, sources, token);
+                    return saved is null ? null : await ReadingLayout.CreateAsync(saved, token);
+                }, token);
             token.ThrowIfCancellationRequested();
             if (_operation != operation) return;
             _association = association; _map = map;
@@ -218,7 +222,11 @@ public sealed partial class ReadAlongPanel : UserControl
             ReportProgress("PROGRESS:{\"stage\":\"Verifying saved alignment\"}");
             var updated = new BookAssociation { EpubPath = association.EpubPath, EpubName = association.EpubName, MapPath = path, Status = "ready" };
             // Validate result before replacing the last good association.
-            var map = await Task.Run(() => _store.LoadMapAsync(book.Id, updated, sources, token), token);
+            var map = await Task.Run(async () =>
+            {
+                var saved = await _store.LoadMapAsync(book.Id, updated, sources, token);
+                return saved is null ? null : await ReadingLayout.CreateAsync(saved, token);
+            }, token);
             token.ThrowIfCancellationRequested();
             await _store.SaveAsync(book.Id, updated, token);
             if (_operation != operation || Book?.Id != book.Id) return;
@@ -260,7 +268,11 @@ public sealed partial class ReadAlongPanel : UserControl
         }
         if (_lastCue == cue) return;
         _lastCue = cue;
-        foreach (var row in VisibleRows()) row.Highlight(cue);
+        foreach (var row in VisibleRows())
+        {
+            row.Highlight(cue);
+            if (_follow) row.BringWordIntoView(cue);
+        }
     }
     private System.Collections.Generic.IEnumerable<ReadAlongPassage> VisibleRows()
     {
@@ -272,7 +284,11 @@ public sealed partial class ReadAlongPanel : UserControl
     private void Passages_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
     {
         if (!args.InRecycleQueue) args.RegisterUpdateCallback((_, a) =>
-            FindChild<ReadAlongPassage>(a.ItemContainer)?.Highlight(_lastCue));
+        {
+            if (FindChild<ReadAlongPassage>(a.ItemContainer) is not { } row) return;
+            row.Highlight(_lastCue);
+            if (_follow) row.BringWordIntoView(_lastCue);
+        });
     }
     private static T? FindChild<T>(DependencyObject parent) where T : DependencyObject
     {

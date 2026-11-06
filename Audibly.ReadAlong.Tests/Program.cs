@@ -7,11 +7,23 @@ if (args.Length is 2 or 3 && args[0] == "--validate-map")
     actual.Validate(actual.AudiobookId, actual.Sources.Count);
     var association = new BookAssociation { EpubPath = actual.Epub.Path, MapPath = Path.GetFullPath(args[1]) };
     var loaded = await new ReadAlongStore(Path.GetDirectoryName(Path.GetFullPath(args[1]))!).LoadMapAsync(actual.AudiobookId, association, actual.Sources.Select(s=>s.Path).ToArray());
+    var layout = await ReadingLayout.CreateAsync(loaded!);
+    var originalCues = loaded!.Passages.SelectMany(p => p.Cues).ToDictionary(c => c.Id);
+    foreach (var paragraph in layout.Passages)
+        foreach (var cue in paragraph.Cues)
+        {
+            var original = loaded.Find(cue.SourceIndex, (cue.StartSeconds + cue.EndSeconds) / 2)!.Value;
+            if (paragraph.Text.Substring(cue.Offset, cue.Length) != original.Passage.Text.Substring(original.Cue.Offset, original.Cue.Length) ||
+                cue.StartSeconds != original.Cue.StartSeconds || cue.EndSeconds != original.Cue.EndSeconds || !originalCues.Remove(cue.Id))
+                throw new Exception("Paragraph layout changed source words or timing: " + cue.Id);
+        }
+    if (originalCues.Count != 0) throw new Exception("Paragraph layout lost cues");
+    Console.WriteLine($"PASS reading layout: {loaded.Passages.Count} sentence rows → {layout.Passages.Count} reading blocks; all words and source timestamps preserved");
     var count = 0;
-    foreach(var passage in loaded!.Passages)
+    foreach(var passage in layout.Passages)
         foreach(var cue in passage.Cues)
         {
-            if(loaded.Find(cue.SourceIndex,(cue.StartSeconds+cue.EndSeconds)/2)?.Cue.Id!=cue.Id)
+            if(layout.Find(cue.SourceIndex,(cue.StartSeconds+cue.EndSeconds)/2)?.Cue.Id!=cue.Id)
                 throw new Exception("Real book lookup failed at " + cue.Id);
             var caption = ReadAlongExcerpt.Create(passage, cue, 150);
             if (caption.Passage.Text != passage.Text[caption.Start..caption.End] ||
@@ -65,6 +77,16 @@ AlignmentMap Fixture() => new()
         new() { Id = "b", SourceIndex = 1, StartSeconds = 1, EndSeconds = 2, Offset = 6, Length = 5, Quality = 99 }]}]
 };
 var map = Fixture(); map.Validate(id, 2);
+Check(map.FindContext(0, 3)?.Cue.Id == "a" && map.Find(0, 3) is null, "pause keeps nearby text without inventing a spoken word");
+Check(map.FindContext(0, 10)?.Cue.Id == "a", "paragraph pause keeps reading context");
+Check(map.FindContext(0, 40) is null, "long unmatched audio does not retain unrelated text");
+Check(map.FindContext(1, 0)?.Cue.Id == "b", "source transition shows its own upcoming text");
+Check(map.FindContext(20, 1) is null && map.FindContext(0, double.NaN) is null && map.FindContext(0, -1) is null, "unknown and invalid context never uses another source");
+var prefs = new ReadingPreferences { FontSize = double.NaN, MiniFontSize = 999, TextColor = "not a colour", HighlightColor = "#123456", HighlightTextColor = "#12345Z", CaptionOpacity = -1 }.Normalize();
+Check(prefs.FontSize == 22 && prefs.MiniFontSize == 36 && prefs.CaptionOpacity == 0.4, "appearance sizes and opacity remain usable");
+Check(prefs.TextColor is null && prefs.HighlightColor == "#123456" && prefs.HighlightTextColor == "#000000", "invalid saved colours fall back safely");
+var persistedPrefs = JsonSerializer.Deserialize<ReadingPreferences>(JsonSerializer.Serialize(prefs))!.Normalize();
+Check(persistedPrefs == prefs, "reading appearance survives save and reload");
 Check(!CaptionGap.IsSignificant(0,1.00,1.00,0,1.02),"mini status ignores a 20 ms inter-word gap");
 Check(!CaptionGap.IsSignificant(0,1.02,1.00,0,1.02),"pausing in an inter-word gap does not create a warning");
 Check(!CaptionGap.IsSignificant(0,1.30,1.00,0,1.40),"short narration pauses retain captions");
@@ -94,6 +116,9 @@ Check(firstCaption.ActiveCue.StartSeconds==captionPassage.Cues[0].StartSeconds,"
 var longWord=new Passage {Id="long",Text=new string('a',100)};
 var longCue=new Cue {Id="longword",Offset=0,Length=100,SourceIndex=0,StartSeconds=0,EndSeconds=1,Quality=99};longWord.Cues.Add(longCue);
 Check(ReadAlongExcerpt.Create(longWord,longCue,32).Passage.Text==longWord.Text,"a long spoken word is never cut off");
+var orphan = new Passage { Id = "tail", Text = string.Concat(Enumerable.Repeat("word ", 30)) + "last" };
+var tailCue = new Cue { Id = "last", Offset = 150, Length = 4, SourceIndex = 0, StartSeconds = 0, EndSeconds = 1, Quality = 99 }; orphan.Cues.Add(tailCue);
+Check(ReadAlongExcerpt.Create(orphan, tailCue, 150).Passage.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 3, "last word is not stranded on its own caption");
 Check(map.Find(0, 1)?.Cue.Id == "a", "inclusive start");
 Check(map.Find(0, 2) is null, "exclusive end and silence unhighlighted");
 Check(map.Find(0, 0.5) is null, "introduction unhighlighted");
@@ -118,6 +143,29 @@ try
     var association = await store.AttachAsync(id, epub);
     Check(File.ReadAllText(epub) == "EPUB" && association.EpubPath != epub, "attachment preserves original");
     Check((await store.LoadAsync(id))?.EpubPath == association.EpubPath, "association reload");
+    var layoutEpub = Path.Combine(temporary, "paragraphs.epub");
+    using (var archive = System.IO.Compression.ZipFile.Open(layoutEpub, System.IO.Compression.ZipArchiveMode.Create))
+    {
+        await using var writer = new StreamWriter(archive.CreateEntry("EPUB/chapter.xhtml").Open());
+        await writer.WriteAsync("<html xmlns='http://www.w3.org/1999/xhtml'><body><p>Hello world.\n Next <em>sentence.</em></p><p>Hello world.</p></body></html>");
+    }
+    var paragraphMap = Fixture(); paragraphMap.Sources = [paragraphMap.Sources[0]];
+    paragraphMap.Epub = await Fingerprint.CreateAsync(layoutEpub);
+    paragraphMap.Passages = [
+        new() { Id = "s1", Href = "chapter.xhtml", Text = "Hello world.", Cues = [new() { Id = "first", Offset = 0, Length = 5, SourceIndex = 0, StartSeconds = 0, EndSeconds = 1, Quality = 99 }] },
+        new() { Id = "s2", Href = "chapter.xhtml", Text = "Next sentence.", Cues = [new() { Id = "next", Offset = 5, Length = 9, SourceIndex = 0, StartSeconds = 3, EndSeconds = 4, Quality = 99 }] },
+        new() { Id = "s3", Href = "chapter.xhtml", Text = "Hello world.", Cues = [new() { Id = "repeat", Offset = 0, Length = 5, SourceIndex = 0, StartSeconds = 5, EndSeconds = 6, Quality = 99 }] }];
+    paragraphMap.Validate(id, 1);
+    var paragraphs = await ReadingLayout.CreateAsync(paragraphMap);
+    Check(paragraphs.Passages.Count == 2 && paragraphs.Passages[0].Text == "Hello world.\n Next sentence.", "reader restores exact EPUB paragraphs and inline text");
+    var nextCue = paragraphs.Find(0, 3.5)!.Value;
+    Check(nextCue.Passage.Text.Substring(nextCue.Cue.Offset, nextCue.Cue.Length) == "sentence." && nextCue.Cue.StartSeconds == 3, "paragraph grouping preserves word offsets and seek times");
+    Check(paragraphs.Find(0, 5.5)!.Value.Passage == paragraphs.Passages[1], "repeated text maps to the correct later paragraph");
+    Check(paragraphMap.Passages.Count == 3 && paragraphMap.Passages[1].Cues[0].Offset == 5, "presentation layout leaves saved source map untouched");
+    Check(ReferenceEquals(await ReadingLayout.CreateAsync(paragraphs), paragraphs), "shared reading layout is reused without parsing again");
+    paragraphMap.Passages[1].Text = "Unrecognised sentence.";
+    var fallback = await ReadingLayout.CreateAsync(paragraphMap);
+    Check(fallback.Passages.Count == 3 && fallback.Passages[0] == paragraphMap.Passages[0], "unusual EPUB structure safely keeps the entire original chapter layout");
     Check(await store.LoadAsync(Guid.NewGuid()) is null, "unattached books unchanged");
     map = Fixture(); map.Sources = [await Fingerprint.CreateAsync(audio)];
     map.Passages[0].Cues.RemoveAt(1); map.Epub = await Fingerprint.CreateAsync(association.EpubPath);

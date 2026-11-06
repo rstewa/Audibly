@@ -49,22 +49,36 @@
 
         <Grid
             Canvas.ZIndex="10"
-            ColumnSpacing="8"
-            Grid.Column="1"
+            ColumnSpacing="4"
+            Grid.Column="0"
             Grid.Row="2"
             HorizontalAlignment="Stretch"
-            Padding="8,0,0,0"
+            Padding="8,0"
             VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="125" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Width" Value="32"/>
+                    <Setter Property="MinWidth" Value="32"/>
+                    <Setter Property="Height" Value="32"/>
+                    <Setter Property="Padding" Value="0"/>
+                </Style>
+                <Style TargetType="RepeatButton">
+                    <Setter Property="Width" Value="32"/>
+                    <Setter Property="MinWidth" Value="32"/>
+                    <Setter Property="Height" Value="32"/>
+                    <Setter Property="Padding" Value="0"/>
+                </Style>
+            </Grid.Resources>
 
             <!--  drag icon  -->
             <FontIcon
@@ -94,8 +108,8 @@
             <userControls:TitleArtistStack
                 ArtistFontSize="12"
                 Grid.Column="2"
-                HorizontalAlignment="Center"
-                Margin="8,0,0,0"
+                HorizontalAlignment="Stretch"
+                Margin="4,0,0,0"
                 ShowChapterTitle="True"
                 Spacing="4"
                 TitleFontSize="16"
@@ -105,8 +119,7 @@
             <userControls:PlaySkipButtonsStack
                 Grid.Column="3"
                 HorizontalAlignment="Center"
-                Margin="0,0,-8,0"
-                Spacing="-12" />
+                Spacing="4" />
 
             <Border
                 Background="{ThemeResource AppBarSeparatorForeground}"
@@ -120,7 +133,7 @@
             <StackPanel
                 Grid.Column="5"
                 Orientation="Horizontal"
-                Spacing="-8"
+                Spacing="4"
                 VerticalAlignment="Center">
 
                 <ToggleButton x:Name="MiniReadAlongToggle" IsChecked="True" Click="MiniReadAlong_Click"
@@ -353,7 +366,7 @@
             <StackPanel
                 Grid.Column="7"
                 Orientation="Horizontal"
-                Spacing="-8"
+                Spacing="4"
                 VerticalAlignment="Center">
 
                 <!--  pin button  -->
@@ -451,16 +464,17 @@
         </Slider>
 
         <Grid Grid.Row="1" x:Name="MiniCaptionTools" Margin="12,0,12,4" ColumnSpacing="8">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
             <TextBlock x:Name="MiniReadAlongStatus" Grid.Column="0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
             <Button Grid.Column="1" Content="A−" Click="SmallerText_Click" ToolTipService.ToolTip="Smaller reading text" AutomationProperties.Name="Smaller reading text"/>
             <Button Grid.Column="2" Content="A+" Click="LargerText_Click" ToolTipService.ToolTip="Larger reading text" AutomationProperties.Name="Larger reading text"/>
+            <userControls:ReadAlongAppearance Grid.Column="3" MiniMode="True"/>
         </Grid>
         <Border Grid.Row="0" x:Name="MiniReadingPane" Margin="8,0,8,8" Padding="4" CornerRadius="8"
             Background="#DD181818" RequestedTheme="Dark">
             <Grid>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <userControls:ReadAlongPassage x:Name="MiniPassage"/>
+                <ScrollViewer x:Name="MiniCaptionScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <userControls:ReadAlongPassage x:Name="MiniPassage" MiniMode="True"/>
                 </ScrollViewer>
                 <StackPanel x:Name="MiniReadingHint" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
                     <TextBlock x:Name="MiniHintText" Text="Prepare this book for Read Along in the main player." TextWrapping="Wrap" MaxWidth="520" TextAlignment="Center"/>

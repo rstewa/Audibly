@@ -12,6 +12,7 @@
                 <Button x:Name="GenerateButton" Content="Choose EPUB and prepare" Style="{StaticResource AccentButtonStyle}" Click="Generate_Click"/>
                 <Button x:Name="AttachButton" Content="Change EPUB" Click="Attach_Click" Visibility="Collapsed"/>
                 <Button Content="Follow narration" Click="Follow_Click"/>
+                <local:ReadAlongAppearance/>
             </StackPanel>
             <StackPanel Grid.Row="1" Spacing="6">
                 <TextBlock x:Name="EpubLabel" Text="Choose the matching ebook. Audibly will prepare it for Read Along." TextWrapping="Wrap"/>
@@ -41,6 +42,7 @@
                 <TextBlock x:Name="ModeLabel" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
             </StackPanel>
             <ListView Grid.Row="4" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"
+                Padding="0,8" BorderThickness="0" Background="Transparent"
                 HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollMode="Disabled"
                 ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
                 ContainerContentChanging="Passages_ContainerContentChanging">

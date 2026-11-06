@@ -20,6 +20,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
 using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -40,9 +41,6 @@ public sealed partial class NewMiniPlayerPage : Page
     private Window? _miniWindow;
     private string? _lastCaptionCue;
     private string? _lastExcerptId;
-    private int _lastSource = -1;
-    private double _lastPosition;
-    private double? _lastMatchedEnd;
     private double _captionFontSize = 24;
     private bool _dragging;
     private PointInt32 _dragWindowStart;
@@ -52,8 +50,7 @@ public sealed partial class NewMiniPlayerPage : Page
     {
         InitializeComponent();
         MiniReadAlongToggle.IsChecked = ApplicationData.Current.LocalSettings.Values["MiniReadAlongEnabled"] is not false;
-        if (ApplicationData.Current.LocalSettings.Values["MiniReadAlongFontSize"] is double size && double.IsFinite(size))
-            _captionFontSize = Math.Clamp(size, 16, 36);
+        _captionFontSize = ReadAlongAppearanceSettings.Current.MiniFontSize;
         MiniPassage.ReadingFontSize = _captionFontSize;
         _readingTimer.Tick += (_, _) => UpdateCaption();
         Loaded += ReadingLoaded;
@@ -89,12 +86,15 @@ public sealed partial class NewMiniPlayerPage : Page
     private async void ReadingLoaded(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.PropertyChanged += ReadingPlayerChanged;
+        ReadAlongAppearanceSettings.Changed += ReadingAppearanceChanged;
+        ApplyReadingAppearance();
         _readingTimer.Start();
         await LoadReadingAsync();
     }
     private void ReadingUnloaded(object sender, RoutedEventArgs e)
     {
         PlayerViewModel.PropertyChanged -= ReadingPlayerChanged;
+        ReadAlongAppearanceSettings.Changed -= ReadingAppearanceChanged;
         _readingTimer.Stop(); _readingLoad?.Cancel();
     }
     private async void ReadingPlayerChanged(object? sender, PropertyChangedEventArgs e)
@@ -108,7 +108,7 @@ public sealed partial class NewMiniPlayerPage : Page
     }
     private void ClearCaption()
     {
-        _lastCaptionCue = null; _lastExcerptId = null; _lastSource = -1;
+        _lastCaptionCue = null; _lastExcerptId = null;
         MiniPassage.Data = null;
     }
     private void ShowReadingHint(string text, bool setup)
@@ -121,7 +121,7 @@ public sealed partial class NewMiniPlayerPage : Page
     {
         _readingLoad?.Cancel(); _readingLoad?.Dispose();
         var operation = _readingLoad = new CancellationTokenSource(); var token = operation.Token;
-        _readingMap = null; ClearCaption(); _lastMatchedEnd = null;
+        _readingMap = null; ClearCaption();
         if (MiniReadAlongToggle.IsChecked != true) return;
         if (PlayerViewModel.NowPlaying is not { } book)
         {
@@ -144,7 +144,11 @@ public sealed partial class NewMiniPlayerPage : Page
                     ShowReadingHint("Prepare this book for Read Along in the main player.", true); return;
                 }
                 var sources = book.SourcePaths.Select(s => s.FilePath).ToArray();
-                var map = await Task.Run(() => _readingStore.LoadMapAsync(book.Id, association, sources, token), token);
+                var map = await Task.Run(async () =>
+                {
+                    var saved = await _readingStore.LoadMapAsync(book.Id, association, sources, token);
+                    return saved is null ? null : await ReadingLayout.CreateAsync(saved, token);
+                }, token);
                 token.ThrowIfCancellationRequested();
                 if (PlayerViewModel.NowPlaying?.Id != book.Id || _readingLoad != operation) return;
                 _readingMap = map;
@@ -164,6 +168,7 @@ public sealed partial class NewMiniPlayerPage : Page
     }
     private void UpdateCaption()
     {
+        if (_miniWindow?.AppWindow.IsVisible == false) return;
         if (MiniReadAlongToggle.IsChecked != true || _readingMap is null || PlayerViewModel.NowPlaying is not { } book || book.Id != _readingMap.AudiobookId) return;
         if ((_miniWindow?.AppWindow.Presenter as OverlappedPresenter)?.State == OverlappedPresenterState.Minimized) return;
         var source = book.CurrentSourceFileIndex;
@@ -171,31 +176,53 @@ public sealed partial class NewMiniPlayerPage : Page
         var active = _readingMap.Find(source, position);
         if (active is null)
         {
-            MiniPassage.Highlight(null); _lastCaptionCue = null;
+            if (_lastCaptionCue is not null) MiniPassage.Highlight(null);
+            _lastCaptionCue = null;
             MiniReadAlongStatus.Text = "";
-            if (CaptionGap.IsSignificant(_lastSource, _lastPosition, _lastMatchedEnd, source, position))
+            if (_readingMap.FindContext(source, position) is { } context)
+            {
+                ShowExcerpt(context.Passage, context.Cue);
+                MiniReadingHint.Visibility = Visibility.Collapsed;
+            }
+            else
             {
                 ClearCaption();
-                ShowReadingHint("No reliable word timing at this position. Playback continues normally.", false);
+                ShowReadingHint("There is no aligned text near this part of the audio.", false);
             }
         }
         else
         {
             MiniReadingHint.Visibility = Visibility.Collapsed;
             MiniReadAlongStatus.Text = "";
-            _lastMatchedEnd = active.Value.Cue.EndSeconds;
             if (_lastCaptionCue != active.Value.Cue.Id)
             {
-                var excerpt = ReadAlongExcerpt.Create(active.Value.Passage, active.Value.Cue, (int)(3600 / _captionFontSize));
-                if (_lastExcerptId != excerpt.Passage.Id)
-                {
-                    MiniPassage.Data = excerpt.Passage; _lastExcerptId = excerpt.Passage.Id;
-                }
+                ShowExcerpt(active.Value.Passage, active.Value.Cue);
                 MiniPassage.Highlight(MiniPassage.Data!.Cues.FirstOrDefault(c => c.Id == active.Value.Cue.Id));
+                MiniPassage.BringWordIntoView(MiniPassage.Data!.Cues.FirstOrDefault(c => c.Id == active.Value.Cue.Id));
                 _lastCaptionCue = active.Value.Cue.Id;
             }
         }
-        _lastSource = source; _lastPosition = position;
+    }
+    private void ShowExcerpt(Passage passage, Cue cue)
+    {
+        if (MiniPassage.Data?.Cues.Any(c => c.Id == cue.Id) == true) return;
+        var excerpt = ReadAlongExcerpt.Create(passage, cue, (int)(3000 / _captionFontSize));
+        if (_lastExcerptId == excerpt.Passage.Id) return;
+        MiniPassage.Data = excerpt.Passage; _lastExcerptId = excerpt.Passage.Id;
+        MiniCaptionScroll.ChangeView(null, 0, null, true);
+    }
+    private void ReadingAppearanceChanged(object? sender, EventArgs e) => ApplyReadingAppearance();
+    private void ApplyReadingAppearance()
+    {
+        var prefs = ReadAlongAppearanceSettings.Current;
+        MiniReadingPane.Background = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)Math.Round(prefs.CaptionOpacity * 255), 24, 24, 24));
+        if (_captionFontSize != prefs.MiniFontSize)
+        {
+            _captionFontSize = prefs.MiniFontSize;
+            _lastCaptionCue = null; _lastExcerptId = null; MiniPassage.Data = null;
+            ApplyReadingVisibility();
+            UpdateCaption();
+        }
     }
     private void ApplyReadingVisibility()
     {
@@ -205,7 +232,8 @@ public sealed partial class NewMiniPlayerPage : Page
         if (_miniWindow is not { } window) return;
         var scale = Win32.GetDpiForWindow(WindowNative.GetWindowHandle(window)) / 96.0;
         // Resize without moving the window, including when pinned on top.
-        window.AppWindow.Resize(new SizeInt32((int)Math.Ceiling(688 * scale), (int)Math.Ceiling((enabled ? 320 : 104) * scale)));
+        var height = enabled ? Math.Max(320, 180 + _captionFontSize * 4.5) : 104;
+        window.AppWindow.Resize(new SizeInt32((int)Math.Ceiling(688 * scale), (int)Math.Ceiling(height * scale)));
     }
     private async void MiniReadAlong_Click(object sender, RoutedEventArgs e)
     {
@@ -217,10 +245,7 @@ public sealed partial class NewMiniPlayerPage : Page
     }
     private void ChangeCaptionSize(double delta)
     {
-        _captionFontSize = Math.Clamp(_captionFontSize + delta, 16, 36);
-        ApplicationData.Current.LocalSettings.Values["MiniReadAlongFontSize"] = _captionFontSize;
-        MiniPassage.ReadingFontSize = _captionFontSize;
-        _lastCaptionCue = null; _lastExcerptId = null; UpdateCaption();
+        ReadAlongAppearanceSettings.Update(ReadAlongAppearanceSettings.Current with { MiniFontSize = _captionFontSize + delta });
     }
     private void SmallerText_Click(object sender, RoutedEventArgs e) => ChangeCaptionSize(-2);
     private void LargerText_Click(object sender, RoutedEventArgs e) => ChangeCaptionSize(2);

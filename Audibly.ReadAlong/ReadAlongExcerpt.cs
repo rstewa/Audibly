@@ -8,10 +8,13 @@ public sealed record ReadAlongExcerpt(Passage Passage, Cue ActiveCue, int Start,
         if (!passage.Cues.Contains(active) || active.Offset < 0 || active.Length <= 0 || active.Offset > passage.Text.Length - active.Length)
             throw new ArgumentException("The active cue must belong to the passage.");
         maxCharacters = Math.Clamp(maxCharacters, 32, 500);
-        int start = 0, end;
+        // Balance windows so a final word does not become a caption by itself.
+        var windows = Math.Max(1, (int)Math.Ceiling((double)passage.Text.Length / maxCharacters));
+        int start = 0, end, window = 0;
         while (true)
         {
-            end = Math.Min(passage.Text.Length, start + maxCharacters);
+            end = Math.Min(passage.Text.Length, (int)Math.Ceiling((double)passage.Text.Length * ++window / windows));
+            if (end <= start) continue;
             if (end < passage.Text.Length)
                 for (var i = end - 1; i > start; i--)
                     if (char.IsWhiteSpace(passage.Text[i])) { end = i + 1; break; }

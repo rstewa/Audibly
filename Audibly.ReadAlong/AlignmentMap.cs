@@ -43,6 +43,8 @@ public sealed class Passage
 
 public sealed class AlignmentMap
 {
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsReadingLayout { get; set; }
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     public int SchemaVersion { get; set; }
     public Guid AudiobookId { get; set; }
@@ -97,6 +99,22 @@ public sealed class AlignmentMap
             else if (seconds >= entry.Cue.EndSeconds) low = mid + 1;
             else return entry;
         }
+        return null;
+    }
+
+    // Nearby text remains readable through pauses; callers must not highlight
+    // this contextual cue unless Find confirms it is actually being spoken.
+    public (Cue Cue, Passage Passage)? FindContext(int sourceIndex, double seconds, double maxDistance = 12)
+    {
+        if (!double.IsFinite(seconds) || seconds < 0 || !_tracks.TryGetValue(sourceIndex, out var track)) return null;
+        int low = 0, high = track.Length;
+        while (low < high)
+        {
+            var mid = low + (high - low) / 2;
+            if (track[mid].Cue.StartSeconds <= seconds) low = mid + 1; else high = mid;
+        }
+        if (low > 0 && seconds - track[low - 1].Cue.EndSeconds <= maxDistance) return track[low - 1];
+        if (low < track.Length && track[low].Cue.StartSeconds - seconds <= maxDistance) return track[low];
         return null;
     }
 }

@@ -1,0 +1,115 @@
+{
+  "sample": {
+    "words": 202,
+    "firstWords": [
+      {
+        "text": "The",
+        "id": "0:chapter-s1-w0:0:0.06",
+        "fragment": "chapter-s1-w0",
+        "sourceIndex": 0,
+        "startSeconds": 0.06,
+        "endSeconds": 0.26,
+        "granularity": "word",
+        "quality": 99.9,
+        "offset": 0,
+        "length": 3
+      },
+      {
+        "text": "morning",
+        "id": "0:chapter-s1-w1:0:0.28",
+        "fragment": "chapter-s1-w1",
+        "sourceIndex": 0,
+        "startSeconds": 0.28,
+        "endSeconds": 0.6,
+        "granularity": "word",
+        "quality": 99.9,
+        "offset": 4,
+        "length": 7
+      },
+      {
+        "text": "train",
+        "id": "0:chapter-s1-w2:0:0.62",
+        "fragment": "chapter-s1-w2",
+        "sourceIndex": 0,
+        "startSeconds": 0.62,
+        "endSeconds": 0.88,
+        "granularity": "word",
+        "quality": 99.9,
+        "offset": 12,
+        "length": 5
+      },
+      {
+        "text": "arrived",
+        "id": "0:chapter-s1-w3:0:0.9",
+        "fragment": "chapter-s1-w3",
+        "sourceIndex": 0,
+        "startSeconds": 0.9,
+        "endSeconds": 1.3,
+        "granularity": "word",
+        "quality": 99.9,
+        "offset": 18,
+        "length": 7
+      }
+    ],
+    "reportTotals": {
+      "sentences": 18,
+      "matchedSentences": 17,
+      "interpolatedSentences": 0,
+      "unmatchedSentences": 0,
+      "droppedSentences": 1,
+      "seconds": 71.38,
+      "matchedSeconds": 71.36,
+      "interpolatedSeconds": 0,
+      "looseSeconds": 0,
+      "spine": {
+        "aligned": 1,
+        "not-found": 0,
+        "too-short": 0,
+        "excluded": 0,
+        "audio-only": 0
+      },
+      "tracks": 1,
+      "unalignedTracks": 0
+    },
+    "mismatchTotals": {
+      "sentences": 5,
+      "matchedSentences": 0,
+      "interpolatedSentences": 0,
+      "unmatchedSentences": 5,
+      "droppedSentences": 0,
+      "seconds": 71.38,
+      "matchedSeconds": 0,
+      "interpolatedSeconds": 0,
+      "looseSeconds": 0,
+      "spine": {
+        "aligned": 0,
+        "not-found": 1,
+        "too-short": 0,
+        "excluded": 0,
+        "audio-only": 0
+      },
+      "tracks": 1,
+      "unalignedTracks": 1
+    }
+  },
+  "formats": [
+    {
+      "name": "m4b",
+      "cues": 202,
+      "sources": 1
+    },
+    {
+      "name": "m4a",
+      "cues": 202,
+      "sources": 1
+    },
+    {
+      "name": "multi-mp3",
+      "cues": 202,
+      "sources": 2
+    }
+  ],
+  "cpu": "quartznet15x5",
+  "engine": "@storyteller-platform/align@0.2.16",
+  "date": "2026-11-06"
+}

@@ -2,17 +2,26 @@
 // Updated: 07/30/2025
 
 using System;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Graphics;
+using Windows.Storage;
 using Windows.System;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.UserControls;
 using Audibly.App.ViewModels;
+using Audibly.ReadAlong;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using WinRT.Interop;
 using Constants = Audibly.App.Helpers.Constants;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -25,10 +34,27 @@ public sealed partial class NewMiniPlayerPage : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private CancellationTokenSource? _playbackSpeedFlyoutCts;
+    private CancellationTokenSource? _readingLoad;
+    private readonly DispatcherTimer _readingTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
+    private readonly ReadAlongStore _readingStore = new(ApplicationData.Current.LocalFolder.Path);
+    private AlignmentMap? _readingMap;
+    private Window? _miniWindow;
+    private string? _lastCaptionCue;
+    private string? _lastExcerptId;
+    private double _captionFontSize = 24;
+    private bool _dragging;
+    private PointInt32 _dragWindowStart;
+    private PointInt32 _dragPointerStart;
 
     public NewMiniPlayerPage()
     {
         InitializeComponent();
+        MiniReadAlongToggle.IsChecked = ApplicationData.Current.LocalSettings.Values["MiniReadAlongEnabled"] is not false;
+        _captionFontSize = ReadAlongAppearanceSettings.Current.MiniFontSize;
+        MiniPassage.ReadingFontSize = _captionFontSize;
+        _readingTimer.Tick += (_, _) => UpdateCaption();
+        Loaded += ReadingLoaded;
+        Unloaded += ReadingUnloaded;
         KeyDown += NewMiniPlayerPage_KeyDown;
 
         // need this to show the slider when the user increases or decreases the speed with the keyboard shortcuts
@@ -51,6 +77,204 @@ public sealed partial class NewMiniPlayerPage : Page
     ///     Gets the app-wide PlayerViewModel instance.
     /// </summary>
     public PlayerViewModel PlayerViewModel => App.PlayerViewModel;
+
+    public void ConfigureWindow(Window window)
+    {
+        _miniWindow = window;
+        ApplyReadingVisibility();
+    }
+    private async void ReadingLoaded(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.PropertyChanged += ReadingPlayerChanged;
+        ReadAlongAppearanceSettings.Changed += ReadingAppearanceChanged;
+        ApplyReadingAppearance();
+        _readingTimer.Start();
+        await LoadReadingAsync();
+    }
+    private void ReadingUnloaded(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.PropertyChanged -= ReadingPlayerChanged;
+        ReadAlongAppearanceSettings.Changed -= ReadingAppearanceChanged;
+        _readingTimer.Stop(); _readingLoad?.Cancel();
+    }
+    private async void ReadingPlayerChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PlayerViewModel.NowPlaying)) await LoadReadingAsync();
+        else if (e.PropertyName == nameof(PlayerViewModel.ReadAlongDocument))
+        {
+            _readingMap = PlayerViewModel.ReadAlongDocument;
+            ClearCaption(); UpdateCaption();
+        }
+    }
+    private void ClearCaption()
+    {
+        _lastCaptionCue = null; _lastExcerptId = null;
+        MiniPassage.Data = null;
+    }
+    private void ShowReadingHint(string text, bool setup)
+    {
+        MiniHintText.Text = text;
+        MiniReadingHint.Visibility = Visibility.Visible;
+        MiniSetupButton.Visibility = setup ? Visibility.Visible : Visibility.Collapsed;
+    }
+    private async Task LoadReadingAsync()
+    {
+        _readingLoad?.Cancel(); _readingLoad?.Dispose();
+        var operation = _readingLoad = new CancellationTokenSource(); var token = operation.Token;
+        _readingMap = null; ClearCaption();
+        if (MiniReadAlongToggle.IsChecked != true) return;
+        if (PlayerViewModel.NowPlaying is not { } book)
+        {
+            MiniReadAlongStatus.Text = "No audiobook open";
+            ShowReadingHint("Open an audiobook in the main player.", true); return;
+        }
+        try
+        {
+            MiniReadAlongStatus.Text = "Loading words…";
+            ShowReadingHint("Loading saved Read Along text…", false);
+            if (PlayerViewModel.ReadAlongDocument is { } shared && shared.AudiobookId == book.Id)
+                _readingMap = shared;
+            else
+            {
+                var association = await _readingStore.LoadAsync(book.Id, token);
+                if (association is null || association.MapPath is null)
+                {
+                    token.ThrowIfCancellationRequested();
+                    MiniReadAlongStatus.Text = "Not prepared yet";
+                    ShowReadingHint("Prepare this book for Read Along in the main player.", true); return;
+                }
+                var sources = book.SourcePaths.Select(s => s.FilePath).ToArray();
+                var map = await Task.Run(async () =>
+                {
+                    var saved = await _readingStore.LoadMapAsync(book.Id, association, sources, token);
+                    return saved is null ? null : await ReadingLayout.CreateAsync(saved, token);
+                }, token);
+                token.ThrowIfCancellationRequested();
+                if (PlayerViewModel.NowPlaying?.Id != book.Id || _readingLoad != operation) return;
+                _readingMap = map;
+                PlayerViewModel.ReadAlongDocument = map;
+            }
+            token.ThrowIfCancellationRequested();
+            if (_readingMap is null) { ShowReadingHint("Prepare this book in the main player.", true); return; }
+            UpdateCaption();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception)
+        {
+            if (_readingLoad != operation) return;
+            MiniReadAlongStatus.Text = "Read Along unavailable";
+            ShowReadingHint("Open Read Along in the main player to check this book's saved alignment.", true);
+        }
+    }
+    private void UpdateCaption()
+    {
+        if (_miniWindow?.AppWindow.IsVisible == false) return;
+        if (MiniReadAlongToggle.IsChecked != true || _readingMap is null || PlayerViewModel.NowPlaying is not { } book || book.Id != _readingMap.AudiobookId) return;
+        if ((_miniWindow?.AppWindow.Presenter as OverlappedPresenter)?.State == OverlappedPresenterState.Minimized) return;
+        var source = book.CurrentSourceFileIndex;
+        var position = PlayerViewModel.CurrentPosition.TotalSeconds;
+        var active = _readingMap.Find(source, position);
+        if (active is null)
+        {
+            if (_lastCaptionCue is not null) MiniPassage.Highlight(null);
+            _lastCaptionCue = null;
+            MiniReadAlongStatus.Text = "";
+            if (_readingMap.FindContext(source, position) is { } context)
+            {
+                ShowExcerpt(context.Passage, context.Cue);
+                MiniReadingHint.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ClearCaption();
+                ShowReadingHint("There is no aligned text near this part of the audio.", false);
+            }
+        }
+        else
+        {
+            MiniReadingHint.Visibility = Visibility.Collapsed;
+            MiniReadAlongStatus.Text = "";
+            if (_lastCaptionCue != active.Value.Cue.Id)
+            {
+                ShowExcerpt(active.Value.Passage, active.Value.Cue);
+                MiniPassage.Highlight(MiniPassage.Data!.Cues.FirstOrDefault(c => c.Id == active.Value.Cue.Id));
+                MiniPassage.BringWordIntoView(MiniPassage.Data!.Cues.FirstOrDefault(c => c.Id == active.Value.Cue.Id));
+                _lastCaptionCue = active.Value.Cue.Id;
+            }
+        }
+    }
+    private void ShowExcerpt(Passage passage, Cue cue)
+    {
+        if (MiniPassage.Data?.Cues.Any(c => c.Id == cue.Id) == true) return;
+        var excerpt = ReadAlongExcerpt.Create(passage, cue, (int)(3000 / _captionFontSize));
+        if (_lastExcerptId == excerpt.Passage.Id) return;
+        MiniPassage.Data = excerpt.Passage; _lastExcerptId = excerpt.Passage.Id;
+        MiniCaptionScroll.ChangeView(null, 0, null, true);
+    }
+    private void ReadingAppearanceChanged(object? sender, EventArgs e) => ApplyReadingAppearance();
+    private void ApplyReadingAppearance()
+    {
+        var prefs = ReadAlongAppearanceSettings.Current;
+        MiniReadingPane.Background = new SolidColorBrush(Windows.UI.Color.FromArgb((byte)Math.Round(prefs.CaptionOpacity * 255), 24, 24, 24));
+        if (_captionFontSize != prefs.MiniFontSize)
+        {
+            _captionFontSize = prefs.MiniFontSize;
+            _lastCaptionCue = null; _lastExcerptId = null; MiniPassage.Data = null;
+            ApplyReadingVisibility();
+            UpdateCaption();
+        }
+    }
+    private void ApplyReadingVisibility()
+    {
+        var enabled = MiniReadAlongToggle.IsChecked == true;
+        MiniReadingPane.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        MiniCaptionTools.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        if (_miniWindow is not { } window) return;
+        var scale = Win32.GetDpiForWindow(WindowNative.GetWindowHandle(window)) / 96.0;
+        // Resize without moving the window, including when pinned on top.
+        var height = enabled ? Math.Max(320, 180 + _captionFontSize * 4.5) : 104;
+        window.AppWindow.Resize(new SizeInt32((int)Math.Ceiling(688 * scale), (int)Math.Ceiling(height * scale)));
+    }
+    private async void MiniReadAlong_Click(object sender, RoutedEventArgs e)
+    {
+        ApplicationData.Current.LocalSettings.Values["MiniReadAlongEnabled"] = MiniReadAlongToggle.IsChecked == true;
+        ApplyReadingVisibility();
+        if (MiniReadAlongToggle.IsChecked == true && _readingMap is null) await LoadReadingAsync();
+        else if (MiniReadAlongToggle.IsChecked != true) _readingLoad?.Cancel();
+        else UpdateCaption();
+    }
+    private void ChangeCaptionSize(double delta)
+    {
+        ReadAlongAppearanceSettings.Update(ReadAlongAppearanceSettings.Current with { MiniFontSize = _captionFontSize + delta });
+    }
+    private void SmallerText_Click(object sender, RoutedEventArgs e) => ChangeCaptionSize(-2);
+    private void LargerText_Click(object sender, RoutedEventArgs e) => ChangeCaptionSize(2);
+    private void OpenReadAlong_Click(object sender, RoutedEventArgs e)
+    {
+        PlayerViewModel.ReadAlongEnabled = true; PlayerViewModel.IsPlayerFullScreen = true;
+        PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
+        PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
+        if (App.RootFrame?.Content is not PlayerPage) App.RootFrame?.Navigate(typeof(PlayerPage));
+        WindowHelper.RestoreMainWindow(); WindowHelper.GetMainWindow()?.Activate(); WindowHelper.HideMiniPlayer();
+    }
+    private void DragHandle_Pressed(object sender, PointerRoutedEventArgs e)
+    {
+        if (_miniWindow is null || !e.GetCurrentPoint(MiniDragHandle).Properties.IsLeftButtonPressed) return;
+        PInvoke.User32.GetCursorPos(out var point);
+        _dragPointerStart = new PointInt32(point.x, point.y); _dragWindowStart = _miniWindow.AppWindow.Position;
+        _dragging = MiniDragHandle.CapturePointer(e.Pointer); e.Handled = true;
+    }
+    private void DragHandle_Moved(object sender, PointerRoutedEventArgs e)
+    {
+        if (!_dragging || _miniWindow is null) return;
+        PInvoke.User32.GetCursorPos(out var point);
+        _miniWindow.AppWindow.Move(new PointInt32(_dragWindowStart.X + point.x - _dragPointerStart.X, _dragWindowStart.Y + point.y - _dragPointerStart.Y));
+        e.Handled = true;
+    }
+    private void DragHandle_Released(object sender, PointerRoutedEventArgs e)
+    {
+        _dragging = false; MiniDragHandle.ReleasePointerCaptures(); e.Handled = true;
+    }
 
     private void NewMiniPlayerPage_KeyDown(object sender, KeyRoutedEventArgs args)
     {
@@ -171,7 +395,6 @@ public sealed partial class NewMiniPlayerPage : Page
         PinButton.Visibility = Visibility.Collapsed;
         UnpinButton.Visibility = Visibility.Visible;
 
-        window.SetWindowDraggable(false);
         window.SetWindowAlwaysOnTop(true);
     }
 
@@ -183,7 +406,6 @@ public sealed partial class NewMiniPlayerPage : Page
         UnpinButton.Visibility = Visibility.Collapsed;
         PinButton.Visibility = Visibility.Visible;
 
-        window.SetWindowDraggable(true);
         window.SetWindowAlwaysOnTop(false);
     }
 

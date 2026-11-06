@@ -39,13 +39,13 @@ public sealed partial class LibraryCardPage : Page
 
     #endregion
 
-    public const string ImportAudiobookText = "Import an audiobook (.m4b, mp3)";
+    public const string ImportAudiobookText = "Import an audiobook + optional EPUB";
 
     public const string ImportAudiobooksFromDirectoryText =
-        "Import all audiobooks in a directory (recursively). Single-file audiobooks only (.m4b, mp3)";
+        "Import all audiobooks in a directory (recursively). Single-file audiobooks only (.m4b, .m4a, .mp3)";
 
     public const string ImportAudiobookWithMultipleFilesText =
-        "Import an audiobook made up of multiple files (.m4b, mp3)";
+        "Import an audiobook made up of multiple files (.m4b, .m4a, .mp3)";
 
     public const string ImportFromJsonFileText = "Import audiobooks from an Audibly export file (.audibly)";
 

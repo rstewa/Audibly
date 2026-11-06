@@ -1,0 +1,53 @@
+<UserControl
+    x:Class="Audibly.App.UserControls.ReadAlongPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Audibly.App.UserControls">
+    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" CornerRadius="8" Padding="12">
+        <Grid RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="GenerateButton" Content="Choose EPUB and prepare" Style="{StaticResource AccentButtonStyle}" Click="Generate_Click"/>
+                <Button x:Name="AttachButton" Content="Change EPUB" Click="Attach_Click" Visibility="Collapsed"/>
+                <Button Content="Follow narration" Click="Follow_Click"/>
+                <local:ReadAlongAppearance/>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Spacing="6">
+                <TextBlock x:Name="EpubLabel" Text="Choose the matching ebook. Audibly will prepare it for Read Along." TextWrapping="Wrap"/>
+                <Expander Header="Processing options" HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language" Width="100"/>
+                        <ComboBox x:Name="ProcessingDevice" Header="Acceleration" SelectedIndex="0">
+                            <ComboBoxItem Content="GPU preferred (CPU fallback)" Tag="dml"/>
+                            <ComboBoxItem Content="CPU" Tag="cpu"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+            <Border Grid.Row="2" x:Name="ProcessingPanel" Visibility="Collapsed" Padding="12" CornerRadius="6" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="ProcessingStage" Text="Preparing Read Along…" FontWeight="SemiBold"/>
+                    <ProgressBar x:Name="ProcessingProgress" IsIndeterminate="True" Minimum="0" Maximum="100" AutomationProperties.Name="Read Along preparation progress"/>
+                    <TextBlock x:Name="ProcessingDetail" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="ProcessingElapsed"/>
+                    <TextBlock Text="You can keep listening while this runs. Unchanged books only need to be prepared once." TextWrapping="Wrap"/>
+                    <Button x:Name="CancelButton" Content="Cancel preparation" Click="Cancel_Click" IsEnabled="False"/>
+                </StackPanel>
+            </Border>
+            <StackPanel Grid.Row="3" Spacing="4">
+                <TextBlock x:Name="StatusText" Text="Choose an EPUB to get started." TextWrapping="Wrap" MaxHeight="90" IsTextSelectionEnabled="True"/>
+                <Button x:Name="CopyErrorButton" Content="Copy error details" Click="CopyError_Click" Visibility="Collapsed"/>
+                <TextBlock x:Name="ModeLabel" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
+            </StackPanel>
+            <ListView Grid.Row="4" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"
+                Padding="0,8" BorderThickness="0" Background="Transparent"
+                HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollMode="Disabled"
+                ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ContainerContentChanging="Passages_ContainerContentChanging">
+                <ListView.ItemTemplate><DataTemplate><local:ReadAlongPassage Data="{Binding}"/></DataTemplate></ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Border>
+</UserControl>

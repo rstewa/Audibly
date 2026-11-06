@@ -17,6 +17,8 @@ using Audibly.App.Helpers;
 using Audibly.App.Services;
 using Audibly.App.Services.Interfaces;
 using Audibly.Models;
+using Audibly.ReadAlong;
+using Audibly.App.Views;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -977,10 +979,21 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".m4a");
         openPicker.FileTypeFilter.Add(".mp3");
+        openPicker.FileTypeFilter.Add(".epub");
+        openPicker.CommitButtonText = "Import audiobook";
 
-        var file = await openPicker.PickSingleFileAsync();
-        if (file == null) return;
+        var files = await openPicker.PickMultipleFilesAsync();
+        if (files.Count == 0) return;
+        AudiobookImportSelection selection;
+        try { selection = AudiobookImportSelection.Parse(files.Select(f => f.Path)); }
+        catch (System.IO.InvalidDataException ex)
+        {
+            EnqueueNotification(new Notification { Message = ex.Message, Severity = InfoBarSeverity.Warning });
+            return;
+        }
+        var file = files.First(f => f.Path == selection.AudioPath);
 
         await _dispatcherQueue.EnqueueAsync(() => IsLoading = true);
 
@@ -992,7 +1005,21 @@ public class MainViewModel : BindableBase
         // note: content dialog
         await DialogService.ShowProgressDialogAsync("Importing Audiobook", _cancellationTokenSource);
 
-        await ImportFileAsync(file, token);
+        var imported = await ImportFileAsync(file, token);
+        if (imported is null || selection.EpubPath is null) return;
+        try
+        {
+            await new ReadAlongStore(ApplicationData.Current.LocalFolder.Path)
+                .AttachAsync(imported.Id, selection.EpubPath);
+            App.PlayerViewModel.ReadAlongEnabled = true;
+            App.RootFrame?.Navigate(typeof(PlayerPage));
+            EnqueueNotification(new Notification { Message = "EPUB attached. Choose Prepare Read Along to match the words to your audio.", Severity = InfoBarSeverity.Success });
+        }
+        catch (Exception ex)
+        {
+            EnqueueNotification(new Notification { Message = "Audiobook imported, but the EPUB could not be attached: " + ex.Message, Severity = InfoBarSeverity.Error });
+            LoggingService.Log(ex.Message);
+        }
     }
 
     public async Task ImportAudiobookFromFileActivationAsync(string path, bool showImportDialog = true)
@@ -1015,7 +1042,7 @@ public class MainViewModel : BindableBase
         await ImportFileAsync(file, token);
     }
 
-    private async Task ImportFileAsync(StorageFile file, CancellationToken token)
+    private async Task<AudiobookViewModel?> ImportFileAsync(StorageFile file, CancellationToken token)
     {
         var importFailed = false;
         try
@@ -1044,6 +1071,7 @@ public class MainViewModel : BindableBase
         }
         catch (OperationCanceledException)
         {
+            importFailed = true;
             EnqueueNotification(new Notification
             {
                 Message = "Import operation was cancelled!", Severity = InfoBarSeverity.Warning
@@ -1071,10 +1099,13 @@ public class MainViewModel : BindableBase
 
         await GetAudiobookListAsync();
 
+        if (importFailed) return null;
+
         // select the imported audiobook
         var audiobook = Audiobooks.FirstOrDefault(a => a.CurrentSourceFile.FilePath == file.Path);
         if (audiobook != null)
             await App.PlayerViewModel.OpenAudiobook(audiobook);
+        return audiobook;
     }
 
     public async void ImportAudiobooksFromDirectoryAsync()
@@ -1175,6 +1206,7 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".m4a");
         openPicker.FileTypeFilter.Add(".mp3");
 
         var files = await openPicker.PickMultipleFilesAsync();

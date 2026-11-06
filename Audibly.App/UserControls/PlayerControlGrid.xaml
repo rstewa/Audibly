@@ -129,6 +129,17 @@
                     Orientation="Horizontal"
                     VerticalAlignment="Top">
 
+                    <ToggleButton
+                        Background="Transparent"
+                        BorderThickness="0"
+                        AutomationProperties.AutomationId="ReadAlongToggle"
+                        AutomationProperties.Name="Read Along"
+                        IsChecked="{x:Bind PlayerViewModel.ReadAlongEnabled, Mode=OneWay}"
+                        IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
+                        Click="ReadAlongToggle_Click"
+                        ToolTipService.ToolTip="Read Along">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8F1;" FontSize="16" />
+                    </ToggleButton>
                     <!--#region VolumeLevelButton-->
                     <Button
                         Background="Transparent"
@@ -334,10 +345,15 @@
             </Grid>
 
             <!--  play & skip buttons  -->
-            <local:PlaySkipButtonsStack
+            <StackPanel
                 Grid.Column="1"
                 Grid.Row="1"
-                HorizontalAlignment="Center" />
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="16">
+                <local:PlaySkipButtonsStack />
+
+            </StackPanel>
 
             <!--  now playing bar  -->
             <local:NowPlayingBar

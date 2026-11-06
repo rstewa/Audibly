@@ -96,6 +96,9 @@
                 </Border>
 
                 <!--  player controls  -->
+                <userControls:ReadAlongPanel x:Name="ReadAlong" Visibility="{x:Bind PlayerViewModel.ReadAlongEnabled, Mode=OneWay}" Margin="50,52,20,150"
+                    RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True" />
                 <userControls:PlayerControlGrid
                     RequestedTheme="Dark"
                     HorizontalAlignment="Stretch"

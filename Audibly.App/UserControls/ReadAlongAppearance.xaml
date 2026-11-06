@@ -1,0 +1,24 @@
+<UserControl x:Class="Audibly.App.UserControls.ReadAlongAppearance"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Button Content="Aa" ToolTipService.ToolTip="Reading appearance" AutomationProperties.Name="Reading appearance">
+        <Button.Flyout>
+            <Flyout Opened="Appearance_Opened" ShouldConstrainToRootBounds="False">
+                <ScrollViewer MaxHeight="520" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Width="280" Spacing="12">
+                        <TextBlock Text="Reading appearance" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <Slider x:Name="TextSize" Header="Text size" Minimum="16" Maximum="36" StepFrequency="2" ValueChanged="TextSize_Changed"/>
+                        <ComboBox x:Name="ColorTarget" Header="Colour to change" SelectedIndex="0" SelectionChanged="ColorTarget_Changed" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Reading text"/>
+                            <ComboBoxItem Content="Highlight background"/>
+                            <ComboBoxItem Content="Highlighted text"/>
+                        </ComboBox>
+                        <ColorPicker x:Name="ReadingColor" IsAlphaEnabled="False" IsMoreButtonVisible="False" ColorChanged="ReadingColor_Changed"/>
+                        <Slider x:Name="CaptionOpacity" Header="Mini-player background opacity" Minimum="40" Maximum="100" StepFrequency="5" ValueChanged="CaptionOpacity_Changed"/>
+                        <Button Content="Reset appearance" Click="Reset_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Flyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

@@ -20,7 +20,7 @@ if (-not $NoBuild) {
 }
 $manifestPath = Join-Path $output 'AppxManifest.xml'
 if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Build the application before using -NoBuild.' }
-foreach ($component in @('align.mjs','convert.mjs','node_modules\node\bin\node.exe','node_modules\ffmpeg-static\ffmpeg.exe','node_modules\@storyteller-platform\align\package.json')) {
+foreach ($component in @('align.mjs','convert.mjs','prepare-epub.mjs','node_modules\node\bin\node.exe','node_modules\ffmpeg-static\ffmpeg.exe','node_modules\@storyteller-platform\align\package.json')) {
     if (-not (Test-Path -LiteralPath (Join-Path $output ('read-along\' + $component)))) {
         throw 'The build is missing bundled Read Along components. Run npm ci --prefix tools/read-along, then rebuild.'
     }

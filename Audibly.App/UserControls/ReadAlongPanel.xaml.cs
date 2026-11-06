@@ -122,7 +122,10 @@ public sealed partial class ReadAlongPanel : UserControl
             _association = association; _map = map;
             UpdateSetup();
             Passages.ItemsSource = map?.Passages;
-            StatusText.Text = map is not null ? "Ready · published EPUB text · click an aligned word to seek" : association.Error ?? "EPUB attached. Generate alignment to begin.";
+            StatusText.Text = map is not null ? "Ready · published EPUB text · click an aligned word to seek"
+                : association.Error?.Contains("only supports EPUB 3", StringComparison.Ordinal) == true
+                    ? "Your ebook uses EPUB 2. This version can convert a working copy automatically. Choose Prepare Read Along to retry."
+                    : association.Error ?? "EPUB attached. Choose Prepare Read Along to begin.";
         }
         catch (OperationCanceledException) { }
         catch (Exception e)

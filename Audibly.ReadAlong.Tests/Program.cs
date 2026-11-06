@@ -78,6 +78,18 @@ try
         Check(gpuRequested, "GPU choice forwarded to future worker request");
         Check(!Directory.EnumerateFiles(Path.Combine(temporary,"jobs"), "*.job.json").Any(), "running cancellation cleans up request");
     }
+    await File.WriteAllTextAsync(Path.Combine(fakeEngine, "align.mjs"), "console.error('████░░ 10%'); console.error('ERROR:'+JSON.stringify({message:'Échec — EPUB 2'})); process.exitCode=1;");
+    try
+    {
+        await new StorytellerProcessor().GenerateAsync(fakeEngine,Path.Combine(temporary,"jobs"),id,epub,[audio],"en",new Progress<string>(),CancellationToken.None);
+        throw new Exception("Failed worker accepted");
+    }
+    catch (IOException error)
+    {
+        Check(error.Message.Contains("Échec — EPUB 2"), "UTF-8 structured error preserved");
+        Check(!error.Message.Contains('█'), "download progress excluded from error message");
+        Check(Directory.EnumerateFiles(Path.Combine(temporary,"jobs"),"*.log").Any(f=>File.ReadAllText(f).Contains("Échec — EPUB 2")), "full UTF-8 diagnostic log retained");
+    }
 }
 finally
 {

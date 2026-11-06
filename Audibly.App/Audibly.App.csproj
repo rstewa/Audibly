@@ -264,7 +264,7 @@
     <!-- Ship the local alignment runtime with the app, including dependency licence notices.
          Models are downloaded to the user's cache on first use, never into the package. -->
     <ItemGroup>
-        <Content Include="..\tools\read-along\align.mjs;..\tools\read-along\convert.mjs;..\tools\read-along\package.json;..\tools\read-along\package-lock.json">
+        <Content Include="..\tools\read-along\align.mjs;..\tools\read-along\convert.mjs;..\tools\read-along\prepare-epub.mjs;..\tools\read-along\package.json;..\tools\read-along\package-lock.json">
             <Link>read-along\%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

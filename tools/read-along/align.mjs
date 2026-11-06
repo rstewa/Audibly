@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convert } from './convert.mjs';
 import pino from 'pino';
+import { prepareEpub } from './prepare-epub.mjs';
 const root=path.dirname(fileURLToPath(import.meta.url));
 process.env.PATH=[path.join(root,'node_modules/ffmpeg-static'),path.join(root,'node_modules/ffprobe-static/bin/win32/x64'),process.env.PATH].join(path.delimiter);
 export async function fingerprint(file) {
@@ -24,6 +25,8 @@ export async function run(job) {
     if(encoded!==lastProgress) {console.log('PROGRESS:'+encoded);lastProgress=encoded;}
   };
   reportProgress('Checking ebook and audio files');
+  // EPUB validation/upgrade must happen before expensive audio work.
+  const preparedEpub=await prepareEpub(job.epub,path.join(job.cache,'epub-preflight'));
   const inputs={epub:await fingerprint(job.epub),sources:await Promise.all(job.sources.map(fingerprint))};
   // Preserve the existing CPU cache identity, including the user's current job.
   const identity=createHash('sha256').update(JSON.stringify({engine:'0.2.16',schema:1,language,inputs,...(device==='cpu'?{}:{device})})).digest('hex');
@@ -31,6 +34,9 @@ export async function run(job) {
   await mkdir(path.join(work,'audio'),{recursive:true});
   const target=path.join(work,'alignment.json');
   try {const cached=JSON.parse(await readFile(target,'utf8')); if(cached.schemaVersion===1 && cached.audiobookId===job.audiobookId) {console.log('Using cached alignment');return {target,model:cached};}} catch(e) {if(e.code!=='ENOENT' && !(e instanceof SyntaxError)) throw e;}
+  reportProgress('Preparing ebook text');
+  const emissions=path.join(work,'emissions'), marked=path.join(work,'marked.epub'), aligned=path.join(work,'aligned.epub'), reports=path.join(work,'report.json');
+  await markup(preparedEpub,marked,{granularity:'word',primaryLocale:new Intl.Locale(language)});
   const sources=[];
   for(let i=0;i<job.sources.length;i++) {
     reportProgress('Preparing audio files',null,`File ${i+1} of ${job.sources.length}`);
@@ -54,16 +60,13 @@ export async function run(job) {
       if(match) {actualDevice=match[1];reportProgress('Analysing audio',null,deviceDescription());}
     } catch { /* Non-progress logs do not change user-visible state. */ }
   }});
-  const emissions=path.join(work,'emissions'), marked=path.join(work,'marked.epub'), aligned=path.join(work,'aligned.epub'), reports=path.join(work,'report.json');
   reportProgress('Loading speech model',null,deviceDescription()+' · first use may download the model');
   await emit(path.join(work,'audio'),emissions,{model:'quartznet15x5',device,language:new Intl.Locale(language),logger,onProgress:progress('Analysing audio')});
-  reportProgress('Preparing ebook text');
-  await markup(job.epub,marked,{granularity:'word',primaryLocale:new Intl.Locale(language)});
   reportProgress('Matching words to audio');
   await ctcAlign(marked,aligned,emissions,path.join(work,'audio'),{granularity:'word',primaryLocale:new Intl.Locale(language),reportsPath:reports,onProgress:progress('Matching words to audio')});
   reportProgress('Saving and checking alignment');
   const report=JSON.parse(await readFile(reports,'utf8'));
-  const passages=await convert(job.epub,marked,aligned,sources,report);
+  const passages=await convert(preparedEpub,marked,aligned,sources,report);
   if(!passages.some(p=>p.cues.length)) throw new Error('No reliable matching passages found. Check the book edition and language.');
   // Detect source modifications during processing; never publish a stale result.
   const after={epub:await fingerprint(job.epub),sources:await Promise.all(job.sources.map(fingerprint))};
@@ -81,5 +84,5 @@ if(process.argv[1] && path.resolve(process.argv[1])===fileURLToPath(import.meta.
     const job=JSON.parse(await readFile(process.argv[2],'utf8'));
     const {target}=await run(job);
     console.log(`RESULT:${target}`);
-  } catch(e) {console.error(e.stack ?? String(e));process.exitCode=1;}
+  } catch(e) {console.error('ERROR:'+JSON.stringify({message:e.message ?? String(e)}));console.error(e.stack ?? String(e));process.exitCode=1;}
 }

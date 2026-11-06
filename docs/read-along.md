@@ -120,7 +120,15 @@ Actual results on 6 November 2026:
 | Isolated packaged app launch | Succeeded |
 | Native visual/click/playback integration | Not verified; computer-use app approval timed out |
 
-The playback-rate assertions exercise the position-based lookup contract, not live playback at multiple speeds. Actual pause/seek/chapter/speed controls, clicking, scrolling, long-book responsiveness, cancellation during a large inference operation, book switching and app restart/progress restoration still need native manual testing. See `read-along-evidence.json` for captured alignment totals. The subsequent one-click opening fix, simplified preparation flow and structured progress card compile, with lightweight progress/timing tests passing. They were prepared without updating the running QA app because the user's audio analysis was still in progress. The launcher now refuses to update/restart while a QA alignment worker is active.
+The playback-rate assertions exercise the position-based lookup contract, not live playback at multiple speeds. Actual pause/seek/chapter/speed controls, clicking, scrolling, long-book responsiveness, cancellation during a large inference operation, book switching and app restart/progress restoration still need native manual testing. See `read-along-evidence.json` for captured alignment totals. The subsequent one-click opening fix, simplified preparation flow and structured progress card compile. The launcher refuses to update/restart while a QA alignment worker is active.
+
+### EPUB 2 compatibility and readable failures
+
+The user's failed run finished audio analysis, then failed because the attached ebook was EPUB 2. The adapter now inspects the ebook before audio hashing/analysis and uses the maintained upstream `Epub.upgrade` on a separate byte copy. Every original reading-order document's href and exact body text must match after conversion. The original attachment and its fingerprint remain the cache identity, so completed CPU emissions from the failed run remain reusable.
+
+The user's actual 78-chapter ebook passed EPUB 2-to-3 conversion with identical chapter body text and an untouched original. A legal EPUB 2 sample produced 202 timing cues from existing emissions, and a broken EPUB was rejected before attempting to open audio. Run `tools/read-along/verify-epub2.mjs` using the local Node executable to reproduce the synthetic regression. No audio inference of the user's book was repeated during these checks.
+
+Worker stdout/stderr are decoded explicitly as UTF-8. A structured failure message is displayed without terminal download bars or stack traces; full stderr is retained as a UTF-8 `.job.log` in the book's cache folder for diagnosis. The subsequent lightweight C# suite passed 235 checks, including Unicode errors, clean summaries and retained diagnostic logs. Previous EPUB-2 failure messages are replaced in the panel with a readable retry instruction.
 
 ## CPU and GPU processing
 
@@ -135,7 +143,7 @@ GPU acceleration may reduce speech-model inference time, but file hashing/copyin
 - Windows x64 and English QuartzNet CPU are the verified configuration. GPU/DirectML is a pending opt-in preview requiring an idle-machine benchmark and native verification; CPU remains the default. Other language/model combinations and native ARM64 dependencies are unverified.
 - Edited/abridged books, repeated passages, music, advertisements and edition differences depend on the upstream matcher. It skips unsupported matches; no policy can guarantee every accepted word is correct. Native quality review/editing is not implemented.
 - A word cut across source files follows upstream behavior: its timing stays on the source where it begins. Sentence fallback may have multiple source-local clips.
-- The converter understands the verified 0.2.16 ID-fragment SMIL and seconds clock format. Future schema changes fail explicitly. EPUB2 auto-upgrade and experimental text-fragment output are not enabled. Unsupported/encrypted EPUBs fail without modifying the library.
+- The converter understands the verified 0.2.16 ID-fragment SMIL and seconds clock format. Future schema changes fail explicitly. EPUB 2 is upgraded on a text-verified working copy before audio processing. Experimental text-fragment output is not enabled. Unsupported/encrypted EPUBs fail without modifying the library.
 - Text is preserved, but ebook typography, images, footnote navigation and rich inline formatting are not reproduced. This is a narration panel, not a full ebook renderer. Text appears after successful processing; attaching alone shows status rather than an unaligned ebook preview.
 - The full timing model is held in memory, but UI controls are virtualized. Very long books and unusually large individual sentences need memory/UI profiling. Full-file validation hashes can take time on multi-hour books.
 - Maps and attachments are retained locally. Cache cleanup, detaching controls, portable export/import and emissions-only reuse across a changed EPUB are future improvements.

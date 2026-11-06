@@ -52,13 +52,14 @@ public static class WindowHelper
         {
             (miniPlayerWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
             miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
+            miniPlayerWindow.Activate();
 
             HideMainWindow();
             return;
         }
 
         miniPlayerWindow = CreateWindow("MiniPlayerWindow");
-        miniPlayerWindow.CustomizeWindow(648, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
+        miniPlayerWindow.CustomizeWindow(648, 320, true, true, false, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         miniPlayerWindow.Content = rootPage;
@@ -67,7 +68,9 @@ public static class WindowHelper
 
         (miniPlayerWindow as MainWindow)?.TrySetSystemBackdrop();
 
-        miniPlayerWindow.SetWindowDraggable(true);
+        // Drag only the explicit handle. Capturing the whole page interferes
+        // with word links, text selection and playback controls.
+        rootPage.ConfigureWindow(miniPlayerWindow);
         miniPlayerWindow.RemoveWindowBorderAndTitleBar();
 
         miniPlayerWindow.Activate();

@@ -41,6 +41,16 @@ The launcher builds and registers only `Audibly.ReadAlong.Development`, displaye
 
 Attaching an EPUB creates a managed copy; neither the original EPUB nor audiobook is modified. A book without an EPUB continues through the original player code. Reading saved maps does not launch Node or require Storyteller.
 
+## Floating mini-player captions
+
+Open the existing **Open Mini Player** button from the player's controls. The mini-player has a **Read Along** toggle; when enabled, the current EPUB excerpt appears **above** the controls on a dark `#DD181818` backing with the active word highlighted. The caption pane and controls are a single movable window. Use the existing drag-grip icon next to the cover to move them together. **Pin** keeps the window above other windows; the grip remains usable while pinned. This is a dark-backed caption panel, not a separate transparent desktop window.
+
+Use **A− / A+** to change the caption text size (remembered between launches). Excerpts are bounded exact substrings of the EPUB so the active word stays within a small caption window rather than requiring a whole chapter to scroll. Aligned words remain clickable for seeking. During silence/unmatched audio the highlight clears; large seeks/source changes clear stale captions. Pause, speed and chapter controls use the same original MediaPlayer. The mini-player does not start analysis or generate text. If no saved map is available, **Open Read Along** returns to setup in the main player.
+
+The full and mini views share the already-validated alignment document for the current book. The mini-player can also load an existing saved map asynchronously without opening the full panel first. Hiding captions returns to a shorter mini-player and does not affect audio. The caption toggle and font size are independent remembered mini-player preferences.
+
+Automated caption tests cover exact text preservation, Unicode, offsets, stable excerpt windows, separate source files, long words and original seek times. The C# suite passes 245 checks. The production loader additionally verified every caption excerpt and lookup against the user's 140,076-cue map without redoing speech analysis. The native WinUI build passes. Floating-window appearance, drag/pin behavior and actual caption clicks have not been computer-use tested, per the user's instruction not to use that skill.
+
 ## Technology verified
 
 The actual npm stable package inspected and executed was `@storyteller-platform/align@0.2.16`, requiring Node >=24. Both its CLI (`dist/cli/bin.js --help`) and shipped implementation were inspected. Its CTC `buildWordRanges` produces individual word start/end positions, and `createMediaOverlay` emits word ID-fragment references in nested SMIL sequences. This is actual word timing, not a sentence timing map presented as words.

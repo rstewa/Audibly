@@ -25,11 +25,13 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Padding="0,8,0,0" RowSpacing="-6">
+    <Grid Padding="0,8,0,0" RowSpacing="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -49,7 +51,7 @@
             Canvas.ZIndex="10"
             ColumnSpacing="8"
             Grid.Column="1"
-            Grid.Row="0"
+            Grid.Row="2"
             HorizontalAlignment="Stretch"
             Padding="8,0,0,0"
             VerticalAlignment="Center">
@@ -66,6 +68,11 @@
 
             <!--  drag icon  -->
             <FontIcon
+                x:Name="MiniDragHandle"
+                PointerPressed="DragHandle_Pressed"
+                PointerMoved="DragHandle_Moved"
+                PointerReleased="DragHandle_Released"
+                PointerCanceled="DragHandle_Released"
                 FontFamily="{StaticResource AudiblyCustomFont}"
                 FontSize="24"
                 Foreground="{ThemeResource TextFillColorTertiaryBrush}"
@@ -411,7 +418,7 @@
         <Slider
             Canvas.ZIndex="0"
             Grid.ColumnSpan="2"
-            Grid.Row="1"
+            Grid.Row="3"
             HorizontalAlignment="Stretch"
             Maximum="{x:Bind PlayerViewModel.ChapterDurationMs, Mode=OneWay}"
             ValueChanged="Slider_OnValueChanged"
@@ -435,6 +442,27 @@
                 <StaticResource ResourceKey="ControlFillColorTransparentBrush" x:Key="SliderThumbBorderBrush" />
             </Slider.Resources>
         </Slider>
+
+        <Grid Grid.Row="1" Margin="12,0,12,4" ColumnSpacing="8">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <ToggleButton x:Name="MiniReadAlongToggle" Content="Read Along" IsChecked="True" Click="MiniReadAlong_Click"
+                AutomationProperties.Name="Show Read Along in mini-player"/>
+            <TextBlock x:Name="MiniReadAlongStatus" Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <Button Grid.Column="2" Content="A−" Click="SmallerText_Click" ToolTipService.ToolTip="Smaller reading text" AutomationProperties.Name="Smaller reading text"/>
+            <Button Grid.Column="3" Content="A+" Click="LargerText_Click" ToolTipService.ToolTip="Larger reading text" AutomationProperties.Name="Larger reading text"/>
+        </Grid>
+        <Border Grid.Row="0" x:Name="MiniReadingPane" Margin="8,0,8,8" Padding="4" CornerRadius="8"
+            Background="#DD181818" RequestedTheme="Dark">
+            <Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <userControls:ReadAlongPassage x:Name="MiniPassage"/>
+                </ScrollViewer>
+                <StackPanel x:Name="MiniReadingHint" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                    <TextBlock x:Name="MiniHintText" Text="Prepare this book for Read Along in the main player." TextWrapping="Wrap" MaxWidth="520" TextAlignment="Center"/>
+                    <Button x:Name="MiniSetupButton" Content="Open Read Along" Click="OpenReadAlong_Click" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
     </Grid>
 </Page>

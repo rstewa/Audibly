@@ -9,6 +9,7 @@ using System.Timers;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Storage;
+using Audibly.ReadAlong;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
@@ -48,6 +49,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private bool _pendingAutoPlay;
     private bool _readAlongEnabled = ApplicationData.Current.LocalSettings.Values["ReadAlongEnabled"] is true;
+    private AlignmentMap? _readAlongDocument;
     private (Guid Book, int Source, double Seconds)? _pendingReadAlongSeek;
 
     private double _playbackSpeed = 1.0;
@@ -85,6 +87,14 @@ public class PlayerViewModel : BindableBase, IDisposable
         }
     }
 
+    // Validated text/timings are shared by the full and mini views; audio state
+    // continues to belong exclusively to the existing MediaPlayer.
+    public AlignmentMap? ReadAlongDocument
+    {
+        get => _readAlongDocument;
+        set => Set(ref _readAlongDocument, value);
+    }
+
     /// <summary>
     ///     Gets or sets the currently playing audiobook.
     /// </summary>
@@ -93,7 +103,7 @@ public class PlayerViewModel : BindableBase, IDisposable
         get => _nowPlaying;
         set
         {
-            if (_nowPlaying?.Id != value?.Id) _pendingReadAlongSeek = null;
+            if (_nowPlaying?.Id != value?.Id) { _pendingReadAlongSeek = null; ReadAlongDocument = null; }
             Set(ref _nowPlaying, value);
         }
     }

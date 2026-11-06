@@ -143,10 +143,16 @@ public sealed partial class ReadAlongPanel : UserControl
             token.ThrowIfCancellationRequested();
             if (_operation != operation) return;
             if (association is null) { StatusText.Text = "Attach the matching EPUB to this audiobook."; return; }
-            var map = await Task.Run(() => _store.LoadMapAsync(book.Id, association, SourcePaths(book), token), token);
+            var shared = App.PlayerViewModel.ReadAlongDocument;
+            var sources = SourcePaths(book);
+            var map = shared is not null && shared.AudiobookId == book.Id &&
+                string.Equals(shared.Epub.Path, association.EpubPath, StringComparison.OrdinalIgnoreCase) &&
+                shared.Sources.Select(s => s.Path).SequenceEqual(sources, StringComparer.OrdinalIgnoreCase)
+                ? shared : await Task.Run(() => _store.LoadMapAsync(book.Id, association, sources, token), token);
             token.ThrowIfCancellationRequested();
             if (_operation != operation) return;
             _association = association; _map = map;
+            App.PlayerViewModel.ReadAlongDocument = map;
             UpdateSetup();
             Passages.ItemsSource = map?.Passages;
             StatusText.Text = map is not null ? "Ready · published EPUB text · click an aligned word to seek"
@@ -217,6 +223,7 @@ public sealed partial class ReadAlongPanel : UserControl
             await _store.SaveAsync(book.Id, updated, token);
             if (_operation != operation || Book?.Id != book.Id) return;
             _association = updated; _map = map; Passages.ItemsSource = map?.Passages;
+            App.PlayerViewModel.ReadAlongDocument = map;
             _follow = true; _lastPassage = null; _lastCue = null;
             StatusText.Text = "Ready · reliable word timing · gaps remain unhighlighted";
         }

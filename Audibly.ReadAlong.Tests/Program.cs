@@ -13,9 +13,14 @@ if (args.Length is 2 or 3 && args[0] == "--validate-map")
         {
             if(loaded.Find(cue.SourceIndex,(cue.StartSeconds+cue.EndSeconds)/2)?.Cue.Id!=cue.Id)
                 throw new Exception("Real book lookup failed at " + cue.Id);
+            var caption = ReadAlongExcerpt.Create(passage, cue, 150);
+            if (caption.Passage.Text != passage.Text[caption.Start..caption.End] ||
+                caption.Passage.Text.Substring(caption.ActiveCue.Offset,caption.ActiveCue.Length) != passage.Text.Substring(cue.Offset,cue.Length) ||
+                caption.ActiveCue.SourceIndex != cue.SourceIndex || caption.ActiveCue.StartSeconds != cue.StartSeconds)
+                throw new Exception("Mini-player caption mapping failed at " + cue.Id);
             count++;
         }
-    Console.WriteLine($"PASS real book: {loaded.Passages.Count} passages, {count} cues, source/EPUB fingerprints verified, all cue lookups passed");
+    Console.WriteLine($"PASS real book: {loaded.Passages.Count} passages, {count} cues, source/EPUB fingerprints verified, all cue lookups and mini-player excerpts passed");
     if (args.Length == 3)
     {
         // Optional recovery tool: publish only after the exact app loader validates
@@ -53,6 +58,27 @@ AlignmentMap Fixture() => new()
         new() { Id = "b", SourceIndex = 1, StartSeconds = 1, EndSeconds = 2, Offset = 6, Length = 5, Quality = 99 }]}]
 };
 var map = Fixture(); map.Validate(id, 2);
+var longText=string.Concat(Enumerable.Repeat("alpha ",50))+"🙂 lastword";
+var captionPassage=new Passage {Id="captions",Text=longText,Cues=Enumerable.Range(0,50).Select(i=>new Cue {Id="w"+i,SourceIndex=0,Offset=i*6,Length=5,StartSeconds=i,EndSeconds=i+0.5,Quality=99}).ToList()};
+captionPassage.Cues.Add(new Cue {Id="emoji",SourceIndex=1,Offset=300,Length=2,StartSeconds=0,EndSeconds=1,Quality=99});
+foreach(var limit in new[]{32,90,150,220})
+{
+    foreach(var cue in captionPassage.Cues)
+    {
+        var caption=ReadAlongExcerpt.Create(captionPassage,cue,limit);
+        if(caption.Passage.Text!=longText[caption.Start..caption.End] || caption.ActiveCue.Offset<0 ||
+           caption.Passage.Text.Substring(caption.ActiveCue.Offset,caption.ActiveCue.Length)!=longText.Substring(cue.Offset,cue.Length) ||
+           caption.Passage.Cues.Any(c=>c.SourceIndex!=cue.SourceIndex)) throw new Exception("Invalid caption slice");
+    }
+    Check(true,$"mini captions preserve exact text, Unicode, offsets and track mapping at size {limit}");
+}
+var firstCaption=ReadAlongExcerpt.Create(captionPassage,captionPassage.Cues[0],150);
+var secondCaption=ReadAlongExcerpt.Create(captionPassage,captionPassage.Cues[1],150);
+Check(firstCaption.Passage.Id==secondCaption.Passage.Id,"mini caption window stays stable between adjacent words");
+Check(firstCaption.ActiveCue.StartSeconds==captionPassage.Cues[0].StartSeconds,"clicking mini caption keeps exact source-local seek time");
+var longWord=new Passage {Id="long",Text=new string('a',100)};
+var longCue=new Cue {Id="longword",Offset=0,Length=100,SourceIndex=0,StartSeconds=0,EndSeconds=1,Quality=99};longWord.Cues.Add(longCue);
+Check(ReadAlongExcerpt.Create(longWord,longCue,32).Passage.Text==longWord.Text,"a long spoken word is never cut off");
 Check(map.Find(0, 1)?.Cue.Id == "a", "inclusive start");
 Check(map.Find(0, 2) is null, "exclusive end and silence unhighlighted");
 Check(map.Find(0, 0.5) is null, "introduction unhighlighted");

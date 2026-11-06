@@ -17,6 +17,7 @@ public sealed class ReadAlongPassage : UserControl
     public Passage? Data { get => (Passage?)GetValue(DataProperty); set => SetValue(DataProperty, value); }
     private readonly RichTextBlock _text = new() { FontSize = 22, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
     public ReadAlongPassage() { Content = _text; Margin = new Thickness(12, 6, 12, 10); }
+    public double ReadingFontSize { get => _text.FontSize; set => _text.FontSize = Math.Clamp(value, 16, 36); }
     private void Render()
     {
         _text.Blocks.Clear(); _text.TextHighlighters.Clear();

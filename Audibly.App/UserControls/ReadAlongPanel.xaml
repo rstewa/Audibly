@@ -6,20 +6,40 @@
     <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" CornerRadius="8" Padding="12">
         <Grid RowSpacing="8">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button x:Name="AttachButton" Content="Attach EPUB" Click="Attach_Click"/>
-                <Button x:Name="GenerateButton" Content="Generate alignment" Click="Generate_Click"/>
-                <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click" IsEnabled="False"/>
+                <Button x:Name="GenerateButton" Content="Choose EPUB and prepare" Style="{StaticResource AccentButtonStyle}" Click="Generate_Click"/>
+                <Button x:Name="AttachButton" Content="Change EPUB" Click="Attach_Click" Visibility="Collapsed"/>
                 <Button Content="Follow narration" Click="Follow_Click"/>
             </StackPanel>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
-                <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language" Width="100"/>
-                <TextBlock x:Name="ModeLabel" VerticalAlignment="Bottom" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
+            <StackPanel Grid.Row="1" Spacing="6">
+                <TextBlock x:Name="EpubLabel" Text="Choose the matching ebook. Audibly will prepare it for Read Along." TextWrapping="Wrap"/>
+                <Expander Header="Processing options" HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language" Width="100"/>
+                        <ComboBox x:Name="ProcessingDevice" Header="Acceleration" SelectedIndex="0">
+                            <ComboBoxItem Content="CPU" Tag="cpu"/>
+                            <ComboBoxItem Content="GPU (preview)" Tag="dml"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Expander>
             </StackPanel>
-            <TextBlock Grid.Row="2" x:Name="StatusText" Text="Attach the matching EPUB to this audiobook." TextWrapping="Wrap" MaxHeight="90"/>
-            <ListView Grid.Row="3" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"
+            <Border Grid.Row="2" x:Name="ProcessingPanel" Visibility="Collapsed" Padding="12" CornerRadius="6" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="ProcessingStage" Text="Preparing Read Along…" FontWeight="SemiBold"/>
+                    <ProgressBar x:Name="ProcessingProgress" IsIndeterminate="True" Minimum="0" Maximum="100" AutomationProperties.Name="Read Along preparation progress"/>
+                    <TextBlock x:Name="ProcessingDetail" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="ProcessingElapsed"/>
+                    <TextBlock Text="You can keep listening while this runs. Unchanged books only need to be prepared once." TextWrapping="Wrap"/>
+                    <Button x:Name="CancelButton" Content="Cancel preparation" Click="Cancel_Click" IsEnabled="False"/>
+                </StackPanel>
+            </Border>
+            <StackPanel Grid.Row="3" Spacing="4">
+                <TextBlock x:Name="StatusText" Text="Choose an EPUB to get started." TextWrapping="Wrap" MaxHeight="90"/>
+                <TextBlock x:Name="ModeLabel" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
+            </StackPanel>
+            <ListView Grid.Row="4" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"
                 HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollMode="Disabled"
                 ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
                 ContainerContentChanging="Passages_ContainerContentChanging">

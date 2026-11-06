@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -28,6 +29,8 @@ public sealed partial class ReadAlongPanel : UserControl
     private Cue? _lastCue;
     private bool _follow = true;
     private bool _busy;
+    private readonly Stopwatch _processingClock = new();
+    private long _lastElapsedSecond = -1;
     private ScrollViewer? _scroll;
     private static string EngineFolder => Path.Combine(AppContext.BaseDirectory, "read-along");
     private AudiobookViewModel? Book => App.PlayerViewModel.NowPlaying;
@@ -35,7 +38,7 @@ public sealed partial class ReadAlongPanel : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded; Unloaded += OnUnloaded;
-        _timer.Tick += (_, _) => UpdatePosition();
+        _timer.Tick += (_, _) => { UpdatePosition(); UpdateElapsed(); };
         Passages.AddHandler(PointerWheelChangedEvent, new PointerEventHandler((_, _) => StopFollowing()), true);
         Passages.AddHandler(PointerPressedEvent, new PointerEventHandler((_, _) => StopFollowing()), true);
         Passages.AddHandler(KeyDownEvent, new KeyEventHandler((_, _) => StopFollowing()), true);
@@ -62,8 +65,42 @@ public sealed partial class ReadAlongPanel : UserControl
     private static string[] SourcePaths(AudiobookViewModel book) => book.SourcePaths.Select(s => s.FilePath).ToArray();
     private void SetBusy(bool busy)
     {
-        _busy = busy; AttachButton.IsEnabled = GenerateButton.IsEnabled = AudioLanguage.IsEnabled = !busy;
+        _busy = busy; AttachButton.IsEnabled = GenerateButton.IsEnabled = AudioLanguage.IsEnabled = ProcessingDevice.IsEnabled = !busy;
         CancelButton.IsEnabled = busy;
+        ProcessingPanel.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
+        if (busy)
+        {
+            _processingClock.Restart(); _lastElapsedSecond = -1;
+            ProcessingProgress.IsIndeterminate = true;
+            ProcessingStage.Text = "Preparing Read Along…";
+            ProcessingDetail.Text = "Checking your ebook and audio files";
+        }
+        else _processingClock.Stop();
+        UpdateSetup();
+    }
+    private void UpdateSetup()
+    {
+        AttachButton.Visibility = _association is null ? Visibility.Collapsed : Visibility.Visible;
+        EpubLabel.Text = _association is null ? "Choose the matching ebook. Audibly will prepare it for Read Along."
+            : "Ebook: " + (_association.EpubName ?? "EPUB attached");
+        GenerateButton.Content = _association is null ? "Choose EPUB and prepare" : _map is null ? "Prepare Read Along" : "Prepare again";
+    }
+    private void UpdateElapsed()
+    {
+        if (!_busy || (long)_processingClock.Elapsed.TotalSeconds == _lastElapsedSecond) return;
+        _lastElapsedSecond = (long)_processingClock.Elapsed.TotalSeconds;
+        ProcessingElapsed.Text = "Elapsed " + _processingClock.Elapsed.ToString(@"hh\:mm\:ss");
+    }
+    private void ReportProgress(string line)
+    {
+        if (AlignmentProgress.TryParse(line, out var progress) && progress is not null)
+        {
+            ProcessingStage.Text = progress.Stage + (progress.Fraction is { } f ? $" · {f * 100:0}%" : "");
+            ProcessingProgress.IsIndeterminate = progress.Fraction is null;
+            if (progress.Fraction is { } fraction) ProcessingProgress.Value = fraction * 100;
+            ProcessingDetail.Text = progress.Detail ?? "";
+        }
+        else ProcessingDetail.Text = line.Length > 400 ? line[..400] : line;
     }
     private async Task LoadBookAsync()
     {
@@ -83,6 +120,7 @@ public sealed partial class ReadAlongPanel : UserControl
             token.ThrowIfCancellationRequested();
             if (_operation != operation) return;
             _association = association; _map = map;
+            UpdateSetup();
             Passages.ItemsSource = map?.Passages;
             StatusText.Text = map is not null ? "Ready · published EPUB text · click an aligned word to seek" : association.Error ?? "EPUB attached. Generate alignment to begin.";
         }
@@ -92,37 +130,47 @@ public sealed partial class ReadAlongPanel : UserControl
             if (_operation == operation) StatusText.Text = e.Message + " Attach an EPUB or generate alignment again.";
             // Keep association available for regeneration when only the map is stale.
             if (_operation == operation) try { _association = await _store.LoadAsync(book.Id); } catch { }
+            if (_operation == operation) UpdateSetup();
         }
     }
     private async void Attach_Click(object sender, RoutedEventArgs e)
     {
-        if (Book is not { } book || _busy) return;
+        await AttachEpubAsync();
+    }
+    private async Task<bool> AttachEpubAsync()
+    {
+        if (Book is not { } book || _busy) return false;
         try
         {
             var picker = new FileOpenPicker(); picker.FileTypeFilter.Add(".epub");
             InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(App.Window));
             var file = await picker.PickSingleFileAsync();
-            if (file is null || Book?.Id != book.Id) return;
+            if (file is null || Book?.Id != book.Id) return false;
             _operation?.Cancel(); SetBusy(true);
             await _store.AttachAsync(book.Id, file.Path);
             await LoadBookAsync();
+            return Book?.Id == book.Id && _association is not null;
         }
         catch (Exception ex) { StatusText.Text = ex.Message; }
         finally { SetBusy(false); }
+        return false;
     }
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
-        if (_busy || Book is not { } book || _association is not { } association) { StatusText.Text = "Attach an EPUB first."; return; }
+        if (_busy || Book is not { } book) return;
+        if (_association is null && !await AttachEpubAsync()) return;
+        if (Book?.Id != book.Id || _association is not { } association) return;
         _operation?.Cancel(); var operation = _operation = new CancellationTokenSource(); var token = operation.Token;
         SetBusy(true); var sources = SourcePaths(book); var language = AudioLanguage.Text.Trim();
-        _map = null; Passages.ItemsSource = null;
+        var device = (ProcessingDevice.SelectedItem as ComboBoxItem)?.Tag as string ?? "cpu";
         try
         {
-            StatusText.Text = "Starting local CPU alignment. First use downloads the speech model…";
-            var progress = new Progress<string>(text => { if (_operation == operation) StatusText.Text = text; });
+            StatusText.Text = "Preparing this book for Read Along…";
+            var progress = new Progress<string>(text => { if (_operation == operation) ReportProgress(text); });
             var path = await new StorytellerProcessor().GenerateAsync(EngineFolder, Path.Combine(_store.BookFolder(book.Id), "cache"),
-                book.Id, association.EpubPath, sources, language, progress, token);
-            var updated = new BookAssociation { EpubPath = association.EpubPath, MapPath = path, Status = "ready" };
+                book.Id, association.EpubPath, sources, language, progress, token, device);
+            ReportProgress("PROGRESS:{\"stage\":\"Verifying saved alignment\"}");
+            var updated = new BookAssociation { EpubPath = association.EpubPath, EpubName = association.EpubName, MapPath = path, Status = "ready" };
             // Validate result before replacing the last good association.
             var map = await Task.Run(() => _store.LoadMapAsync(book.Id, updated, sources, token), token);
             token.ThrowIfCancellationRequested();

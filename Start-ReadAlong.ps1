@@ -1,6 +1,11 @@
 param([switch]$NoBuild)
 $ErrorActionPreference = 'Stop'
 $checkout = [IO.Path]::GetFullPath($PSScriptRoot)
+# Never restart the QA app while one of its alignment workers is still running.
+$runningAlignment = Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object {
+    $_.CommandLine -and $_.CommandLine.Replace('/','\').IndexOf((Join-Path $checkout '.research\qa-app\read-along\align.mjs'), [StringComparison]::OrdinalIgnoreCase) -ge 0
+}
+if ($runningAlignment) { throw 'Read Along preparation is still running. Wait for it to finish before updating or restarting this app.' }
 $output = Join-Path $checkout 'Audibly.App\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64'
 $developmentRoot = [IO.Path]::GetFullPath((Join-Path $checkout '.research\qa-app'))
 if (-not $developmentRoot.StartsWith($checkout.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {

@@ -34,8 +34,8 @@ The launcher builds and registers only `Audibly.ReadAlong.Development`, displaye
 
 1. Import an M4B, M4A or MP3 audiobook using Audibly's existing import commands. Use its existing multi-file import for a split audiobook, in the intended source order.
 2. Click **Read Along** beside the play/skip buttons in the bottom playback bar. It opens the expanded player and reading panel. The same toggle is available beside the expanded player's play/skip buttons; it no longer sits in the window's top-right area.
-3. Choose **Attach EPUB**, select the matching DRM-free ebook, and set the audio language (`en` by default).
-4. Choose **Generate alignment**. The app uses its included processing software automatically. Progress appears in the panel. **Cancel** terminates the worker process tree. Completed emissions can be reused when retrying.
+3. Choose **Choose EPUB and prepare** and select the matching DRM-free ebook. Preparation starts automatically. The selected filename stays visible; **Change EPUB** lets you replace it. If an EPUB was already attached, the main action is **Prepare Read Along**. Audio language (`en` by default) is under **Processing options**.
+4. A persistent preparation card shows the current stage, a progress bar, elapsed time and **Cancel preparation**. Percentages refer to the current stage, not an invented overall estimate. Stages without measured progress show an indeterminate bar. Completed emissions can be reused when retrying.
 5. Play using the normal controls. Reliable words are highlighted in gold using the player's source position. Click an aligned word to seek. Untimed text stays readable and unhighlighted.
 6. Scroll manually to suspend following; choose **Follow narration** to resume. Toggle Read Along off to return to the original cover/player view. The toggle is remembered.
 
@@ -120,11 +120,19 @@ Actual results on 6 November 2026:
 | Isolated packaged app launch | Succeeded |
 | Native visual/click/playback integration | Not verified; computer-use app approval timed out |
 
-The playback-rate assertions exercise the position-based lookup contract, not live playback at multiple speeds. Actual pause/seek/chapter/speed controls, clicking, scrolling, long-book responsiveness, cancellation during a large inference operation, book switching and app restart/progress restoration still need native manual testing. See `read-along-evidence.json` for captured alignment totals.
+The playback-rate assertions exercise the position-based lookup contract, not live playback at multiple speeds. Actual pause/seek/chapter/speed controls, clicking, scrolling, long-book responsiveness, cancellation during a large inference operation, book switching and app restart/progress restoration still need native manual testing. See `read-along-evidence.json` for captured alignment totals. The subsequent one-click opening fix, simplified preparation flow and structured progress card compile, with lightweight progress/timing tests passing. They were prepared without updating the running QA app because the user's audio analysis was still in progress. The launcher now refuses to update/restart while a QA alignment worker is active.
+
+## CPU and GPU processing
+
+The existing running job explicitly uses CPU; it is not changed or stopped by editing/building this checkout. Under **Processing options**, the pending build adds **GPU (preview)** using Storyteller's supported Windows DirectML path. CPU remains the default verified mode. The current PC reports an NVIDIA GeForce RTX 5060 Ti and Intel UHD Graphics 770, but GPU inference has not been benchmarked or manually validated here. No concurrent inference benchmark was run during the user's ongoing analysis.
+
+The actual shipped engine selects DirectML automatically on Windows when `auto` is requested, while its CUDA selection is gated to Linux x64. Its GPU loader can fall back to CPU if model loading fails. The adapter forwards an explicit `dml` choice only for future GPU requests, labels it preview, forwards fallback notices, and records the actual model-load device when upstream logging exposes it. Runtime failure after model loading is still reported as an error, not silently retried. No CUDA toolkit setup is required for this DirectML option. This is supported by the inspected 0.3.4 package source (`constants.js`, `emission/CtcModel.js`, `emission/ConvCtcOnnx.js`) and [ONNX Runtime's DirectML requirements](https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html).
+
+GPU acceleration may reduce speech-model inference time, but file hashing/copying and text matching also take time. No speedup factor or completion estimate is promised. Existing CPU cache keys remain unchanged so current completed work can be reused. A GPU request has a separate cache identity to keep device-dependent emissions distinct.
 
 ## Limits and remaining work
 
-- Windows x64 and English QuartzNet CPU are the verified configuration. Other language/model combinations and native ARM64 dependencies are unverified. The actual engine supports `cpu`, `webgpu`, Windows `dml`, `cuda`, and Apple `mlx` options in appropriate environments, but this adapter deliberately selects CPU; it exposes no unverified GPU setting.
+- Windows x64 and English QuartzNet CPU are the verified configuration. GPU/DirectML is a pending opt-in preview requiring an idle-machine benchmark and native verification; CPU remains the default. Other language/model combinations and native ARM64 dependencies are unverified.
 - Edited/abridged books, repeated passages, music, advertisements and edition differences depend on the upstream matcher. It skips unsupported matches; no policy can guarantee every accepted word is correct. Native quality review/editing is not implemented.
 - A word cut across source files follows upstream behavior: its timing stays on the source where it begins. Sentence fallback may have multiple source-local clips.
 - The converter understands the verified 0.2.16 ID-fragment SMIL and seconds clock format. Future schema changes fail explicitly. EPUB2 auto-upgrade and experimental text-fragment output are not enabled. Unsupported/encrypted EPUBs fail without modifying the library.

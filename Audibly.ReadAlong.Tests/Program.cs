@@ -8,6 +8,11 @@ void Reject(Action action, string name)
     try { action(); } catch (InvalidDataException) { Check(true, name); return; }
     throw new Exception("Accepted invalid map: " + name);
 }
+Check(AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Analysing audio\",\"fraction\":0.42,\"detail\":\"CPU\"}", out var progress) && progress?.Fraction == 0.42, "measured stage progress");
+Check(AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Checking files\"}", out progress) && progress?.Fraction is null, "unknown duration stays indeterminate");
+Check(!AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Audio\",\"fraction\":2}", out _), "invalid progress refused");
+Check(!AlignmentProgress.TryParse("PROGRESS:{", out _), "malformed progress ignored");
+Check(!AlignmentProgress.TryParse("arbitrary log line", out _), "logs do not invent progress");
 var id = Guid.NewGuid();
 AlignmentMap Fixture() => new()
 {
@@ -57,18 +62,20 @@ try
     catch (JsonException) { Check(true, "corrupt JSON rejected"); }
     // A running worker must be killed, not just an already-cancelled request refused.
     var fakeEngine = Path.Combine(temporary, "fake-engine"); Directory.CreateDirectory(fakeEngine);
-    await File.WriteAllTextAsync(Path.Combine(fakeEngine, "align.mjs"), "console.log('worker-ready'); setInterval(() => {}, 1000);");
+    await File.WriteAllTextAsync(Path.Combine(fakeEngine, "align.mjs"), "import fs from 'node:fs'; const job=JSON.parse(fs.readFileSync(process.argv[2],'utf8')); console.log('DEVICE:'+job.device); console.log('worker-ready'); setInterval(() => {}, 1000);");
     using var inFlight = new CancellationTokenSource(TimeSpan.FromSeconds(5));
     var workerStarted = false;
-    var cancelProgress = new ImmediateProgress(text => { if (text == "worker-ready") { workerStarted = true; inFlight.Cancel(); } });
+    var gpuRequested = false;
+    var cancelProgress = new ImmediateProgress(text => { if (text == "DEVICE:dml") gpuRequested=true; if (text == "worker-ready") { workerStarted = true; inFlight.Cancel(); } });
     try
     {
-        await new StorytellerProcessor().GenerateAsync(fakeEngine, Path.Combine(temporary,"jobs"), id, epub, [audio], "en", cancelProgress, inFlight.Token);
+        await new StorytellerProcessor().GenerateAsync(fakeEngine, Path.Combine(temporary,"jobs"), id, epub, [audio], "en", cancelProgress, inFlight.Token, "dml");
         throw new Exception("Running worker was not cancelled");
     }
     catch (OperationCanceledException)
     {
         Check(workerStarted, "cancellation exercised a running worker");
+        Check(gpuRequested, "GPU choice forwarded to future worker request");
         Check(!Directory.EnumerateFiles(Path.Combine(temporary,"jobs"), "*.job.json").Any(), "running cancellation cleans up request");
     }
 }

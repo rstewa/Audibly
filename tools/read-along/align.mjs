@@ -5,6 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convert } from './convert.mjs';
+import pino from 'pino';
 const root=path.dirname(fileURLToPath(import.meta.url));
 process.env.PATH=[path.join(root,'node_modules/ffmpeg-static'),path.join(root,'node_modules/ffprobe-static/bin/win32/x64'),process.env.PATH].join(path.delimiter);
 export async function fingerprint(file) {
@@ -14,14 +15,25 @@ export async function fingerprint(file) {
 }
 export async function run(job) {
   const language=job.language ?? 'en';
+  const device=job.device ?? 'cpu';
+  if(!['cpu','dml'].includes(device)) throw new Error('Unsupported acceleration setting');
+  let actualDevice=null, lastProgress='';
+  const reportProgress=(stage,fraction=null,detail=null)=>{
+    const value={stage,fraction: fraction===null ? null : Math.max(0,Math.min(1,Math.round(fraction*100)/100)),detail};
+    const encoded=JSON.stringify(value);
+    if(encoded!==lastProgress) {console.log('PROGRESS:'+encoded);lastProgress=encoded;}
+  };
+  reportProgress('Checking ebook and audio files');
   const inputs={epub:await fingerprint(job.epub),sources:await Promise.all(job.sources.map(fingerprint))};
-  const identity=createHash('sha256').update(JSON.stringify({engine:'0.2.16',schema:1,language,inputs})).digest('hex');
+  // Preserve the existing CPU cache identity, including the user's current job.
+  const identity=createHash('sha256').update(JSON.stringify({engine:'0.2.16',schema:1,language,inputs,...(device==='cpu'?{}:{device})})).digest('hex');
   const work=path.join(job.cache,identity);
   await mkdir(path.join(work,'audio'),{recursive:true});
   const target=path.join(work,'alignment.json');
   try {const cached=JSON.parse(await readFile(target,'utf8')); if(cached.schemaVersion===1 && cached.audiobookId===job.audiobookId) {console.log('Using cached alignment');return {target,model:cached};}} catch(e) {if(e.code!=='ENOENT' && !(e instanceof SyntaxError)) throw e;}
   const sources=[];
   for(let i=0;i<job.sources.length;i++) {
+    reportProgress('Preparing audio files',null,`File ${i+1} of ${job.sources.length}`);
     const stagedName=String(i).padStart(6,'0')+path.extname(job.sources[i]).toLowerCase();
     if(!['.m4b','.m4a','.mp3','.wav'].includes(path.extname(stagedName))) throw new Error('Unsupported audio format');
     const staged=path.join(work,'audio',stagedName);
@@ -33,22 +45,35 @@ export async function run(job) {
     }
     sources.push({...inputs.sources[i],index:i,stagedName});
   }
-  const progress=stage=>p=>console.log(`${stage}: ${Math.round(p*100)}%`);
+  const deviceDescription=()=>actualDevice ? (actualDevice==='cpu' && device!=='cpu' ? 'CPU · GPU unavailable, using CPU fallback' : actualDevice==='cpu'?'CPU':'GPU · DirectML') : device==='cpu'?'CPU':'GPU requested · DirectML (preview)';
+  const progress=stage=>p=>reportProgress(stage,p>0?p:null,deviceDescription());
+  const logger=pino({level:'info'}, {write(chunk){
+    try {
+      const message=JSON.parse(chunk).msg ?? '';
+      const match=message.match(/Model load .*\bon (cpu|dml|webgpu|cuda|mlx)\b/);
+      if(match) {actualDevice=match[1];reportProgress('Analysing audio',null,deviceDescription());}
+    } catch { /* Non-progress logs do not change user-visible state. */ }
+  }});
   const emissions=path.join(work,'emissions'), marked=path.join(work,'marked.epub'), aligned=path.join(work,'aligned.epub'), reports=path.join(work,'report.json');
-  await emit(path.join(work,'audio'),emissions,{model:'quartznet15x5',device:'cpu',language:new Intl.Locale(language),onProgress:progress('Analysing audio')});
+  reportProgress('Loading speech model',null,deviceDescription()+' · first use may download the model');
+  await emit(path.join(work,'audio'),emissions,{model:'quartznet15x5',device,language:new Intl.Locale(language),logger,onProgress:progress('Analysing audio')});
+  reportProgress('Preparing ebook text');
   await markup(job.epub,marked,{granularity:'word',primaryLocale:new Intl.Locale(language)});
-  await ctcAlign(marked,aligned,emissions,path.join(work,'audio'),{granularity:'word',primaryLocale:new Intl.Locale(language),reportsPath:reports,onProgress:progress('Aligning EPUB')});
+  reportProgress('Matching words to audio');
+  await ctcAlign(marked,aligned,emissions,path.join(work,'audio'),{granularity:'word',primaryLocale:new Intl.Locale(language),reportsPath:reports,onProgress:progress('Matching words to audio')});
+  reportProgress('Saving and checking alignment');
   const report=JSON.parse(await readFile(reports,'utf8'));
   const passages=await convert(job.epub,marked,aligned,sources,report);
   if(!passages.some(p=>p.cues.length)) throw new Error('No reliable matching passages found. Check the book edition and language.');
   // Detect source modifications during processing; never publish a stale result.
   const after={epub:await fingerprint(job.epub),sources:await Promise.all(job.sources.map(fingerprint))};
   if(JSON.stringify(inputs)!==JSON.stringify(after)) throw new Error('Inputs changed while aligning; please retry.');
-  const model={schemaVersion:1,audiobookId:job.audiobookId,engine:'@storyteller-platform/align@0.2.16;quartznet15x5;cpu',status:'ready',language,epub:inputs.epub,sources,passages};
+  const model={schemaVersion:1,audiobookId:job.audiobookId,engine:`@storyteller-platform/align@0.2.16;quartznet15x5;${actualDevice ?? device+'-requested'}`,requestedDevice:device,actualDevice,status:'ready',language,epub:inputs.epub,sources,passages};
   const temporary=target+'.'+randomUUID()+'.tmp';
   await writeFile(temporary,JSON.stringify(model));await rename(temporary,target);
   // Audio is already in the original library; retain only emissions, markup and maps.
   await rm(aligned,{force:true});
+  reportProgress('Read Along is ready',1);
   return {target,model};
 }
 if(process.argv[1] && path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) {

@@ -103,7 +103,11 @@ public sealed partial class PlayerControlGrid : UserControl
 
     private void ReadAlongToggle_Click(object sender, RoutedEventArgs e)
     {
-        if (PlayerViewModel.ReadAlongEnabled && App.RootFrame?.Content is not PlayerPage)
+        // Read the clicked control, not a two-way binding that may update after Click.
+        // From the library this action always opens reading, even if remembered as enabled.
+        var inPlayer = App.RootFrame?.Content is PlayerPage;
+        PlayerViewModel.ReadAlongEnabled = !inPlayer || (sender as ToggleButton)?.IsChecked == true;
+        if (PlayerViewModel.ReadAlongEnabled && !inPlayer)
         {
             PlayerViewModel.IsPlayerFullScreen = true;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;

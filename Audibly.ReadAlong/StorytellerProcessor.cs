@@ -6,7 +6,8 @@ namespace Audibly.ReadAlong;
 public sealed class StorytellerProcessor
 {
     public async Task<string> GenerateAsync(string engineFolder, string cacheFolder, Guid bookId,
-        string epub, IReadOnlyList<string> sources, string language, IProgress<string> progress, CancellationToken token)
+        string epub, IReadOnlyList<string> sources, string language, IProgress<string> progress, CancellationToken token,
+        string device = "cpu")
     {
         if (!File.Exists(Path.Combine(engineFolder, "align.mjs")))
             throw new FileNotFoundException("Read Along components are missing from this installation. Repair or reinstall Audibly.");
@@ -15,7 +16,7 @@ public sealed class StorytellerProcessor
         try
         {
             await File.WriteAllTextAsync(jobFile, JsonSerializer.Serialize(new
-            { audiobookId = bookId, epub, sources, language, cache = cacheFolder }, AlignmentMap.Json), token);
+            { audiobookId = bookId, epub, sources, language, device, cache = cacheFolder }, AlignmentMap.Json), token);
             var localNode = Path.Combine(engineFolder, "node_modules", "node", "bin", "node.exe");
             var start = new ProcessStartInfo(File.Exists(localNode) ? localNode : "node.exe")
             {
@@ -37,7 +38,7 @@ public sealed class StorytellerProcessor
             {
                 while (await process.StandardOutput.ReadLineAsync() is { } line)
                     if (line.StartsWith("RESULT:", StringComparison.Ordinal)) result = line[7..];
-                    else progress.Report(line.Length > 240 ? line[..240] : line);
+                    else progress.Report(line.StartsWith("PROGRESS:", StringComparison.Ordinal) ? line : line.Length > 240 ? line[..240] : line);
             }
             async Task ReadErrors()
             {
@@ -45,6 +46,8 @@ public sealed class StorytellerProcessor
                 {
                     if (errors.Count == 12) errors.Dequeue();
                     errors.Enqueue(line.Length > 500 ? line[..500] : line);
+                    if (line.Contains("falling back", StringComparison.OrdinalIgnoreCase))
+                        progress.Report("GPU unavailable; continuing with CPU. " + line);
                 }
             }
             var output = ReadOutput(); var error = ReadErrors();

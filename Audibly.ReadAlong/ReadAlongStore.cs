@@ -5,6 +5,7 @@ namespace Audibly.ReadAlong;
 public sealed class BookAssociation
 {
     public string EpubPath { get; set; } = "";
+    public string? EpubName { get; set; }
     public string? MapPath { get; set; }
     public string Status { get; set; } = "attached";
     public string? Error { get; set; }
@@ -44,7 +45,7 @@ public sealed class ReadAlongStore(string root)
         await using (var source = File.OpenRead(epub))
         await using (var destination = File.Create(path))
             await source.CopyToAsync(destination, token);
-        var association = new BookAssociation { EpubPath = path };
+        var association = new BookAssociation { EpubPath = path, EpubName = Path.GetFileName(epub) };
         await SaveAsync(id, association, token);
         return association;
     }

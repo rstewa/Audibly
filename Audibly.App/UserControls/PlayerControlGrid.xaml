@@ -344,7 +344,7 @@
                 <ToggleButton
                     Content="Read Along"
                     AutomationProperties.AutomationId="ReadAlongToggle"
-                    IsChecked="{x:Bind PlayerViewModel.ReadAlongEnabled, Mode=TwoWay}"
+                    IsChecked="{x:Bind PlayerViewModel.ReadAlongEnabled, Mode=OneWay}"
                     IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
                     Click="ReadAlongToggle_Click"
                     VerticalAlignment="Center"

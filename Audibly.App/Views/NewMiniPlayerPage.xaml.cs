@@ -42,6 +42,7 @@ public sealed partial class NewMiniPlayerPage : Page
     private string? _lastExcerptId;
     private int _lastSource = -1;
     private double _lastPosition;
+    private double? _lastMatchedEnd;
     private double _captionFontSize = 24;
     private bool _dragging;
     private PointInt32 _dragWindowStart;
@@ -120,7 +121,7 @@ public sealed partial class NewMiniPlayerPage : Page
     {
         _readingLoad?.Cancel(); _readingLoad?.Dispose();
         var operation = _readingLoad = new CancellationTokenSource(); var token = operation.Token;
-        _readingMap = null; ClearCaption();
+        _readingMap = null; ClearCaption(); _lastMatchedEnd = null;
         if (MiniReadAlongToggle.IsChecked != true) return;
         if (PlayerViewModel.NowPlaying is not { } book)
         {
@@ -171,14 +172,18 @@ public sealed partial class NewMiniPlayerPage : Page
         if (active is null)
         {
             MiniPassage.Highlight(null); _lastCaptionCue = null;
-            if (_lastSource != source || Math.Abs(position - _lastPosition) > 2) ClearCaption();
-            MiniReadAlongStatus.Text = "No aligned words here";
-            if (MiniPassage.Data is null) ShowReadingHint("No reliable word timing at this position. Playback continues normally.", false);
+            MiniReadAlongStatus.Text = "";
+            if (CaptionGap.IsSignificant(_lastSource, _lastPosition, _lastMatchedEnd, source, position))
+            {
+                ClearCaption();
+                ShowReadingHint("No reliable word timing at this position. Playback continues normally.", false);
+            }
         }
         else
         {
             MiniReadingHint.Visibility = Visibility.Collapsed;
-            MiniReadAlongStatus.Text = "Following narration";
+            MiniReadAlongStatus.Text = "";
+            _lastMatchedEnd = active.Value.Cue.EndSeconds;
             if (_lastCaptionCue != active.Value.Cue.Id)
             {
                 var excerpt = ReadAlongExcerpt.Create(active.Value.Passage, active.Value.Cue, (int)(3600 / _captionFontSize));
@@ -196,10 +201,11 @@ public sealed partial class NewMiniPlayerPage : Page
     {
         var enabled = MiniReadAlongToggle.IsChecked == true;
         MiniReadingPane.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        MiniCaptionTools.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
         if (_miniWindow is not { } window) return;
         var scale = Win32.GetDpiForWindow(WindowNative.GetWindowHandle(window)) / 96.0;
         // Resize without moving the window, including when pinned on top.
-        window.AppWindow.Resize(new SizeInt32((int)Math.Ceiling(648 * scale), (int)Math.Ceiling((enabled ? 320 : 144) * scale)));
+        window.AppWindow.Resize(new SizeInt32((int)Math.Ceiling(688 * scale), (int)Math.Ceiling((enabled ? 320 : 104) * scale)));
     }
     private async void MiniReadAlong_Click(object sender, RoutedEventArgs e)
     {

@@ -58,6 +58,14 @@ AlignmentMap Fixture() => new()
         new() { Id = "b", SourceIndex = 1, StartSeconds = 1, EndSeconds = 2, Offset = 6, Length = 5, Quality = 99 }]}]
 };
 var map = Fixture(); map.Validate(id, 2);
+Check(!CaptionGap.IsSignificant(0,1.00,1.00,0,1.02),"mini status ignores a 20 ms inter-word gap");
+Check(!CaptionGap.IsSignificant(0,1.02,1.00,0,1.02),"pausing in an inter-word gap does not create a warning");
+Check(!CaptionGap.IsSignificant(0,1.30,1.00,0,1.40),"short narration pauses retain captions");
+Check(CaptionGap.IsSignificant(0,2.49,1.00,0,2.50),"genuine unmatched stretch clears stale captions");
+Check(CaptionGap.IsSignificant(0,1.00,1.00,1,1.02),"changing source clears an unmatched old caption");
+Check(CaptionGap.IsSignificant(0,1.00,1.00,0,100.00),"seeking into unmatched audio clears stale captions immediately");
+Check(CaptionGap.IsSignificant(0,100.00,100.00,0,1.00),"backward seek clears stale captions immediately");
+Check(map.Find(0,2.02) is null,"gap grace never fabricates an active word highlight");
 var longText=string.Concat(Enumerable.Repeat("alpha ",50))+"🙂 lastword";
 var captionPassage=new Passage {Id="captions",Text=longText,Cues=Enumerable.Range(0,50).Select(i=>new Cue {Id="w"+i,SourceIndex=0,Offset=i*6,Length=5,StartSeconds=i,EndSeconds=i+0.5,Quality=99}).ToList()};
 captionPassage.Cues.Add(new Cue {Id="emoji",SourceIndex=1,Offset=300,Length=2,StartSeconds=0,EndSeconds=1,Quality=99});

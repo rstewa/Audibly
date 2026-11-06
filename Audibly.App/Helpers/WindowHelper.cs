@@ -59,7 +59,7 @@ public static class WindowHelper
         }
 
         miniPlayerWindow = CreateWindow("MiniPlayerWindow");
-        miniPlayerWindow.CustomizeWindow(648, 320, true, true, false, false, false);
+        miniPlayerWindow.CustomizeWindow(688, 320, true, true, false, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         miniPlayerWindow.Content = rootPage;

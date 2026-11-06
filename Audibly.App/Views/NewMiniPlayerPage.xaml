@@ -123,6 +123,13 @@
                 Spacing="-8"
                 VerticalAlignment="Center">
 
+                <ToggleButton x:Name="MiniReadAlongToggle" IsChecked="True" Click="MiniReadAlong_Click"
+                    Background="Transparent" BorderThickness="0" Width="32" Padding="0"
+                    ToolTipService.ToolTip="Show or hide Read Along"
+                    AutomationProperties.Name="Show or hide Read Along captions">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8F1;" FontSize="16"/>
+                </ToggleButton>
+
                 <!--  Volume Button  -->
                 <Button
                     Background="Transparent"
@@ -443,13 +450,11 @@
             </Slider.Resources>
         </Slider>
 
-        <Grid Grid.Row="1" Margin="12,0,12,4" ColumnSpacing="8">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <ToggleButton x:Name="MiniReadAlongToggle" Content="Read Along" IsChecked="True" Click="MiniReadAlong_Click"
-                AutomationProperties.Name="Show Read Along in mini-player"/>
-            <TextBlock x:Name="MiniReadAlongStatus" Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-            <Button Grid.Column="2" Content="A−" Click="SmallerText_Click" ToolTipService.ToolTip="Smaller reading text" AutomationProperties.Name="Smaller reading text"/>
-            <Button Grid.Column="3" Content="A+" Click="LargerText_Click" ToolTipService.ToolTip="Larger reading text" AutomationProperties.Name="Larger reading text"/>
+        <Grid Grid.Row="1" x:Name="MiniCaptionTools" Margin="12,0,12,4" ColumnSpacing="8">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock x:Name="MiniReadAlongStatus" Grid.Column="0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <Button Grid.Column="1" Content="A−" Click="SmallerText_Click" ToolTipService.ToolTip="Smaller reading text" AutomationProperties.Name="Smaller reading text"/>
+            <Button Grid.Column="2" Content="A+" Click="LargerText_Click" ToolTipService.ToolTip="Larger reading text" AutomationProperties.Name="Larger reading text"/>
         </Grid>
         <Border Grid.Row="0" x:Name="MiniReadingPane" Margin="8,0,8,8" Padding="4" CornerRadius="8"
             Background="#DD181818" RequestedTheme="Dark">

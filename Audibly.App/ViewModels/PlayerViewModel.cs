@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.Storage;
 using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.Services;
@@ -46,6 +47,8 @@ public class PlayerViewModel : BindableBase, IDisposable
     private AudiobookViewModel? _nowPlaying;
 
     private bool _pendingAutoPlay;
+    private bool _readAlongEnabled = ApplicationData.Current.LocalSettings.Values["ReadAlongEnabled"] is true;
+    private (Guid Book, int Source, double Seconds)? _pendingReadAlongSeek;
 
     private double _playbackSpeed = 1.0;
 
@@ -72,13 +75,27 @@ public class PlayerViewModel : BindableBase, IDisposable
     /// </summary>
     public bool IsUserSeeking { get; set; }
 
+    public bool ReadAlongEnabled
+    {
+        get => _readAlongEnabled;
+        set
+        {
+            Set(ref _readAlongEnabled, value);
+            ApplicationData.Current.LocalSettings.Values["ReadAlongEnabled"] = value;
+        }
+    }
+
     /// <summary>
     ///     Gets or sets the currently playing audiobook.
     /// </summary>
     public AudiobookViewModel? NowPlaying
     {
         get => _nowPlaying;
-        set => Set(ref _nowPlaying, value);
+        set
+        {
+            if (_nowPlaying?.Id != value?.Id) _pendingReadAlongSeek = null;
+            Set(ref _nowPlaying, value);
+        }
     }
 
     /// <summary>
@@ -412,21 +429,48 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     public async void OpenSourceFile(int index, int chapterIndex)
     {
-        if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex == index)
-            return;
+        await OpenSourceFileAsync(index, chapterIndex);
+    }
 
-        NowPlaying.CurrentTimeMs = 0;
-        NowPlaying.CurrentSourceFileIndex = index;
-        NowPlaying.CurrentChapterIndex = chapterIndex;
+    private async Task OpenSourceFileAsync(int index, int chapterIndex)
+    {
+        var book = NowPlaying;
+        if (book == null || book.CurrentSourceFileIndex == index)
+            return;
+        if (_pendingReadAlongSeek is { } seek && (seek.Book != book.Id || seek.Source != index))
+            _pendingReadAlongSeek = null;
+
+        book.CurrentTimeMs = 0;
+        book.CurrentSourceFileIndex = index;
+        book.CurrentChapterIndex = chapterIndex;
 
         await _dispatcherQueue.EnqueueAsync(() =>
         {
-            NowPlaying.CurrentChapterTitle = NowPlaying.Chapters[chapterIndex].Title;
+            book.CurrentChapterTitle = book.Chapters[chapterIndex].Title;
         });
 
-        await NowPlaying.SaveAsync();
+        await book.SaveAsync();
 
-        MediaPlayer.Source = MediaSource.CreateFromUri(NowPlaying.CurrentSourceFile.FilePath.AsUri());
+        if (NowPlaying == book)
+            MediaPlayer.Source = MediaSource.CreateFromUri(book.CurrentSourceFile.FilePath.AsUri());
+    }
+
+    public async Task SeekReadAlongAsync(int sourceIndex, double seconds)
+    {
+        if (NowPlaying is not { } book || sourceIndex < 0 || sourceIndex >= book.SourcePaths.Count ||
+            !double.IsFinite(seconds) || seconds < 0) return;
+        if (sourceIndex == book.CurrentSourceFileIndex)
+        {
+            _pendingReadAlongSeek = null;
+            CurrentPosition = TimeSpan.FromSeconds(seconds);
+            return;
+        }
+        var chapter = book.Chapters.FirstOrDefault(c => c.ParentSourceFileIndex == sourceIndex && c.InRange(seconds * 1000))
+            ?? book.Chapters.FirstOrDefault(c => c.ParentSourceFileIndex == sourceIndex);
+        if (chapter is null) return;
+        _pendingReadAlongSeek = (book.Id, sourceIndex, seconds);
+        _pendingAutoPlay = MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing;
+        await OpenSourceFileAsync(sourceIndex, chapter.Index);
     }
 
     /// <summary>
@@ -473,6 +517,12 @@ public class PlayerViewModel : BindableBase, IDisposable
                     : 0;
 
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
+            if (_pendingReadAlongSeek is { } seek)
+            {
+                _pendingReadAlongSeek = null;
+                if (seek.Book == NowPlaying.Id && seek.Source == NowPlaying.CurrentSourceFileIndex)
+                    CurrentPosition = TimeSpan.FromSeconds(seek.Seconds);
+            }
 
             MediaPlayer.PlaybackRate = PlaybackSpeed;
 

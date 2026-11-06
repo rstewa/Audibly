@@ -2,6 +2,8 @@
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+        <!-- Toolkit packages require WinRT.Runtime 2.2 (older SDKs choose 2.1). -->
+        <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
         <RootNamespace>Audibly.App</RootNamespace>
         <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -150,6 +152,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
         <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
+        <ProjectReference Include="..\Audibly.ReadAlong\Audibly.ReadAlong.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Page Update="Views\ControlPages\ChangelogDialogContent.xaml">

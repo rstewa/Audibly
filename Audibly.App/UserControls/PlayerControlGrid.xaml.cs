@@ -101,6 +101,17 @@ public sealed partial class PlayerControlGrid : UserControl
         }
     }
 
+    private void ReadAlongToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (PlayerViewModel.ReadAlongEnabled && App.RootFrame?.Content is not PlayerPage)
+        {
+            PlayerViewModel.IsPlayerFullScreen = true;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
+            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
+            App.RootFrame?.Navigate(typeof(PlayerPage));
+        }
+    }
+
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         var slider = sender as Slider;

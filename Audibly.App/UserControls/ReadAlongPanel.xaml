@@ -1,0 +1,31 @@
+<UserControl
+    x:Class="Audibly.App.UserControls.ReadAlongPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Audibly.App.UserControls">
+    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" CornerRadius="8" Padding="12">
+        <Grid RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="AttachButton" Content="Attach EPUB" Click="Attach_Click"/>
+                <Button x:Name="GenerateButton" Content="Generate alignment" Click="Generate_Click"/>
+                <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click" IsEnabled="False"/>
+                <Button Content="Follow narration" Click="Follow_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+                <Button x:Name="EngineButton" Content="Engine folder…" Click="Engine_Click"/>
+                <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language" Width="100"/>
+                <TextBlock x:Name="ModeLabel" VerticalAlignment="Bottom" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
+            </StackPanel>
+            <TextBlock Grid.Row="2" x:Name="StatusText" Text="Attach the matching EPUB to this audiobook." TextWrapping="Wrap" MaxHeight="90"/>
+            <ListView Grid.Row="3" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"
+                HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollMode="Disabled"
+                ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ContainerContentChanging="Passages_ContainerContentChanging">
+                <ListView.ItemTemplate><DataTemplate><local:ReadAlongPassage Data="{Binding}"/></DataTemplate></ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Border>
+</UserControl>

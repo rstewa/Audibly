@@ -334,10 +334,22 @@
             </Grid>
 
             <!--  play & skip buttons  -->
-            <local:PlaySkipButtonsStack
+            <StackPanel
                 Grid.Column="1"
                 Grid.Row="1"
-                HorizontalAlignment="Center" />
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="16">
+                <local:PlaySkipButtonsStack />
+                <ToggleButton
+                    Content="Read Along"
+                    AutomationProperties.AutomationId="ReadAlongToggle"
+                    IsChecked="{x:Bind PlayerViewModel.ReadAlongEnabled, Mode=TwoWay}"
+                    IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
+                    Click="ReadAlongToggle_Click"
+                    VerticalAlignment="Center"
+                    ToolTipService.ToolTip="Show or hide Read Along" />
+            </StackPanel>
 
             <!--  now playing bar  -->
             <local:NowPlayingBar

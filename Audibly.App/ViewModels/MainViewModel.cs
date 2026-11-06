@@ -977,6 +977,7 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".m4a");
         openPicker.FileTypeFilter.Add(".mp3");
 
         var file = await openPicker.PickSingleFileAsync();
@@ -1175,6 +1176,7 @@ public class MainViewModel : BindableBase
         openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.FileTypeFilter.Add(".m4b");
+        openPicker.FileTypeFilter.Add(".m4a");
         openPicker.FileTypeFilter.Add(".mp3");
 
         var files = await openPicker.PickMultipleFilesAsync();

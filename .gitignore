@@ -367,3 +367,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Read Along local research and dependencies
+.research/
+.dotnet/
+.nuget/
+tools/read-along/sample/
+*.tgz

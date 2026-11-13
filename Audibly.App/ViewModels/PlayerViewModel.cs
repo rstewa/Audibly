@@ -2,6 +2,7 @@
 // Updated: 08/02/2025
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,6 +60,13 @@ public class PlayerViewModel : BindableBase, IDisposable
     private double _volumeLevel;
 
     private string _volumeLevelGlyph = Constants.VolumeGlyph3;
+
+    /// <summary>
+    ///     True from the moment a new source is requested until its MediaOpened handler has applied the
+    ///     start position. While set, PositionChanged must not record positions: they belong to the old
+    ///     media but would be written into the new source file's CurrentTimeMs.
+    /// </summary>
+    private volatile bool _isSwitchingSource;
 
     public PlayerViewModel()
     {
@@ -407,6 +415,7 @@ public class PlayerViewModel : BindableBase, IDisposable
             await NowPlaying.SaveAsync();
         });
 
+        _isSwitchingSource = true;
         MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
     }
 
@@ -415,9 +424,17 @@ public class PlayerViewModel : BindableBase, IDisposable
         if (NowPlaying == null || NowPlaying.CurrentSourceFileIndex == index)
             return;
 
-        NowPlaying.CurrentTimeMs = 0;
+        // must be set before the index changes so PositionChanged stops recording old-media positions
+        _isSwitchingSource = true;
+
+        Debug.WriteLine(
+            $"[PlayerVM] OpenSourceFile: {NowPlaying.CurrentSourceFileIndex} -> {index}, chapter {chapterIndex}");
+
+        // CurrentTimeMs is stored per source file, so switch the index first and then set the start
+        // position of the *new* file (previously this reset the old file and left the new file's stale value)
         NowPlaying.CurrentSourceFileIndex = index;
         NowPlaying.CurrentChapterIndex = chapterIndex;
+        NowPlaying.CurrentTimeMs = (int)NowPlaying.Chapters[chapterIndex].StartTime;
 
         await _dispatcherQueue.EnqueueAsync(() =>
         {
@@ -472,7 +489,11 @@ public class PlayerViewModel : BindableBase, IDisposable
                     ? (int)(NowPlaying.CurrentTimeMs - NowPlaying.CurrentChapter.StartTime)
                     : 0;
 
+            Debug.WriteLine(
+                $"[PlayerVM] MediaOpened: source {NowPlaying.CurrentSourceFileIndex}, seeking to {NowPlaying.CurrentTimeMs} ms");
+
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
+            _isSwitchingSource = false;
 
             MediaPlayer.PlaybackRate = PlaybackSpeed;
 
@@ -504,6 +525,7 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private void AudioPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
     {
+        _isSwitchingSource = false;
         _dispatcherQueue.TryEnqueue(() => NowPlaying = null);
 
         // note: content dialog
@@ -541,44 +563,70 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
     {
-        if (NowPlaying == null) return;
+        var audiobook = NowPlaying;
+        if (audiobook == null) return;
 
-        if (!NowPlaying.CurrentChapter.InRange(CurrentPosition.TotalMilliseconds))
+        // capture the position and the source file it belongs to *now*, on the event thread. The dispatcher
+        // work below can run much later (the UI thread may be backed up), by which time a different source
+        // file may be current and the position read there would belong to the wrong file.
+        var sourceIndex = audiobook.CurrentSourceFileIndex;
+        var positionMs = sender.Position.TotalMilliseconds;
+
+        // checked after the captures: if no switch was in progress at this point, both values above
+        // belong to the same (old or settled) media
+        if (_isSwitchingSource) return;
+
+        bool IsStale()
         {
-            var newChapter = NowPlaying.Chapters.FirstOrDefault(c =>
-                c.ParentSourceFileIndex == NowPlaying.CurrentSourceFileIndex &&
-                c.InRange(CurrentPosition.TotalMilliseconds));
+            if (!_isSwitchingSource && ReferenceEquals(NowPlaying, audiobook) &&
+                audiobook.CurrentSourceFileIndex == sourceIndex)
+                return false;
+
+            Debug.WriteLine(
+                $"[PlayerVM] Discarded stale position update: {positionMs:F0} ms from source {sourceIndex}, " +
+                $"current source is now {audiobook.CurrentSourceFileIndex} (switching: {_isSwitchingSource})");
+            return true;
+        }
+
+        if (!audiobook.CurrentChapter.InRange(positionMs))
+        {
+            var newChapter = audiobook.Chapters.FirstOrDefault(c =>
+                c.ParentSourceFileIndex == sourceIndex &&
+                c.InRange(positionMs));
 
             if (newChapter != null)
                 _ = _dispatcherQueue.EnqueueAsync(() =>
                 {
-                    NowPlaying.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
-                    NowPlaying.CurrentChapterTitle = newChapter.Title;
-                    ChapterDurationMs = (int)(NowPlaying.CurrentChapter.EndTime - NowPlaying.CurrentChapter.StartTime);
+                    if (IsStale()) return;
+
+                    audiobook.CurrentChapterIndex = ChapterComboSelectedIndex = newChapter.Index;
+                    audiobook.CurrentChapterTitle = newChapter.Title;
+                    ChapterDurationMs = (int)(audiobook.CurrentChapter.EndTime - audiobook.CurrentChapter.StartTime);
                 });
         }
 
         if (IsUserSeeking) return;
 
-        _ = _dispatcherQueue.EnqueueAsync(async () =>
+        _ = _dispatcherQueue.EnqueueAsync(() =>
         {
-            ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
-                ? CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime
+            if (IsStale()) return;
+
+            ChapterPositionMs = (int)(positionMs > audiobook.CurrentChapter.StartTime
+                ? positionMs - audiobook.CurrentChapter.StartTime
                 : 0);
-            NowPlaying.CurrentTimeMs = (int)CurrentPosition.TotalMilliseconds;
+            audiobook.CurrentTimeMs = (int)positionMs;
 
             // TODO: this is gross
             // calculate/update progress
             double tmp = 0;
-            if (NowPlaying.CurrentSourceFileIndex != 0)
-                for (var i = 0; i < NowPlaying.CurrentSourceFileIndex; i++)
-                    tmp += NowPlaying.SourcePaths[i].Duration;
-            tmp += CurrentPosition.TotalSeconds;
-            NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
-            NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
+            for (var i = 0; i < sourceIndex; i++)
+                tmp += audiobook.SourcePaths[i].Duration;
+            tmp += positionMs / 1000;
+            audiobook.Progress = Math.Ceiling(tmp / audiobook.Duration * 100);
+            audiobook.IsCompleted = audiobook.Progress >= 99.9;
         });
 
-        await NowPlaying.SaveAsync();
+        await audiobook.SaveAsync();
     }
 
     #endregion

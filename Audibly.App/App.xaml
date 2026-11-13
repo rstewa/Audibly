@@ -125,11 +125,12 @@
             <converters:PlaybackSpeedToolTipConverter x:Key="PlaybackSpeedToolTipConverter" />
             <Style TargetType="Slider" x:Key="PlaybackSpeedSliderStyle">
                 <Setter Property="Minimum" Value="0" />
-                <Setter Property="Maximum" Value="9" />
+                <!--  steps of 0.05× from 0.5× (0) to 4× (70), see PlaybackSpeedPresets  -->
+                <Setter Property="Maximum" Value="70" />
                 <Setter Property="SmallChange" Value="1" />
-                <Setter Property="LargeChange" Value="1" />
+                <Setter Property="LargeChange" Value="5" />
                 <Setter Property="StepFrequency" Value="1" />
-                <Setter Property="TickFrequency" Value="1" />
+                <Setter Property="TickFrequency" Value="10" />
                 <Setter Property="TickPlacement" Value="Outside" />
                 <Setter Property="SnapsTo" Value="StepValues" />
                 <Setter Property="ThumbToolTipValueConverter" Value="{StaticResource PlaybackSpeedToolTipConverter}" />

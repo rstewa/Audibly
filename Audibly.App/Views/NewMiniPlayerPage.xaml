@@ -208,83 +208,11 @@
                         </Button.KeyboardAccelerators>
                     </Button>
 
-                    <!--  Playback Speed Button  -->
-                    <Button
-                        Background="Transparent"
-                        BorderThickness="0"
+                    <!--  Playback Speed: current speed as a number; [ ] change it, \ resets  -->
+                    <userControls:PlaybackSpeedControl
+                        LabelFontSize="12"
                         VerticalAlignment="Center"
-                        Width="40"
-                        x:Name="PlaybackSpeedButton">
-                        <ToolTipService.ToolTip>
-                            <TextBlock>
-                                <Run Text="Playback Speed" />
-                                <LineBreak />
-                                <Run Text="[ = Decrease speed" />
-                                <LineBreak />
-                                <Run Text="] = Increase speed" />
-                                <LineBreak />
-                                <Run Text="\ = Reset to normal speed" />
-                            </TextBlock>
-                        </ToolTipService.ToolTip>
-                        <Button.Resources>
-                            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundPressed">Transparent</SolidColorBrush>
-                            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
-                        </Button.Resources>
-                        <Grid Width="32">
-                            <FontIcon
-                                FontFamily="Segoe MDL2 Assets"
-                                FontSize="14"
-                                Glyph="&#xEC57;"
-                                Visibility="{x:Bind NormalSpeedVisibility(PlayerViewModel.PlaybackSpeed), Mode=OneWay}" />
-                            <Border
-                                BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Height="20"
-                                Visibility="{x:Bind AdjustedSpeedVisibility(PlayerViewModel.PlaybackSpeed), Mode=OneWay}">
-                                <TextBlock
-                                    FontSize="11"
-                                    FontWeight="SemiBold"
-                                    HorizontalAlignment="Center"
-                                    Text="{x:Bind FormatPlaybackSpeed(PlayerViewModel.PlaybackSpeed), Mode=OneWay}"
-                                    VerticalAlignment="Center" />
-                            </Border>
-                        </Grid>
-                        <Button.Flyout>
-                            <Flyout ShouldConstrainToRootBounds="False" x:Name="PlaybackSpeedSliderFlyout">
-                                <Flyout.FlyoutPresenterStyle>
-                                    <Style TargetType="FlyoutPresenter">
-                                        <Setter Property="MinWidth" Value="30" />
-                                        <Setter Property="MaxWidth" Value="30" />
-                                        <Setter Property="MinHeight" Value="125" />
-                                        <Setter Property="CornerRadius" Value="4" />
-                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-                                    </Style>
-                                </Flyout.FlyoutPresenterStyle>
-                                <Slider
-                                    AutomationProperties.Name="PlaybackSpeedSlider"
-                                    FocusVisualPrimaryThickness="0"
-                                    FocusVisualSecondaryThickness="0"
-                                    Margin="-14,0,0,0"
-                                    Orientation="Vertical"
-                                    Style="{StaticResource PlaybackSpeedSliderStyle}"
-                                    ToolTipService.ToolTip="Playback Speed"
-                                    Value="{x:Bind PlayerViewModel.PlaybackSpeed, Mode=OneWay, Converter={StaticResource PlaybackSpeedIndexConverter}}"
-                                    ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                    x:Name="PlaybackSpeedSlider">
-                                    <Slider.Resources>
-                                        <SolidColorBrush Color="Transparent" x:Key="FocusVisualPrimaryBrush" />
-                                        <SolidColorBrush Color="Transparent" x:Key="FocusVisualSecondaryBrush" />
-                                    </Slider.Resources>
-                                </Slider>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
+                        x:Name="SpeedControl" />
 
                     <!--#region TimerButton-->
                     <Button

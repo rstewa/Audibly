@@ -15,7 +15,7 @@ public sealed class PlaybackSpeedIndexConverter : IValueConverter
 public sealed class PlaybackSpeedToolTipConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language) =>
-        $"{PlaybackSpeedPresets.FromIndex((double)value):0.##}×";
+        PlaybackSpeedPresets.Format(PlaybackSpeedPresets.FromIndex((double)value));
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>
         throw new NotSupportedException();

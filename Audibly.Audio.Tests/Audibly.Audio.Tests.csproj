@@ -19,5 +19,6 @@
     <Compile Include="..\Audibly.App\Services\Audio\*.cs" Link="Audio\%(Filename)%(Extension)" />
     <Compile Include="..\Audibly.App\Helpers\PlaybackTimeRemaining.cs" Link="PlaybackTimeRemaining.cs" />
     <Compile Include="..\Audibly.App\Helpers\ChapterSleepTimer.cs" Link="ChapterSleepTimer.cs" />
+    <Compile Include="..\Audibly.App\Helpers\PlaybackSpeedPresets.cs" Link="PlaybackSpeedPresets.cs" />
   </ItemGroup>
 </Project>

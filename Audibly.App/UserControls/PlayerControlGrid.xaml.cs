@@ -109,14 +109,6 @@ public sealed partial class PlayerControlGrid : UserControl
         PlayerViewModel.UpdateVolume(slider.Value);
     }
 
-    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        var slider = sender as Slider;
-        if (slider == null || !IsLoaded) return;
-
-        PlayerViewModel.UpdatePlaybackSpeed(PlaybackSpeedPresets.FromIndex(slider.Value));
-    }
-
     private void TimerButton_OnClick(object sender, RoutedEventArgs e)
     {
         // todo

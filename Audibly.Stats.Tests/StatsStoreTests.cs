@@ -85,6 +85,17 @@ public class StatsStoreTests
     }
 
     [Fact]
+    public async Task SeveralTrophyTiersAreSavedTogether()
+    {
+        using var db = new TempDb();
+        var store = new StatsStore(db.Path);
+        await store.SaveTrophyTierAsync("finisher", 3, new DateTime(2026, 11, 13));
+        await store.SaveTrophyTiersAsync([("marathoner", 1), ("finisher", 2), ("collector", 2)], new DateTime(2026, 11, 14));
+        var tiers = await store.LoadTrophyTiersAsync();
+        Assert.Equal((1, 3, 2), (tiers["marathoner"], tiers["finisher"], tiers["collector"]));
+    }
+
+    [Fact]
     public async Task CorruptFileThrowsSqliteException()
     {
         using var db = new TempDb();

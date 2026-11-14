@@ -132,6 +132,36 @@ public class ListeningStatsRecorderTests
     }
 
     [Fact]
+    public async Task BrokenDatabaseStillShowsWhatTheLibraryEarned()
+    {
+        using var db = new TempDb();
+        await File.WriteAllTextAsync(db.Path, "not a database, just some text that is long enough to not be an empty file");
+        _library = 12;
+        var trophies = await Recorder(db.Path).LoadTrophiesAsync();
+        Assert.Equal(1, trophies.Single(s => s.Definition.Id == "collector").Tier);
+        Assert.All(trophies.Where(s => s.Definition.Id != "collector"), state => Assert.Equal(0, state.Tier));
+    }
+
+    [Fact]
+    public async Task RepeatedFlushFailuresAreReportedOnceAndNothingIsLost()
+    {
+        using var db = new TempDb();
+        await File.WriteAllTextAsync(db.Path, "not a database, just some text that is long enough to not be an empty file");
+        var recorder = Recorder(db.Path);
+        for (var i = 0; i < 3; i++)
+        {
+            Listen(recorder, 10);
+            Assert.Empty(await recorder.FlushAsync());
+        }
+
+        Assert.Single(_errors);
+        File.Delete(db.Path);
+        await recorder.FlushAsync();
+        Assert.Equal(30, StatsSummary.Total(await new StatsStore(db.Path).LoadAsync()).ListenedSeconds, 3);
+        Assert.Single((await new StatsStore(db.Path).LoadAsync()).Slices);
+    }
+
+    [Fact]
     public async Task FailedWriteKeepsSlicesForTheNextFlush()
     {
         using var db = new TempDb();

@@ -84,7 +84,7 @@ public class ListeningTrackerTests
     }
 
     [Fact]
-    public void SplitsAcrossMidnightAndHours()
+    public void TickAfterMidnightCountsForTheNewDayAndHour()
     {
         var t = new ListeningTracker();
         t.Observe(Book, 0, 100, 1.0, T(23, 59, 58));

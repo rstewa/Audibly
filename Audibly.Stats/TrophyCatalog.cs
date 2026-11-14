@@ -71,8 +71,9 @@ public static class TrophyCatalog
                 .Sum(s => s.ListenedSeconds) / Hour),
         (new("sprint", "Sprint", "\uE7C1", [2, 3, 5],
                 "Finish {0} audiobooks within 7 days.", "Your best week is {0} audiobooks."),
-            input => Best(input.Data.Completions.Select(start => (double)input.Data.Completions.Count(other =>
-                other.CompletedAt >= start.CompletedAt && other.CompletedAt < start.CompletedAt.AddDays(7))))),
+            input => Best(input.Data.Completions.Select(start => (double)input.Data.Completions
+                .Where(other => other.CompletedAt >= start.CompletedAt && other.CompletedAt < start.CompletedAt.AddDays(7))
+                .Select(other => other.AudiobookId).Distinct().Count()))),
         (new("juggler", "Juggler", "\uE8EE", [2, 3, 5],
                 "Listen to {0} different audiobooks on one day.", "Your best is {0} audiobooks on one day."),
             input => Best(input.Data.Slices.GroupBy(s => s.Day).Select(day => (double)day

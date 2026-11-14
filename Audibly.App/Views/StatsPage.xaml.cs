@@ -49,12 +49,22 @@ public sealed partial class StatsPage : Page
         if (e.PropertyName == nameof(PlayerViewModel.NowPlaying)) Show();
     }
 
-    private void OnLibraryChanged(object? sender, NotifyCollectionChangedEventArgs e) => Show();
+    private void OnLibraryChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (IsLoaded) Show();
+    }
 
     private async void Reload()
     {
-        _data = await App.ListeningStats.LoadAsync();
-        if (IsLoaded) Show();
+        try
+        {
+            _data = await App.ListeningStats.LoadAsync();
+            if (IsLoaded) Show();
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e);
+        }
     }
 
     private void Show()

@@ -22,6 +22,7 @@ public sealed class ListeningStatsRecorder
     private readonly SemaphoreSlim _flushing = new(1, 1);
     private List<ListeningSlice> _unsaved = [];
     private bool _completionPending;
+    private bool _flushFailing;
     private int? _evaluatedLibraryCount;
 
     public ListeningStatsRecorder(StatsStore store, Func<DateTime> localNow, Func<int> libraryCount,
@@ -89,16 +90,20 @@ public sealed class ListeningStatsRecorder
             var states = TrophyCatalog.Evaluate(new TrophyInput(await _store.LoadAsync().ConfigureAwait(false), library));
             var stored = await _store.LoadTrophyTiersAsync().ConfigureAwait(false);
             var raised = states.Where(state => state.Tier > stored.GetValueOrDefault(state.Definition.Id)).ToList();
-            foreach (var state in raised)
-                await _store.SaveTrophyTierAsync(state.Definition.Id, state.Tier, _localNow()).ConfigureAwait(false);
+            // all or nothing: a tier that is stored but was never returned would never be announced
+            await _store.SaveTrophyTiersAsync(raised.Select(state => (state.Definition.Id, state.Tier)).ToList(),
+                _localNow()).ConfigureAwait(false);
 
             _completionPending = false;
             _evaluatedLibraryCount = library;
+            _flushFailing = false;
             return raised;
         }
         catch (Exception e)
         {
-            Report(e);
+            // the timer retries every flush interval; one log line per outage is enough
+            if (!_flushFailing) Report(e);
+            _flushFailing = true;
             return [];
         }
         finally
@@ -136,8 +141,8 @@ public sealed class ListeningStatsRecorder
         catch (Exception e)
         {
             Report(e);
-            return TrophyCatalog.Evaluate(new TrophyInput(StatsData.Empty, library))
-                .Select(state => state with { Tier = 0 }).ToList();
+            // without history only what the library alone earns can be shown
+            return TrophyCatalog.Evaluate(new TrophyInput(StatsData.Empty, library));
         }
     }
 
@@ -145,7 +150,14 @@ public sealed class ListeningStatsRecorder
     {
         IReadOnlyList<ListeningSlice> drained;
         lock (_trackerLock) drained = _tracker.Drain();
-        _unsaved.AddRange(drained);
+        if (drained.Count == 0) return;
+
+        // merged by hour and book, so a long outage does not grow the list with every flush
+        _unsaved = _unsaved.Concat(drained)
+            .GroupBy(slice => (slice.Day, slice.Hour, slice.AudiobookId))
+            .Select(group => new ListeningSlice(group.Key.Day, group.Key.Hour, group.Key.AudiobookId,
+                group.Sum(slice => slice.ListenedSeconds), group.Sum(slice => slice.SavedSeconds)))
+            .ToList();
     }
 
     // Callers hold the flush semaphore. A failed write leaves the slices in _unsaved for the next attempt.

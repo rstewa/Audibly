@@ -107,6 +107,15 @@ public class TrophyCatalogTests
     }
 
     [Fact]
+    public void SprintCountsABookFinishedTwiceOnce()
+    {
+        DateTime D(int day) => new(2026, 11, day, 12, 0, 0);
+        var other = Guid.NewGuid();
+        Assert.Equal(2, Get("sprint", completions:
+            [new Completion(Book, D(1)), new Completion(Book, D(3)), new Completion(other, D(4)), new Completion(Book, D(6))]).Value);
+    }
+
+    [Fact]
     public void JugglerIgnoresBooksUnderAMinute() =>
         Assert.Equal(2, Get("juggler", [S(1, 10, 120, book: Guid.NewGuid()), S(1, 11, 30, book: Guid.NewGuid()),
             S(1, 12, 40, book: Book), S(1, 13, 40, book: Book)]).Value);

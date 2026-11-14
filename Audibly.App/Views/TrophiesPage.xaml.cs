@@ -38,12 +38,23 @@ public sealed partial class TrophiesPage : Page
 
     private void OnLibraryChanged(object? sender, NotifyCollectionChangedEventArgs e) => Reload();
 
+    private int _reloads;
+
     private async void Reload()
     {
-        var trophies = await App.ListeningStats.LoadTrophiesAsync();
-        if (!IsLoaded) return;
-        Badges.ItemsSource = trophies;
-        SummaryText.Text = string.Create(CultureInfo.InvariantCulture,
-            $"{trophies.Count(trophy => trophy.Tier > 0)} of {trophies.Count} unlocked");
+        // a search or filter changes the library list once per title; only the last reload is shown
+        var reload = ++_reloads;
+        try
+        {
+            var trophies = await App.ListeningStats.LoadTrophiesAsync();
+            if (!IsLoaded || reload != _reloads) return;
+            Badges.ItemsSource = trophies;
+            SummaryText.Text = string.Create(CultureInfo.InvariantCulture,
+                $"{trophies.Count(trophy => trophy.Tier > 0)} of {trophies.Count} unlocked");
+        }
+        catch (Exception e)
+        {
+            App.ViewModel.LoggingService.LogError(e);
+        }
     }
 }

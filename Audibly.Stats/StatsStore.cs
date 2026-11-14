@@ -125,20 +125,35 @@ public sealed class StatsStore
     });
 
     /// <summary>Remembers the highest tier reached; a lower tier never replaces a higher one.</summary>
-    public Task SaveTrophyTierAsync(string trophyId, int tier, DateTime localUnlockedAt) => Task.Run(() =>
-    {
-        using var db = Open();
-        using var command = db.CreateCommand();
-        command.CommandText = """
-            INSERT INTO trophies(id, tier, unlocked_at) VALUES ($id, $tier, $at)
-            ON CONFLICT(id) DO UPDATE SET tier = excluded.tier, unlocked_at = excluded.unlocked_at
-            WHERE excluded.tier > trophies.tier
-            """;
-        command.Parameters.AddWithValue("$id", trophyId);
-        command.Parameters.AddWithValue("$tier", tier);
-        command.Parameters.AddWithValue("$at", localUnlockedAt.ToString(TimeFormat, CultureInfo.InvariantCulture));
-        command.ExecuteNonQuery();
-    });
+    public Task SaveTrophyTierAsync(string trophyId, int tier, DateTime localUnlockedAt) =>
+        SaveTrophyTiersAsync([(trophyId, tier)], localUnlockedAt);
+
+    /// <summary>Saves several tiers together: either all of them are stored or none.</summary>
+    public Task SaveTrophyTiersAsync(IReadOnlyList<(string TrophyId, int Tier)> tiers, DateTime localUnlockedAt) =>
+        Task.Run(() =>
+        {
+            if (tiers.Count == 0) return;
+            using var db = Open();
+            using var transaction = db.BeginTransaction();
+            using var command = db.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = """
+                INSERT INTO trophies(id, tier, unlocked_at) VALUES ($id, $tier, $at)
+                ON CONFLICT(id) DO UPDATE SET tier = excluded.tier, unlocked_at = excluded.unlocked_at
+                WHERE excluded.tier > trophies.tier
+                """;
+            var id = command.Parameters.Add("$id", SqliteType.Text);
+            var tier = command.Parameters.Add("$tier", SqliteType.Integer);
+            command.Parameters.AddWithValue("$at", localUnlockedAt.ToString(TimeFormat, CultureInfo.InvariantCulture));
+            foreach (var (trophyId, value) in tiers)
+            {
+                id.Value = trophyId;
+                tier.Value = value;
+                command.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+        });
 
     private SqliteConnection Open()
     {

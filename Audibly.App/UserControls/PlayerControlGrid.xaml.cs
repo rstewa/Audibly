@@ -61,7 +61,7 @@ public sealed partial class PlayerControlGrid : UserControl
             PlayerViewModel.NowPlaying.CurrentSourceFile.Index != newChapter.ParentSourceFileIndex)
         {
             // set the current source file index to the new source file index
-            PlayerViewModel.OpenSourceFile(newChapter.ParentSourceFileIndex, newChapter.Index);
+            await PlayerViewModel.OpenSourceFile(newChapter.ParentSourceFileIndex, newChapter.Index);
             PlayerViewModel.CurrentPosition = TimeSpan.FromMilliseconds(newChapter.StartTime);
         }
         else if (ChapterCombo.SelectedIndex != ChapterCombo.Items.IndexOf(PlayerViewModel.NowPlaying?.CurrentChapter))
@@ -109,14 +109,6 @@ public sealed partial class PlayerControlGrid : UserControl
         PlayerViewModel.UpdateVolume(slider.Value);
     }
 
-    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        var slider = sender as Slider;
-        if (slider == null || !IsLoaded) return;
-
-        PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
-    }
-
     private void TimerButton_OnClick(object sender, RoutedEventArgs e)
     {
         // todo
@@ -155,15 +147,6 @@ public sealed partial class PlayerControlGrid : UserControl
 
     private void EndOfChapterTimerMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (PlayerViewModel.NowPlaying?.CurrentChapter == null) return;
-
-        var endTime = PlayerViewModel.NowPlaying.CurrentChapter.EndTime;
-        var currentPosition = PlayerViewModel.CurrentPosition.TotalMilliseconds;
-        var timerDuration = endTime - currentPosition;
-
-        // convert to seconds
-        timerDuration = timerDuration.ToSeconds().ToInt();
-
-        if (timerDuration > 0) PlayerViewModel.SetTimer(timerDuration);
+        PlayerViewModel.SetEndOfChapterTimer();
     }
 }

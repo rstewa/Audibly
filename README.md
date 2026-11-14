@@ -123,7 +123,30 @@ This desktop audiobook player for Windows 10/11 supports playing .m4b and .mp3 f
 
 
 
-<!-- TODO: GETTING STARTED -->
+## Building locally
+
+Use Windows 10/11 with the .NET 8 SDK or newer and the Windows build tools for WinUI 3.
+The repository's `NuGet.Config` includes the Community Toolkit Labs feed needed by the existing preview controls.
+
+```powershell
+dotnet build Audibly.App/Audibly.App.csproj -p:Platform=x64 -p:WindowsPackageType=None -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
+dotnet test Audibly.Audio.Tests/Audibly.Audio.Tests.csproj
+```
+
+### Pitch-preserving playback
+
+The speed slider snaps to 1x, 1.1x, 1.25x, 1.5x, 1.75x, 2x, 2.5x, 3x, 3.5x and 4x while preserving the narrator's pitch.
+The main player, mini-player, default-speed settings and keyboard controls share these presets. Previously saved speeds snap to the nearest preset when loaded.
+NAudio decodes the file, SoundTouch.NET changes tempo, and Windows MediaPlayer plays the resulting PCM audio at 1x.
+Normal-speed playback bypasses time-stretching. Audio is streamed in small buffers rather than converting or caching an entire audiobook.
+
+Changing speed reopens the stream at the current audiobook position and preserves the play/pause state; a brief buffering pause may occur.
+Chapter positions, skipping, progress and saved resume positions use the original audiobook timeline.
+The Windows-only audio tests measure pitch and duration, decode MP3/M4B files, and exercise seeking, speed changes and end-of-file playback without audible output.
+
+Audio dependencies: [NAudio](https://github.com/naudio/NAudio) (MIT) and
+[SoundTouch.NET](https://github.com/owoudenberg/soundtouch.net) (LGPL-2.1-or-later, C# port by Olaf Woudenberg of Olli Parviainen's SoundTouch).
+They are used as separate, unmodified assemblies. Their license notices are included in `Audibly.App/Assets/ThirdPartyNotices`.
 
 
 

@@ -5,6 +5,7 @@
     x:Class="Audibly.App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:converters="using:Audibly.App.Helpers.Converters"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -120,6 +121,20 @@
                 </XamlControlsResources>
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
+            <converters:PlaybackSpeedIndexConverter x:Key="PlaybackSpeedIndexConverter" />
+            <converters:PlaybackSpeedToolTipConverter x:Key="PlaybackSpeedToolTipConverter" />
+            <Style TargetType="Slider" x:Key="PlaybackSpeedSliderStyle">
+                <Setter Property="Minimum" Value="0" />
+                <!--  steps of 0.05× from 0.5× (0) to 4× (70), see PlaybackSpeedPresets  -->
+                <Setter Property="Maximum" Value="70" />
+                <Setter Property="SmallChange" Value="1" />
+                <Setter Property="LargeChange" Value="5" />
+                <Setter Property="StepFrequency" Value="1" />
+                <Setter Property="TickFrequency" Value="10" />
+                <Setter Property="TickPlacement" Value="Outside" />
+                <Setter Property="SnapsTo" Value="StepValues" />
+                <Setter Property="ThumbToolTipValueConverter" Value="{StaticResource PlaybackSpeedToolTipConverter}" />
+            </Style>
             <SolidColorBrush x:Key="WindowCaptionBackground">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled">Transparent</SolidColorBrush>
             <SolidColorBrush x:Key="WindowCaptionForeground">Black</SolidColorBrush>

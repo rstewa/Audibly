@@ -3,6 +3,7 @@
 // Updated: 3/22/2024
 
 using System;
+using Audibly.App.Helpers;
 using Audibly.App.ViewModels;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
@@ -80,10 +81,10 @@ public sealed partial class LegacyPlayerPage : Page
 
     private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
+        if (!IsLoaded) return;
         DispatcherQueue.TryEnqueue(() =>
         {
-            PlayerViewModel.NowPlaying.PlaybackSpeed = e.NewValue;
-            PlayerViewModel.MediaPlayer.PlaybackRate = e.NewValue;
+            PlayerViewModel.UpdatePlaybackSpeed(PlaybackSpeedPresets.FromIndex(e.NewValue));
         });
     }
 

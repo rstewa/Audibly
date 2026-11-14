@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<UserControl
+    mc:Ignorable="d"
+    x:Class="Audibly.App.UserControls.PlaybackSpeedControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  The current speed is always visible as a number; the flyout holds the controls.  -->
+    <Button
+        AutomationProperties.AutomationId="PlaybackSpeedButton"
+        AutomationProperties.Name="Playback speed"
+        Background="Transparent"
+        BorderThickness="0"
+        MinWidth="40"
+        Padding="6,4"
+        VerticalAlignment="Center"
+        x:Name="SpeedButton">
+        <Button.Resources>
+            <SolidColorBrush x:Key="ButtonBackground">Transparent</SolidColorBrush>
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+        </Button.Resources>
+        <TextBlock
+            FontSize="{x:Bind LabelFontSize, Mode=OneWay}"
+            FontWeight="SemiBold"
+            HorizontalAlignment="Center"
+            TextLineBounds="Tight"
+            VerticalAlignment="Center"
+            x:Name="SpeedLabel" />
+        <Button.Flyout>
+            <Flyout
+                Closed="SpeedFlyout_Closed"
+                Placement="Top"
+                ShouldConstrainToRootBounds="False"
+                x:Name="SpeedFlyout">
+                <Flyout.FlyoutPresenterStyle>
+                    <Style TargetType="FlyoutPresenter">
+                        <Setter Property="Padding" Value="16,12" />
+                        <Setter Property="CornerRadius" Value="8" />
+                        <Setter Property="MaxWidth" Value="400" />
+                    </Style>
+                </Flyout.FlyoutPresenterStyle>
+                <Grid RowSpacing="10" Width="330">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                            Text="Playback speed"
+                            VerticalAlignment="Center" />
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            VerticalAlignment="Center"
+                            x:Name="FlyoutValueText" />
+                    </Grid>
+
+                    <Grid ColumnSpacing="8" Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            AutomationProperties.AutomationId="SpeedDecreaseButton"
+                            AutomationProperties.Name="Slower"
+                            Click="Decrease_Click"
+                            CornerRadius="16"
+                            Height="32"
+                            Padding="0"
+                            Style="{StaticResource AccentButtonStyle}"
+                            ToolTipService.ToolTip="Slower (−0.05×)"
+                            Width="32">
+                            <FontIcon FontSize="12" Glyph="&#xE738;" />
+                        </Button>
+                        <Slider
+                            AutomationProperties.AutomationId="PlaybackSpeedSlider"
+                            AutomationProperties.Name="PlaybackSpeedSlider"
+                            Grid.Column="1"
+                            Style="{StaticResource PlaybackSpeedSliderStyle}"
+                            TickPlacement="None"
+                            ValueChanged="SpeedSlider_ValueChanged"
+                            VerticalAlignment="Center"
+                            x:Name="SpeedSlider" />
+                        <Button
+                            AutomationProperties.AutomationId="SpeedIncreaseButton"
+                            AutomationProperties.Name="Faster"
+                            Click="Increase_Click"
+                            CornerRadius="16"
+                            Grid.Column="2"
+                            Height="32"
+                            Padding="0"
+                            Style="{StaticResource AccentButtonStyle}"
+                            ToolTipService.ToolTip="Faster (+0.05×)"
+                            Width="32">
+                            <FontIcon FontSize="12" Glyph="&#xE710;" />
+                        </Button>
+                    </Grid>
+
+                    <!--  quick picks are generated from PlaybackSpeedPresets.QuickPicks  -->
+                    <Grid Grid.Row="2" x:Name="QuickPickGrid" />
+
+                    <CheckBox
+                        AutomationProperties.AutomationId="SpeedDefaultCheckBox"
+                        Click="DefaultCheckBox_Click"
+                        Content="Use as default for new audiobooks"
+                        Grid.Row="3"
+                        x:Name="DefaultCheckBox" />
+                </Grid>
+            </Flyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

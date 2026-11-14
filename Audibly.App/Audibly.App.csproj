@@ -72,6 +72,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Content Include="Assets\ThirdPartyNotices\*.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
         <Content Include="Assets\SplashScreen.scale-200.png" />
         <Content Include="Assets\LockScreenLogo.scale-200.png" />
         <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -131,11 +135,13 @@
         </PackageReference>
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+        <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
         <Manifest Include="$(ApplicationManifest)" />
         <PackageReference Include="PInvoke.User32" Version="0.7.124" />
         <PackageReference Include="Sentry" Version="5.13.0" />
         <PackageReference Include="Sharpener" Version="0.2.4" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+        <PackageReference Include="SoundTouch.Net" Version="2.3.2" />
         <PackageReference Include="z440.atl.core" Version="7.2.0" />
     </ItemGroup>
 

@@ -9,6 +9,7 @@ using Audibly.App.Extensions;
 using Audibly.App.Helpers;
 using Audibly.App.UserControls;
 using Audibly.App.ViewModels;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -24,15 +25,11 @@ namespace Audibly.App.Views;
 public sealed partial class NewMiniPlayerPage : Page
 {
     private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    private CancellationTokenSource? _playbackSpeedFlyoutCts;
 
     public NewMiniPlayerPage()
     {
         InitializeComponent();
         KeyDown += NewMiniPlayerPage_KeyDown;
-
-        // need this to show the slider when the user increases or decreases the speed with the keyboard shortcuts
-        PlaybackSpeedSliderFlyout.Opened += (s, e) => { PlaybackSpeedSlider.Focus(FocusState.Programmatic); };
 
         ProgressSlider.AddHandler(PointerPressedEvent,
             new PointerEventHandler(Slider_OnPointerPressed), true);
@@ -40,6 +37,21 @@ public sealed partial class NewMiniPlayerPage : Page
             new PointerEventHandler(Slider_OnPointerReleased), true);
         ProgressSlider.AddHandler(PointerCanceledEvent,
             new PointerEventHandler(Slider_OnPointerReleased), true);
+        ProgressSlider.Loaded += ProgressSlider_Loaded;
+    }
+
+    private void ProgressSlider_Loaded(object sender, RoutedEventArgs e)
+    {
+        ProgressSlider.ApplyTemplate();
+        var trackLayout = ProgressSlider.FindDescendant<Grid>(grid => grid.Name == "HorizontalTemplate");
+        if (trackLayout == null || trackLayout.RowDefinitions.Count < 3) return;
+
+        // Template row definitions can retain the theme's default spacing instead of
+        // the slider's local resources. Apply these directly to align the bar with its labels.
+        trackLayout.MinHeight = ProgressSlider.Height;
+        trackLayout.RowDefinitions[0].Height = new GridLength((double)ProgressSlider.Resources["SliderPreContentMargin"]);
+        trackLayout.RowDefinitions[1].Height = new GridLength((double)ProgressSlider.Resources["SliderTrackThemeHeight"]);
+        trackLayout.RowDefinitions[2].Height = new GridLength((double)ProgressSlider.Resources["SliderPostContentMargin"]);
     }
 
     /// <summary>
@@ -57,66 +69,19 @@ public sealed partial class NewMiniPlayerPage : Page
         var key = args.Key;
         if (key == (VirtualKey)219) // Open bracket '['
         {
-            HandleSpeedDecrease();
-            ClosePlaybackSpeedFlyout();
+            SpeedControl.Nudge(-1);
             args.Handled = true;
         }
         else if (key == (VirtualKey)221) // Close bracket ']'
         {
-            HandleSpeedIncrease();
-            ClosePlaybackSpeedFlyout();
+            SpeedControl.Nudge(1);
             args.Handled = true;
         }
         else if (key == (VirtualKey)0xDC) // Backslash '\'
         {
-            ResetPlaybackSpeed();
-            ClosePlaybackSpeedFlyout();
+            SpeedControl.ResetToNormal();
             args.Handled = true;
         }
-    }
-
-    private void ClosePlaybackSpeedFlyout()
-    {
-        // Cancel any previous close operation
-        _playbackSpeedFlyoutCts?.Cancel();
-        _playbackSpeedFlyoutCts = new CancellationTokenSource();
-        var token = _playbackSpeedFlyoutCts.Token;
-
-        _dispatcherQueue.TryEnqueue(async () =>
-        {
-            try
-            {
-                await Task.Delay(2000, token);
-                if (PlaybackSpeedSliderFlyout.IsOpen)
-                    PlaybackSpeedSliderFlyout.Hide();
-            }
-            catch (TaskCanceledException)
-            {
-                // Ignore cancellation
-            }
-        });
-    }
-
-    private void ResetPlaybackSpeed()
-    {
-        PlaybackSpeedSliderFlyout.ShowAt(PlaybackSpeedButton);
-        PlaybackSpeedSlider.Value = Constants.PlaybackSpeedDefault;
-    }
-
-    private void HandleSpeedIncrease()
-    {
-        PlaybackSpeedSliderFlyout.ShowAt(PlaybackSpeedButton);
-        var newValue = PlaybackSpeedSlider.Value + Constants.PlaybackSpeedIncrement;
-        if (newValue >= Constants.PlaybackSpeedMaximum) newValue = Constants.PlaybackSpeedMaximum;
-        PlaybackSpeedSlider.Value = newValue;
-    }
-
-    private void HandleSpeedDecrease()
-    {
-        PlaybackSpeedSliderFlyout.ShowAt(PlaybackSpeedButton);
-        var newValue = PlaybackSpeedSlider.Value - Constants.PlaybackSpeedIncrement;
-        if (newValue <= Constants.PlaybackSpeedMinimum) newValue = Constants.PlaybackSpeedMinimum;
-        PlaybackSpeedSlider.Value = newValue;
     }
 
     private bool _isPointerInteracting;
@@ -155,14 +120,6 @@ public sealed partial class NewMiniPlayerPage : Page
         PlayerViewModel.UpdateVolume(slider.Value);
     }
 
-    private void PlaybackSpeedSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        var slider = sender as Slider;
-        if (slider == null || !IsLoaded) return;
-
-        PlayerViewModel.UpdatePlaybackSpeed(slider.Value);
-    }
-
     private void PinButton_Click(object sender, RoutedEventArgs e)
     {
         var window = WindowHelper.GetMiniPlayerWindow();
@@ -191,6 +148,24 @@ public sealed partial class NewMiniPlayerPage : Page
     {
         WindowHelper.RestoreMainWindow();
         WindowHelper.HideMiniPlayer();
+    }
+
+    private async void ExitButton_Click(object sender, RoutedEventArgs e)
+    {
+        ExitButton.IsEnabled = false;
+        PlayerViewModel.AudioPlayer.Pause();
+        try
+        {
+            if (PlayerViewModel.NowPlaying != null)
+                await PlayerViewModel.NowPlaying.SaveAsync();
+        }
+        catch (Exception exception)
+        {
+            ViewModel.LoggingService.LogError(exception, false);
+        }
+
+        PlayerViewModel.Dispose();
+        Application.Current.Exit();
     }
 
     private void TimerMenuItem_Click(object sender, RoutedEventArgs e)
@@ -226,15 +201,6 @@ public sealed partial class NewMiniPlayerPage : Page
 
     private void EndOfChapterTimerMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (PlayerViewModel.NowPlaying?.CurrentChapter == null) return;
-
-        var endTime = PlayerViewModel.NowPlaying.CurrentChapter.EndTime;
-        var currentPosition = PlayerViewModel.CurrentPosition.TotalMilliseconds;
-        var timerDuration = endTime - currentPosition;
-
-        // convert to seconds
-        timerDuration = timerDuration.ToSeconds().ToInt();
-
-        if (timerDuration > 0) PlayerViewModel.SetTimer(timerDuration);
+        PlayerViewModel.SetEndOfChapterTimer();
     }
 }

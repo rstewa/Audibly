@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <UserControl
     mc:Ignorable="d"
@@ -175,45 +175,7 @@
                     <!--#endregion VolumeLevelButton-->
 
                     <!--#region PlaybackSpeedButton-->
-                    <Button
-                        Background="Transparent"
-                        BorderThickness="0"
-                        ToolTipService.ToolTip="Playback Speed"
-                        x:Name="PlaybackSpeedButton">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEC57;" />
-                        <!--  Glyph="{x:Bind AudiobookViewModel.Audiobook.PlaybackGlyph}" />  -->
-                        <Button.Flyout>
-                            <Flyout>
-                                <Flyout.FlyoutPresenterStyle>
-                                    <Style TargetType="FlyoutPresenter">
-                                        <Setter Property="MinWidth" Value="30" />
-                                        <Setter Property="MaxWidth" Value="30" />
-                                        <Setter Property="MinHeight" Value="125" />
-                                        <Setter Property="CornerRadius" Value="4" />
-                                        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
-                                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-                                    </Style>
-                                </Flyout.FlyoutPresenterStyle>
-                                <Grid>
-                                    <Slider
-                                        AutomationProperties.Name="PlaybackSpeedSlider"
-                                        Margin="-14,0,0,0"
-                                        Maximum="4.0"
-                                        Minimum="0.5"
-                                        Orientation="Vertical"
-                                        SmallChange="0.05"
-                                        SnapsTo="StepValues"
-                                        StepFrequency="0.05"
-                                        ToolTipService.ToolTip="Playback Speed"
-                                        Value="{x:Bind PlayerViewModel.PlaybackSpeed, Mode=OneWay}"
-                                        ValueChanged="PlaybackSpeedSlider_ValueChanged"
-                                        x:Name="PlaybackSpeedSlider" />
-                                </Grid>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
+                    <local:PlaybackSpeedControl />
                     <!--#endregion PlaybackSpeedButton-->
 
                     <!--#region TimerButton-->

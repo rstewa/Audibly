@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Audibly.App", "Audibly.App\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Audibly.Repository", "Audibly.Repository\Audibly.Repository.csproj", "{9A20702B-625A-4167-A6CD-7FB627CD2DBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audibly.Audio.Tests", "Audibly.Audio.Tests\Audibly.Audio.Tests.csproj", "{D66E7D53-4196-4BE4-A0C1-1C4459D80791}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,22 @@ Global
 		{9A20702B-625A-4167-A6CD-7FB627CD2DBD}.Release|x64.Build.0 = Release|Any CPU
 		{9A20702B-625A-4167-A6CD-7FB627CD2DBD}.Release|x86.ActiveCfg = Release|Any CPU
 		{9A20702B-625A-4167-A6CD-7FB627CD2DBD}.Release|x86.Build.0 = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|arm64.Build.0 = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|x64.Build.0 = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Debug|x86.Build.0 = Debug|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|arm64.ActiveCfg = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|arm64.Build.0 = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|x64.ActiveCfg = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|x64.Build.0 = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|x86.ActiveCfg = Release|Any CPU
+		{D66E7D53-4196-4BE4-A0C1-1C4459D80791}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -114,6 +114,7 @@ public class MainViewModel : BindableBase
         get => _defaultPlaybackSpeed;
         set
         {
+            value = PlaybackSpeedPresets.Snap(value);
             if (Set(ref _defaultPlaybackSpeed, value)) UserSettings.PlaybackSpeed = value;
         }
     }
@@ -329,7 +330,7 @@ public class MainViewModel : BindableBase
             if (SelectedAudiobook == App.PlayerViewModel.NowPlaying)
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    App.PlayerViewModel.MediaPlayer.Pause();
+                    App.PlayerViewModel.AudioPlayer.Pause();
                     App.PlayerViewModel.NowPlaying.IsNowPlaying = false;
                     App.PlayerViewModel.NowPlaying = null;
                 });
@@ -366,7 +367,7 @@ public class MainViewModel : BindableBase
     {
         await _dispatcherQueue.EnqueueAsync(() =>
         {
-            App.PlayerViewModel.MediaPlayer.Pause();
+            App.PlayerViewModel.AudioPlayer.Pause();
             App.PlayerViewModel.NowPlaying = null;
             SelectedAudiobook = null;
             IsLoading = true;

@@ -80,6 +80,24 @@
                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE768;" />
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem
+                    x:Name="StatsMenuItem"
+                    Content="Statistics"
+                    Tag="StatsPage"
+                    ToolTipService.ToolTip="Statistics">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE9D2;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+                <muxc:NavigationViewItem
+                    x:Name="TrophiesMenuItem"
+                    Content="Trophies"
+                    Tag="TrophiesPage"
+                    ToolTipService.ToolTip="Trophies">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7C1;" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
 
             <NavigationView.AutoSuggestBox>

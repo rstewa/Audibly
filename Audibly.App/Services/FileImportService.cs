@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using ATL;
 using Audibly.App.Extensions;
+using Audibly.App.Helpers;
 using Audibly.App.Services.Interfaces;
 using Audibly.App.ViewModels;
 using Audibly.Models;
@@ -295,6 +296,12 @@ public class FileImportService : IImportFiles
                         ParentSourceFileIndex = sourceFile.Index
                     });
             }
+
+            // files that share one title tag would all show the same chapter name
+            var chapterTitles = FileChapterTitles.Resolve(
+                audiobook.Chapters.Select(chapter => (chapter.ParentSourceFileIndex, (string?)chapter.Title)).ToList(),
+                paths);
+            for (var i = 0; i < audiobook.Chapters.Count; i++) audiobook.Chapters[i].Title = chapterTitles[i];
 
             // get duration of the entire audiobook
             audiobook.Duration = audiobook.SourcePaths.Sum(x => x.Duration);

@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Audibly.App.Extensions;
+using Audibly.App.Helpers;
 using Audibly.Models;
 using ChapterInfo = Audibly.Models.ChapterInfo;
 
@@ -26,6 +28,13 @@ public class AudiobookViewModel : BindableBase
         Model = model ?? new Audiobook();
 
         if (model == null) return;
+
+        // Books imported before file names were used still carry one shared title per file.
+        var sourcePaths = model.SourcePaths.OrderBy(source => source.Index).Select(source => source.FilePath).ToList();
+        var chapterTitles = FileChapterTitles.Resolve(
+            model.Chapters.Select(chapter => (chapter.ParentSourceFileIndex, (string?)chapter.Title)).ToList(),
+            sourcePaths);
+        for (var i = 0; i < model.Chapters.Count; i++) model.Chapters[i].Title = chapterTitles[i];
 
         Chapters.Clear();
         foreach (var chapter in model.Chapters) Chapters.Add(chapter);

@@ -153,6 +153,16 @@ public sealed partial class AppShell : Page
             PlayerViewModel.IsPlayerFullScreen = true;
             PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
         }
+        else if (item == StatsMenuItem)
+        {
+            if (AppAppShellFrame.Content is StatsPage) return;
+            AppAppShellFrame.Navigate(typeof(StatsPage));
+        }
+        else if (item == TrophiesMenuItem)
+        {
+            if (AppAppShellFrame.Content is TrophiesPage) return;
+            AppAppShellFrame.Navigate(typeof(TrophiesPage));
+        }
         else if (item == (NavigationViewItem)NavView.SettingsItem)
         {
             if (AppAppShellFrame.Content is SettingsPage) return;
@@ -169,6 +179,8 @@ public sealed partial class AppShell : Page
         // if (e.SourcePageType == typeof(LibraryPage)) NavView.SelectedItem = AudiobookListMenuItem;
         if (e.SourcePageType == typeof(LibraryCardPage)) NavView.SelectedItem = LibraryCardMenuItem;
         else if (e.SourcePageType == typeof(PlayerPage)) NavView.SelectedItem = NowPlayingMenuItem;
+        else if (e.SourcePageType == typeof(StatsPage)) NavView.SelectedItem = StatsMenuItem;
+        else if (e.SourcePageType == typeof(TrophiesPage)) NavView.SelectedItem = TrophiesMenuItem;
         else if (e.SourcePageType == typeof(SettingsPage)) NavView.SelectedItem = NavView.SettingsItem;
     }
 

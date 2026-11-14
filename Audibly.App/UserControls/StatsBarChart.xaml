@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<UserControl
+    mc:Ignorable="d"
+    x:Class="Audibly.App.UserControls.StatsBarChart"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  Bars, grid lines and labels are drawn in code; these styles keep their colors theme-aware.  -->
+    <UserControl.Resources>
+        <Style TargetType="Border" x:Key="BarStyle">
+            <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+            <Setter Property="CornerRadius" Value="4,4,0,0" />
+        </Style>
+        <Style TargetType="Line" x:Key="GridLineStyle">
+            <Setter Property="Stroke" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+        <Style TargetType="Line" x:Key="AverageLineStyle">
+            <Setter Property="Stroke" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="StrokeThickness" Value="1.5" />
+        </Style>
+        <Style
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock"
+            x:Key="ChartLabelStyle">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Height="260" SizeChanged="OnSizeChanged">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="52" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer
+            HorizontalScrollBarVisibility="Auto"
+            HorizontalScrollMode="Auto"
+            VerticalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Disabled"
+            x:Name="PlotScroller">
+            <Canvas
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                x:Name="Plot" />
+        </ScrollViewer>
+        <Canvas Grid.Column="1" x:Name="Axis" />
+    </Grid>
+</UserControl>

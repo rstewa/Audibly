@@ -89,6 +89,12 @@ public partial class App : Application
     public static PlayerViewModel PlayerViewModel { get; } = new();
 
     /// <summary>
+    ///     Records listening time for the statistics and trophies pages.
+    /// </summary>
+    public static ListeningStatsService ListeningStats { get; } =
+        new(ApplicationData.Current.LocalFolder.Path + @"\stats.db");
+
+    /// <summary>
     ///     Pipeline for interacting with backend service or database.
     /// </summary>
     public static IAudiblyRepository Repository { get; private set; }
@@ -135,6 +141,7 @@ public partial class App : Application
         var appWindow = WindowHelper.GetAppWindow(Window);
         appWindow.Closing += async (_, _) =>
         {
+            ListeningStats.FlushBeforeExit();
             if (PlayerViewModel.NowPlaying != null) await PlayerViewModel.NowPlaying.SaveAsync();
             PlayerViewModel.Dispose();
             WindowHelper.CloseAll();

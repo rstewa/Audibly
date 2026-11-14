@@ -150,6 +150,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Audibly.Models\Audibly.Models.csproj" />
         <ProjectReference Include="..\Audibly.Repository\Audibly.Repository.csproj" />
+        <ProjectReference Include="..\Audibly.Stats\Audibly.Stats.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Page Update="Views\ControlPages\ChangelogDialogContent.xaml">

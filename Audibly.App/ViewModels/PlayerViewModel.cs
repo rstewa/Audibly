@@ -212,7 +212,12 @@ public class PlayerViewModel : BindableBase, IDisposable
     public TimeSpan CurrentPosition
     {
         get => MediaPlayer.PlaybackSession.Position;
-        set => MediaPlayer.PlaybackSession.Position = value > TimeSpan.Zero ? value : TimeSpan.Zero;
+        set
+        {
+            // a jump is not listening time, however small it is
+            App.ListeningStats.OnInterrupted();
+            MediaPlayer.PlaybackSession.Position = value > TimeSpan.Zero ? value : TimeSpan.Zero;
+        }
     }
 
     /// <summary>
@@ -365,6 +370,7 @@ public class PlayerViewModel : BindableBase, IDisposable
         }
 
         MediaPlayer.Pause();
+        App.ListeningStats.OnInterrupted();
 
         App.ViewModel.SelectedAudiobook = audiobook;
 
@@ -529,6 +535,7 @@ public class PlayerViewModel : BindableBase, IDisposable
                 break;
 
             case MediaPlaybackState.Paused:
+                App.ListeningStats.OnInterrupted();
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     if (PlayPauseIcon == Symbol.Play) return;
@@ -558,10 +565,22 @@ public class PlayerViewModel : BindableBase, IDisposable
                 });
         }
 
-        if (IsUserSeeking) return;
+        if (IsUserSeeking)
+        {
+            App.ListeningStats.OnInterrupted();
+            return;
+        }
 
         _ = _dispatcherQueue.EnqueueAsync(async () =>
         {
+            // statistics only count steady playback; a paused player that moves is a seek
+            var isPlaying = MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing;
+            if (isPlaying)
+                App.ListeningStats.OnPosition(NowPlaying.Id, NowPlaying.CurrentSourceFileIndex,
+                    CurrentPosition.TotalSeconds, PlaybackSpeed);
+            else
+                App.ListeningStats.OnInterrupted();
+
             ChapterPositionMs = (int)(CurrentPosition.TotalMilliseconds > NowPlaying.CurrentChapter.StartTime
                 ? CurrentPosition.TotalMilliseconds - NowPlaying.CurrentChapter.StartTime
                 : 0);
@@ -575,7 +594,9 @@ public class PlayerViewModel : BindableBase, IDisposable
                     tmp += NowPlaying.SourcePaths[i].Duration;
             tmp += CurrentPosition.TotalSeconds;
             NowPlaying.Progress = Math.Ceiling(tmp / NowPlaying.Duration * 100);
+            var wasCompleted = NowPlaying.IsCompleted;
             NowPlaying.IsCompleted = NowPlaying.Progress >= 99.9;
+            if (!wasCompleted && NowPlaying.IsCompleted && isPlaying) App.ListeningStats.OnCompleted(NowPlaying.Id);
         });
 
         await NowPlaying.SaveAsync();

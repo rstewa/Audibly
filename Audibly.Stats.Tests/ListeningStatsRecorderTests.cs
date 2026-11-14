@@ -68,9 +68,33 @@ public class ListeningStatsRecorderTests
         using var db = new TempDb();
         var recorder = Recorder(db.Path);
         await recorder.FlushAsync();
+        Listen(recorder, 90);
         await recorder.OnCompletedAsync(Book);
         var unlocked = Assert.Single(await recorder.FlushAsync());
         Assert.Equal(("finisher", 1), (unlocked.Definition.Id, unlocked.Tier));
+        Assert.Equal(90, StatsSummary.Total(await new StatsStore(db.Path).LoadAsync()).ListenedSeconds, 3);
+    }
+
+    [Fact]
+    public async Task ReachingTheEndWithoutListeningIsNotACompletion()
+    {
+        using var db = new TempDb();
+        var recorder = Recorder(db.Path);
+        Listen(recorder, 20);
+        await recorder.OnCompletedAsync(Book);
+        Assert.Empty(await recorder.FlushAsync());
+        Assert.Empty((await new StatsStore(db.Path).LoadAsync()).Completions);
+    }
+
+    [Fact]
+    public async Task ListeningToAnotherBookDoesNotCompleteThisOne()
+    {
+        using var db = new TempDb();
+        var recorder = Recorder(db.Path);
+        Listen(recorder, 300);
+        await recorder.OnCompletedAsync(Guid.NewGuid());
+        await recorder.FlushAsync();
+        Assert.Empty((await new StatsStore(db.Path).LoadAsync()).Completions);
     }
 
     [Fact]

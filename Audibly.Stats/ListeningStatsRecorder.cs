@@ -11,6 +11,12 @@ public sealed class ListeningStatsRecorder
     private readonly Func<DateTime> _localNow;
     private readonly Func<int> _libraryCount;
     private readonly Action<Exception>? _onError;
+
+    /// <summary>
+    ///     Reaching the end only counts as finishing a book that was actually listened to; without
+    ///     this, jumping to the last seconds of a book would count as a finished audiobook.
+    /// </summary>
+    public const double MinimumListenedToCompleteSeconds = 60;
     private readonly ListeningTracker _tracker = new();
     private readonly object _trackerLock = new();
     private readonly SemaphoreSlim _flushing = new(1, 1);
@@ -49,14 +55,22 @@ public sealed class ListeningStatsRecorder
     /// <summary>Report that the listener reached the end of an audiobook.</summary>
     public async Task OnCompletedAsync(Guid audiobookId)
     {
+        await _flushing.WaitAsync().ConfigureAwait(false);
         try
         {
+            await SaveCollectedAsync().ConfigureAwait(false);
+            var listened = StatsSummary.ForBook(await _store.LoadAsync().ConfigureAwait(false), audiobookId);
+            if (listened.ListenedSeconds < MinimumListenedToCompleteSeconds) return;
             if (await _store.RecordCompletionAsync(audiobookId, _localNow()).ConfigureAwait(false))
                 _completionPending = true;
         }
         catch (Exception e)
         {
             Report(e);
+        }
+        finally
+        {
+            _flushing.Release();
         }
     }
 
@@ -66,15 +80,11 @@ public sealed class ListeningStatsRecorder
         await _flushing.WaitAsync().ConfigureAwait(false);
         try
         {
-            IReadOnlyList<ListeningSlice> drained;
-            lock (_trackerLock) drained = _tracker.Drain();
-            _unsaved.AddRange(drained);
-
+            Collect();
             var library = _libraryCount();
             if (_unsaved.Count == 0 && !_completionPending && _evaluatedLibraryCount == library) return [];
 
-            await _store.AddAsync(_unsaved).ConfigureAwait(false);
-            _unsaved = [];
+            await SaveCollectedAsync().ConfigureAwait(false);
 
             var states = TrophyCatalog.Evaluate(new TrophyInput(await _store.LoadAsync().ConfigureAwait(false), library));
             var stored = await _store.LoadTrophyTiersAsync().ConfigureAwait(false);
@@ -129,6 +139,22 @@ public sealed class ListeningStatsRecorder
             return TrophyCatalog.Evaluate(new TrophyInput(StatsData.Empty, library))
                 .Select(state => state with { Tier = 0 }).ToList();
         }
+    }
+
+    private void Collect()
+    {
+        IReadOnlyList<ListeningSlice> drained;
+        lock (_trackerLock) drained = _tracker.Drain();
+        _unsaved.AddRange(drained);
+    }
+
+    // Callers hold the flush semaphore. A failed write leaves the slices in _unsaved for the next attempt.
+    private async Task SaveCollectedAsync()
+    {
+        Collect();
+        if (_unsaved.Count == 0) return;
+        await _store.AddAsync(_unsaved).ConfigureAwait(false);
+        _unsaved = [];
     }
 
     private void Report(Exception e)

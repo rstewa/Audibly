@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using Audibly.App.Services;
 using Audibly.App.ViewModels;
 using Audibly.Stats;
 using Microsoft.UI.Xaml;
@@ -75,7 +76,7 @@ public sealed partial class StatsPage : Page
             ? "Nothing recorded yet"
             : "Since " + _data.Slices.Min(slice => slice.Day).ToString("d MMM yyyy", Invariant);
 
-        var count = App.ViewModel.Audiobooks.Count;
+        var count = ListeningStatsService.LibraryCount();
         LibraryCountText.Text = count == 1 ? "1 title" : string.Create(Invariant, $"{count} titles");
 
         var hasData = total.ListenedSeconds > 0;

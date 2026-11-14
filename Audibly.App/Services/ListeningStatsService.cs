@@ -25,8 +25,14 @@ public sealed class ListeningStatsService
     public ListeningStatsService(string databasePath)
     {
         _recorder = new ListeningStatsRecorder(new StatsStore(databasePath), () => DateTime.Now,
-            () => App.ViewModel.Audiobooks.Count, e => App.ViewModel.LoggingService.LogError(e));
+            LibraryCount, e => App.ViewModel.LoggingService.LogError(e));
     }
+
+    /// <summary>
+    ///     Titles in the whole library. <c>Audiobooks</c> is only what the library page currently shows
+    ///     and shrinks while a search or filter is active.
+    /// </summary>
+    public static int LibraryCount() => App.ViewModel.AudiobooksForFilter.Count;
 
     /// <summary>Raised on the UI thread after new listening time or a completion was saved.</summary>
     public event Action? Updated;
@@ -99,7 +105,15 @@ public sealed class ListeningStatsService
 
     public Task<StatsData> LoadAsync() => _recorder.LoadAsync();
 
-    public Task<IReadOnlyList<TrophyState>> LoadTrophiesAsync() => _recorder.LoadTrophiesAsync();
+    /// <summary>
+    ///     Flushes first, so a tier reached without playback (a grown library) is stored and announced
+    ///     before it is shown, and cannot be lost again when the library shrinks.
+    /// </summary>
+    public async Task<IReadOnlyList<TrophyState>> LoadTrophiesAsync()
+    {
+        await FlushAsync();
+        return await _recorder.LoadTrophiesAsync();
+    }
 
     private void EnsureTimer()
     {

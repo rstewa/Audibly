@@ -227,6 +227,7 @@ public static class WindowExtensions
         else if (properties.IsRightButtonPressed)
         {
             Thread.Sleep(200);
+            App.ListeningStats.FlushBeforeExit();
             Application.Current.Exit();
         }
     }

@@ -30,6 +30,7 @@ public sealed partial class ReadAlongPanel : UserControl
     private Cue? _lastCue;
     private bool _follow = true;
     private bool _busy;
+    private bool _loading = true;
     private readonly Stopwatch _processingClock = new();
     private long _lastElapsedSecond = -1;
     private string? _lastError;
@@ -47,7 +48,12 @@ public sealed partial class ReadAlongPanel : UserControl
         Passages.AddHandler(PointerPressedEvent, new PointerEventHandler((_, _) => StopFollowing()), true);
         Passages.AddHandler(KeyDownEvent, new KeyEventHandler((_, _) => StopFollowing()), true);
     }
-    private void StopFollowing() { _follow = false; ModeLabel.Text = "Manual scrolling · choose Follow narration to resume"; }
+    private void StopFollowing()
+    {
+        if (_map is null) return;
+        _follow = false; FollowButton.Visibility = Visibility.Visible;
+        ModeLabel.Text = "Scrolling freely"; ModeLabel.Visibility = Visibility.Visible;
+    }
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         App.PlayerViewModel.PropertyChanged += PlayerChanged;
@@ -69,15 +75,15 @@ public sealed partial class ReadAlongPanel : UserControl
     private static string[] SourcePaths(AudiobookViewModel book) => book.SourcePaths.Select(s => s.FilePath).ToArray();
     private void SetBusy(bool busy)
     {
-        _busy = busy; AttachButton.IsEnabled = GenerateButton.IsEnabled = AudioLanguage.IsEnabled = ProcessingDevice.IsEnabled = !busy;
+        _busy = busy; AttachButton.IsEnabled = GenerateButton.IsEnabled = ReprepareButton.IsEnabled = AudioLanguage.IsEnabled = ProcessingDevice.IsEnabled = !busy;
         CancelButton.IsEnabled = busy;
         ProcessingPanel.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         if (busy)
         {
             _processingClock.Restart(); _lastElapsedSecond = -1;
             ProcessingProgress.IsIndeterminate = true;
-            ProcessingStage.Text = "Preparing Read Along…";
-            ProcessingDetail.Text = "Checking your ebook and audio files";
+            ProcessingStage.Text = "Preparing your ebook";
+            ProcessingDetail.Text = "Checking your files";
         }
         else _processingClock.Stop();
         UpdateSetup();
@@ -85,9 +91,18 @@ public sealed partial class ReadAlongPanel : UserControl
     private void UpdateSetup()
     {
         AttachButton.Visibility = _association is null ? Visibility.Collapsed : Visibility.Visible;
-        EpubLabel.Text = _association is null ? "Choose the matching ebook. Audibly will prepare it for Read Along."
-            : "Ebook: " + (_association.EpubName ?? "EPUB attached");
-        GenerateButton.Content = _association is null ? "Choose EPUB and prepare" : _map is null ? "Prepare Read Along" : "Prepare again";
+        ReprepareButton.Visibility = _map is null ? Visibility.Collapsed : Visibility.Visible;
+        EpubLabel.Text = _association is null ? "Read alongside your audiobook" : _association.EpubName ?? "Your ebook";
+        ToolTipService.SetToolTip(EpubLabel, EpubLabel.Text);
+        GenerateButton.Content = _association is null ? "Add ebook" : "Set up Read Along";
+        EmptyTitle.Text = _association is null ? "Read as you listen" : "Follow every word";
+        EmptyDescription.Text = _association is null ? "Add this book's EPUB to follow the narration."
+            : "Set up word highlighting for this audiobook. You only need to do this once.";
+        LoadingPanel.Visibility = _loading ? Visibility.Visible : Visibility.Collapsed;
+        EmptyPanel.Visibility = !_loading && !_busy && _map is null ? Visibility.Visible : Visibility.Collapsed;
+        Passages.Visibility = _map is not null ? Visibility.Visible : Visibility.Collapsed;
+        FollowButton.Visibility = !_follow && _map is not null ? Visibility.Visible : Visibility.Collapsed;
+        ModeLabel.Visibility = !_follow && _map is not null ? Visibility.Visible : Visibility.Collapsed;
     }
     private void UpdateElapsed()
     {
@@ -99,23 +114,37 @@ public sealed partial class ReadAlongPanel : UserControl
     {
         if (AlignmentProgress.TryParse(line, out var progress) && progress is not null)
         {
-            ProcessingStage.Text = progress.Stage + (progress.Fraction is { } f ? $" · {f * 100:0}%" : "");
+            ProcessingStage.Text = progress.Stage switch
+            {
+                "Checking ebook and audio files" => "Checking your files",
+                "Preparing ebook text" => "Opening your ebook",
+                "Loading speech model" => "Getting ready",
+                "Matching words to audio" => "Matching text to narration",
+                "Saving and checking alignment" or "Verifying saved alignment" => "Finishing up",
+                "Read Along is ready" => "Your ebook is ready",
+                _ => progress.Stage
+            };
             ProcessingProgress.IsIndeterminate = progress.Fraction is null;
             if (progress.Fraction is { } fraction) ProcessingProgress.Value = fraction * 100;
-            ProcessingDetail.Text = progress.Detail ?? "";
+            ProcessingDetail.Text = progress.Detail?.Contains("fallback", StringComparison.OrdinalIgnoreCase) == true ? "Using CPU. Graphics processing isn't available."
+                : progress.Detail?.Contains("first use", StringComparison.OrdinalIgnoreCase) == true ? "Downloading what we need for your first ebook."
+                : progress.Detail?.Contains("GPU", StringComparison.OrdinalIgnoreCase) == true ? "Using graphics processing"
+                : progress.Detail?.Contains("CPU", StringComparison.OrdinalIgnoreCase) == true ? "Using CPU"
+                : progress.Detail ?? "";
         }
-        else ProcessingDetail.Text = line.Length > 400 ? line[..400] : line;
     }
     private void ShowFailure(string message, string? diagnosticPath = null, string? context = null)
     {
         _lastError = message; _lastDiagnosticPath = diagnosticPath; _lastErrorContext = context;
         StatusText.Text = message;
+        ErrorNotice.IsOpen = true;
         CopyErrorButton.Content = "Copy error details"; CopyErrorButton.Visibility = Visibility.Visible;
     }
     private void ClearFailure()
     {
         _lastError = null; _lastDiagnosticPath = null; _lastErrorContext = null;
         CopyErrorButton.Visibility = Visibility.Collapsed;
+        ErrorNotice.IsOpen = false;
     }
     private async void CopyError_Click(object sender, RoutedEventArgs e)
     {
@@ -132,10 +161,10 @@ public sealed partial class ReadAlongPanel : UserControl
     {
         _operation?.Cancel();
         var operation = _operation = new CancellationTokenSource(); var token = operation.Token;
-        _book = Book?.Id; _map = null; _association = null; _lastPassage = null; _lastCue = null;
+        _book = Book?.Id; _map = null; _association = null; _lastPassage = null; _lastCue = null; _loading = true;
         ClearFailure();
         Passages.ItemsSource = null; SetBusy(false); _follow = true;
-        if (Book is not { } book) { StatusText.Text = "Open an audiobook first."; return; }
+        if (Book is not { } book) { _loading = false; UpdateSetup(); EmptyDescription.Text = "Open an audiobook to get started."; GenerateButton.IsEnabled = false; return; }
         try
         {
             StatusText.Text = "Checking saved Read Along data…";
@@ -161,8 +190,8 @@ public sealed partial class ReadAlongPanel : UserControl
             Passages.ItemsSource = map?.Passages;
             StatusText.Text = map is not null ? "Ready · published EPUB text · click an aligned word to seek"
                 : association.Error?.Contains("only supports EPUB 3", StringComparison.Ordinal) == true
-                    ? "Your ebook uses EPUB 2. This version can convert a working copy automatically. Choose Prepare Read Along to retry."
-                    : association.Error ?? "EPUB attached. Choose Prepare Read Along to begin.";
+                    ? "Your ebook needs an update. Choose Set up Read Along to try again."
+                    : association.Error ?? "";
             if (map is null && association.Error is { } savedError)
             {
                 var diagnosticPath = association.DiagnosticPath;
@@ -181,9 +210,11 @@ public sealed partial class ReadAlongPanel : UserControl
             if (_operation == operation) try { _association = await _store.LoadAsync(book.Id); } catch { }
             if (_operation == operation) UpdateSetup();
         }
+        finally { if (_operation == operation) { _loading = false; UpdateSetup(); } }
     }
     private async void Attach_Click(object sender, RoutedEventArgs e)
     {
+        BookSettingsFlyout.Hide();
         await AttachEpubAsync();
     }
     private async Task<bool> AttachEpubAsync()
@@ -207,6 +238,7 @@ public sealed partial class ReadAlongPanel : UserControl
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
         if (_busy || Book is not { } book) return;
+        BookSettingsFlyout.Hide();
         if (_association is null && !await AttachEpubAsync()) return;
         if (Book?.Id != book.Id || _association is not { } association) return;
         _operation?.Cancel(); var operation = _operation = new CancellationTokenSource(); var token = operation.Token;
@@ -235,7 +267,7 @@ public sealed partial class ReadAlongPanel : UserControl
             _follow = true; _lastPassage = null; _lastCue = null;
             StatusText.Text = "Ready · reliable word timing · gaps remain unhighlighted";
         }
-        catch (OperationCanceledException) { if (_operation == operation) StatusText.Text = "Cancelled. Completed audio analysis can be reused on retry."; }
+        catch (OperationCanceledException) { if (_operation == operation) StatusText.Text = "Setup cancelled. You can continue later."; }
         catch (Exception ex)
         {
             if (_operation == operation)
@@ -253,7 +285,7 @@ public sealed partial class ReadAlongPanel : UserControl
     private void Follow_Click(object sender, RoutedEventArgs e)
     {
         _follow = true; _lastPassage = null;
-        ModeLabel.Text = "Following narration"; UpdatePosition();
+        FollowButton.Visibility = ModeLabel.Visibility = Visibility.Collapsed; UpdatePosition();
     }
     private void UpdatePosition()
     {
@@ -264,7 +296,6 @@ public sealed partial class ReadAlongPanel : UserControl
         {
             Passages.ScrollIntoView(active.Passage, ScrollIntoViewAlignment.Leading);
             _lastPassage = active.Passage;
-            ModeLabel.Text = active.Cue.Granularity == "word" ? "Following · word timing" : "Following · sentence timing";
         }
         if (_lastCue == cue) return;
         _lastCue = cue;

@@ -68,6 +68,25 @@ Check(!AlignmentProgress.TryParse("PROGRESS:{\"stage\":\"Audio\",\"fraction\":2}
 Check(!AlignmentProgress.TryParse("PROGRESS:{", out _), "malformed progress ignored");
 Check(!AlignmentProgress.TryParse("arbitrary log line", out _), "logs do not invent progress");
 var id = Guid.NewGuid();
+var seeking = new ReadAlongSeekState();
+var firstOpen = seeking.BeginOpen(id, 0);
+seeking.Complete(firstOpen);
+Check(seeking.Request(id, 0, 12), "word click on loaded media can seek immediately");
+Check(!seeking.Request(id, 1, 20), "cross-file word click waits for loading");
+var destinationOpen = seeking.BeginOpen(id, 1);
+Check(!seeking.Request(id, 1, 42) && seeking.Pending?.Seconds == 42, "second click on selected but opening source keeps the latest seek");
+Check(seeking.Complete(firstOpen) is null && seeking.Pending?.Seconds == 42, "late open from the old source cannot consume the destination seek");
+var latestSeek = seeking.Complete(destinationOpen);
+Check(latestSeek?.Seconds == 42 && latestSeek.Source == 1 && seeking.Pending is null, "destination opens at the most recent requested word");
+Check(seeking.Request(id, 1, 44), "seeking is immediate once destination is loaded");
+seeking.Request(id, 0, 4); var backwardsOpen = seeking.BeginOpen(id, 0);
+seeking.Request(id, 2, 7); var thirdOpen = seeking.BeginOpen(id, 2);
+Check(!seeking.IsCurrent(backwardsOpen) && seeking.Complete(backwardsOpen) is null && seeking.Pending?.Source == 2, "rapid source changes reject outdated open work");
+Check(seeking.Complete(thirdOpen)?.Seconds == 7, "last source selection wins after multiple rapid clicks");
+var retryOpen = seeking.BeginOpen(id, 2); seeking.Request(id, 2, 9);
+seeking.Reset(); var differentBookOpen = seeking.BeginOpen(Guid.NewGuid(), 2);
+Check(seeking.Complete(retryOpen) is null && seeking.Pending is null && !seeking.IsCurrent(thirdOpen), "book change or media failure drops previous pending seeks");
+Check(seeking.Complete(differentBookOpen) is null && seeking.Loaded == differentBookOpen, "opening another book does not inherit its predecessor's seek");
 AlignmentMap Fixture() => new()
 {
     SchemaVersion = 1, AudiobookId = id, Status = "ready", Epub = new("book.epub", 1, "hash"),

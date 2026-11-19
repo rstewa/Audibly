@@ -48,9 +48,11 @@ public class PlayerViewModel : BindableBase, IDisposable
     private AudiobookViewModel? _nowPlaying;
 
     private bool _pendingAutoPlay;
-    private bool _readAlongEnabled = ApplicationData.Current.LocalSettings.Values["ReadAlongEnabled"] is true;
+    private bool _readAlongEnabled;
     private AlignmentMap? _readAlongDocument;
-    private (Guid Book, int Source, double Seconds)? _pendingReadAlongSeek;
+    private readonly ReadAlongSeekState _readAlongSeeks = new();
+    private SourceOpenRequest? _assignedSourceRequest;
+    private MediaSource? _assignedMediaSource;
 
     private double _playbackSpeed = 1.0;
 
@@ -82,9 +84,20 @@ public class PlayerViewModel : BindableBase, IDisposable
         get => _readAlongEnabled;
         set
         {
-            Set(ref _readAlongEnabled, value);
-            ApplicationData.Current.LocalSettings.Values["ReadAlongEnabled"] = value;
+            if (Set(ref _readAlongEnabled, value)) OnPropertyChanged(nameof(IsReadAlongActive));
         }
+    }
+
+    public bool IsReadAlongActive => ReadAlongEnabled && IsPlayerFullScreen;
+
+    public void OpenReadAlong()
+    {
+        ReadAlongEnabled = true;
+        IsPlayerFullScreen = true;
+        MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
+        MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
+        if (App.RootFrame?.Content is not Audibly.App.Views.PlayerPage)
+            App.RootFrame?.Navigate(typeof(Audibly.App.Views.PlayerPage));
     }
 
     // Validated text/timings are shared by the full and mini views; audio state
@@ -103,7 +116,11 @@ public class PlayerViewModel : BindableBase, IDisposable
         get => _nowPlaying;
         set
         {
-            if (_nowPlaying?.Id != value?.Id) { _pendingReadAlongSeek = null; ReadAlongDocument = null; }
+            if (_nowPlaying?.Id != value?.Id)
+            {
+                _readAlongSeeks.Reset(); _assignedSourceRequest = null; _assignedMediaSource = null;
+                _pendingAutoPlay = false; ReadAlongDocument = null;
+            }
             Set(ref _nowPlaying, value);
         }
     }
@@ -194,7 +211,7 @@ public class PlayerViewModel : BindableBase, IDisposable
     public bool IsPlayerFullScreen
     {
         get => _isPlayerFullScreen;
-        set => Set(ref _isPlayerFullScreen, value);
+        set { if (Set(ref _isPlayerFullScreen, value)) OnPropertyChanged(nameof(IsReadAlongActive)); }
     }
 
     /// <summary>
@@ -407,9 +424,11 @@ public class PlayerViewModel : BindableBase, IDisposable
             return;
         }
 
+        SourceOpenRequest? openRequest = null;
         await _dispatcherQueue.EnqueueAsync(async () =>
         {
             NowPlaying = audiobook;
+            openRequest = _readAlongSeeks.BeginOpen(audiobook.Id, audiobook.CurrentSourceFileIndex);
 
             if (NowPlaying.DateLastPlayed == null)
             {
@@ -434,7 +453,15 @@ public class PlayerViewModel : BindableBase, IDisposable
             await NowPlaying.SaveAsync();
         });
 
-        MediaPlayer.Source = MediaSource.CreateFromUri(audiobook.CurrentSourceFile.FilePath.AsUri());
+        if (openRequest is not null) AssignPlaybackSource(audiobook, openRequest);
+    }
+
+    private void AssignPlaybackSource(AudiobookViewModel book, SourceOpenRequest request)
+    {
+        if (NowPlaying?.Id != book.Id || !_readAlongSeeks.IsCurrent(request)) return;
+        _assignedSourceRequest = request;
+        _assignedMediaSource = MediaSource.CreateFromUri(book.SourcePaths[request.Source].FilePath.AsUri());
+        MediaPlayer.Source = _assignedMediaSource;
     }
 
     public async void OpenSourceFile(int index, int chapterIndex)
@@ -447,8 +474,7 @@ public class PlayerViewModel : BindableBase, IDisposable
         var book = NowPlaying;
         if (book == null || book.CurrentSourceFileIndex == index)
             return;
-        if (_pendingReadAlongSeek is { } seek && (seek.Book != book.Id || seek.Source != index))
-            _pendingReadAlongSeek = null;
+        var openRequest = _readAlongSeeks.BeginOpen(book.Id, index);
 
         book.CurrentTimeMs = 0;
         book.CurrentSourceFileIndex = index;
@@ -461,25 +487,22 @@ public class PlayerViewModel : BindableBase, IDisposable
 
         await book.SaveAsync();
 
-        if (NowPlaying == book)
-            MediaPlayer.Source = MediaSource.CreateFromUri(book.CurrentSourceFile.FilePath.AsUri());
+        AssignPlaybackSource(book, openRequest);
     }
 
     public async Task SeekReadAlongAsync(int sourceIndex, double seconds)
     {
         if (NowPlaying is not { } book || sourceIndex < 0 || sourceIndex >= book.SourcePaths.Count ||
             !double.IsFinite(seconds) || seconds < 0) return;
-        if (sourceIndex == book.CurrentSourceFileIndex)
+        if (_readAlongSeeks.Request(book.Id, sourceIndex, seconds))
         {
-            _pendingReadAlongSeek = null;
             CurrentPosition = TimeSpan.FromSeconds(seconds);
             return;
         }
         var chapter = book.Chapters.FirstOrDefault(c => c.ParentSourceFileIndex == sourceIndex && c.InRange(seconds * 1000))
             ?? book.Chapters.FirstOrDefault(c => c.ParentSourceFileIndex == sourceIndex);
         if (chapter is null) return;
-        _pendingReadAlongSeek = (book.Id, sourceIndex, seconds);
-        _pendingAutoPlay = MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing;
+        _pendingAutoPlay |= MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing;
         await OpenSourceFileAsync(sourceIndex, chapter.Index);
     }
 
@@ -502,9 +525,14 @@ public class PlayerViewModel : BindableBase, IDisposable
 
     private void AudioPlayer_MediaOpened(MediaPlayer sender, object args)
     {
-        if (NowPlaying == null) return;
+        if (NowPlaying == null || _assignedSourceRequest is not { } request) return;
+        var mediaSource = _assignedMediaSource;
         _dispatcherQueue.EnqueueAsync(async () =>
         {
+            if (NowPlaying?.Id != request.Book || _readAlongSeeks.Opening != request ||
+                _assignedSourceRequest != request || !ReferenceEquals(sender.Source, mediaSource) ||
+                sender.PlaybackSession.PlaybackState == MediaPlaybackState.Opening) return;
+            var requestedSeek = _readAlongSeeks.Complete(request);
             if (NowPlaying.Chapters.Count == 0)
             {
                 NowPlaying = null;
@@ -527,12 +555,7 @@ public class PlayerViewModel : BindableBase, IDisposable
                     : 0;
 
             CurrentPosition = TimeSpan.FromMilliseconds(NowPlaying.CurrentTimeMs);
-            if (_pendingReadAlongSeek is { } seek)
-            {
-                _pendingReadAlongSeek = null;
-                if (seek.Book == NowPlaying.Id && seek.Source == NowPlaying.CurrentSourceFileIndex)
-                    CurrentPosition = TimeSpan.FromSeconds(seek.Seconds);
-            }
+            if (requestedSeek is { } seek) CurrentPosition = TimeSpan.FromSeconds(seek.Seconds);
 
             MediaPlayer.PlaybackRate = PlaybackSpeed;
 

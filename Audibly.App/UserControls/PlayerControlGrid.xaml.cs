@@ -109,10 +109,7 @@ public sealed partial class PlayerControlGrid : UserControl
         PlayerViewModel.ReadAlongEnabled = !inPlayer || (sender as ToggleButton)?.IsChecked == true;
         if (PlayerViewModel.ReadAlongEnabled && !inPlayer)
         {
-            PlayerViewModel.IsPlayerFullScreen = true;
-            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
-            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
-            App.RootFrame?.Navigate(typeof(PlayerPage));
+            PlayerViewModel.OpenReadAlong();
         }
     }
 

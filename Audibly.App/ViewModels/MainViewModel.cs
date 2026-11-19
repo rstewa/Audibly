@@ -1011,9 +1011,8 @@ public class MainViewModel : BindableBase
         {
             await new ReadAlongStore(ApplicationData.Current.LocalFolder.Path)
                 .AttachAsync(imported.Id, selection.EpubPath);
-            App.PlayerViewModel.ReadAlongEnabled = true;
-            App.RootFrame?.Navigate(typeof(PlayerPage));
-            EnqueueNotification(new Notification { Message = "EPUB attached. Choose Prepare Read Along to match the words to your audio.", Severity = InfoBarSeverity.Success });
+            App.PlayerViewModel.OpenReadAlong();
+            EnqueueNotification(new Notification { Message = "Ebook added. Set up Read Along to follow the narration.", Severity = InfoBarSeverity.Success });
         }
         catch (Exception ex)
         {

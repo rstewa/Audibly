@@ -21,6 +21,12 @@ public sealed class ReadAlongPassage : UserControl
     private readonly RichTextBlock _text = new() { FontSize = 22, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
     private Cue? _active;
     private readonly Dictionary<string, Hyperlink> _links = new();
+    private bool _isSeekEnabled = true;
+    public bool IsSeekEnabled
+    {
+        get => _isSeekEnabled;
+        set { if (_isSeekEnabled != value) { _isSeekEnabled = value; Render(); } }
+    }
     public bool MiniMode { get; set; }
     public ReadAlongPassage()
     {
@@ -44,6 +50,11 @@ public sealed class ReadAlongPassage : UserControl
         _text.Blocks.Clear(); _text.TextHighlighters.Clear(); _links.Clear(); _active = null;
         if (Data is not { } passage) return;
         var paragraph = new Paragraph(); int offset = 0;
+        if (!IsSeekEnabled)
+        {
+            paragraph.Inlines.Add(new Run { Text = passage.Text });
+            _text.Blocks.Add(paragraph); return;
+        }
         foreach (var group in passage.Cues.OrderBy(c => c.Offset).GroupBy(c => c.Offset))
         {
             var cue = group.First();

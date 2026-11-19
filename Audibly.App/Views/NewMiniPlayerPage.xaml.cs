@@ -40,7 +40,9 @@ public sealed partial class NewMiniPlayerPage : Page
     private AlignmentMap? _readingMap;
     private Window? _miniWindow;
     private string? _lastCaptionCue;
-    private string? _lastExcerptId;
+    private Passage? _lastMiniPassage;
+    private bool _followingNarration = true;
+    private ScrollViewer? _transcriptScroll;
     private double _captionFontSize = 24;
     private bool _dragging;
     private PointInt32 _dragWindowStart;
@@ -51,7 +53,9 @@ public sealed partial class NewMiniPlayerPage : Page
         InitializeComponent();
         MiniReadAlongToggle.IsChecked = ApplicationData.Current.LocalSettings.Values["MiniReadAlongEnabled"] is not false;
         _captionFontSize = ReadAlongAppearanceSettings.Current.MiniFontSize;
-        MiniPassage.ReadingFontSize = _captionFontSize;
+        MiniTranscript.AddHandler(PointerWheelChangedEvent, new PointerEventHandler(MiniTranscript_Wheel), true);
+        MiniTranscript.AddHandler(PointerPressedEvent, new PointerEventHandler(MiniTranscript_Pressed), true);
+        MiniTranscript.KeyDown += MiniTranscript_KeyDown;
         _readingTimer.Tick += (_, _) => UpdateCaption();
         Loaded += ReadingLoaded;
         Unloaded += ReadingUnloaded;
@@ -108,8 +112,10 @@ public sealed partial class NewMiniPlayerPage : Page
     }
     private void ClearCaption()
     {
-        _lastCaptionCue = null; _lastExcerptId = null;
-        MiniPassage.Data = null;
+        _lastCaptionCue = null; _lastMiniPassage = null;
+        MiniTranscript.ItemsSource = null;
+        _followingNarration = true;
+        MiniFollowButton.Visibility = Visibility.Collapsed;
     }
     private void ShowReadingHint(string text, bool setup)
     {
@@ -130,8 +136,8 @@ public sealed partial class NewMiniPlayerPage : Page
         }
         try
         {
-            MiniReadAlongStatus.Text = "Loading words…";
-            ShowReadingHint("Loading saved Read Along text…", false);
+            MiniReadAlongStatus.Text = "";
+            ShowReadingHint("Opening your ebook…", false);
             if (PlayerViewModel.ReadAlongDocument is { } shared && shared.AudiobookId == book.Id)
                 _readingMap = shared;
             else
@@ -140,8 +146,8 @@ public sealed partial class NewMiniPlayerPage : Page
                 if (association is null || association.MapPath is null)
                 {
                     token.ThrowIfCancellationRequested();
-                    MiniReadAlongStatus.Text = "Not prepared yet";
-                    ShowReadingHint("Prepare this book for Read Along in the main player.", true); return;
+                    MiniReadAlongStatus.Text = "";
+                    ShowReadingHint("Add an ebook and set up Read Along to see the words here.", true); return;
                 }
                 var sources = book.SourcePaths.Select(s => s.FilePath).ToArray();
                 var map = await Task.Run(async () =>
@@ -155,7 +161,7 @@ public sealed partial class NewMiniPlayerPage : Page
                 PlayerViewModel.ReadAlongDocument = map;
             }
             token.ThrowIfCancellationRequested();
-            if (_readingMap is null) { ShowReadingHint("Prepare this book in the main player.", true); return; }
+            if (_readingMap is null) { ShowReadingHint("Set up Read Along to see the words here.", true); return; }
             UpdateCaption();
         }
         catch (OperationCanceledException) { }
@@ -163,7 +169,7 @@ public sealed partial class NewMiniPlayerPage : Page
         {
             if (_readingLoad != operation) return;
             MiniReadAlongStatus.Text = "Read Along unavailable";
-            ShowReadingHint("Open Read Along in the main player to check this book's saved alignment.", true);
+            ShowReadingHint("Open Read Along to check this book's ebook settings.", true);
         }
     }
     private void UpdateCaption()
@@ -174,42 +180,96 @@ public sealed partial class NewMiniPlayerPage : Page
         var source = book.CurrentSourceFileIndex;
         var position = PlayerViewModel.CurrentPosition.TotalSeconds;
         var active = _readingMap.Find(source, position);
-        if (active is null)
+        if (!ReferenceEquals(MiniTranscript.ItemsSource, _readingMap.Passages)) MiniTranscript.ItemsSource = _readingMap.Passages;
+        MiniReadingHint.Visibility = Visibility.Collapsed;
+        var context = active ?? _readingMap.FindContext(source, position);
+        MiniReadAlongStatus.Text = !_followingNarration ? "Reading earlier text" : context is null ? "No word timing here" : "";
+        if (_followingNarration && context is { } current && current.Passage != _lastMiniPassage)
         {
-            if (_lastCaptionCue is not null) MiniPassage.Highlight(null);
-            _lastCaptionCue = null;
-            MiniReadAlongStatus.Text = "";
-            if (_readingMap.FindContext(source, position) is { } context)
-            {
-                ShowExcerpt(context.Passage, context.Cue);
-                MiniReadingHint.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                ClearCaption();
-                ShowReadingHint("There is no aligned text near this part of the audio.", false);
-            }
+            MiniTranscript.ScrollIntoView(current.Passage, ScrollIntoViewAlignment.Leading);
+            _lastMiniPassage = current.Passage;
         }
-        else
+        var cue = active?.Cue;
+        if (_lastCaptionCue == cue?.Id) return;
+        _lastCaptionCue = cue?.Id;
+        foreach (var row in TranscriptRows())
         {
-            MiniReadingHint.Visibility = Visibility.Collapsed;
-            MiniReadAlongStatus.Text = "";
-            if (_lastCaptionCue != active.Value.Cue.Id)
-            {
-                ShowExcerpt(active.Value.Passage, active.Value.Cue);
-                MiniPassage.Highlight(MiniPassage.Data!.Cues.FirstOrDefault(c => c.Id == active.Value.Cue.Id));
-                MiniPassage.BringWordIntoView(MiniPassage.Data!.Cues.FirstOrDefault(c => c.Id == active.Value.Cue.Id));
-                _lastCaptionCue = active.Value.Cue.Id;
-            }
+            row.Highlight(cue);
+            if (_followingNarration) row.BringWordIntoView(cue);
         }
     }
-    private void ShowExcerpt(Passage passage, Cue cue)
+    private void SuspendMiniFollowing()
     {
-        if (MiniPassage.Data?.Cues.Any(c => c.Id == cue.Id) == true) return;
-        var excerpt = ReadAlongExcerpt.Create(passage, cue, (int)(3000 / _captionFontSize));
-        if (_lastExcerptId == excerpt.Passage.Id) return;
-        MiniPassage.Data = excerpt.Passage; _lastExcerptId = excerpt.Passage.Id;
-        MiniCaptionScroll.ChangeView(null, 0, null, true);
+        if (_readingMap is null || !_followingNarration) return;
+        _followingNarration = false;
+        MiniFollowButton.Visibility = Visibility.Visible;
+        MiniReadAlongStatus.Text = "Reading earlier text";
+        // Browsing is read-only: selecting old text must not accidentally seek.
+        foreach (var row in TranscriptRows()) row.IsSeekEnabled = false;
+        _lastCaptionCue = null;
+    }
+    private void MiniFollow_Click(object sender, RoutedEventArgs e)
+    {
+        _followingNarration = true; _lastMiniPassage = null; _lastCaptionCue = null;
+        MiniFollowButton.Visibility = Visibility.Collapsed;
+        foreach (var row in TranscriptRows()) row.IsSeekEnabled = true;
+        UpdateCaption();
+    }
+    private void MiniTranscript_Wheel(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.GetCurrentPoint(MiniTranscript).Properties.MouseWheelDelta != 0) SuspendMiniFollowing();
+        // Let the native ListView handle wheel/trackpad scrolling normally.
+    }
+    private void MiniTranscript_Pressed(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch) { SuspendMiniFollowing(); return; }
+        for (var node = e.OriginalSource as DependencyObject; node is not null && node != MiniTranscript;)
+        {
+            if (node is ScrollBar) { SuspendMiniFollowing(); return; }
+            if (node is not UIElement) break;
+            node = VisualTreeHelper.GetParent(node);
+        }
+    }
+    private void MiniTranscript_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is VirtualKey.Up or VirtualKey.Down or VirtualKey.PageUp or VirtualKey.PageDown or VirtualKey.Home or VirtualKey.End)
+            SuspendMiniFollowing();
+    }
+    private void MiniTranscript_Loaded(object sender, RoutedEventArgs e)
+    {
+        _transcriptScroll = FindTranscriptChild<ScrollViewer>(MiniTranscript);
+        if (_transcriptScroll is not null) _transcriptScroll.DirectManipulationStarted += MiniTranscript_ManipulationStarted;
+    }
+    private void MiniTranscript_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (_transcriptScroll is not null) _transcriptScroll.DirectManipulationStarted -= MiniTranscript_ManipulationStarted;
+        _transcriptScroll = null;
+    }
+    private void MiniTranscript_ManipulationStarted(object? sender, object e) => SuspendMiniFollowing();
+    private System.Collections.Generic.IEnumerable<ReadAlongPassage> TranscriptRows()
+    {
+        if (MiniTranscript.ItemsPanelRoot is not { } panel) yield break;
+        foreach (var child in panel.Children)
+            if (FindTranscriptChild<ReadAlongPassage>(child) is { } row) yield return row;
+    }
+    private void MiniTranscript_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.InRecycleQueue) return;
+        args.RegisterUpdateCallback((_, a) =>
+        {
+            if (FindTranscriptChild<ReadAlongPassage>(a.ItemContainer) is not { } row) return;
+            row.IsSeekEnabled = _followingNarration;
+            var cue = _readingMap?.Find(PlayerViewModel.NowPlaying?.CurrentSourceFileIndex ?? -1, PlayerViewModel.CurrentPosition.TotalSeconds)?.Cue;
+            row.Highlight(cue);
+            if (_followingNarration) row.BringWordIntoView(cue);
+        });
+    }
+    private static T? FindTranscriptChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        if (parent is T value) return value;
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            if (FindTranscriptChild<T>(VisualTreeHelper.GetChild(parent, i)) is { } child) return child;
+        return null;
     }
     private void ReadingAppearanceChanged(object? sender, EventArgs e) => ApplyReadingAppearance();
     private void ApplyReadingAppearance()
@@ -219,7 +279,7 @@ public sealed partial class NewMiniPlayerPage : Page
         if (_captionFontSize != prefs.MiniFontSize)
         {
             _captionFontSize = prefs.MiniFontSize;
-            _lastCaptionCue = null; _lastExcerptId = null; MiniPassage.Data = null;
+            _lastCaptionCue = null; _lastMiniPassage = null;
             ApplyReadingVisibility();
             UpdateCaption();
         }
@@ -251,10 +311,7 @@ public sealed partial class NewMiniPlayerPage : Page
     private void LargerText_Click(object sender, RoutedEventArgs e) => ChangeCaptionSize(2);
     private void OpenReadAlong_Click(object sender, RoutedEventArgs e)
     {
-        PlayerViewModel.ReadAlongEnabled = true; PlayerViewModel.IsPlayerFullScreen = true;
-        PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
-        PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
-        if (App.RootFrame?.Content is not PlayerPage) App.RootFrame?.Navigate(typeof(PlayerPage));
+        PlayerViewModel.OpenReadAlong();
         WindowHelper.RestoreMainWindow(); WindowHelper.GetMainWindow()?.Activate(); WindowHelper.HideMiniPlayer();
     }
     private void DragHandle_Pressed(object sender, PointerRoutedEventArgs e)

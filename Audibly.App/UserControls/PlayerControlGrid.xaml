@@ -134,7 +134,7 @@
                         BorderThickness="0"
                         AutomationProperties.AutomationId="ReadAlongToggle"
                         AutomationProperties.Name="Read Along"
-                        IsChecked="{x:Bind PlayerViewModel.ReadAlongEnabled, Mode=OneWay}"
+                        IsChecked="{x:Bind PlayerViewModel.IsReadAlongActive, Mode=OneWay}"
                         IsEnabled="{x:Bind vm:Converters.IsNotNull(PlayerViewModel.NowPlaying), Mode=OneWay}"
                         Click="ReadAlongToggle_Click"
                         ToolTipService.ToolTip="Read Along">

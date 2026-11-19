@@ -3,51 +3,101 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Audibly.App.UserControls">
-    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" CornerRadius="8" Padding="12">
-        <Grid RowSpacing="8">
+    <Border Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button x:Name="GenerateButton" Content="Choose EPUB and prepare" Style="{StaticResource AccentButtonStyle}" Click="Generate_Click"/>
-                <Button x:Name="AttachButton" Content="Change EPUB" Click="Attach_Click" Visibility="Collapsed"/>
-                <Button Content="Follow narration" Click="Follow_Click"/>
-                <local:ReadAlongAppearance/>
-            </StackPanel>
-            <StackPanel Grid.Row="1" Spacing="6">
-                <TextBlock x:Name="EpubLabel" Text="Choose the matching ebook. Audibly will prepare it for Read Along." TextWrapping="Wrap"/>
-                <Expander Header="Processing options" HorizontalAlignment="Stretch">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language" Width="100"/>
-                        <ComboBox x:Name="ProcessingDevice" Header="Acceleration" SelectedIndex="0">
-                            <ComboBoxItem Content="GPU preferred (CPU fallback)" Tag="dml"/>
-                            <ComboBoxItem Content="CPU" Tag="cpu"/>
-                        </ComboBox>
-                    </StackPanel>
-                </Expander>
-            </StackPanel>
-            <Border Grid.Row="2" x:Name="ProcessingPanel" Visibility="Collapsed" Padding="12" CornerRadius="6" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+            <Grid Padding="20,12" ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="Read Along" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                    <TextBlock x:Name="EpubLabel" Text="Read alongside your audiobook" Style="{StaticResource CaptionTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="ModeLabel" Visibility="Collapsed" Style="{StaticResource CaptionTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <Button x:Name="FollowButton" Content="Follow narration" Click="Follow_Click" Visibility="Collapsed"/>
+                    <local:ReadAlongAppearance/>
+                    <Button x:Name="SettingsButton" Background="Transparent" BorderThickness="0"
+                        ToolTipService.ToolTip="Read Along settings" AutomationProperties.Name="Read Along settings">
+                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE712;" FontSize="16"/>
+                        <Button.Flyout>
+                            <Flyout x:Name="BookSettingsFlyout" ShouldConstrainToRootBounds="False">
+                                <ScrollViewer MaxHeight="480" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Width="280" Spacing="16">
+                                        <TextBlock Text="Read Along settings" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                        <Button x:Name="AttachButton" Content="Replace ebook" Click="Attach_Click" HorizontalAlignment="Stretch"/>
+                                        <TextBox x:Name="AudioLanguage" Text="en" Header="Audio language"/>
+                                        <ComboBox x:Name="ProcessingDevice" Header="Audio processing" SelectedIndex="0" HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Content="GPU when available" Tag="dml"/>
+                                            <ComboBoxItem Content="CPU" Tag="cpu"/>
+                                        </ComboBox>
+                                        <TextBlock Text="These options apply the next time you set up word highlighting."
+                                            TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}"/>
+                                        <Button x:Name="ReprepareButton" Content="Update word timing" Click="Generate_Click" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <InfoBar Grid.Row="1" x:Name="ErrorNotice" IsOpen="False" Severity="Error" Title="Couldn't set up Read Along" Margin="16,0,16,12">
                 <StackPanel Spacing="8">
-                    <TextBlock x:Name="ProcessingStage" Text="Preparing Read Along…" FontWeight="SemiBold"/>
-                    <ProgressBar x:Name="ProcessingProgress" IsIndeterminate="True" Minimum="0" Maximum="100" AutomationProperties.Name="Read Along preparation progress"/>
-                    <TextBlock x:Name="ProcessingDetail" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="ProcessingElapsed"/>
-                    <TextBlock Text="You can keep listening while this runs. Unchanged books only need to be prepared once." TextWrapping="Wrap"/>
-                    <Button x:Name="CancelButton" Content="Cancel preparation" Click="Cancel_Click" IsEnabled="False"/>
+                    <TextBlock x:Name="StatusText" TextWrapping="Wrap" MaxHeight="100" IsTextSelectionEnabled="True"/>
+                    <Button x:Name="CopyErrorButton" Content="Copy error details" Click="CopyError_Click" Visibility="Collapsed"/>
+                </StackPanel>
+            </InfoBar>
+            <Border Grid.Row="2" x:Name="ProcessingPanel" Visibility="Collapsed" Margin="20,0,20,16" Padding="16"
+                CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4">
+                            <TextBlock x:Name="ProcessingStage" Text="Preparing your ebook" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                            <TextBlock x:Name="ProcessingDetail" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" x:Name="CancelButton" Content="Cancel" Click="Cancel_Click" IsEnabled="False" VerticalAlignment="Top"/>
+                    </Grid>
+                    <ProgressBar x:Name="ProcessingProgress" IsIndeterminate="True" Minimum="0" Maximum="100" AutomationProperties.Name="Ebook setup progress"/>
+                    <TextBlock x:Name="ProcessingElapsed" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="You can keep listening while we prepare your ebook." TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}"/>
                 </StackPanel>
             </Border>
-            <StackPanel Grid.Row="3" Spacing="4">
-                <TextBlock x:Name="StatusText" Text="Choose an EPUB to get started." TextWrapping="Wrap" MaxHeight="90" IsTextSelectionEnabled="True"/>
-                <Button x:Name="CopyErrorButton" Content="Copy error details" Click="CopyError_Click" Visibility="Collapsed"/>
-                <TextBlock x:Name="ModeLabel" Text="Word highlighting when reliably aligned" TextWrapping="Wrap"/>
-            </StackPanel>
-            <ListView Grid.Row="4" x:Name="Passages" SelectionMode="None" IsItemClickEnabled="False"
-                Padding="0,8" BorderThickness="0" Background="Transparent"
-                HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollMode="Disabled"
-                ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                ContainerContentChanging="Passages_ContainerContentChanging">
-                <ListView.ItemTemplate><DataTemplate><local:ReadAlongPassage Data="{Binding}"/></DataTemplate></ListView.ItemTemplate>
-            </ListView>
+            <Grid Grid.Row="3">
+                <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                    <ProgressRing IsActive="True" Width="28" Height="28"/>
+                    <TextBlock Text="Opening your ebook…" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel x:Name="EmptyPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="420" Margin="24">
+                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8F1;" FontSize="40" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock x:Name="EmptyTitle" Text="Read as you listen" Style="{StaticResource SubtitleTextBlockStyle}" TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="EmptyDescription" Text="Add this book's EPUB to follow the narration." TextAlignment="Center" TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <Button x:Name="GenerateButton" Content="Add ebook" Style="{StaticResource AccentButtonStyle}" Click="Generate_Click" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <ListView x:Name="Passages" Visibility="Collapsed" SelectionMode="None" IsItemClickEnabled="False"
+                    Padding="16,16,16,32" BorderThickness="0" Background="Transparent" MaxWidth="880"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollMode="Disabled"
+                    ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    ContainerContentChanging="Passages_ContainerContentChanging">
+                    <ListView.Resources>
+                        <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="Transparent"/>
+                        <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="Transparent"/>
+                    </ListView.Resources>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="8,0"/><Setter Property="MinHeight" Value="0"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate><DataTemplate><local:ReadAlongPassage Data="{Binding}"/></DataTemplate></ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Grid>
     </Border>
 </UserControl>

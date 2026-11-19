@@ -95,8 +95,17 @@ jobs:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
         Appx_Package_Build_Mode: SideloadOnly
-        Appx_Package_Dir: Packages\
+        Appx_Package_Dir: ${{ github.workspace }}/artifacts/msix-build/
         Configuration: ${{ matrix.configuration }}
+
+    # Publishing with WindowsPackageType=None can clean earlier package outputs.
+    # Keep the release payload outside MSBuild's tracked output directories.
+    - name: Stage app package
+      run: |
+        New-Item -ItemType Directory -Path artifacts/release -Force | Out-Null
+        $packages = @(Get-ChildItem artifacts/msix-build -Filter 'Audibly.App*.msix' -Recurse -File)
+        if ($packages.Count -eq 0) { throw 'The application MSIX was not produced.' }
+        $packages | Copy-Item -Destination artifacts/release
 
     # Remove the pfx
     # - name: Remove the pfx
@@ -107,7 +116,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: MSIX Package
-        path: Audibly.App/Packages/**/Audibly.App*.msix
+        path: artifacts/release/Audibly.App*.msix
         
         
         
@@ -137,6 +146,6 @@ jobs:
         tag_name: 'v0.${{ github.run_number }}.${{ github.run_attempt }}.0'
         body: 'To install the MSIX version, you first have to add the certificate included in the MSIX (only need to do that once). To install the unpackaged version, you need to install the x64 WinAppRuntime Installer.'
         files: |
-          Audibly.App/Packages/**/Audibly.App*.msix
+          artifacts/release/Audibly.App*.msix
           Audibly.App-unpackaged-*.zip
         fail_on_unmatched_files: true

@@ -183,7 +183,8 @@ public sealed partial class NewMiniPlayerPage : Page
         if (!ReferenceEquals(MiniTranscript.ItemsSource, _readingMap.Passages)) MiniTranscript.ItemsSource = _readingMap.Passages;
         MiniReadingHint.Visibility = Visibility.Collapsed;
         var context = active ?? _readingMap.FindContext(source, position);
-        MiniReadAlongStatus.Text = !_followingNarration ? "Reading earlier text" : context is null ? "No word timing here" : "";
+        var status = !_followingNarration ? "Reading earlier text" : context is null ? "No word timing here" : "Scroll to read back";
+        if (MiniReadAlongStatus.Text != status) MiniReadAlongStatus.Text = status;
         if (_followingNarration && context is { } current && current.Passage != _lastMiniPassage)
         {
             MiniTranscript.ScrollIntoView(current.Passage, ScrollIntoViewAlignment.Leading);
@@ -222,7 +223,6 @@ public sealed partial class NewMiniPlayerPage : Page
     }
     private void MiniTranscript_Pressed(object sender, PointerRoutedEventArgs e)
     {
-        if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch) { SuspendMiniFollowing(); return; }
         for (var node = e.OriginalSource as DependencyObject; node is not null && node != MiniTranscript;)
         {
             if (node is ScrollBar) { SuspendMiniFollowing(); return; }

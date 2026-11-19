@@ -1,5 +1,7 @@
 <a name="readme-top"></a>
 
+Read Along development: [Windows setup, usage, verified alignment results and remaining manual checks](docs/read-along.md).
+
 
 
 <!-- PROJECT SHIELDS -->

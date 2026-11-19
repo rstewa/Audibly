@@ -1,0 +1,15 @@
+import { emit, markup, ctcAlign } from '@storyteller-platform/align';
+import { mkdir, copyFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.dirname(fileURLToPath(import.meta.url));
+process.env.PATH = [path.join(root,'node_modules/ffmpeg-static'), path.join(root,'node_modules/ffprobe-static/bin/win32/x64'), process.env.PATH].join(path.delimiter);
+const sample = path.join(root,'sample');
+await mkdir(path.join(sample,'emissions'), {recursive:true});
+const progress = stage => p => console.log(`${stage}: ${Math.round(p*100)}%`);
+console.log('CPU QuartzNet emissions on original, unsplit audio');
+await emit(path.join(sample,'audio'),path.join(sample,'emissions'),{model:'quartznet15x5',device:'cpu',language:new Intl.Locale('en'),onProgress:progress('emissions')});
+await copyFile(path.join(sample,'book.epub'),path.join(sample,'marked.epub'));
+await markup(path.join(sample,'book.epub'),path.join(sample,'marked.epub'),{granularity:'word',primaryLocale:new Intl.Locale('en')});
+await ctcAlign(path.join(sample,'marked.epub'),path.join(sample,'aligned.epub'),path.join(sample,'emissions'),path.join(sample,'audio'),{granularity:'word',primaryLocale:new Intl.Locale('en'),reportsPath:path.join(sample,'reports'),onProgress:progress('alignment')});
+console.log('Saved aligned.epub and actual alignment report');

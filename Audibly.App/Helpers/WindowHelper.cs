@@ -52,13 +52,14 @@ public static class WindowHelper
         {
             (miniPlayerWindow.AppWindow.Presenter as OverlappedPresenter)?.Restore();
             miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
+            miniPlayerWindow.Activate();
 
             HideMainWindow();
             return;
         }
 
         miniPlayerWindow = CreateWindow("MiniPlayerWindow");
-        miniPlayerWindow.CustomizeWindow(648, !MicaController.IsSupported() ? 92 : 96, true, true, false, false, false);
+        miniPlayerWindow.CustomizeWindow(688, 320, true, true, false, false, false);
 
         var rootPage = new NewMiniPlayerPage();
         miniPlayerWindow.Content = rootPage;
@@ -67,14 +68,16 @@ public static class WindowHelper
 
         (miniPlayerWindow as MainWindow)?.TrySetSystemBackdrop();
 
-        miniPlayerWindow.SetWindowDraggable(true);
+        // Drag only the explicit handle. Capturing the whole page interferes
+        // with word links, text selection and playback controls.
+        rootPage.ConfigureWindow(miniPlayerWindow);
         miniPlayerWindow.RemoveWindowBorderAndTitleBar();
 
         miniPlayerWindow.Activate();
         miniPlayerWindow.AppWindow.IsShownInSwitchers = true;
         
         miniPlayerWindow.AppWindow.Title = "Audibly — Audiobook Player";
-        miniPlayerWindow.AppWindow.SetIcon("Assets/logo.ico");
+        miniPlayerWindow.AppWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "logo.ico"));
         
         HideMainWindow();
     }

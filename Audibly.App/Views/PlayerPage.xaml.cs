@@ -16,6 +16,18 @@ public sealed partial class PlayerPage : Page
     public PlayerPage()
     {
         InitializeComponent();
+        Loaded += (_, _) =>
+        {
+            PlayerViewModel.IsPlayerFullScreen = true;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MinimizeGlyph;
+            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MinimizeTooltip;
+        };
+        Unloaded += (_, _) =>
+        {
+            PlayerViewModel.IsPlayerFullScreen = false;
+            PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
+            PlayerViewModel.MaximizeMinimizeTooltip = Constants.MaximizeTooltip;
+        };
 
         // Set the title bar for the current view
         App.Window.ExtendsContentIntoTitleBar = true;
@@ -34,5 +46,6 @@ public sealed partial class PlayerPage : Page
         Frame.GoBack();
         PlayerViewModel.IsPlayerFullScreen = false;
         PlayerViewModel.MaximizeMinimizeGlyph = Constants.MaximizeGlyph;
+        PlayerViewModel.MaximizeMinimizeTooltip = Constants.MaximizeTooltip;
     }
 }

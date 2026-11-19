@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         
@@ -38,13 +38,28 @@ jobs:
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
+    # MSBuild evaluates the bundled-runtime Content glob when the project loads.
+    # Install into a clean checkout before restore/build, not in an MSBuild target.
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        cache: npm
+        cache-dependency-path: tools/read-along/package-lock.json
+
+    - name: Install Read Along runtime
+      run: npm ci --prefix tools/read-along
+
+    - name: Test Read Along playback and persistence
+      run: dotnet run --project Audibly.ReadAlong.Tests
+
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
@@ -55,20 +70,42 @@ jobs:
 
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     - name: Decode the pfx
+      id: signing
+      env:
+        SIGNING_CERTIFICATE: ${{ secrets.Base64_Encoded_Pfx }}
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath Audibly.App_TemporaryKey.pfx
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        if ($env:SIGNING_CERTIFICATE) {
+          $pfx_cert_byte = [System.Convert]::FromBase64String($env:SIGNING_CERTIFICATE)
+          $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath Audibly.App_TemporaryKey.pfx
+          [IO.File]::WriteAllBytes($certificatePath, $pfx_cert_byte)
+          "enabled=true" >> $env:GITHUB_OUTPUT
+        } else {
+          "enabled=false" >> $env:GITHUB_OUTPUT
+        }
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
-      run: msbuild $env:Solution_Name /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=Audibly.App_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
+      run: |
+        $signing = @('/p:AppxPackageSigningEnabled=false')
+        if ('${{ steps.signing.outputs.enabled }}' -eq 'true') {
+          $signing = @('/p:AppxPackageSigningEnabled=true', '/p:PackageCertificateKeyFile=Audibly.App_TemporaryKey.pfx')
+        }
+        msbuild $env:Solution_Name /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true @signing
       env:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
         Appx_Package_Build_Mode: SideloadOnly
-        Appx_Package_Dir: Packages\
+        Appx_Package_Dir: ${{ github.workspace }}/artifacts/msix-build/
         Configuration: ${{ matrix.configuration }}
+
+    # Publishing with WindowsPackageType=None can clean earlier package outputs.
+    # Keep the release payload outside MSBuild's tracked output directories.
+    - name: Stage app package
+      run: |
+        New-Item -ItemType Directory -Path artifacts/release -Force | Out-Null
+        $packages = @(Get-ChildItem artifacts/msix-build -Filter 'Audibly.App*.msix' -Recurse -File)
+        if ($packages.Count -eq 0) { throw 'The application MSIX was not produced.' }
+        $packages | Copy-Item -Destination artifacts/release
 
     # Remove the pfx
     # - name: Remove the pfx
@@ -76,31 +113,31 @@ jobs:
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: MSIX Package
-        path: Audibly.App/Packages/**/Audibly.App*.msix
+        path: artifacts/release/Audibly.App*.msix
         
         
         
     # Create the unpackaged app
     - name: Build unpackaged app
-      run: msbuild $env:Solution_Name /t:Publish /p:WindowsPackageType=None /p:Configuration=$env:Configuration /p:Platform=x64
+      run: msbuild "$env:Project_Directory/Audibly.App.csproj" /t:Publish /p:WindowsPackageType=None /p:Configuration=$env:Configuration /p:Platform=x64 /p:RuntimeIdentifier=win-x64 /p:PublishDir="$env:GITHUB_WORKSPACE/artifacts/unpackaged/"
       env:
         Configuration: ${{ matrix.configuration }}
         
     - name: Create ZIP of unpackaged app
-      run: Compress-Archive Audibly.App/bin/x64/Release/net8.0-windows10.0.19041.0/publish/* 'Audibly.App-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+      run: Compress-Archive artifacts/unpackaged/* 'Audibly.App-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
         
     - name: Upload unpackaged app
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: 'Unpackaged app'
         path: 'Audibly.App-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
         
 
     - name: Create GH release
-      if: github.ref_name == 'main'
+      if: github.ref_name == 'main' && steps.signing.outputs.enabled == 'true'
       uses: softprops/action-gh-release@v1
       with:
         draft: false
@@ -109,6 +146,6 @@ jobs:
         tag_name: 'v0.${{ github.run_number }}.${{ github.run_attempt }}.0'
         body: 'To install the MSIX version, you first have to add the certificate included in the MSIX (only need to do that once). To install the unpackaged version, you need to install the x64 WinAppRuntime Installer.'
         files: |
-          Audibly.App/Packages/**/Audibly.App*.msix
+          artifacts/release/Audibly.App*.msix
           Audibly.App-unpackaged-*.zip
         fail_on_unmatched_files: true

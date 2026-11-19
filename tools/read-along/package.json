@@ -1,0 +1,20 @@
+{
+  "name": "audibly-read-along-engine",
+  "private": true,
+  "description": "Local CPU Storyteller preprocessing adapter for Audibly",
+  "dependencies": {
+    "@storyteller-platform/align": "0.2.16",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
+    "node": "^24.22.2"
+  },
+  "allowScripts": {
+    "node": true,
+    "@storyteller-platform/align": true,
+    "ffprobe-static": true,
+    "onnxruntime-node": true,
+    "protobufjs": true,
+    "ffmpeg-static": true,
+    "esbuild": true
+  }
+}

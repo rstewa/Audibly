@@ -43,6 +43,7 @@ public class FileImportService : IImportFiles
 
         var files = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
             .Where(file => file.EndsWith(".m4b", StringComparison.OrdinalIgnoreCase) ||
+                           file.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase) ||
                            file.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
             .ToList();
         var numberOfFiles = files.Count;
